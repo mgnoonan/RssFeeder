@@ -1,0 +1,18 @@
+﻿[
+  {
+    "Title": "The Drudge Report",
+    "Url": "http://www.drudgereport.com",
+    "Description": "The Drudge Report",
+    "Filename": "drudge.xml",
+    "Language": "en-US",
+    "CustomParser": "RssFeeder.Console.CustomBuilders.DrudgeReportFeedBuilder",
+    "Filters": [
+      "cd0802700cef27a775ab057a2ef54aea",
+      "cf69b6dd74d44010fdd0eff6d778e70f",
+      "3277518fd12233369747e13dc415de14",
+      "3c0e6e6b7eb1f7563eeacc7a9165407a",
+      "aac71d089541a02789fe80fc806dbabf",
+      "0cdb9a4ef88173081464cbb9e8000e86"
+    ]
+  }
+]
