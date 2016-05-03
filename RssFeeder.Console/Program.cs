@@ -1,4 +1,5 @@
 using log4net;
+using Newtonsoft.Json;
 using Raven.Client;
 using Raven.Client.Document;
 using Raven.Client.Embedded;
@@ -10,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Xml;
 
 namespace RssFeeder.Console
@@ -19,68 +21,130 @@ namespace RssFeeder.Console
     /// </summary>
     class Program
     {
-        private const string VERSION = "4.1";
         private const string DATEFORMAT = "ddd, dd MMM yyyy HH':'mm':'ss 'GMT'";
 
-        private static ILog _log = null;
+        /// <summary>
+        /// Instance of the log4net logger
+        /// </summary>
+        private static readonly ILog log = LogManager.GetLogger(typeof(Program));
 
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
-            if (args.Length != 0)
-            {
-                // Display usage help and exit
-                Usage();
-                return;
-            }
-
-            // Start the logging
+            // Init the log4net through the config
             log4net.Config.XmlConfigurator.Configure();
-            _log = LogManager.GetLogger(typeof(Program));
+            log.Info("--------------------------------");
+            log.InfoFormat("RSSFeed {0}", System.Reflection.Assembly.GetExecutingAssembly().GetName().Version);
 
-            // Print banner to console
-            _log.InfoFormat("RSSFeed {0}", VERSION);
+            // Process the command line arguments
+            var commandLineOptions = new Options();
+            if (!CommandLine.Parser.Default.ParseArguments(args, commandLineOptions))
+            {
+                // Return an error code
+                log.Error(string.Format("Invalid arguments: '{0}'", string.Join(",", args)));
+                return 255;
+            }
 
             try
             {
-                //using (IDocumentStore store = new DocumentStore
-                //{
-                //    Url = "http://localhost:8080/",
-                //    DefaultDatabase = "RSSFeed"
-                //})
-                using (IDocumentStore store = new EmbeddableDocumentStore
+                // A config file was specified so read in the options from there
+                List<Options> optionsList;
+                if (string.IsNullOrWhiteSpace(commandLineOptions.Config))
                 {
-                    DataDirectory = "~/App_Data/Database",
-                    DefaultDatabase = "RSSFeed"
-                })
+                    optionsList = new List<Options> { commandLineOptions };
+                }
+                else
                 {
-                    store.Initialize();
+                    // Get the directory of the current executable, all config 
+                    // files should be in this path
+                    string configFile = AssemblyDirectory + commandLineOptions.Config;
+                    log.InfoFormat("Reading from config file: {0}", configFile);
 
-                    List<Feed> feeds = GetFeeds(store);
-
-                    foreach (var f in feeds)
+                    using (StreamReader sr = new StreamReader(configFile))
                     {
-                        _log.Info("Building feed links...");
-                        BuildFeedLinks(store, f);
-                        _log.Info("Building RSS files...");
-                        BuildRssFile(store, f);
-                        _log.Info("Removing stale links...");
-                        RemoveFeedLinks(store, DateTime.Now.AddDays(-7));
+                        // Read the options in JSON format
+                        string json = sr.ReadToEnd();
+                        log.InfoFormat("Options: {0}", json);
+
+                        // Deserialize into our options class
+                        optionsList = JsonConvert.DeserializeObject<List<Options>>(json);
                     }
                 }
+
+                foreach (var option in optionsList)
+                {
+                    // Transform the option to the old style feed
+                    var f = new Feed
+                    {
+                        Title = option.Title,
+                        Description = option.Description,
+                        Filename = option.Filename,
+                        Language = option.Language,
+                        Url = option.Url,
+                        CustomParser = option.CustomParser,
+                        Filters = option.Filters
+                    };
+
+                    using (IDocumentStore store = new EmbeddableDocumentStore
+                    {
+                        DataDirectory = "~/App_Data/Database",
+                        DefaultDatabase = "RSSFeed"
+                    })
+                    {
+                        store.Initialize();
+
+                        //List<Feed> feeds = GetFeeds(store);
+
+                        //foreach (var f in feeds)
+                        //{
+                        log.Info("Building feed links...");
+                        BuildFeedLinks(store, f);
+                        log.Info("Building RSS files...");
+                        BuildRssFile(store, f);
+                        log.Info("Removing stale links...");
+                        RemoveFeedLinks(store, DateTime.Now.AddDays(-7));
+                        //}
+                    }
+                }
+
+#if DEBUG
+                System.Console.WriteLine("\nPress <Enter> to continue...");
+                System.Console.ReadLine();
+#endif
+
+                // Zero return value means everything processed normally
+                log.Info("Completed successfully");
+                return 0;
             }
             catch (Exception ex)
             {
-                _log.Error(ex.Message, ex);
-            }
-
+                log.Error("Error during processing", ex);
 #if DEBUG
-            System.Console.WriteLine("\nPress <ENTER> to continue...");
-            System.Console.ReadLine();
+                System.Console.WriteLine("\nPress <Enter> to continue...");
+                System.Console.ReadLine();
 #endif
+                return 250;
+            }
+        }
+
+        private static string AssemblyDirectory
+        {
+            get
+            {
+                string codeBase = Assembly.GetExecutingAssembly().CodeBase;
+                UriBuilder uri = new UriBuilder(codeBase);
+                string path = Uri.UnescapeDataString(uri.Path);
+
+                // Add the trailing backslash if not present
+                string name = Path.GetDirectoryName(path);
+                if (!name.EndsWith("\\"))
+                    name += "\\";
+
+                return name;
+            }
         }
 
         private static List<Feed> GetFeeds(IDocumentStore store)
@@ -119,15 +183,6 @@ namespace RssFeeder.Console
             }
         }
 
-        private static void Usage()
-        {
-            System.Console.WriteLine("\nRSSFeed {0}", VERSION);
-            System.Console.WriteLine("------------");
-            System.Console.WriteLine("A utility to retrieve multiple RSS Feeds from remote servers");
-            System.Console.WriteLine("Written by Matthew Noonan");
-            System.Console.WriteLine("Sept 2003\n");
-        }
-
         private static void BuildFeedLinks(IDocumentStore store, Feed feed)
         {
             string builderName = feed.CustomParser;
@@ -138,9 +193,9 @@ namespace RssFeeder.Console
             {
                 Type type = System.Reflection.Assembly.GetExecutingAssembly().GetType(builderName);
                 ICustomFeedBuilder builder = (ICustomFeedBuilder)Activator.CreateInstance(type);
-                var list = builder.Build(_log, feed);
+                var list = builder.Build(log, feed);
 
-                _log.Info("Adding links to database...");
+                log.Info("Adding links to database...");
                 foreach (var item in list)
                 {
                     AddLinkToDatabase(store, feed, item);
@@ -148,7 +203,7 @@ namespace RssFeeder.Console
             }
             catch (Exception ex)
             {
-                _log.Error(ex.Message, ex);
+                log.Error(ex.Message, ex);
             }
         }
 
@@ -179,7 +234,7 @@ namespace RssFeeder.Console
                 string description = string.Empty;
                 string imageUrl = string.Empty;
 
-                _log.InfoFormat("Visiting URL '{0}'", item.Url);
+                log.InfoFormat("Visiting URL '{0}'", item.Url);
                 description = Utility.Utility.GetParagraphTagsFromHtml(item.Url);
                 item.Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
                 //ISiteParser parser;
@@ -199,7 +254,7 @@ namespace RssFeeder.Console
                 //parser.Load(item);
                 //parser.Parse();
 
-                _log.InfoFormat("ADDING: {0}|{1}", item.UrlHash, item.Title);
+                log.InfoFormat("ADDING: {0}|{1}", item.UrlHash, item.Title);
                 documentSession.Store(item);
                 documentSession.SaveChanges();
 
@@ -247,13 +302,13 @@ namespace RssFeeder.Console
 
         private static void WriteRssHeader(XmlTextWriter writer, Feed feed, FeedItem imageItem)
         {
-            writer.Formatting = Formatting.Indented;
+            writer.Formatting = System.Xml.Formatting.Indented;
             writer.Indentation = 4;
 
             writer.WriteStartDocument();
             //			writer.WriteAttributeString("encoding", "UTF-8");
 
-            writer.WriteComment("Generated by RSSFeed " + VERSION + " Copyright &copy " + DateTime.Now.Year + " Noonan Consulting Inc.");
+            writer.WriteComment("Generated by RSSFeed " + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version + " Copyright &copy " + DateTime.Now.Year + " Noonan Consulting Inc.");
 
             writer.WriteStartElement("rss");
             writer.WriteAttributeString("version", "2.0");
@@ -273,7 +328,7 @@ namespace RssFeeder.Console
             writer.WriteEndElement();
 
             writer.WriteStartElement("generator");
-            writer.WriteString("NCI RSSFeed " + VERSION);
+            writer.WriteString("NCI RSSFeed " + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version);
             writer.WriteEndElement();
 
             if (imageItem != null)

@@ -279,7 +279,7 @@ namespace RssFeeder.Console.Utility
 
                 return true;
             }
-            catch (Exception ex)
+            catch
             {
                 // do something with the error
                 return false;
