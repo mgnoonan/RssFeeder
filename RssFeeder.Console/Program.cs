@@ -34,10 +34,15 @@ namespace RssFeeder.Console
         [STAThread]
         static int Main(string[] args)
         {
+            // Grab the current assembly name
+            AssemblyName assemblyName = System.Reflection.Assembly.GetExecutingAssembly().GetName();
+
             // Init the log4net through the config
             log4net.Config.XmlConfigurator.Configure();
             log.Info("--------------------------------");
-            log.InfoFormat("RSSFeed {0}", System.Reflection.Assembly.GetExecutingAssembly().GetName().Version);
+            log.InfoFormat("Machine: {0}", Environment.MachineName);
+            log.InfoFormat("Assembly: {0}", assemblyName.FullName);
+            log.Info("--------------------------------");
 
             // Process the command line arguments
             var commandLineOptions = new Options();
