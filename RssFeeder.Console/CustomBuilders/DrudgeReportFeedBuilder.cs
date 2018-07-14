@@ -12,7 +12,7 @@ namespace RssFeeder.Console.CustomBuilders
 {
     class DrudgeReportFeedBuilder : ICustomFeedBuilder
     {
-        public List<FeedItem> Build(ILog log, Feed feed)
+        public List<FeedItem> ParseFeedItems(ILog log, Feed feed)
         {
             var list = new List<FeedItem>();
             var filters = feed.Filters ?? new List<string>();

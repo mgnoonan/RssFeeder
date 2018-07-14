@@ -6,6 +6,6 @@ namespace RssFeeder.Console.CustomBuilders
 {
     public interface ICustomFeedBuilder
     {
-        List<FeedItem> Build(ILog log, Feed feed);
+        List<FeedItem> ParseFeedItems(ILog log, Feed feed);
     }
 }

@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
 
 namespace RssFeeder.Console.Models
 {
@@ -15,6 +11,7 @@ namespace RssFeeder.Console.Models
         public string ImageUrl { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
-        public DateTime DateAdded { get; set; }        
+        public DateTime DateAdded { get; set; }
+        public string FileName { get; set; }
     }
 }
