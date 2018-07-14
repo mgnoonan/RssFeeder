@@ -8,7 +8,6 @@ using HtmlAgilityPack;
 using log4net;
 using Newtonsoft.Json;
 using Raven.Client;
-using Raven.Client.Embedded;
 using RssFeeder.Console.CustomBuilders;
 using RssFeeder.Console.Models;
 
@@ -20,6 +19,11 @@ namespace RssFeeder.Console
     class Program
     {
         private const string DATEFORMAT = "ddd, dd MMM yyyy HH':'mm':'ss 'GMT'";
+
+        /// <summary>
+        /// Name of the working area folder
+        /// </summary>
+        private const string WORKING_FOLDER = "working";
 
         /// <summary>
         /// Instance of the log4net logger
@@ -177,10 +181,10 @@ namespace RssFeeder.Console
             Type type = Assembly.GetExecutingAssembly().GetType(builderName);
             ICustomFeedBuilder builder = (ICustomFeedBuilder)Activator.CreateInstance(type);
             var list = builder.ParseFeedItems(log, feed)
-                //.Take(10)
+                .Take(10)
                 ;
 
-            log.Info("Adding links to database...");
+            log.Info("Adding links to database");
             foreach (var item in list)
             {
                 //AddLinkToDatabase(store, feed, item);
@@ -196,7 +200,7 @@ namespace RssFeeder.Console
         {
             if (File.Exists(item.FileName))
             {
-                log.Info($"Parsing meta tags from file '{item.FileName}'.");
+                log.Info($"Parsing meta tags from file '{item.FileName}'");
 
                 var doc = new HtmlDocument();
                 doc.Load(item.FileName);
@@ -207,10 +211,11 @@ namespace RssFeeder.Console
                     return;
                 }
 
-                item.Title = ParseMetaTagAttributes(doc, "og:title", "content");
+                var title = ParseMetaTagAttributes(doc, "og:title", "content");
                 item.Url = ParseMetaTagAttributes(doc, "og:url", "content");
-                item.Description = ParseMetaTagAttributes(doc, "og:description", "content");
                 item.ImageUrl = ParseMetaTagAttributes(doc, "og:image", "content");
+                item.SiteName = ParseMetaTagAttributes(doc, "og:site_name", "content");
+                item.Description = $"<img src=\"{item.ImageUrl}\" />\r\n<h1>{title}<h1>\r\n<p><a href=\"{item.Url}\"></a></p>\r\n<p>{ParseMetaTagAttributes(doc, "og:description", "content")}</p>";
             }
 
             log.Info(JsonConvert.SerializeObject(item, Newtonsoft.Json.Formatting.Indented));
@@ -218,12 +223,15 @@ namespace RssFeeder.Console
 
         private static string ParseMetaTagAttributes(HtmlDocument doc, string property, string attribute)
         {
+            // Retrieve the requested meta tag by property name
             var node = doc.DocumentNode.SelectSingleNode($"/html/head/meta[@property='{property}']");
+
+            // Node can come back null if the meta tag is not present in the DOM
             string value = node?.Attributes[attribute].Value.Trim() ?? string.Empty;
 
             if (string.IsNullOrWhiteSpace(value))
             {
-                log.Warn($"Error reading attribute {attribute} from property {property}");
+                log.Warn($"Error reading attribute '{attribute}' from meta tag '{property}'");
             }
 
             return value;
@@ -278,8 +286,15 @@ namespace RssFeeder.Console
                 HtmlDocument doc = hw.Load(item.Url);
                 doc.OptionFixNestedTags = true;
 
+                string workingFolder = $"{AssemblyDirectory}\\{WORKING_FOLDER}";
+                if (!Directory.Exists(workingFolder))
+                {
+                    log.Info($"Creating folder '{workingFolder}'");
+                    Directory.CreateDirectory(workingFolder);
+                }
+
                 // Construct unique file name
-                item.FileName = item.UrlHash + ".html";
+                item.FileName = $"{workingFolder}\\{item.UrlHash}.html";
                 if (File.Exists(item.FileName))
                 {
                     File.Delete(item.FileName);
@@ -290,12 +305,11 @@ namespace RssFeeder.Console
             }
             catch (System.Net.WebException ex)
             {
-                log.Info($"Error loading url '{ex.Message}'");
+                log.Warn($"Error loading url '{ex.Message}'");
             }
             catch (Exception ex)
             {
-                log.Error($"Unexpected error loading url '{item.Url}'", ex);
-                throw;
+                log.Warn($"Unexpected error loading url '{ex.Message}'");
             }
         }
 

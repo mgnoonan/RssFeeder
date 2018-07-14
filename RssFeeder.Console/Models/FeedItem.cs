@@ -13,5 +13,6 @@ namespace RssFeeder.Console.Models
         public string Description { get; set; }
         public DateTime DateAdded { get; set; }
         public string FileName { get; set; }
+        public string SiteName { get; set; }
     }
 }
