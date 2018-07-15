@@ -1,5 +1,4 @@
 ﻿using CommandLine;
-using System.Collections.Generic;
 
 namespace RssFeeder.Console
 {
@@ -23,10 +22,10 @@ namespace RssFeeder.Console
         [Option('p', "customparser")]
         public string CustomParser { get; set; }
 
-        [Option('h', "filters")]
-        public List<string> Filters { get; set; }
+        [Option('h', "filters", Default = new string[] { })]
+        public string[] Filters { get; set; }
 
-        [Option('g', "config", DefaultValue = null, HelpText = "The name of the config.json file that contains all the options for the current run")]
+        [Option('g', "config", Default = null, HelpText = "The name of the config.json file that contains all the options for the current run")]
         public string Config { get; set; }
     }
 }

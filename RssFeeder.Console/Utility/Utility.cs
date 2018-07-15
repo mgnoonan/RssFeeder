@@ -1,13 +1,10 @@
 using System;
+using System.Drawing;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.Net;
-using HtmlAgilityPack;
-using System.IO;
 using System.Web;
+using HtmlAgilityPack;
 
 namespace RssFeeder.Console.Utility
 {
@@ -122,15 +119,8 @@ namespace RssFeeder.Console.Utility
 
         internal static string RemoveWhitespaceWithSplit(string inputText)
         {
-            var sb = new StringBuilder();
-
             string[] parts = inputText.Split(new char[] { ' ', '\n', '\t', '\r', '\f', '\v' }, StringSplitOptions.RemoveEmptyEntries);
-
-            int size = parts.Length;
-            for (int i = 0; i < size; i++)
-                sb.AppendFormat("{0} ", parts[i]);
-
-            return sb.ToString();
+            return string.Join(" ", parts);
         }
 
         public static void GetDescriptionAndImageFromMeta(string url, ref string description, ref string imageUrl)
