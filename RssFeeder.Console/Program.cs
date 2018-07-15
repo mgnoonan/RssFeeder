@@ -80,6 +80,9 @@ namespace RssFeeder.Console
             log.InfoFormat("Assembly: {0}", assemblyName.FullName);
             log.Info("--------------------------------");
 
+            // set up TLS defaults
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+
             try
             {
                 // A config file was specified so read in the options from there
@@ -127,10 +130,11 @@ namespace RssFeeder.Console
                     BuildRssFileUsingTemplate(f, items);
                 }
 
-#if DEBUG
-                System.Console.WriteLine("\nPress <Enter> to continue...");
-                System.Console.ReadLine();
-#endif
+                if (Environment.UserInteractive)
+                {
+                    System.Console.WriteLine("\nPress <Enter> to continue...");
+                    System.Console.ReadLine();
+                }
 
                 // Zero return value means everything processed normally
                 log.Info("Completed successfully");
@@ -139,10 +143,11 @@ namespace RssFeeder.Console
             catch (Exception ex)
             {
                 log.Error("Error during processing", ex);
-#if DEBUG
-                System.Console.WriteLine("\nPress <Enter> to continue...");
-                System.Console.ReadLine();
-#endif
+                if (Environment.UserInteractive)
+                {
+                    System.Console.WriteLine("\nPress <Enter> to continue...");
+                    System.Console.ReadLine();
+                }
                 Environment.Exit(250);
             }
         }
