@@ -65,7 +65,7 @@ namespace RssFeeder.Console.CustomBuilders
                         log.Info($"FOUND: {hash}|{title}|{linkUrl}");
                         var item = new FeedItem()
                         {
-                            Id = hash,
+                            id = Guid.NewGuid().ToString(),
                             FeedId = feed.Id,
                             Title = HttpUtility.HtmlDecode(title),
                             //Description = Utility.Utility.GetDescriptionFromMeta(linkUrl),
@@ -107,6 +107,7 @@ namespace RssFeeder.Console.CustomBuilders
                         log.InfoFormat("FOUND: {0}|{1}|{2}", hash, title, linkUrl);
                         var item = new FeedItem()
                         {
+                            id = Guid.NewGuid().ToString(),
                             FeedId = feed.Id,
                             Title = HttpUtility.HtmlDecode(title),
                             //Description = Utility.Utility.GetDescriptionFromMeta(linkUrl),

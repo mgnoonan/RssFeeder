@@ -1,12 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using Antlr3.ST;
 using CommandLine;
 using HtmlAgilityPack;
 using log4net;
+using Microsoft.Azure.Documents.Client;
 using Newtonsoft.Json;
 using RssFeeder.Console.CustomBuilders;
 using RssFeeder.Console.Models;
@@ -26,9 +29,24 @@ namespace RssFeeder.Console
         private const string WORKING_FOLDER = "working";
 
         /// <summary>
+        /// The Azure DocumentDB endpoint for running this GetStarted sample.
+        /// </summary>
+        private static readonly string EndpointUri = ConfigurationManager.AppSettings["EndPointUrl"];
+
+        /// <summary>
+        /// The primary key for the Azure DocumentDB account.
+        /// </summary>
+        private static readonly string PrimaryKey = ConfigurationManager.AppSettings["PrimaryKey"];
+
+        /// <summary>
         /// Instance of the log4net logger
         /// </summary>
         private static readonly ILog log = LogManager.GetLogger(typeof(Program));
+
+        /// <summary>
+        /// The DocumentDB client instance.
+        /// </summary>
+        private static DocumentClient client;
 
         /// <summary>
         /// The main entry point for the application.
@@ -43,7 +61,7 @@ namespace RssFeeder.Console
                 ;
         }
 
-        static void HandleParserError(IEnumerable<Error> errors, string[] args)
+        static void HandleParserError(IEnumerable<CommandLine.Error> errors, string[] args)
         {
             // Return an error code
             log.Error(string.Format("Invalid arguments: '{0}'", string.Join(",", args)));
@@ -87,6 +105,9 @@ namespace RssFeeder.Console
                         optionsList = JsonConvert.DeserializeObject<List<Options>>(json);
                     }
                 }
+
+                // Create a new instance of the DocumentClient
+                client = new DocumentClient(new Uri(EndpointUri), PrimaryKey);
 
                 foreach (var option in optionsList)
                 {
@@ -152,17 +173,104 @@ namespace RssFeeder.Console
             Type type = Assembly.GetExecutingAssembly().GetType(builderName);
             ICustomFeedBuilder builder = (ICustomFeedBuilder)Activator.CreateInstance(type);
             var list = builder.ParseFeedItems(log, feed)
-                .Take(10)
+                //.Take(10) FOR DEBUG PURPOSES
                 ;
 
-            log.Info("Adding links to database");
+            string databaseName = "rssfeeder";
+            string collectionName = "drudge-report";
+
+            // Add any links that don't already exist
+            log.Info("Adding links to the database");
             foreach (var item in list)
             {
-                SaveUrlToDisk(item);
-                ParseMetaTags(item);
+                if (!DocumentExists(databaseName, collectionName, item))
+                {
+                    SaveUrlToDisk(item);
+                    ParseMetaTags(item);
+                    CreateDocument(databaseName, collectionName, item);
+                }
             }
 
-            return list.ToList();
+            // Remove any stale documents
+            log.Info("Removing stale links from the database");
+            list = GetStaleDocuments(databaseName, collectionName, DateTime.Now.AddDays(-7));
+            foreach (var item in list)
+            {
+                DeleteDocument(databaseName, collectionName, item.id);
+            }
+
+            // Return whatever documents are left in the database
+            return GetAllDocuments(databaseName, collectionName);
+        }
+
+        /// <summary>
+        /// Create the Family document in the collection if another by the same partition key/item key doesn't already exist.
+        /// </summary>
+        /// <param name="databaseName">The name/ID of the database.</param>
+        /// <param name="collectionName">The name/ID of the collection.</param>
+        /// <param name="item"></param>
+        private static void CreateDocument(string databaseName, string collectionName, FeedItem item)
+        {
+            var result = client.CreateDocumentAsync(
+                UriFactory.CreateDocumentCollectionUri(databaseName, collectionName), item)
+                .Result;
+
+            if (result.StatusCode != HttpStatusCode.Created)
+            {
+                throw new Exception($"Unable to create document for '{item.UrlHash}'");
+            }
+        }
+
+        private static List<FeedItem> GetStaleDocuments(string databaseName, string collectionName, DateTime targetDate)
+        {
+            // Set some common query options
+            FeedOptions queryOptions = new FeedOptions { MaxItemCount = -1 };
+
+            // Run a simple query via LINQ. DocumentDB indexes all properties, so queries 
+            // can be completed efficiently and with low latency
+            return client.CreateDocumentQuery<FeedItem>(
+                UriFactory.CreateDocumentCollectionUri(databaseName, collectionName), queryOptions)
+                .Where(f => f.DateAdded <= targetDate)
+                .ToList();
+        }
+
+        private static bool DocumentExists(string databaseName, string collectionName, FeedItem item)
+        {
+            // Set some common query options
+            FeedOptions queryOptions = new FeedOptions { MaxItemCount = -1 };
+
+            // Run a simple query via LINQ. DocumentDB indexes all properties, so queries 
+            // can be completed efficiently and with low latency
+            var result = client.CreateDocumentQuery<FeedItem>(
+                UriFactory.CreateDocumentCollectionUri(databaseName, collectionName), queryOptions)
+                .Where(f => f.id == item.id);
+
+            return result.Count() > 0;
+        }
+
+        private static List<FeedItem> GetAllDocuments(string databaseName, string collectionName)
+        {
+            // Set some common query options
+            FeedOptions queryOptions = new FeedOptions { MaxItemCount = -1 };
+
+            // Run a simple query via LINQ. DocumentDB indexes all properties, so queries 
+            // can be completed efficiently and with low latency
+            return client.CreateDocumentQuery<FeedItem>(
+                UriFactory.CreateDocumentCollectionUri(databaseName, collectionName), queryOptions)
+                .ToList();
+        }
+        private static void DeleteDocument(string databaseName, string collectionName, FeedItem item)
+        {
+            DeleteDocument(databaseName, collectionName, item.id);
+        }
+        private static void DeleteDocument(string databaseName, string collectionName, string documentID)
+        {
+            var result = client.DeleteDocumentAsync(UriFactory.CreateDocumentUri(databaseName, collectionName, documentID)).Result;
+
+            if (result.StatusCode != HttpStatusCode.NoContent)
+            {
+                throw new Exception($"Unable to delete document for '{documentID}'");
+            }
         }
 
         private static void ParseMetaTags(FeedItem item)

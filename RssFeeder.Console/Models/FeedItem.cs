@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Web;
+using Newtonsoft.Json;
 
 namespace RssFeeder.Console.Models
 {
     public class FeedItem
     {
-        public string Id { get; set; }
+        public string id { get; set; }
         public int FeedId { get; set; }
         public string Url { get; set; }
         public string UrlHash { get; set; }
@@ -16,6 +17,7 @@ namespace RssFeeder.Console.Models
         public string FileName { get; set; }
         public string SiteName { get; set; }
 
+        [JsonIgnore]
         public string EncodedDescription
         {
             get
@@ -24,6 +26,7 @@ namespace RssFeeder.Console.Models
             }
         }
 
+        [JsonIgnore]
         public string FormattedDateAdded
         {
             get
