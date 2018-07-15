@@ -248,7 +248,7 @@ namespace RssFeeder.Console
             // can be completed efficiently and with low latency
             var result = client.CreateDocumentQuery<FeedItem>(
                 UriFactory.CreateDocumentCollectionUri(databaseName, collectionName), queryOptions)
-                .Where(f => f.id == item.id);
+                .Where(f => f.UrlHash == item.UrlHash);
 
             return result.Count() > 0;
         }
@@ -297,7 +297,7 @@ namespace RssFeeder.Console
                 item.Url = ParseMetaTagAttributes(doc, "og:url", "content");
                 item.ImageUrl = ParseMetaTagAttributes(doc, "og:image", "content");
                 item.SiteName = ParseMetaTagAttributes(doc, "og:site_name", "content");
-                item.Description = $"<img src=\"{item.ImageUrl}\" />\r\n<h1>{title}<h1>\r\n<p><a href=\"{item.Url}\">{item.Url}</a></p>\r\n<p>{ParseMetaTagAttributes(doc, "og:description", "content")}</p>";
+                item.Description = $"<img src=\"{item.ImageUrl}\" />\r\n<h1>{title}</h1>\r\n<p><a href=\"{item.Url}\">{item.Url}</a></p>\r\n<p>{ParseMetaTagAttributes(doc, "og:description", "content")}</p>";
             }
 
             log.Info(JsonConvert.SerializeObject(item, Newtonsoft.Json.Formatting.Indented));
