@@ -262,6 +262,7 @@ namespace RssFeeder.Console
             // can be completed efficiently and with low latency
             return client.CreateDocumentQuery<FeedItem>(
                 UriFactory.CreateDocumentCollectionUri(databaseName, collectionName), queryOptions)
+                .OrderByDescending(i => i.DateAdded)
                 .ToList();
         }
         private static void DeleteDocument(string databaseName, string collectionName, FeedItem item)
