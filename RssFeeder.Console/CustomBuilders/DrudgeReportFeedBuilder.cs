@@ -1,12 +1,12 @@
-﻿using HtmlAgilityPack;
-using log4net;
-using RssFeeder.Console.Models;
-using RssFeeder.Console.Utility;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Web;
+using HtmlAgilityPack;
+using log4net;
+using RssFeeder.Console.Models;
+using RssFeeder.Console.Utility;
 
 namespace RssFeeder.Console.CustomBuilders
 {
@@ -62,9 +62,10 @@ namespace RssFeeder.Console.CustomBuilders
 
                     if (linkUrl.Length > 0 && title.Length > 0)
                     {
-                        log.InfoFormat("FOUND: {0}|{1}|{2}", hash, title, linkUrl);
+                        log.Info($"FOUND: {hash}|{title}|{linkUrl}");
                         var item = new FeedItem()
                         {
+                            Id = hash,
                             FeedId = feed.Id,
                             Title = HttpUtility.HtmlDecode(title),
                             //Description = Utility.Utility.GetDescriptionFromMeta(linkUrl),

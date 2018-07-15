@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Xml;
+using Antlr3.ST;
+using CommandLine;
 using HtmlAgilityPack;
 using log4net;
 using Newtonsoft.Json;
-using Raven.Client;
 using RssFeeder.Console.CustomBuilders;
 using RssFeeder.Console.Models;
 
@@ -34,7 +34,23 @@ namespace RssFeeder.Console
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        static int Main(string[] args)
+        static void Main(string[] args)
+        {
+            // Process the command line arguments
+            Parser.Default.ParseArguments<Options>(args)
+                .WithParsed<Options>(opts => ProcessWithExitCode(opts))
+                .WithNotParsed<Options>(errs => HandleParserError(errs, args))
+                ;
+        }
+
+        static void HandleParserError(IEnumerable<Error> errors, string[] args)
+        {
+            // Return an error code
+            log.Error(string.Format("Invalid arguments: '{0}'", string.Join(",", args)));
+            Environment.Exit(255);
+        }
+
+        static void ProcessWithExitCode(Options opts)
         {
             // Grab the current assembly name
             AssemblyName assemblyName = Assembly.GetExecutingAssembly().GetName();
@@ -46,28 +62,19 @@ namespace RssFeeder.Console
             log.InfoFormat("Assembly: {0}", assemblyName.FullName);
             log.Info("--------------------------------");
 
-            // Process the command line arguments
-            var commandLineOptions = new Options();
-            if (!CommandLine.Parser.Default.ParseArguments(args, commandLineOptions))
-            {
-                // Return an error code
-                log.Error(string.Format("Invalid arguments: '{0}'", string.Join(",", args)));
-                return 255;
-            }
-
             try
             {
                 // A config file was specified so read in the options from there
                 List<Options> optionsList;
-                if (string.IsNullOrWhiteSpace(commandLineOptions.Config))
+                if (string.IsNullOrWhiteSpace(opts.Config))
                 {
-                    optionsList = new List<Options> { commandLineOptions };
+                    optionsList = new List<Options> { opts };
                 }
                 else
                 {
                     // Get the directory of the current executable, all config 
                     // files should be in this path
-                    string configFile = AssemblyDirectory + commandLineOptions.Config;
+                    string configFile = Path.Combine(AssemblyDirectory, opts.Config);
                     log.InfoFormat("Reading from config file: {0}", configFile);
 
                     using (StreamReader sr = new StreamReader(configFile))
@@ -92,11 +99,11 @@ namespace RssFeeder.Console
                         Language = option.Language,
                         Url = option.Url,
                         CustomParser = option.CustomParser,
-                        Filters = option.Filters
+                        Filters = option.Filters.ToList()
                     };
 
                     var items = BuildFeedLinks(f);
-                    BuildRssFile(f, items);
+                    BuildRssFileUsingTemplate(f, items);
                 }
 
 #if DEBUG
@@ -106,7 +113,7 @@ namespace RssFeeder.Console
 
                 // Zero return value means everything processed normally
                 log.Info("Completed successfully");
-                return 0;
+                Environment.Exit(0);
             }
             catch (Exception ex)
             {
@@ -115,7 +122,7 @@ namespace RssFeeder.Console
                 System.Console.WriteLine("\nPress <Enter> to continue...");
                 System.Console.ReadLine();
 #endif
-                return 250;
+                Environment.Exit(250);
             }
         }
 
@@ -136,42 +143,6 @@ namespace RssFeeder.Console
             }
         }
 
-        private static List<Feed> GetFeeds(IDocumentStore store)
-        {
-            using (IDocumentSession documentSession = store.OpenSession())
-            {
-                var feeds = documentSession.Query<Feed>().ToList();
-
-                if (!feeds.Any())
-                {
-                    Feed newFeed = new Feed
-                    {
-                        Title = "The Drudge Report",
-                        Url = "http://www.drudgereport.com",
-                        Description = "The Drudge Report",
-                        Filename = @"drudge.xml",
-                        Language = "en-US",
-                        CustomParser = "RSSFeed.CustomBuilders.DrudgeReportFeedBuilder",
-                        Filters = new List<string>
-                        {
-                            "cd0802700cef27a775ab057a2ef54aea",
-                            "cf69b6dd74d44010fdd0eff6d778e70f",
-                            "3277518fd12233369747e13dc415de14",
-                            "3c0e6e6b7eb1f7563eeacc7a9165407a",
-                            "aac71d089541a02789fe80fc806dbabf",
-                            "0cdb9a4ef88173081464cbb9e8000e86"
-                        }
-                    };
-
-                    feeds.Add(newFeed);
-                    documentSession.Store(newFeed);
-                    documentSession.SaveChanges();
-                }
-
-                return feeds;
-            }
-        }
-
         private static List<FeedItem> BuildFeedLinks(Feed feed)
         {
             string builderName = feed.CustomParser;
@@ -187,8 +158,6 @@ namespace RssFeeder.Console
             log.Info("Adding links to database");
             foreach (var item in list)
             {
-                //AddLinkToDatabase(store, feed, item);
-
                 SaveUrlToDisk(item);
                 ParseMetaTags(item);
             }
@@ -215,7 +184,7 @@ namespace RssFeeder.Console
                 item.Url = ParseMetaTagAttributes(doc, "og:url", "content");
                 item.ImageUrl = ParseMetaTagAttributes(doc, "og:image", "content");
                 item.SiteName = ParseMetaTagAttributes(doc, "og:site_name", "content");
-                item.Description = $"<img src=\"{item.ImageUrl}\" />\r\n<h1>{title}<h1>\r\n<p><a href=\"{item.Url}\"></a></p>\r\n<p>{ParseMetaTagAttributes(doc, "og:description", "content")}</p>";
+                item.Description = $"<img src=\"{item.ImageUrl}\" />\r\n<h1>{title}<h1>\r\n<p><a href=\"{item.Url}\">{item.Url}</a></p>\r\n<p>{ParseMetaTagAttributes(doc, "og:description", "content")}</p>";
             }
 
             log.Info(JsonConvert.SerializeObject(item, Newtonsoft.Json.Formatting.Indented));
@@ -237,43 +206,43 @@ namespace RssFeeder.Console
             return value;
         }
 
-        private static void RemoveFeedLinks(IDocumentStore store, DateTime targetDate)
-        {
-            using (IDocumentSession documentSession = store.OpenSession())
-            {
-                var query = documentSession.Query<FeedItem>().Where(i => i.DateAdded < targetDate);
+        //private static void RemoveFeedLinks(IDocumentStore store, DateTime targetDate)
+        //{
+        //    using (IDocumentSession documentSession = store.OpenSession())
+        //    {
+        //        var query = documentSession.Query<FeedItem>().Where(i => i.DateAdded < targetDate);
 
-                foreach (var item in query)
-                {
-                    documentSession.Delete<FeedItem>(item);
-                }
+        //        foreach (var item in query)
+        //        {
+        //            documentSession.Delete<FeedItem>(item);
+        //        }
 
-                documentSession.SaveChanges();
-            }
-        }
+        //        documentSession.SaveChanges();
+        //    }
+        //}
 
-        private static void AddLinkToDatabase(IDocumentStore store, Feed feed, FeedItem item)
-        {
-            using (IDocumentSession documentSession = store.OpenSession())
-            {
-                if (documentSession.Query<FeedItem>().Any(i => i.UrlHash == item.UrlHash))
-                {
-                    return;
-                }
+        //private static void AddLinkToDatabase(IDocumentStore store, Feed feed, FeedItem item)
+        //{
+        //    using (IDocumentSession documentSession = store.OpenSession())
+        //    {
+        //        if (documentSession.Query<FeedItem>().Any(i => i.UrlHash == item.UrlHash))
+        //        {
+        //            return;
+        //        }
 
-                string description = string.Empty;
+        //        string description = string.Empty;
 
-                log.InfoFormat("Visiting URL '{0}'", item.Url);
-                description = Utility.Utility.GetParagraphTagsFromHtml(item.Url);
-                item.Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+        //        log.InfoFormat("Visiting URL '{0}'", item.Url);
+        //        description = Utility.Utility.GetParagraphTagsFromHtml(item.Url);
+        //        item.Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
 
-                log.InfoFormat("ADDING: {0}|{1}", item.UrlHash, item.Title);
-                documentSession.Store(item);
-                documentSession.SaveChanges();
+        //        log.InfoFormat("ADDING: {0}|{1}", item.UrlHash, item.Title);
+        //        documentSession.Store(item);
+        //        documentSession.SaveChanges();
 
-                return;
-            }
-        }
+        //        return;
+        //    }
+        //}
 
         private static void SaveUrlToDisk(FeedItem item)
         {
@@ -286,7 +255,7 @@ namespace RssFeeder.Console
                 HtmlDocument doc = hw.Load(item.Url);
                 doc.OptionFixNestedTags = true;
 
-                string workingFolder = $"{AssemblyDirectory}\\{WORKING_FOLDER}";
+                string workingFolder = Path.Combine(AssemblyDirectory, WORKING_FOLDER);
                 if (!Directory.Exists(workingFolder))
                 {
                     log.Info($"Creating folder '{workingFolder}'");
@@ -294,7 +263,7 @@ namespace RssFeeder.Console
                 }
 
                 // Construct unique file name
-                item.FileName = $"{workingFolder}\\{item.UrlHash}.html";
+                item.FileName = Path.Combine(workingFolder, $"{item.UrlHash}.html");
                 if (File.Exists(item.FileName))
                 {
                     File.Delete(item.FileName);
@@ -313,122 +282,29 @@ namespace RssFeeder.Console
             }
         }
 
-        private static void BuildRssFile(Feed feed, List<FeedItem> items)
+        private static void BuildRssFileUsingTemplate(Feed feed, List<FeedItem> items)
         {
-            // Build the initial RSS 2.0 document
-            string url = feed.Url;
-            string channelTitle = feed.Title;
-            string relativeRoot = feed.Url;
-            string tempFile = Guid.NewGuid().ToString();    // CAUSES ACL PROBLEMS --> Path.GetTempFileName();
-            var targetDate = DateTime.Now.AddDays(-1);
+            var group = new StringTemplateGroup("myGroup", Path.Combine(AssemblyDirectory, "Templates"));
+            var t = group.GetInstanceOf("DrudgeFeed");
 
-            using (XmlTextWriter writer = new XmlTextWriter(tempFile, System.Text.Encoding.UTF8))
+            t.SetAttribute("feed", feed);
+            t.SetAttribute("items", items);
+            t.SetAttribute("copyrightYear", DateTime.Now.Year);
+            t.SetAttribute("feedGenerator", "NCI RSSFeeder " + Assembly.GetExecutingAssembly().GetName().Version);
+            t.SetAttribute("feedPubDate", DateTime.Now.Date.ToUniversalTime().ToString(DATEFORMAT));
+            t.SetAttribute("feedLastBuildDate", DateTime.Now.ToUniversalTime().ToString(DATEFORMAT));
+
+            string tempFile = Guid.NewGuid().ToString();    // CAUSES ACL PROBLEMS --> Path.GetTempFileName();
+
+            using (var writer = new StreamWriter(tempFile, false, System.Text.Encoding.UTF8))
             {
-                WriteRssHeader(writer, feed, null);
-                foreach (var item in items)
-                {
-                    WriteRssItem(writer, item);
-                }
-                WriteRssFooter(writer);
-                writer.Flush();
-                writer.Close();
+                writer.WriteLine(t.ToString());
             }
 
             // Rename the temp file
             File.Delete(feed.Filename);
             File.Move(tempFile, feed.Filename);
             File.Delete(tempFile);
-        }
-
-        private static void WriteRssHeader(XmlTextWriter writer, Feed feed, FeedItem imageItem)
-        {
-            writer.Formatting = System.Xml.Formatting.Indented;
-            writer.Indentation = 4;
-
-            writer.WriteStartDocument();
-            //			writer.WriteAttributeString("encoding", "UTF-8");
-
-            writer.WriteComment("Generated by RSSFeed " + Assembly.GetExecutingAssembly().GetName().Version + " Copyright &copy " + DateTime.Now.Year + " Noonan Consulting Inc.");
-
-            writer.WriteStartElement("rss");
-            writer.WriteAttributeString("version", "2.0");
-
-            writer.WriteStartElement("channel");
-
-            writer.WriteStartElement("title");
-            writer.WriteString(feed.Title);
-            writer.WriteEndElement();
-
-            writer.WriteStartElement("link");
-            writer.WriteString(feed.Url);
-            writer.WriteEndElement();
-
-            writer.WriteStartElement("description");
-            writer.WriteString(feed.Title);
-            writer.WriteEndElement();
-
-            writer.WriteStartElement("generator");
-            writer.WriteString("NCI RSSFeed " + Assembly.GetExecutingAssembly().GetName().Version);
-            writer.WriteEndElement();
-
-            if (imageItem != null)
-            {
-                writer.WriteStartElement("image");
-                writer.WriteStartElement("url");
-                writer.WriteString(imageItem.ImageUrl);
-                writer.WriteEndElement();
-                writer.WriteStartElement("title");
-                writer.WriteString(feed.Title);
-                writer.WriteEndElement();
-                writer.WriteStartElement("link");
-                writer.WriteString(feed.Url);
-                writer.WriteEndElement();
-                writer.WriteEndElement();
-            }
-
-            writer.WriteStartElement("pubDate");
-            writer.WriteString(DateTime.Now.Date.ToUniversalTime().ToString(DATEFORMAT));
-            writer.WriteEndElement();
-
-            writer.WriteStartElement("lastBuildDate");
-            writer.WriteString(DateTime.Now.ToUniversalTime().ToString(DATEFORMAT));
-            writer.WriteEndElement();
-        }
-
-        private static void WriteRssFooter(XmlTextWriter writer)
-        {
-            writer.WriteEndElement();	// Channel
-            writer.WriteEndElement();	// Rss
-        }
-
-        private static void WriteRssItem(XmlTextWriter writer, FeedItem item)
-        {
-            writer.WriteStartElement("item");
-
-            writer.WriteStartElement("title");
-            writer.WriteString(item.Title.Trim());
-            writer.WriteEndElement();
-
-            if (!string.IsNullOrWhiteSpace(item.Description))
-            {
-                writer.WriteStartElement("description");
-                writer.WriteString(item.Description.Trim());
-                writer.WriteEndElement();
-            }
-
-            writer.WriteStartElement("link");
-            writer.WriteString(item.Url.Trim());
-            writer.WriteEndElement();
-
-            writer.WriteStartElement("guid");
-            writer.WriteString(item.UrlHash);
-            writer.WriteEndElement();
-
-            writer.WriteStartElement("pubDate");
-            writer.WriteString(item.DateAdded.ToUniversalTime().ToString(DATEFORMAT));
-            writer.WriteEndElement();
-
-            writer.WriteEndElement();
         }
     }
 }
