@@ -329,8 +329,8 @@ namespace RssFeeder.Console
 <p>
     <ul>
         <li><strong>Site Name:</strong> $item.SiteName$</li>
-        <li><strong>Hash:</strong> $item.UrlHash$</li>
         <li><strong>URL:</strong> <a href=""$item.Url$"">$item.Url$</a></li>
+        <li><strong>Hash:</strong> $item.UrlHash$</li>
     </ul>
 </p>
 ");
@@ -346,8 +346,8 @@ namespace RssFeeder.Console
 <p>
     <ul>
         <li><strong>Site Name:</strong> $item.SiteName$</li>
-        <li><strong>Hash:</strong> $item.UrlHash$</li>
         <li><strong>URL:</strong> <a href=""$item.Url$"">$item.Url$</a></li>
+        <li><strong>Hash:</strong> $item.UrlHash$</li>
     </ul>
 </p>
 ");
