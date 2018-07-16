@@ -269,6 +269,7 @@ namespace RssFeeder.Console
         {
             DeleteDocument(databaseName, collectionName, item.id);
         }
+
         private static void DeleteDocument(string databaseName, string collectionName, string documentID)
         {
             var result = client.DeleteDocumentAsync(UriFactory.CreateDocumentUri(databaseName, collectionName, documentID)).Result;
@@ -283,6 +284,7 @@ namespace RssFeeder.Console
         {
             if (File.Exists(item.FileName))
             {
+                // Article was successfully downloaded from the target site
                 log.Info($"Parsing meta tags from file '{item.FileName}'");
 
                 var doc = new HtmlDocument();
@@ -291,17 +293,66 @@ namespace RssFeeder.Console
                 if (!doc.DocumentNode.HasChildNodes)
                 {
                     log.Warn("No file content found, skipping.");
+                    SetBasicItemInfo(item);
                     return;
                 }
 
-                var title = ParseMetaTagAttributes(doc, "og:title", "content");
-                item.Url = ParseMetaTagAttributes(doc, "og:url", "content");
-                item.ImageUrl = ParseMetaTagAttributes(doc, "og:image", "content");
-                item.SiteName = ParseMetaTagAttributes(doc, "og:site_name", "content");
-                item.Description = $"<img src=\"{item.ImageUrl}\" />\r\n<h1>{title}</h1>\r\n<p><a href=\"{item.Url}\">{item.Url}</a></p>\r\n<p>{ParseMetaTagAttributes(doc, "og:description", "content")}</p>";
+                // Meta tags provide extended data about the item, display as much as possible
+                SetExtendedItemInfo(item, doc);
+            }
+            else
+            {
+                // Article failed to download, display minimal basic meta data
+                SetBasicItemInfo(item);
             }
 
-            log.Info(JsonConvert.SerializeObject(item, Newtonsoft.Json.Formatting.Indented));
+            log.Info(JsonConvert.SerializeObject(item, Formatting.Indented));
+        }
+
+        private static void SetExtendedItemInfo(FeedItem item, HtmlDocument doc)
+        {
+            item.Subtitle = ParseMetaTagAttributes(doc, "og:title", "content");
+            item.Url = ParseMetaTagAttributes(doc, "og:url", "content");
+            item.ImageUrl = ParseMetaTagAttributes(doc, "og:image", "content");
+            item.MetaDescription = ParseMetaTagAttributes(doc, "og:description", "content");
+            item.SiteName = ParseMetaTagAttributes(doc, "og:site_name", "content");
+            if (string.IsNullOrWhiteSpace(item.SiteName))
+            {
+                item.SiteName = new Uri(item.Url).GetComponents(UriComponents.Host, UriFormat.Unescaped);
+            }
+
+            StringTemplate t = new StringTemplate(@"<img src=""$item.ImageUrl$"" />
+<h2>$item.Subtitle$</h2>
+<p>
+    $item.MetaDescription$
+</p>
+<p>
+    <ul>
+        <li><strong>Site Name:</strong> $item.SiteName$</li>
+        <li><strong>URL:</strong> <a href=""$item.Url$"">$item.Url$</a></li>
+        <li><strong>Hash:</strong> $item.UrlHash$</li>
+    </ul>
+</p>
+");
+            t.SetAttribute("item", item);
+            item.Description = t.ToString();
+        }
+
+        private static void SetBasicItemInfo(FeedItem item)
+        {
+            item.SiteName = new Uri(item.Url).GetComponents(UriComponents.Host, UriFormat.Unescaped);
+
+            StringTemplate t = new StringTemplate(@"<h2>$item.Title$</h2>
+<p>
+    <ul>
+        <li><strong>Site Name:</strong> $item.SiteName$</li>
+        <li><strong>URL:</strong> <a href=""$item.Url$"">$item.Url$</a></li>
+        <li><strong>Hash:</strong> $item.UrlHash$</li>
+    </ul>
+</p>
+");
+            t.SetAttribute("item", item);
+            item.Description = t.ToString();
         }
 
         private static string ParseMetaTagAttributes(HtmlDocument doc, string property, string attribute)
@@ -319,44 +370,6 @@ namespace RssFeeder.Console
 
             return value;
         }
-
-        //private static void RemoveFeedLinks(IDocumentStore store, DateTime targetDate)
-        //{
-        //    using (IDocumentSession documentSession = store.OpenSession())
-        //    {
-        //        var query = documentSession.Query<FeedItem>().Where(i => i.DateAdded < targetDate);
-
-        //        foreach (var item in query)
-        //        {
-        //            documentSession.Delete<FeedItem>(item);
-        //        }
-
-        //        documentSession.SaveChanges();
-        //    }
-        //}
-
-        //private static void AddLinkToDatabase(IDocumentStore store, Feed feed, FeedItem item)
-        //{
-        //    using (IDocumentSession documentSession = store.OpenSession())
-        //    {
-        //        if (documentSession.Query<FeedItem>().Any(i => i.UrlHash == item.UrlHash))
-        //        {
-        //            return;
-        //        }
-
-        //        string description = string.Empty;
-
-        //        log.InfoFormat("Visiting URL '{0}'", item.Url);
-        //        description = Utility.Utility.GetParagraphTagsFromHtml(item.Url);
-        //        item.Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
-
-        //        log.InfoFormat("ADDING: {0}|{1}", item.UrlHash, item.Title);
-        //        documentSession.Store(item);
-        //        documentSession.SaveChanges();
-
-        //        return;
-        //    }
-        //}
 
         private static void SaveUrlToDisk(FeedItem item)
         {
@@ -386,7 +399,7 @@ namespace RssFeeder.Console
                 log.Info($"Saving file '{item.FileName}'");
                 doc.Save(item.FileName);
             }
-            catch (System.Net.WebException ex)
+            catch (WebException ex)
             {
                 log.Warn($"Error loading url '{ex.Message}'");
             }

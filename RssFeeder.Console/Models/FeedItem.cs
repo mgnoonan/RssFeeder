@@ -12,7 +12,9 @@ namespace RssFeeder.Console.Models
         public string UrlHash { get; set; }
         public string ImageUrl { get; set; }
         public string Title { get; set; }
+        public string Subtitle { get; set; }
         public string Description { get; set; }
+        public string MetaDescription { get; set; }
         public DateTime DateAdded { get; set; }
         public string FileName { get; set; }
         public string SiteName { get; set; }
