@@ -184,28 +184,63 @@ namespace RssFeeder.Console
             string databaseName = "rssfeeder";
             string collectionName = "drudge-report";
 
+            // Create the working folder if it doesn't exist
+            string workingFolder = Path.Combine(AssemblyDirectory, WORKING_FOLDER);
+            if (!Directory.Exists(workingFolder))
+            {
+                log.Info($"Creating folder '{workingFolder}'");
+                Directory.CreateDirectory(workingFolder);
+            }
+
             // Add any links that don't already exist
             log.Info("Adding links to the database");
             foreach (var item in list)
             {
                 if (!DocumentExists(databaseName, collectionName, item))
                 {
-                    SaveUrlToDisk(item);
+                    SaveUrlToDisk(item, workingFolder);
                     ParseMetaTags(item);
                     CreateDocument(databaseName, collectionName, item);
                 }
             }
 
             // Remove any stale documents
-            log.Info("Removing stale links from the database");
-            list = GetStaleDocuments(databaseName, collectionName, DateTime.Now.AddDays(-7));
+            log.Info($"Removing stale links from {databaseName}");
+            list = GetStaleDocuments(databaseName, collectionName, 7);
             foreach (var item in list)
             {
+                log.Info($"Removing {item.UrlHash}");
                 DeleteDocument(databaseName, collectionName, item.id);
             }
 
+            // Purge stale files from working folder
+            log.Info($"Removing stale files from {workingFolder}");
+            PurgeStaleFiles(workingFolder, 7);
+
             // Return whatever documents are left in the database
             return GetAllDocuments(databaseName, collectionName);
+        }
+
+        public static void PurgeStaleFiles(string folderPath, short maximumAgeInDays)
+        {
+            DateTime minimumDate = DateTime.Now.AddDays(-maximumAgeInDays);
+
+            var files = Directory.EnumerateFiles(folderPath);
+
+            foreach (var file in files)
+            {
+                DeleteFileIfOlderThan(file, minimumDate);
+            }
+        }
+
+        private static void DeleteFileIfOlderThan(string path, DateTime date)
+        {
+            var file = new FileInfo(path);
+            if (file.CreationTime < date)
+            {
+                log.Info($"Removing {file.FullName}");
+                file.Delete();
+            }
         }
 
         /// <summary>
@@ -226,8 +261,10 @@ namespace RssFeeder.Console
             }
         }
 
-        private static List<FeedItem> GetStaleDocuments(string databaseName, string collectionName, DateTime targetDate)
+        private static List<FeedItem> GetStaleDocuments(string databaseName, string collectionName, short maximumAgeInDays)
         {
+            DateTime targetDate = DateTime.Now.AddDays(-maximumAgeInDays);
+
             // Set some common query options
             FeedOptions queryOptions = new FeedOptions { MaxItemCount = -1 };
 
@@ -312,17 +349,17 @@ namespace RssFeeder.Console
         private static void SetExtendedItemInfo(FeedItem item, HtmlDocument doc)
         {
             item.Subtitle = ParseMetaTagAttributes(doc, "og:title", "content");
-            item.Url = ParseMetaTagAttributes(doc, "og:url", "content");
+            //item.Url = ParseMetaTagAttributes(doc, "og:url", "content");
             item.ImageUrl = ParseMetaTagAttributes(doc, "og:image", "content");
             item.MetaDescription = ParseMetaTagAttributes(doc, "og:description", "content");
             item.SiteName = ParseMetaTagAttributes(doc, "og:site_name", "content");
             if (string.IsNullOrWhiteSpace(item.SiteName))
             {
-                item.SiteName = new Uri(item.Url).GetComponents(UriComponents.Host, UriFormat.Unescaped);
+                item.SiteName = string.IsNullOrWhiteSpace(item.Url) ? "" : new Uri(item.Url).GetComponents(UriComponents.Host, UriFormat.Unescaped);
             }
 
             StringTemplate t = new StringTemplate(@"<img src=""$item.ImageUrl$"" />
-<h2>$item.Subtitle$</h2>
+<h3>$item.Subtitle$</h3>
 <p>
     $item.MetaDescription$
 </p>
@@ -340,9 +377,9 @@ namespace RssFeeder.Console
 
         private static void SetBasicItemInfo(FeedItem item)
         {
-            item.SiteName = new Uri(item.Url).GetComponents(UriComponents.Host, UriFormat.Unescaped);
+            item.SiteName = string.IsNullOrWhiteSpace(item.Url) ? "" : new Uri(item.Url).GetComponents(UriComponents.Host, UriFormat.Unescaped);
 
-            StringTemplate t = new StringTemplate(@"<h2>$item.Title$</h2>
+            StringTemplate t = new StringTemplate(@"<h3>$item.Title$</h3>
 <p>
     <ul>
         <li><strong>Site Name:</strong> $item.SiteName$</li>
@@ -361,7 +398,8 @@ namespace RssFeeder.Console
             var node = doc.DocumentNode.SelectSingleNode($"/html/head/meta[@property='{property}']");
 
             // Node can come back null if the meta tag is not present in the DOM
-            string value = node?.Attributes[attribute].Value.Trim() ?? string.Empty;
+            // Attribute can come back null as well if not present on the meta tag
+            string value = node?.Attributes[attribute]?.Value.Trim() ?? string.Empty;
 
             if (string.IsNullOrWhiteSpace(value))
             {
@@ -371,23 +409,16 @@ namespace RssFeeder.Console
             return value;
         }
 
-        private static void SaveUrlToDisk(FeedItem item)
+        private static void SaveUrlToDisk(FeedItem item, string workingFolder)
         {
             try
             {
-                log.Info($"Loading URL '{item.Url}'");
+                log.Info($"Loading URL '{item.UrlHash}':'{item.Url}'");
 
                 // Load the initial HTML from the URL
                 HtmlWeb hw = new HtmlWeb();
                 HtmlDocument doc = hw.Load(item.Url);
                 doc.OptionFixNestedTags = true;
-
-                string workingFolder = Path.Combine(AssemblyDirectory, WORKING_FOLDER);
-                if (!Directory.Exists(workingFolder))
-                {
-                    log.Info($"Creating folder '{workingFolder}'");
-                    Directory.CreateDirectory(workingFolder);
-                }
 
                 // Construct unique file name
                 item.FileName = Path.Combine(workingFolder, $"{item.UrlHash}.html");
