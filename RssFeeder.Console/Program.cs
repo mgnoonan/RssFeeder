@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Reflection;
@@ -150,6 +151,37 @@ namespace RssFeeder.Console
                 }
                 Environment.Exit(250);
             }
+        }
+        public static string GetResponse(string url)
+        {
+            HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
+
+            string source = String.Empty;
+
+            using (WebResponse webResponse = req.GetResponse())
+            {
+                using (HttpWebResponse httpWebResponse = webResponse as HttpWebResponse)
+                {
+                    StreamReader reader;
+                    if (httpWebResponse.ContentEncoding.ToLower().Contains("gzip"))
+                    {
+                        reader = new StreamReader(new GZipStream(httpWebResponse.GetResponseStream(), CompressionMode.Decompress));
+                    }
+                    else if (httpWebResponse.ContentEncoding.ToLower().Contains("deflate"))
+                    {
+                        reader = new StreamReader(new DeflateStream(httpWebResponse.GetResponseStream(), CompressionMode.Decompress));
+                    }
+                    else
+                    {
+                        reader = new StreamReader(httpWebResponse.GetResponseStream());
+                    }
+                    source = reader.ReadToEnd();
+                }
+            }
+
+            req.Abort();
+
+            return source;
         }
 
         private static string AssemblyDirectory
@@ -415,9 +447,9 @@ namespace RssFeeder.Console
             {
                 log.Info($"Loading URL '{item.UrlHash}':'{item.Url}'");
 
-                // Load the initial HTML from the URL
-                HtmlWeb hw = new HtmlWeb();
-                HtmlDocument doc = hw.Load(item.Url);
+                // Use custom load method to account for compression headers
+                HtmlDocument doc = new HtmlDocument();
+                doc.LoadHtml(GetResponse(item.Url));
                 doc.OptionFixNestedTags = true;
 
                 // Construct unique file name
