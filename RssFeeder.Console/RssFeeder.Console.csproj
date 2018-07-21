@@ -166,11 +166,14 @@
     <Compile Include="Models\FeedContextInitializer.cs" />
     <Compile Include="Options.cs" />
     <Compile Include="Parsers\BreitbartParser.cs" />
+    <Compile Include="Parsers\DailyMailParser.cs" />
     <Compile Include="Parsers\GenericParser.cs" />
     <Compile Include="Parsers\ISiteParser.cs" />
+    <Compile Include="Parsers\NyPostParser.cs" />
     <Compile Include="Parsers\ReutersParser.cs" />
     <Compile Include="Parsers\TelegraphUkParser.cs" />
     <Compile Include="Parsers\UsaTodayParser.cs" />
+    <Compile Include="Parsers\VarietyParser.cs" />
     <Compile Include="Program.cs">
       <SubType>Code</SubType>
     </Compile>

@@ -89,10 +89,11 @@ $item.ArticleText$
 
         private static void TestParser()
         {
-            string filename = @"C:\Projects\RssFeeder\RssFeeder.Console\bin\Release\working\7b14b04ab92c625cfe9ec7f052dc1160.html";
-            var parser = new UsaTodayParser();
-            System.Console.WriteLine(parser.GetArticleText(filename));
-            //System.Console.WriteLine(parser.GetArticleText("C:\\Projects\\RssFeeder\\RssFeeder.Console\\bin\\Release\\working\\c531608765177fe357c20016db271fc8.html"));
+            string filename = @"C:\Projects\RssFeeder\RssFeeder.Console\bin\Release\working\6eaa0f16bf466af2a0758ae0abcf01ab.html";
+            var parser = new VarietyParser();
+            string html = File.ReadAllText(filename);
+            System.Console.WriteLine(parser.GetArticleText(html));
+            System.Console.ReadLine();
         }
 
         static void HandleParserError(IEnumerable<Error> errors, string[] args)
@@ -431,8 +432,22 @@ $item.ArticleText$
                 item.SiteName = string.IsNullOrWhiteSpace(item.Url) ? "" : new Uri(item.Url).GetComponents(UriComponents.Host, UriFormat.Unescaped);
             }
 
-            switch (item.SiteName)
+            switch (item.SiteName.ToUpper())
             {
+                case "MAIL ONLINE":
+                    {
+                        var parser = new DailyMailParser();
+                        item.ArticleText = parser.GetArticleText(doc.Text);
+                    }
+                    break;
+
+                case "NEW YORK POST":
+                    {
+                        var parser = new NyPostParser();
+                        item.ArticleText = parser.GetArticleText(doc.Text);
+                    }
+                    break;
+
                 case "USA TODAY":
                     {
                         var parser = new UsaTodayParser();
@@ -443,6 +458,13 @@ $item.ArticleText$
                 case "U.S.":
                     {
                         var parser = new ReutersParser();
+                        item.ArticleText = parser.GetArticleText(doc.Text);
+                    }
+                    break;
+
+                case "VARIETY":
+                    {
+                        var parser = new VarietyParser();
                         item.ArticleText = parser.GetArticleText(doc.Text);
                     }
                     break;

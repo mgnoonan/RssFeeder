@@ -3,7 +3,7 @@ using AngleSharp.Parser.Html;
 
 namespace RssFeeder.Console.Parsers
 {
-    class ReutersParser : ISiteParser
+    class NyPostParser : ISiteParser
     {
         public string GetArticleText(string html)
         {
@@ -12,13 +12,20 @@ namespace RssFeeder.Console.Parsers
             var document = parser.Parse(html);
 
             // Query the document by CSS selectors to get the article text
-            var paragraphs = document.QuerySelectorAll(".StandardArticleBody_body > p");
+            var paragraphs = document.QuerySelector(".entry-content").QuerySelectorAll("p");
 
             StringBuilder description = new StringBuilder();
 
             foreach (var p in paragraphs)
             {
-                description.AppendLine($"<p>{p.TextContent.Trim()}</p>");
+                if (p.TagName.Equals("P"))
+                {
+                    description.AppendLine($"<p>{p.TextContent.Trim()}</p>");
+                }
+                else
+                {
+                    description.AppendLine($"<ul>{p.InnerHtml}</ul>");
+                }
             }
 
             return description.ToString();

@@ -1,7 +1,5 @@
-﻿using System;
-using System.Text;
+﻿using System.Text;
 using AngleSharp.Parser.Html;
-using RssFeeder.Console.Models;
 
 namespace RssFeeder.Console.Parsers
 {
@@ -38,16 +36,6 @@ namespace RssFeeder.Console.Parsers
             }
 
             return description.ToString();
-        }
-
-        public void Load(FeedItem item)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Parse()
-        {
-            throw new NotImplementedException();
         }
     }
 }
