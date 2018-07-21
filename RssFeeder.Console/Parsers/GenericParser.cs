@@ -1,12 +1,8 @@
-﻿using HtmlAgilityPack;
-using log4net;
-using log4net.Core;
-using RssFeeder.Console.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System;
 using System.Text;
-using System.Threading.Tasks;
+using HtmlAgilityPack;
+using log4net;
+using RssFeeder.Console.Models;
 
 namespace RssFeeder.Console.Parsers
 {
@@ -19,6 +15,11 @@ namespace RssFeeder.Console.Parsers
         public GenericParser(ILog log)
         {
             _log = log;
+        }
+
+        public string GetArticleText(string html)
+        {
+            throw new NotImplementedException();
         }
 
         public void Load(FeedItem item)

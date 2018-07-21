@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using RssFeeder.Console.Models;
 using HtmlAgilityPack;
 using log4net;
+using RssFeeder.Console.Models;
 
 namespace RssFeeder.Console.Parsers
 {
@@ -18,6 +15,11 @@ namespace RssFeeder.Console.Parsers
         public BreitbartParser(ILog log)
         {
             _log = log;
+        }
+
+        public string GetArticleText(string html)
+        {
+            throw new NotImplementedException();
         }
 
         public void Load(FeedItem item)

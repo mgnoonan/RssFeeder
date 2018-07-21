@@ -14,6 +14,7 @@ using Microsoft.Azure.Documents.Client;
 using Newtonsoft.Json;
 using RssFeeder.Console.CustomBuilders;
 using RssFeeder.Console.Models;
+using RssFeeder.Console.Parsers;
 
 namespace RssFeeder.Console
 {
@@ -28,6 +29,26 @@ namespace RssFeeder.Console
         /// Name of the working area folder
         /// </summary>
         private const string WORKING_FOLDER = "working";
+        private const string ExtendedTemplate = @"<img src=""$item.ImageUrl$"" />
+<h3>$item.Subtitle$</h3>
+$item.ArticleText$
+<p>
+    <ul>
+        <li><strong>Site Name:</strong> $item.SiteName$</li>
+        <li><strong>URL:</strong> <a href=""$item.Url$"">$item.Url$</a></li>
+        <li><strong>Hash:</strong> $item.UrlHash$</li>
+    </ul>
+</p>
+";
+        private const string BasicTemplate = @"<h3>$item.Title$</h3>
+<p>
+    <ul>
+        <li><strong>Site Name:</strong> $item.SiteName$</li>
+        <li><strong>URL:</strong> <a href=""$item.Url$"">$item.Url$</a></li>
+        <li><strong>Hash:</strong> $item.UrlHash$</li>
+    </ul>
+</p>
+";
 
         /// <summary>
         /// The Azure DocumentDB endpoint for running this GetStarted sample.
@@ -55,6 +76,10 @@ namespace RssFeeder.Console
         [STAThread]
         static void Main(string[] args)
         {
+            // DEBUG ONLY
+            //TestParser();
+            //return;
+
             // Process the command line arguments
             Parser.Default.ParseArguments<Options>(args)
                 .WithParsed<Options>(opts => ProcessWithExitCode(opts))
@@ -62,7 +87,15 @@ namespace RssFeeder.Console
                 ;
         }
 
-        static void HandleParserError(IEnumerable<CommandLine.Error> errors, string[] args)
+        private static void TestParser()
+        {
+            string filename = @"C:\Projects\RssFeeder\RssFeeder.Console\bin\Release\working\7b14b04ab92c625cfe9ec7f052dc1160.html";
+            var parser = new UsaTodayParser();
+            System.Console.WriteLine(parser.GetArticleText(filename));
+            //System.Console.WriteLine(parser.GetArticleText("C:\\Projects\\RssFeeder\\RssFeeder.Console\\bin\\Release\\working\\c531608765177fe357c20016db271fc8.html"));
+        }
+
+        static void HandleParserError(IEnumerable<Error> errors, string[] args)
         {
             // Return an error code
             log.Error(string.Format("Invalid arguments: '{0}'", string.Join(",", args)));
@@ -368,20 +401,28 @@ namespace RssFeeder.Console
 
                 // Meta tags provide extended data about the item, display as much as possible
                 SetExtendedItemInfo(item, doc);
+                ApplyTemplateToDescription(item, ExtendedTemplate);
             }
             else
             {
                 // Article failed to download, display minimal basic meta data
                 SetBasicItemInfo(item);
+                ApplyTemplateToDescription(item, BasicTemplate);
             }
 
             log.Info(JsonConvert.SerializeObject(item, Formatting.Indented));
         }
 
+        private static void ApplyTemplateToDescription(FeedItem item, string template)
+        {
+            StringTemplate t = new StringTemplate(template);
+            t.SetAttribute("item", item);
+            item.Description = t.ToString();
+        }
+
         private static void SetExtendedItemInfo(FeedItem item, HtmlDocument doc)
         {
             item.Subtitle = ParseMetaTagAttributes(doc, "og:title", "content");
-            //item.Url = ParseMetaTagAttributes(doc, "og:url", "content");
             item.ImageUrl = ParseMetaTagAttributes(doc, "og:image", "content");
             item.MetaDescription = ParseMetaTagAttributes(doc, "og:description", "content");
             item.SiteName = ParseMetaTagAttributes(doc, "og:site_name", "content");
@@ -390,38 +431,31 @@ namespace RssFeeder.Console
                 item.SiteName = string.IsNullOrWhiteSpace(item.Url) ? "" : new Uri(item.Url).GetComponents(UriComponents.Host, UriFormat.Unescaped);
             }
 
-            StringTemplate t = new StringTemplate(@"<img src=""$item.ImageUrl$"" />
-<h3>$item.Subtitle$</h3>
-<p>
-    $item.MetaDescription$
-</p>
-<p>
-    <ul>
-        <li><strong>Site Name:</strong> $item.SiteName$</li>
-        <li><strong>URL:</strong> <a href=""$item.Url$"">$item.Url$</a></li>
-        <li><strong>Hash:</strong> $item.UrlHash$</li>
-    </ul>
-</p>
-");
-            t.SetAttribute("item", item);
-            item.Description = t.ToString();
+            switch (item.SiteName)
+            {
+                case "USA TODAY":
+                    {
+                        var parser = new UsaTodayParser();
+                        item.ArticleText = parser.GetArticleText(doc.Text);
+                    }
+                    break;
+
+                case "U.S.":
+                    {
+                        var parser = new ReutersParser();
+                        item.ArticleText = parser.GetArticleText(doc.Text);
+                    }
+                    break;
+
+                default:
+                    item.ArticleText = $"<p>{item.MetaDescription}</p>";
+                    break;
+            }
         }
 
         private static void SetBasicItemInfo(FeedItem item)
         {
             item.SiteName = string.IsNullOrWhiteSpace(item.Url) ? "" : new Uri(item.Url).GetComponents(UriComponents.Host, UriFormat.Unescaped);
-
-            StringTemplate t = new StringTemplate(@"<h3>$item.Title$</h3>
-<p>
-    <ul>
-        <li><strong>Site Name:</strong> $item.SiteName$</li>
-        <li><strong>URL:</strong> <a href=""$item.Url$"">$item.Url$</a></li>
-        <li><strong>Hash:</strong> $item.UrlHash$</li>
-    </ul>
-</p>
-");
-            t.SetAttribute("item", item);
-            item.Description = t.ToString();
         }
 
         private static string ParseMetaTagAttributes(HtmlDocument doc, string property, string attribute)

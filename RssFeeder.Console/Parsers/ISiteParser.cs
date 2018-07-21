@@ -1,9 +1,4 @@
 ﻿using RssFeeder.Console.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RssFeeder.Console.Parsers
 {
@@ -11,5 +6,6 @@ namespace RssFeeder.Console.Parsers
     {
         void Load(FeedItem item);
         void Parse();
+        string GetArticleText(string html);
     }
 }

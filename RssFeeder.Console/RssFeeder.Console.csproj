@@ -104,6 +104,9 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AngleSharp, Version=0.9.9.0, Culture=neutral, PublicKeyToken=e83494dcdc6d31ea, processorArchitecture=MSIL">
+      <HintPath>..\packages\AngleSharp.0.9.10\lib\net45\AngleSharp.dll</HintPath>
+    </Reference>
     <Reference Include="AntiXSSLibrary, Version=3.0.3264.23865, Culture=neutral, PublicKeyToken=d127efab8a9c114f, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>DLLs\AntiXSSLibrary.dll</HintPath>
@@ -165,7 +168,9 @@
     <Compile Include="Parsers\BreitbartParser.cs" />
     <Compile Include="Parsers\GenericParser.cs" />
     <Compile Include="Parsers\ISiteParser.cs" />
+    <Compile Include="Parsers\ReutersParser.cs" />
     <Compile Include="Parsers\TelegraphUkParser.cs" />
+    <Compile Include="Parsers\UsaTodayParser.cs" />
     <Compile Include="Program.cs">
       <SubType>Code</SubType>
     </Compile>
