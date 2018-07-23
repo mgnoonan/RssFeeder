@@ -95,10 +95,10 @@ $item.ArticleText$
             // set up TLS defaults
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
 
-            string url = "https://www.miamiherald.com/news/article215241865.html";
+            string url = "https://losangeles.cbslocal.com/2018/07/21/kcal9-employee-tells-harrowing-story-of-being-held-hostage-inside-trader-joes/";
             string html = GetResponse(url);
 
-            var parser = new MiamiHeraldParser();
+            var parser = new CbsLocalParser();
             System.Console.WriteLine(parser.GetArticleText(html));
             System.Console.ReadLine();
         }
@@ -443,6 +443,19 @@ $item.ArticleText$
 
             switch (item.SiteName.ToUpper())
             {
+                case "LOSANGELES.CBSLOCAL.COM":
+                case "SACRAMENTO.CBSLOCAL.COM":
+                case "CHICAGO.CBSLOCAL.COM":
+                case "PHILADELPHIA.CBSLOCAL.COM":
+                case "DENVER.CBSLOCAL.COM":
+                case "DFW.CBSLOCAL.COM":
+                case "NEWYORK.CBSLOCAL.COM":
+                    {
+                        var parser = new CbsLocalParser();
+                        item.ArticleText = parser.GetArticleText(doc.Text);
+                    }
+                    break;
+
                 case "MAIL ONLINE":
                     {
                         var parser = new DailyMailParser();
