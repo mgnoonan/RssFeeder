@@ -450,6 +450,7 @@ $item.ArticleText$
                 case "DENVER.CBSLOCAL.COM":
                 case "DFW.CBSLOCAL.COM":
                 case "NEWYORK.CBSLOCAL.COM":
+                case "SPORTS.CBSLOCAL.COM":
                     {
                         var parser = new CbsLocalParser();
                         item.ArticleText = parser.GetArticleText(doc.Text);
