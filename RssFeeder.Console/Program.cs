@@ -89,9 +89,16 @@ $item.ArticleText$
 
         private static void TestParser()
         {
-            string filename = @"C:\Projects\RssFeeder\RssFeeder.Console\bin\Release\working\6eaa0f16bf466af2a0758ae0abcf01ab.html";
-            var parser = new VarietyParser();
-            string html = File.ReadAllText(filename);
+            //string filename = @"C:\Projects\RssFeeder\RssFeeder.Console\bin\Release\working\6eaa0f16bf466af2a0758ae0abcf01ab.html";
+            //string html = File.ReadAllText(filename);
+            
+            // set up TLS defaults
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+
+            string url = "https://www.miamiherald.com/news/article215241865.html";
+            string html = GetResponse(url);
+
+            var parser = new MiamiHeraldParser();
             System.Console.WriteLine(parser.GetArticleText(html));
             System.Console.ReadLine();
         }
@@ -186,6 +193,7 @@ $item.ArticleText$
                 Environment.Exit(250);
             }
         }
+
         public static string GetResponse(string url)
         {
             HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
@@ -368,6 +376,7 @@ $item.ArticleText$
                 .OrderByDescending(i => i.DateAdded)
                 .ToList();
         }
+
         private static void DeleteDocument(string databaseName, string collectionName, FeedItem item)
         {
             DeleteDocument(databaseName, collectionName, item.id);
@@ -441,9 +450,23 @@ $item.ArticleText$
                     }
                     break;
 
+                case "MIAMIHERALD":
+                    {
+                        var parser = new MiamiHeraldParser();
+                        item.ArticleText = parser.GetArticleText(doc.Text);
+                    }
+                    break;
+
                 case "NEW YORK POST":
                     {
                         var parser = new NyPostParser();
+                        item.ArticleText = parser.GetArticleText(doc.Text);
+                    }
+                    break;
+
+                case "WWW.NYTIMES.COM":
+                    {
+                        var parser = new NyTimesParser();
                         item.ArticleText = parser.GetArticleText(doc.Text);
                     }
                     break;
@@ -465,6 +488,17 @@ $item.ArticleText$
                 case "VARIETY":
                     {
                         var parser = new VarietyParser();
+                        item.ArticleText = parser.GetArticleText(doc.Text);
+                    }
+                    break;
+
+                case "WWW.YAHOO.COM":
+                case "FINANCE.YAHOO.COM":
+                case "CA.NEWS.YAHOO.COM":
+                case "SG.NEWS.YAHOO.COM":
+                case "UK.NEWS.YAHOO.COM":
+                    {
+                        var parser = new YahooParser();
                         item.ArticleText = parser.GetArticleText(doc.Text);
                     }
                     break;
