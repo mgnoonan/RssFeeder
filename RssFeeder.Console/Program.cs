@@ -98,8 +98,8 @@ $item.ArticleText$
             string url = "https://losangeles.cbslocal.com/2018/07/21/kcal9-employee-tells-harrowing-story-of-being-held-hostage-inside-trader-joes/";
             string html = GetResponse(url);
 
-            var parser = new CbsLocalParser();
-            System.Console.WriteLine(parser.GetArticleText(html));
+            var parser = new GenericParser();
+            System.Console.WriteLine(parser.GetArticleBySelector(html, "", ""));
             System.Console.ReadLine();
         }
 
@@ -445,6 +445,7 @@ $item.ArticleText$
             {
                 case "LOSANGELES.CBSLOCAL.COM":
                 case "SACRAMENTO.CBSLOCAL.COM":
+                case "SANFRANCISCO.CBSLOCAL.COM":
                 case "CHICAGO.CBSLOCAL.COM":
                 case "PHILADELPHIA.CBSLOCAL.COM":
                 case "DENVER.CBSLOCAL.COM":
@@ -452,57 +453,57 @@ $item.ArticleText$
                 case "NEWYORK.CBSLOCAL.COM":
                 case "SPORTS.CBSLOCAL.COM":
                     {
-                        var parser = new CbsLocalParser();
-                        item.ArticleText = parser.GetArticleText(doc.Text);
+                        var parser = new GenericParser();
+                        item.ArticleText = parser.GetArticleBySelector(doc.Text, ".main-story-wrapper", "p");
                     }
                     break;
 
                 case "MAIL ONLINE":
                     {
-                        var parser = new DailyMailParser();
-                        item.ArticleText = parser.GetArticleText(doc.Text);
+                        var parser = new ParagraphAndBulletParser();
+                        item.ArticleText = parser.GetArticleBySelector(doc.Text, ".mol-bullets-with-font", "#js-article-text", "p.mol-para-with-font");
                     }
                     break;
 
                 case "MIAMIHERALD":
                     {
-                        var parser = new MiamiHeraldParser();
-                        item.ArticleText = parser.GetArticleText(doc.Text);
+                        var parser = new GenericParser();
+                        item.ArticleText = parser.GetArticleBySelector(doc.Text, ".content-body", "p");
                     }
                     break;
 
                 case "NEW YORK POST":
                     {
-                        var parser = new NyPostParser();
-                        item.ArticleText = parser.GetArticleText(doc.Text);
+                        var parser = new GenericParser();
+                        item.ArticleText = parser.GetArticleBySelector(doc.Text, ".entry-content", "p");
                     }
                     break;
 
                 case "WWW.NYTIMES.COM":
                     {
-                        var parser = new NyTimesParser();
-                        item.ArticleText = parser.GetArticleText(doc.Text);
+                        var parser = new GenericParser();
+                        item.ArticleText = parser.GetArticleBySelector(doc.Text, "#story", "p.css-1i0edl6");
                     }
                     break;
 
                 case "USA TODAY":
                     {
                         var parser = new UsaTodayParser();
-                        item.ArticleText = parser.GetArticleText(doc.Text);
+                        item.ArticleText = parser.GetArticleBySelector(doc.Text, ".story", "p.p-text,h2.presto-h2");
                     }
                     break;
 
                 case "U.S.":
                     {
-                        var parser = new ReutersParser();
-                        item.ArticleText = parser.GetArticleText(doc.Text);
+                        var parser = new GenericParser();
+                        item.ArticleText = parser.GetArticleBySelector(doc.Text, ".StandardArticleBody_body", "p");
                     }
                     break;
 
                 case "VARIETY":
                     {
-                        var parser = new VarietyParser();
-                        item.ArticleText = parser.GetArticleText(doc.Text);
+                        var parser = new GenericParser();
+                        item.ArticleText = parser.GetArticleBySelector(doc.Text, ".c-content", "p");
                     }
                     break;
 
@@ -512,8 +513,8 @@ $item.ArticleText$
                 case "SG.NEWS.YAHOO.COM":
                 case "UK.NEWS.YAHOO.COM":
                     {
-                        var parser = new YahooParser();
-                        item.ArticleText = parser.GetArticleText(doc.Text);
+                        var parser = new GenericParser();
+                        item.ArticleText = parser.GetArticleBySelector(doc.Text, ".canvas-body", "p.canvas-text");
                     }
                     break;
 
