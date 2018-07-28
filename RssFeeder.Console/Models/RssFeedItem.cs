@@ -4,9 +4,9 @@ using Newtonsoft.Json;
 
 namespace RssFeeder.Console.Models
 {
-    public class FeedItem
+    public class RssFeedItem
     {
-        public string id { get; set; }
+        public string Id { get; set; }
         public int FeedId { get; set; }
         public string Url { get; set; }
         public string UrlHash { get; set; }

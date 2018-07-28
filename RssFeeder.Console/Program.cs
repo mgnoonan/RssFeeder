@@ -71,6 +71,16 @@ $item.ArticleText$
         private static DocumentClient client;
 
         /// <summary>
+        /// The list of site definitions that describe how to get an article
+        /// </summary>
+        private static List<SiteArticleDefinition> ArticleDefinitions;
+
+        /// <summary>
+        /// Cache for any site parsers created through reflection
+        /// </summary>
+        private static Dictionary<string, IArticleParser> ArticleParserCache = new Dictionary<string, IArticleParser>();
+
+        /// <summary>
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
@@ -91,16 +101,16 @@ $item.ArticleText$
         {
             //string filename = @"C:\Projects\RssFeeder\RssFeeder.Console\bin\Release\working\6eaa0f16bf466af2a0758ae0abcf01ab.html";
             //string html = File.ReadAllText(filename);
-            
+
             // set up TLS defaults
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
 
-            string url = "https://losangeles.cbslocal.com/2018/07/21/kcal9-employee-tells-harrowing-story-of-being-held-hostage-inside-trader-joes/";
-            string html = GetResponse(url);
+            //string url = "https://losangeles.cbslocal.com/2018/07/21/kcal9-employee-tells-harrowing-story-of-being-held-hostage-inside-trader-joes/";
+            //string html = GetResponse(url);
 
-            var parser = new GenericParser();
-            System.Console.WriteLine(parser.GetArticleBySelector(html, "", ""));
-            System.Console.ReadLine();
+            //var parser = new GenericParser();
+            //System.Console.WriteLine(parser.GetArticleBySelector(html, "", ""));
+            //System.Console.ReadLine();
         }
 
         static void HandleParserError(IEnumerable<Error> errors, string[] args)
@@ -157,7 +167,7 @@ $item.ArticleText$
                 foreach (var option in optionsList)
                 {
                     // Transform the option to the old style feed
-                    var f = new Feed
+                    var f = new RssFeed
                     {
                         Title = option.Title,
                         Description = option.Description,
@@ -168,8 +178,8 @@ $item.ArticleText$
                         Filters = option.Filters.ToList()
                     };
 
-                    var items = BuildFeedLinks(f);
-                    BuildRssFileUsingTemplate(f, items);
+                    var items = BuildFeedLinks(f, option.IsOffline);
+                    BuildRssFileUsingTemplate(f, items.OrderByDescending(i => i.DateAdded).ToList());
                 }
 
                 if (Environment.UserInteractive)
@@ -243,20 +253,23 @@ $item.ArticleText$
             }
         }
 
-        private static List<FeedItem> BuildFeedLinks(Feed feed)
+        private static List<RssFeedItem> BuildFeedLinks(RssFeed feed, bool isOffline)
         {
             string builderName = feed.CustomParser;
             if (string.IsNullOrWhiteSpace(builderName))
-                return new List<FeedItem>();
+                return new List<RssFeedItem>();
 
             Type type = Assembly.GetExecutingAssembly().GetType(builderName);
-            ICustomFeedBuilder builder = (ICustomFeedBuilder)Activator.CreateInstance(type);
-            var list = builder.ParseFeedItems(log, feed)
+            IRssFeedBuilder builder = (IRssFeedBuilder)Activator.CreateInstance(type);
+            var list = builder.ParseRssFeedItems(log, feed)
                 //.Take(10) FOR DEBUG PURPOSES
                 ;
 
             string databaseName = "rssfeeder";
             string collectionName = "drudge-report";
+
+            // Load the collection of site parsers
+            ArticleDefinitions = GetAllDocuments<SiteArticleDefinition>(databaseName, "site-parsers");
 
             // Create the working folder if it doesn't exist
             string workingFolder = Path.Combine(AssemblyDirectory, WORKING_FOLDER);
@@ -266,33 +279,48 @@ $item.ArticleText$
                 Directory.CreateDirectory(workingFolder);
             }
 
+#if DEBUG
+            log.Debug($"Removing all files from '{workingFolder}'");
+            foreach (var filename in Directory.EnumerateFiles(workingFolder))
+            {
+                File.Delete(filename);
+            }
+#endif
+
             // Add any links that don't already exist
             log.Info("Adding links to the database");
             foreach (var item in list)
             {
-                if (!DocumentExists(databaseName, collectionName, item))
+                if (isOffline || !DocumentExists(databaseName, collectionName, item))
                 {
                     SaveUrlToDisk(item, workingFolder);
-                    ParseMetaTags(item);
-                    CreateDocument(databaseName, collectionName, item);
+                    ParseArticleMetaTags(item);
+
+                    if (!isOffline)
+                    {
+                        CreateDocument(databaseName, collectionName, item);
+                    }
                 }
             }
 
-            // Remove any stale documents
-            log.Info($"Removing stale links from {databaseName}");
-            list = GetStaleDocuments(databaseName, collectionName, 7);
-            foreach (var item in list)
+            if (!isOffline)
             {
-                log.Info($"Removing {item.UrlHash}");
-                DeleteDocument(databaseName, collectionName, item.id);
+                // Remove any stale documents
+                log.Info($"Removing stale links from {databaseName}");
+                list = GetStaleDocuments(databaseName, collectionName, 7);
+                foreach (var item in list)
+                {
+                    log.Info($"Removing {item.UrlHash}");
+                    DeleteDocument(databaseName, collectionName, item.Id);
+                }
+
+                // Purge stale files from working folder
+                log.Info($"Removing stale files from {workingFolder}");
+                PurgeStaleFiles(workingFolder, 7);
             }
 
-            // Purge stale files from working folder
-            log.Info($"Removing stale files from {workingFolder}");
-            PurgeStaleFiles(workingFolder, 7);
-
             // Return whatever documents are left in the database
-            return GetAllDocuments(databaseName, collectionName);
+            return GetAllDocuments<RssFeedItem>(databaseName, collectionName);
         }
 
         public static void PurgeStaleFiles(string folderPath, short maximumAgeInDays)
@@ -323,7 +351,7 @@ $item.ArticleText$
         /// <param name="databaseName">The name/ID of the database.</param>
         /// <param name="collectionName">The name/ID of the collection.</param>
         /// <param name="item"></param>
-        private static void CreateDocument(string databaseName, string collectionName, FeedItem item)
+        private static void CreateDocument(string databaseName, string collectionName, RssFeedItem item)
         {
             var result = client.CreateDocumentAsync(
                 UriFactory.CreateDocumentCollectionUri(databaseName, collectionName), item)
@@ -335,7 +363,7 @@ $item.ArticleText$
             }
         }
 
-        private static List<FeedItem> GetStaleDocuments(string databaseName, string collectionName, short maximumAgeInDays)
+        private static List<RssFeedItem> GetStaleDocuments(string databaseName, string collectionName, short maximumAgeInDays)
         {
             DateTime targetDate = DateTime.Now.AddDays(-maximumAgeInDays);
 
@@ -344,42 +372,41 @@ $item.ArticleText$
 
             // Run a simple query via LINQ. DocumentDB indexes all properties, so queries 
             // can be completed efficiently and with low latency
-            return client.CreateDocumentQuery<FeedItem>(
+            return client.CreateDocumentQuery<RssFeedItem>(
                 UriFactory.CreateDocumentCollectionUri(databaseName, collectionName), queryOptions)
                 .Where(f => f.DateAdded <= targetDate)
                 .ToList();
         }
 
-        private static bool DocumentExists(string databaseName, string collectionName, FeedItem item)
+        private static bool DocumentExists(string databaseName, string collectionName, RssFeedItem item)
         {
             // Set some common query options
             FeedOptions queryOptions = new FeedOptions { MaxItemCount = -1 };
 
             // Run a simple query via LINQ. DocumentDB indexes all properties, so queries 
             // can be completed efficiently and with low latency
-            var result = client.CreateDocumentQuery<FeedItem>(
+            var result = client.CreateDocumentQuery<RssFeedItem>(
                 UriFactory.CreateDocumentCollectionUri(databaseName, collectionName), queryOptions)
                 .Where(f => f.UrlHash == item.UrlHash);
 
             return result.Count() > 0;
         }
 
-        private static List<FeedItem> GetAllDocuments(string databaseName, string collectionName)
+        private static List<T> GetAllDocuments<T>(string databaseName, string collectionName)
         {
             // Set some common query options
             FeedOptions queryOptions = new FeedOptions { MaxItemCount = -1 };
 
             // Run a simple query via LINQ. DocumentDB indexes all properties, so queries 
             // can be completed efficiently and with low latency
-            return client.CreateDocumentQuery<FeedItem>(
+            return client.CreateDocumentQuery<T>(
                 UriFactory.CreateDocumentCollectionUri(databaseName, collectionName), queryOptions)
-                .OrderByDescending(i => i.DateAdded)
                 .ToList();
         }
 
-        private static void DeleteDocument(string databaseName, string collectionName, FeedItem item)
+        private static void DeleteDocument(string databaseName, string collectionName, RssFeedItem item)
         {
-            DeleteDocument(databaseName, collectionName, item.id);
+            DeleteDocument(databaseName, collectionName, item.Id);
         }
 
         private static void DeleteDocument(string databaseName, string collectionName, string documentID)
@@ -392,7 +419,7 @@ $item.ArticleText$
             }
         }
 
-        private static void ParseMetaTags(FeedItem item)
+        private static void ParseArticleMetaTags(RssFeedItem item)
         {
             if (File.Exists(item.FileName))
             {
@@ -405,32 +432,32 @@ $item.ArticleText$
                 if (!doc.DocumentNode.HasChildNodes)
                 {
                     log.Warn("No file content found, skipping.");
-                    SetBasicItemInfo(item);
+                    SetBasicArticleMetaData(item);
                     return;
                 }
 
                 // Meta tags provide extended data about the item, display as much as possible
-                SetExtendedItemInfo(item, doc);
+                SetExtendedArticleMetaData(item, doc);
                 ApplyTemplateToDescription(item, ExtendedTemplate);
             }
             else
             {
                 // Article failed to download, display minimal basic meta data
-                SetBasicItemInfo(item);
+                SetBasicArticleMetaData(item);
                 ApplyTemplateToDescription(item, BasicTemplate);
             }
 
             log.Info(JsonConvert.SerializeObject(item, Formatting.Indented));
         }
 
-        private static void ApplyTemplateToDescription(FeedItem item, string template)
+        private static void ApplyTemplateToDescription(RssFeedItem item, string template)
         {
             StringTemplate t = new StringTemplate(template);
             t.SetAttribute("item", item);
             item.Description = t.ToString();
         }
 
-        private static void SetExtendedItemInfo(FeedItem item, HtmlDocument doc)
+        private static void SetExtendedArticleMetaData(RssFeedItem item, HtmlDocument doc)
         {
             item.Subtitle = ParseMetaTagAttributes(doc, "og:title", "content");
             item.ImageUrl = ParseMetaTagAttributes(doc, "og:image", "content");
@@ -441,90 +468,29 @@ $item.ArticleText$
                 item.SiteName = string.IsNullOrWhiteSpace(item.Url) ? "" : new Uri(item.Url).GetComponents(UriComponents.Host, UriFormat.Unescaped);
             }
 
-            switch (item.SiteName.ToUpper())
+            // Check if we have a site parser defined for the site name
+            string loweredSiteName = item.SiteName.ToLower();
+            var definition = ArticleDefinitions.SingleOrDefault(p => p.SiteName == loweredSiteName);
+
+            if (definition == null)
             {
-                case "LOSANGELES.CBSLOCAL.COM":
-                case "SACRAMENTO.CBSLOCAL.COM":
-                case "SANFRANCISCO.CBSLOCAL.COM":
-                case "CHICAGO.CBSLOCAL.COM":
-                case "PHILADELPHIA.CBSLOCAL.COM":
-                case "DENVER.CBSLOCAL.COM":
-                case "DFW.CBSLOCAL.COM":
-                case "NEWYORK.CBSLOCAL.COM":
-                case "SPORTS.CBSLOCAL.COM":
-                    {
-                        var parser = new GenericParser();
-                        item.ArticleText = parser.GetArticleBySelector(doc.Text, ".main-story-wrapper", "p");
-                    }
-                    break;
+                item.ArticleText = $"<p>{item.MetaDescription}</p>";
+            }
+            else
+            {
+                // Check if we have a cached instance of this parser
+                if (!ArticleParserCache.ContainsKey(loweredSiteName))
+                {
+                    Type type = Assembly.GetExecutingAssembly().GetType(definition.Parser);
+                    ArticleParserCache.Add(loweredSiteName, (IArticleParser)Activator.CreateInstance(type));
+                }
 
-                case "MAIL ONLINE":
-                    {
-                        var parser = new ParagraphAndBulletParser();
-                        item.ArticleText = parser.GetArticleBySelector(doc.Text, ".mol-bullets-with-font", "#js-article-text", "p.mol-para-with-font");
-                    }
-                    break;
-
-                case "MIAMIHERALD":
-                    {
-                        var parser = new GenericParser();
-                        item.ArticleText = parser.GetArticleBySelector(doc.Text, ".content-body", "p");
-                    }
-                    break;
-
-                case "NEW YORK POST":
-                    {
-                        var parser = new GenericParser();
-                        item.ArticleText = parser.GetArticleBySelector(doc.Text, ".entry-content", "p");
-                    }
-                    break;
-
-                case "WWW.NYTIMES.COM":
-                    {
-                        var parser = new GenericParser();
-                        item.ArticleText = parser.GetArticleBySelector(doc.Text, "#story", "p.css-1i0edl6");
-                    }
-                    break;
-
-                case "USA TODAY":
-                    {
-                        var parser = new UsaTodayParser();
-                        item.ArticleText = parser.GetArticleBySelector(doc.Text, ".story", "p.p-text,h2.presto-h2");
-                    }
-                    break;
-
-                case "U.S.":
-                    {
-                        var parser = new GenericParser();
-                        item.ArticleText = parser.GetArticleBySelector(doc.Text, ".StandardArticleBody_body", "p");
-                    }
-                    break;
-
-                case "VARIETY":
-                    {
-                        var parser = new GenericParser();
-                        item.ArticleText = parser.GetArticleBySelector(doc.Text, ".c-content", "p");
-                    }
-                    break;
-
-                case "WWW.YAHOO.COM":
-                case "FINANCE.YAHOO.COM":
-                case "CA.NEWS.YAHOO.COM":
-                case "SG.NEWS.YAHOO.COM":
-                case "UK.NEWS.YAHOO.COM":
-                    {
-                        var parser = new GenericParser();
-                        item.ArticleText = parser.GetArticleBySelector(doc.Text, ".canvas-body", "p.canvas-text");
-                    }
-                    break;
-
-                default:
-                    item.ArticleText = $"<p>{item.MetaDescription}</p>";
-                    break;
+                var inst = ArticleParserCache[loweredSiteName];
+                item.ArticleText = inst.GetArticleBySelector(doc.Text, definition);
             }
         }
 
-        private static void SetBasicItemInfo(FeedItem item)
+        private static void SetBasicArticleMetaData(RssFeedItem item)
         {
             item.SiteName = string.IsNullOrWhiteSpace(item.Url) ? "" : new Uri(item.Url).GetComponents(UriComponents.Host, UriFormat.Unescaped);
         }
@@ -546,7 +512,7 @@ $item.ArticleText$
             return value;
         }
 
-        private static void SaveUrlToDisk(FeedItem item, string workingFolder)
+        private static void SaveUrlToDisk(RssFeedItem item, string workingFolder)
         {
             try
             {
@@ -577,7 +543,7 @@ $item.ArticleText$
             }
         }
 
-        private static void BuildRssFileUsingTemplate(Feed feed, List<FeedItem> items)
+        private static void BuildRssFileUsingTemplate(RssFeed feed, List<RssFeedItem> items)
         {
             var group = new StringTemplateGroup("myGroup", Path.Combine(AssemblyDirectory, "Templates"));
             var t = group.GetInstanceOf("DrudgeFeed");

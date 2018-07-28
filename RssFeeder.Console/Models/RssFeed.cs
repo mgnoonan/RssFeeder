@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace RssFeeder.Console.Models
 {
-    public class Feed
+    public class RssFeed
     {
         public int Id { get; set; }
         public string Title { get; set; }
@@ -14,7 +11,7 @@ namespace RssFeeder.Console.Models
         public string Language { get; set; }
         public string Filename { get; set; }
         public string CustomParser { get; set; }
-        public List<FeedItem> Items { get; set; }
+        public List<RssFeedItem> Items { get; set; }
         public List<string> Filters { get; set; }
     }
 }

@@ -159,17 +159,17 @@
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Models\FeedItem.cs" />
-    <Compile Include="Models\Feed.cs" />
-    <Compile Include="CustomBuilders\DrudgeReportFeedBuilder.cs" />
-    <Compile Include="CustomBuilders\ICustomFeedBuilder.cs" />
-    <Compile Include="Models\FeedContextInitializer.cs" />
+    <Compile Include="Models\RssFeedItem.cs" />
+    <Compile Include="Models\RssFeed.cs" />
+    <Compile Include="FeedBuilders\DrudgeReportFeedBuilder.cs" />
+    <Compile Include="FeedBuilders\IRssFeedBuilder.cs" />
+    <Compile Include="Models\SiteArticleDefinition.cs" />
     <Compile Include="Options.cs" />
-    <Compile Include="Parsers\ParagraphAndBulletParser.cs" />
-    <Compile Include="Parsers\GenericParser.cs" />
-    <Compile Include="Parsers\ISiteParser.cs" />
-    <Compile Include="Parsers\ParagraphAndListParser.cs" />
-    <Compile Include="Parsers\UsaTodayParser.cs" />
+    <Compile Include="ArticleParsers\ParagraphAndBulletParser.cs" />
+    <Compile Include="ArticleParsers\GenericParser.cs" />
+    <Compile Include="ArticleParsers\IArticleParser.cs" />
+    <Compile Include="ArticleParsers\ParagraphAndListParser.cs" />
+    <Compile Include="ArticleParsers\UsaTodayParser.cs" />
     <Compile Include="Program.cs">
       <SubType>Code</SubType>
     </Compile>
