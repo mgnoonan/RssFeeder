@@ -1,0 +1,150 @@
+[
+	{
+    "id": "4f50a65d-5a72-453e-bc60-98842b8fa84a",
+    "SiteName": "new york post",
+    "ArticleSelector": ".entry-content",
+    "ParagraphSelector": "p",
+    "Parser": "RssFeeder.Console.Parsers.GenericParser"
+  },
+  {
+    "id": "8ab5c62d-308a-4f56-aa8d-aa29b80c3efa",
+    "SiteName": "losangeles.cbslocal.com",
+    "ArticleSelector": ".main-story-wrapper",
+    "ParagraphSelector": "p",
+    "Parser": "RssFeeder.Console.Parsers.GenericParser"
+  },
+  {
+    "id": "0e5ed3e7-68b0-45ce-b73a-5246e02ad9fa",
+    "SiteName": "sacramento.cbslocal.com",
+    "ArticleSelector": ".main-story-wrapper",
+    "ParagraphSelector": "p",
+    "Parser": "RssFeeder.Console.Parsers.GenericParser"
+  },
+  {
+    "id": "aa6addea-010f-4342-964e-3f250aa81dce",
+    "SiteName": "sanfrancisco.cbslocal.com",
+    "ArticleSelector": ".main-story-wrapper",
+    "ParagraphSelector": "p",
+    "Parser": "RssFeeder.Console.Parsers.GenericParser"
+  },
+  {
+    "id": "546f72c0-8692-4f05-ab5d-6572d1a9e035",
+    "SiteName": "chicago.cbslocal.com",
+    "ArticleSelector": ".main-story-wrapper",
+    "ParagraphSelector": "p",
+    "Parser": "RssFeeder.Console.Parsers.GenericParser"
+  },
+  {
+    "id": "15ccb4b1-4232-4ec8-99a7-c9d6815ec5da",
+    "SiteName": "philadelphia.cbslocal.com",
+    "ArticleSelector": ".main-story-wrapper",
+    "ParagraphSelector": "p",
+    "Parser": "RssFeeder.Console.Parsers.GenericParser"
+  },
+  {
+    "id": "de6317e3-8814-4f5f-a840-1c8c5a712a36",
+    "SiteName": "denver.cbslocal.com",
+    "ArticleSelector": ".main-story-wrapper",
+    "ParagraphSelector": "p",
+    "Parser": "RssFeeder.Console.Parsers.GenericParser"
+  },
+  {
+    "id": "6dba7438-d53d-4e34-94a4-d4e8ade85045",
+    "SiteName": "dfw.cbslocal.com",
+    "ArticleSelector": ".main-story-wrapper",
+    "ParagraphSelector": "p",
+    "Parser": "RssFeeder.Console.Parsers.GenericParser"
+  },
+  {
+    "id": "c34aaee5-bd7b-4327-8806-5ad86acf90df",
+    "SiteName": "newyork.cbslocal.com",
+    "ArticleSelector": ".main-story-wrapper",
+    "ParagraphSelector": "p",
+    "Parser": "RssFeeder.Console.Parsers.GenericParser"
+  },
+  {
+    "id": "e5c3f863-9dc2-4481-b910-fe90a19ae7e2",
+    "SiteName": "sports.cbslocal.com",
+    "ArticleSelector": ".main-story-wrapper",
+    "ParagraphSelector": "p",
+    "Parser": "RssFeeder.Console.Parsers.GenericParser"
+  },
+  {
+    "id": "482840a2-0c56-4ccc-a6be-a445cc2ac52e",
+    "SiteName": "mail online",
+    "BulletSelector": ".mol-bullets-with-font",
+    "ArticleSelector": "#js-article-text",
+    "ParagraphSelector": "p.mol-para-with-font",
+    "Parser": "RssFeeder.Console.Parsers.ParagraphAndBulletParser"
+  },
+  {
+    "id": "e8fd74ea-4dcb-4773-89d4-bb96210e31f1",
+    "SiteName": "miamiherald",
+    "ArticleSelector": ".content-body",
+    "ParagraphSelector": "p",
+    "Parser": "RssFeeder.Console.Parsers.GenericParser"
+  },
+  {
+    "id": "8061dbfa-0c17-4d1e-8f7f-091aed159717",
+    "SiteName": "www.nytimes.com",
+    "ArticleSelector": "#story",
+    "ParagraphSelector": "p.css-1i0edl6",
+    "Parser": "RssFeeder.Console.Parsers.GenericParser"
+  },
+  {
+    "id": "0a1d220f-5e40-4be6-b760-58058a071c3c",
+    "SiteName": "usa today",
+    "ArticleSelector": ".story",
+    "ParagraphSelector": "p.p-text,h2.presto-h2",
+    "Parser": "RssFeeder.Console.Parsers.UsaTodayParser"
+  },
+  {
+    "id": "3599bbb0-091d-4bfa-85cd-51bb4da7c5fc",
+    "SiteName": "u.s.",
+    "ArticleSelector": ".StandardArticleBody_body",
+    "ParagraphSelector": "p",
+    "Parser": "RssFeeder.Console.Parsers.GenericParser"
+  },
+  {
+    "id": "2331aa55-9745-4133-b477-c8b2d1920d78",
+    "SiteName": "variety",
+    "ArticleSelector": ".c-content",
+    "ParagraphSelector": "p",
+    "Parser": "RssFeeder.Console.Parsers.GenericParser"
+  },
+  {
+    "id": "dbe46766-ec48-4450-aac4-3b2fa6056cf4",
+    "SiteName": "www.yahoo.com",
+    "ArticleSelector": ".canvas-body",
+    "ParagraphSelector": "p.canvas-text",
+    "Parser": "RssFeeder.Console.Parsers.GenericParser"
+  },
+  {
+    "id": "338804a0-c29c-4f01-890b-282f2b6713e5",
+    "SiteName": "finance.yahoo.com",
+    "ArticleSelector": ".canvas-body",
+    "ParagraphSelector": "p.canvas-text",
+    "Parser": "RssFeeder.Console.Parsers.GenericParser"
+  },
+  {
+    "id": "bb84ba05-2ae9-4a26-9dcc-8a98377a09cb",
+    "SiteName": "ca.news.yahoo.com",
+    "ArticleSelector": ".canvas-body",
+    "ParagraphSelector": "p.canvas-text",
+    "Parser": "RssFeeder.Console.Parsers.GenericParser"
+  },
+  {
+    "id": "3a74d30f-da57-466c-90cf-bf129d912ab0",
+    "SiteName": "sg.news.yahoo.com",
+    "ArticleSelector": ".canvas-body",
+    "ParagraphSelector": "p.canvas-text",
+    "Parser": "RssFeeder.Console.Parsers.GenericParser"
+  },
+  {
+    "id": "9812a526-635d-42ce-9f5e-4d587786fd4a",
+    "SiteName": "uk.news.yahoo.com",
+    "ArticleSelector": ".canvas-body",
+    "ParagraphSelector": "p.canvas-text",
+    "Parser": "RssFeeder.Console.Parsers.GenericParser"
+  }
+]

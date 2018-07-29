@@ -1,19 +1,12 @@
 ﻿using System.Text;
-using AngleSharp.Parser.Html;
+using AngleSharp.Dom;
 
 namespace RssFeeder.Console.Parsers
 {
-    class NyPostParser : ISiteParser
+    class ParagraphAndListParser : GenericParser
     {
-        public string GetArticleText(string html)
+        protected override string BuildArticleText(IHtmlCollection<IElement> paragraphs)
         {
-            // Load and parse the html from the source file
-            var parser = new HtmlParser();
-            var document = parser.Parse(html);
-
-            // Query the document by CSS selectors to get the article text
-            var paragraphs = document.QuerySelector(".entry-content").QuerySelectorAll("p");
-
             StringBuilder description = new StringBuilder();
 
             foreach (var p in paragraphs)

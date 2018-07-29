@@ -4,8 +4,8 @@ using System.Collections.Generic;
 
 namespace RssFeeder.Console.CustomBuilders
 {
-    public interface ICustomFeedBuilder
+    public interface IRssFeedBuilder
     {
-        List<FeedItem> ParseFeedItems(ILog log, Feed feed);
+        List<RssFeedItem> ParseRssFeedItems(ILog log, RssFeed feed);
     }
 }

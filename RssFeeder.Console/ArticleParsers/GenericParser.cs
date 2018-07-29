@@ -1,19 +1,27 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
+using AngleSharp.Dom;
 using AngleSharp.Parser.Html;
+using RssFeeder.Console.Models;
 
 namespace RssFeeder.Console.Parsers
 {
-    class ReutersParser : ISiteParser
+    public class GenericParser : IArticleParser
     {
-        public string GetArticleText(string html)
+        public string GetArticleBySelector(string html, SiteArticleDefinition options)
         {
             // Load and parse the html from the source file
             var parser = new HtmlParser();
             var document = parser.Parse(html);
 
             // Query the document by CSS selectors to get the article text
-            var paragraphs = document.QuerySelectorAll(".StandardArticleBody_body > p");
+            var paragraphs = document.QuerySelector(options.ArticleSelector).QuerySelectorAll(options.ParagraphSelector);
 
+            return BuildArticleText(paragraphs);
+        }
+
+        protected virtual string BuildArticleText(IHtmlCollection<IElement> paragraphs)
+        {
             StringBuilder description = new StringBuilder();
 
             foreach (var p in paragraphs)

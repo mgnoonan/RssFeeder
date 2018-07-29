@@ -10,11 +10,11 @@ using RssFeeder.Console.Utility;
 
 namespace RssFeeder.Console.CustomBuilders
 {
-    class DrudgeReportFeedBuilder : ICustomFeedBuilder
+    class DrudgeReportFeedBuilder : IRssFeedBuilder
     {
-        public List<FeedItem> ParseFeedItems(ILog log, Feed feed)
+        public List<RssFeedItem> ParseRssFeedItems(ILog log, RssFeed feed)
         {
-            var list = new List<FeedItem>();
+            var list = new List<RssFeedItem>();
             var filters = feed.Filters ?? new List<string>();
 
             string url = feed.Url;
@@ -63,9 +63,9 @@ namespace RssFeeder.Console.CustomBuilders
                     if (linkUrl.Length > 0 && title.Length > 0)
                     {
                         log.Info($"FOUND: {hash}|{title}|{linkUrl}");
-                        var item = new FeedItem()
+                        var item = new RssFeedItem()
                         {
-                            id = Guid.NewGuid().ToString(),
+                            Id = Guid.NewGuid().ToString(),
                             FeedId = feed.Id,
                             Title = HttpUtility.HtmlDecode(title),
                             //Description = Utility.Utility.GetDescriptionFromMeta(linkUrl),
@@ -105,9 +105,9 @@ namespace RssFeeder.Console.CustomBuilders
                     if (linkUrl.Length > 0 && title.Length > 0)
                     {
                         log.InfoFormat("FOUND: {0}|{1}|{2}", hash, title, linkUrl);
-                        var item = new FeedItem()
+                        var item = new RssFeedItem()
                         {
-                            id = Guid.NewGuid().ToString(),
+                            Id = Guid.NewGuid().ToString(),
                             FeedId = feed.Id,
                             Title = HttpUtility.HtmlDecode(title),
                             //Description = Utility.Utility.GetDescriptionFromMeta(linkUrl),
