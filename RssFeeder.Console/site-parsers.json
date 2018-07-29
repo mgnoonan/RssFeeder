@@ -1,5 +1,5 @@
 [
-	{
+  {
     "id": "4f50a65d-5a72-453e-bc60-98842b8fa84a",
     "SiteName": "new york post",
     "ArticleSelector": ".entry-content",
@@ -145,6 +145,34 @@
     "SiteName": "uk.news.yahoo.com",
     "ArticleSelector": ".canvas-body",
     "ParagraphSelector": "p.canvas-text",
+    "Parser": "RssFeeder.Console.Parsers.GenericParser"
+  },
+  {
+    "id": "4245CC20-DA3C-47C4-85D1-32C82BEB51ED",
+    "SiteName": "wral.com",
+    "ArticleSelector": ".story-text",
+    "ParagraphSelector": "p",
+    "Parser": "RssFeeder.Console.Parsers.GenericParser"
+  },
+  {
+    "id": "0DA34D64-DEED-4007-B60C-288E8228936C",
+    "SiteName": "afp.com",
+    "ArticleSelector": ".textcontent",
+    "ParagraphSelector": "p",
+    "Parser": "RssFeeder.Console.Parsers.GenericParser"
+  },
+  {
+    "id": "08227641-C365-4123-893E-338EEA8EF8BD",
+    "SiteName": "ap news",
+    "ArticleSelector": ".articleBody",
+    "ParagraphSelector": "p",
+    "Parser": "RssFeeder.Console.Parsers.GenericParser"
+  },
+  {
+    "id": "5A75AAF6-2E12-4D5D-B5EE-7F3F675F81DA",
+    "SiteName": "cnn",
+    "ArticleSelector": "div.l-container",
+    "ParagraphSelector": "p.zn-body__paragraph,.zn-body__paragraph,.zn-body__read-all",
     "Parser": "RssFeeder.Console.Parsers.GenericParser"
   }
 ]
