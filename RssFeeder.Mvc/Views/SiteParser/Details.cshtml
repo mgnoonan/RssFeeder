@@ -1,0 +1,42 @@
+﻿@model RssFeeder.Mvc.Models.SiteParserModel
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>@Html.DisplayFor(model => model.SiteName)</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.id)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.id)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.ArticleSelector)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.ArticleSelector)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.ParagraphSelector)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.ParagraphSelector)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Parser)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Parser)
+        </dd>
+    </dl>
+</div>
+<div>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.id }) |
+    <a asp-action="Index">Back to List</a>
+</div>
