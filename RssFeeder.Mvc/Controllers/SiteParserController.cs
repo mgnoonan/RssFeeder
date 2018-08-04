@@ -43,6 +43,10 @@ namespace RssFeeder.Mvc.Controllers
             {
                 if (ModelState.IsValid)
                 {
+                    // Standardize a few properties on lowercase
+                    model.id = model.id.ToLower();
+                    model.SiteName = model.SiteName.ToLower();
+
                     await Repository<SiteParserModel>.CreateItemAsync(model);
                     return RedirectToAction(nameof(Index));
                 }
@@ -73,6 +77,10 @@ namespace RssFeeder.Mvc.Controllers
             {
                 if (ModelState.IsValid)
                 {
+                    // Standardize a few properties on lowercase
+                    model.id = model.id.ToLower();
+                    model.SiteName = model.SiteName.ToLower();
+
                     await Repository<SiteParserModel>.UpdateItemAsync(id, model);
                     return RedirectToAction(nameof(Index));
                 }
