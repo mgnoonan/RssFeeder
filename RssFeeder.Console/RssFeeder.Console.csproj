@@ -190,7 +190,7 @@
     <None Include="app.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="drudge.json">
+    <None Include="drudge-feed.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="packages.config">

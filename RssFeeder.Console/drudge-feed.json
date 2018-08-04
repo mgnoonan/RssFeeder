@@ -3,7 +3,7 @@
     "Title": "The Drudge Report",
     "Url": "http://www.drudgereport.com",
     "Description": "The Drudge Report",
-    "Filename": "C:\\inetpub\\wwwroot\\content\\rss\\drudge.xml",
+    "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\drudge.xml",
     "Language": "en-US",
     "CustomParser": "RssFeeder.Console.CustomBuilders.DrudgeReportFeedBuilder",
     "Filters": [
