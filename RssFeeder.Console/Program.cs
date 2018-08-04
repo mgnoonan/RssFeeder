@@ -97,20 +97,32 @@ $item.ArticleText$
                 ;
         }
 
-        private static void TestParser()
+        private static void TestArticleDefinition(SiteArticleDefinition definition)
         {
-            //string filename = @"C:\Projects\RssFeeder\RssFeeder.Console\bin\Release\working\6eaa0f16bf466af2a0758ae0abcf01ab.html";
-            //string html = File.ReadAllText(filename);
+            string html;
+            IArticleParser parser;
 
-            // set up TLS defaults
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+            if (!string.IsNullOrEmpty(definition.TestFilename))
+            {
+                html = File.ReadAllText(definition.TestFilename);
+            }
+            else
+            {
+                // set up TLS defaults
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
 
-            //string url = "https://losangeles.cbslocal.com/2018/07/21/kcal9-employee-tells-harrowing-story-of-being-held-hostage-inside-trader-joes/";
-            //string html = GetResponse(url);
+                html = GetResponse(definition.TestUrl);
+            }
 
-            //var parser = new GenericParser();
-            //System.Console.WriteLine(parser.GetArticleBySelector(html, "", ""));
-            //System.Console.ReadLine();
+            Type type = Assembly.GetExecutingAssembly().GetType(definition.Parser);
+            parser = (IArticleParser)Activator.CreateInstance(type);
+
+            // For console display, strip out the paragraph tags
+            string text = parser.GetArticleBySelector(html, definition)
+                .Replace("<p>", "")
+                .Replace("</p>", "\n");
+
+            System.Console.WriteLine(text);
         }
 
         static void HandleParserError(IEnumerable<Error> errors, string[] args)
@@ -166,20 +178,37 @@ $item.ArticleText$
 
                 foreach (var option in optionsList)
                 {
-                    // Transform the option to the old style feed
-                    var f = new RssFeed
+                    if (!string.IsNullOrWhiteSpace(option.TestDefinition))
                     {
-                        Title = option.Title,
-                        Description = option.Description,
-                        Filename = option.Filename,
-                        Language = option.Language,
-                        Url = option.Url,
-                        CustomParser = option.CustomParser,
-                        Filters = option.Filters.ToList()
-                    };
+                        using (StreamReader sr = new StreamReader(option.TestDefinition))
+                        {
+                            // Read the options in JSON format
+                            string json = sr.ReadToEnd();
+                            log.InfoFormat("Test article parser: {0}", json);
 
-                    var items = BuildFeedLinks(f, option.IsOffline);
-                    BuildRssFileUsingTemplate(f, items.OrderByDescending(i => i.DateAdded).ToList());
+                            // Deserialize into our options class
+                            var definition = JsonConvert.DeserializeObject<SiteArticleDefinition>(json);
+
+                            TestArticleDefinition(definition);
+                        }
+                    }
+                    else
+                    {
+                        // Transform the option to the old style feed
+                        var f = new RssFeed
+                        {
+                            Title = option.Title,
+                            Description = option.Description,
+                            OutputFile = option.OutputFile,
+                            Language = option.Language,
+                            Url = option.Url,
+                            CustomParser = option.CustomParser,
+                            Filters = option.Filters.ToList()
+                        };
+
+                        var items = BuildFeedLinks(f, option.IsOffline);
+                        BuildRssFileUsingTemplate(f, items.OrderByDescending(i => i.DateAdded).ToList());
+                    }
                 }
 
                 if (Environment.UserInteractive)
@@ -459,40 +488,42 @@ $item.ArticleText$
 
         private static void SetExtendedArticleMetaData(RssFeedItem item, HtmlDocument doc)
         {
+            // Extract the meta data from the Open Graph tags helpfully provided with almost every article
             item.Subtitle = ParseMetaTagAttributes(doc, "og:title", "content");
             item.ImageUrl = ParseMetaTagAttributes(doc, "og:image", "content");
             item.MetaDescription = ParseMetaTagAttributes(doc, "og:description", "content");
-            item.SiteName = ParseMetaTagAttributes(doc, "og:site_name", "content");
+            item.SiteName = ParseMetaTagAttributes(doc, "og:site_name", "content").ToLower();
             if (string.IsNullOrWhiteSpace(item.SiteName))
             {
-                item.SiteName = string.IsNullOrWhiteSpace(item.Url) ? "" : new Uri(item.Url).GetComponents(UriComponents.Host, UriFormat.Unescaped);
+                item.SiteName = string.IsNullOrWhiteSpace(item.Url) ? "" : new Uri(item.Url).GetComponents(UriComponents.Host, UriFormat.Unescaped).ToLower();
             }
 
             // Check if we have a site parser defined for the site name
-            string loweredSiteName = item.SiteName.ToLower();
-            var definition = ArticleDefinitions.SingleOrDefault(p => p.SiteName == loweredSiteName);
+            var definition = ArticleDefinitions.SingleOrDefault(p => p.SiteName == item.SiteName);
 
             if (definition == null)
             {
+                // We don't have an article parser definition for this site, so just use the meta description
                 item.ArticleText = $"<p>{item.MetaDescription}</p>";
             }
             else
             {
-                // Check if we have a cached instance of this parser
-                if (!ArticleParserCache.ContainsKey(loweredSiteName))
+                // Add a cached instance of this parser if we don't already have one, using reflection
+                if (!ArticleParserCache.ContainsKey(item.SiteName))
                 {
                     Type type = Assembly.GetExecutingAssembly().GetType(definition.Parser);
-                    ArticleParserCache.Add(loweredSiteName, (IArticleParser)Activator.CreateInstance(type));
+                    ArticleParserCache.Add(item.SiteName, (IArticleParser)Activator.CreateInstance(type));
                 }
 
-                var inst = ArticleParserCache[loweredSiteName];
+                // Parse the article from the html
+                var inst = ArticleParserCache[item.SiteName];
                 item.ArticleText = inst.GetArticleBySelector(doc.Text, definition);
             }
         }
 
         private static void SetBasicArticleMetaData(RssFeedItem item)
         {
-            item.SiteName = string.IsNullOrWhiteSpace(item.Url) ? "" : new Uri(item.Url).GetComponents(UriComponents.Host, UriFormat.Unescaped);
+            item.SiteName = string.IsNullOrWhiteSpace(item.Url) ? "" : new Uri(item.Url).GetComponents(UriComponents.Host, UriFormat.Unescaped).ToLower();
         }
 
         private static string ParseMetaTagAttributes(HtmlDocument doc, string property, string attribute)
@@ -563,8 +594,8 @@ $item.ArticleText$
             }
 
             // Rename the temp file
-            File.Delete(feed.Filename);
-            File.Move(tempFile, feed.Filename);
+            File.Delete(feed.OutputFile);
+            File.Move(tempFile, feed.OutputFile);
             File.Delete(tempFile);
         }
     }

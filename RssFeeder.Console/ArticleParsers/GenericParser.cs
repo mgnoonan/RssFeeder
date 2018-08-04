@@ -15,7 +15,8 @@ namespace RssFeeder.Console.Parsers
             var document = parser.Parse(html);
 
             // Query the document by CSS selectors to get the article text
-            var paragraphs = document.QuerySelector(options.ArticleSelector).QuerySelectorAll(options.ParagraphSelector);
+            var container = document.QuerySelector(options.ArticleSelector);
+            var paragraphs = container.QuerySelectorAll(options.ParagraphSelector);
 
             return BuildArticleText(paragraphs);
         }

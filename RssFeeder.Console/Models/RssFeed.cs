@@ -9,7 +9,7 @@ namespace RssFeeder.Console.Models
         public string Url { get; set; }
         public string Description { get; set; }
         public string Language { get; set; }
-        public string Filename { get; set; }
+        public string OutputFile { get; set; }
         public string CustomParser { get; set; }
         public List<RssFeedItem> Items { get; set; }
         public List<string> Filters { get; set; }

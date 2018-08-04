@@ -3,7 +3,7 @@
     "Title": "The Drudge Report",
     "Url": "http://www.drudgereport.com",
     "Description": "The Drudge Report",
-    "Filename": "drudge.xml",
+    "OutputFile": "drudge.xml",
     "Language": "en-US",
     "IsOffline": "True",
     "CustomParser": "RssFeeder.Console.CustomBuilders.DrudgeReportFeedBuilder",
