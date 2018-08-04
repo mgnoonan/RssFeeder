@@ -1,7 +1,7 @@
 ﻿{
   "ArticleSelector": "article",
-  "ParagraphSelector": "p",
+  "ParagraphSelector": "p,h2,span",
   "Parser": "RssFeeder.Console.Parsers.GenericParser",
-  "TestUrl": "",
-  "TestFilename": "C:\\Projects\\RssFeeder\\RssFeeder.Console\\bin\\Release\\working\\682e78b89017ec069bf85a9f6e8badc4.html"
+  "TestUrl": "http://www.france24.com/en/20180804-brazil-lula-launches-presidential-candidacy-prison",
+  "TestFilename": ""
 }

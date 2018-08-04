@@ -27,7 +27,14 @@ namespace RssFeeder.Console.Parsers
 
             foreach (var p in paragraphs)
             {
-                description.AppendLine($"<p>{p.TextContent.Trim()}</p>");
+                if (p.TagName.ToLower().StartsWith("h"))
+                {
+                    description.AppendLine($"<h4>{p.TextContent.Trim()}</h4>");
+                }
+                else
+                {
+                    description.AppendLine($"<p>{p.TextContent.Trim()}</p>");
+                }
             }
 
             return description.ToString();
