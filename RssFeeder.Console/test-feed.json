@@ -5,7 +5,6 @@
     "Description": "The Drudge Report",
     "OutputFile": "drudge.xml",
     "Language": "en-US",
-    "IsOffline": "True",
     "CustomParser": "RssFeeder.Console.CustomBuilders.DrudgeReportFeedBuilder",
     "Filters": [
       "cd0802700cef27a775ab057a2ef54aea",

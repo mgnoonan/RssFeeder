@@ -1,7 +1,7 @@
 ﻿{
-  "ArticleSelector": "article",
-  "ParagraphSelector": "p,h2,span",
+  "ArticleSelector": ".content__article-body",
+  "ParagraphSelector": "p",
   "Parser": "RssFeeder.Console.Parsers.GenericParser",
-  "TestUrl": "http://www.france24.com/en/20180804-brazil-lula-launches-presidential-candidacy-prison",
+  "TestUrl": "https://www.theguardian.com/us-news/video/2018/aug/11/plane-stolen-from-seattle-airport-chased-by-fighter-jets-video",
   "TestFilename": ""
 }

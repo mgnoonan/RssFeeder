@@ -206,7 +206,7 @@ $item.ArticleText$
                             Filters = option.Filters.ToList()
                         };
 
-                        var items = BuildFeedLinks(f, option.IsOffline);
+                        var items = BuildFeedLinks(f);
                         BuildRssFileUsingTemplate(f, items.OrderByDescending(i => i.DateAdded).ToList());
                     }
                 }
@@ -282,7 +282,7 @@ $item.ArticleText$
             }
         }
 
-        private static List<RssFeedItem> BuildFeedLinks(RssFeed feed, bool isOffline)
+        private static List<RssFeedItem> BuildFeedLinks(RssFeed feed)
         {
             string builderName = feed.CustomParser;
             if (string.IsNullOrWhiteSpace(builderName))
@@ -320,33 +320,26 @@ $item.ArticleText$
             log.Info("Adding links to the database");
             foreach (var item in list)
             {
-                if (isOffline || !DocumentExists(databaseName, collectionName, item))
+                if (!DocumentExists(databaseName, collectionName, item))
                 {
                     SaveUrlToDisk(item, workingFolder);
                     ParseArticleMetaTags(item);
-
-                    if (!isOffline)
-                    {
-                        CreateDocument(databaseName, collectionName, item);
-                    }
+                    CreateDocument(databaseName, collectionName, item);
                 }
             }
 
-            if (!isOffline)
+            // Remove any stale documents
+            log.Info($"Removing stale links from {databaseName}");
+            list = GetStaleDocuments(databaseName, collectionName, 7);
+            foreach (var item in list)
             {
-                // Remove any stale documents
-                log.Info($"Removing stale links from {databaseName}");
-                list = GetStaleDocuments(databaseName, collectionName, 7);
-                foreach (var item in list)
-                {
-                    log.Info($"Removing {item.UrlHash}");
-                    DeleteDocument(databaseName, collectionName, item.Id);
-                }
-
-                // Purge stale files from working folder
-                log.Info($"Removing stale files from {workingFolder}");
-                PurgeStaleFiles(workingFolder, 7);
+                log.Info($"Removing {item.UrlHash}");
+                DeleteDocument(databaseName, collectionName, item.Id);
             }
+
+            // Purge stale files from working folder
+            log.Info($"Removing stale files from {workingFolder}");
+            PurgeStaleFiles(workingFolder, 7);
 
             // Return whatever documents are left in the database
             return GetAllDocuments<RssFeedItem>(databaseName, collectionName);

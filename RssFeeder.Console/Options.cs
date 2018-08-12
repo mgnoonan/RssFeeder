@@ -16,9 +16,6 @@ namespace RssFeeder.Console
         [Option('l', "language")]
         public string Language { get; set; }
 
-        [Option('o', "offline")]
-        public bool IsOffline { get; set; }
-
         [Option('p', "customparser")]
         public string CustomParser { get; set; }
 

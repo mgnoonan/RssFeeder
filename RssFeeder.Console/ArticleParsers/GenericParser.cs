@@ -1,5 +1,4 @@
-﻿using System;
-using System.Text;
+﻿using System.Text;
 using AngleSharp.Dom;
 using AngleSharp.Parser.Html;
 using RssFeeder.Console.Models;
@@ -16,6 +15,11 @@ namespace RssFeeder.Console.Parsers
 
             // Query the document by CSS selectors to get the article text
             var container = document.QuerySelector(options.ArticleSelector);
+            if (container == null)
+            {
+                return $"<p>Error reading article: '{options.ArticleSelector}' article selector not found.</p>";
+            }
+
             var paragraphs = container.QuerySelectorAll(options.ParagraphSelector);
 
             return BuildArticleText(paragraphs);
