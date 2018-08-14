@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -30,7 +29,16 @@ namespace RssFeeder.Mvc.Controllers
         [ActionName("Create")]
         public ActionResult Create()
         {
-            return View();
+            // Set some reasonable defaults
+            var model = new SiteParserModel
+            {
+                id = Guid.NewGuid().ToString(),
+                ArticleSelector = "article",
+                ParagraphSelector = "p",
+                Parser = "RssFeeder.Console.Parsers.GenericParser"
+            };
+
+            return View(model);
         }
 
         // POST: SiteParser/Create

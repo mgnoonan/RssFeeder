@@ -14,7 +14,7 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="id" class="control-label"></label>
-                <input asp-for="id" class="form-control" value="@Guid.NewGuid().ToString()" />
+                <input asp-for="id" class="form-control" />
                 <span asp-validation-for="id" class="text-danger"></span>
             </div>
             <div class="form-group">
