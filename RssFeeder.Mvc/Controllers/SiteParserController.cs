@@ -7,6 +7,7 @@ using RssFeeder.Mvc.Models;
 
 namespace RssFeeder.Mvc.Controllers
 {
+    [Authorize]
     public class SiteParserController : Controller
     {
         // GET: SiteParser
