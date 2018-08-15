@@ -55,15 +55,23 @@ namespace RssFeeder.Mvc.Controllers
                     model.id = model.id.ToLower();
                     model.SiteName = model.SiteName.ToLower();
 
+                    var items = await Repository<SiteParserModel>.GetItemsAsync(i => i.SiteName == model.SiteName);
+                    if (items.Any())
+                    {
+                        ModelState.AddModelError("duplicate", $"A SiteParser for site name {model.SiteName} already exists.");
+                        return View(model);
+                    }
+
                     await Repository<SiteParserModel>.CreateItemAsync(model);
                     return RedirectToAction(nameof(Index));
                 }
 
                 return View(model);
             }
-            catch
+            catch (Exception ex)
             {
-                return View();
+                ModelState.AddModelError("error", ex.Message);
+                return View(model);
             }
         }
 
