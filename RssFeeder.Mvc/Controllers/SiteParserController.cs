@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using RssFeeder.Mvc.Models;
 
 namespace RssFeeder.Mvc.Controllers
 {
+    [Authorize]
     public class SiteParserController : Controller
     {
         // GET: SiteParser
