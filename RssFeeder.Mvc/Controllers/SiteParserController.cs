@@ -54,8 +54,11 @@ namespace RssFeeder.Mvc.Controllers
                 if (ModelState.IsValid)
                 {
                     // Standardize a few properties on lowercase
-                    model.id = model.id.ToLower();
-                    model.SiteName = model.SiteName.ToLower();
+                    model.id = model.id.Trim().ToLower();
+                    model.SiteName = model.SiteName.Trim().ToLower();
+                    model.ArticleSelector = model.ArticleSelector.Trim();
+                    model.ParagraphSelector = model.ParagraphSelector.Trim();
+                    model.Parser = model.Parser.Trim();
 
                     var items = await Repository<SiteParserModel>.GetItemsAsync(i => i.SiteName == model.SiteName);
                     if (items.Any())
