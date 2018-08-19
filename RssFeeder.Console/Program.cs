@@ -6,6 +6,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Threading;
 using Antlr3.ST;
 using CommandLine;
 using HtmlAgilityPack;
@@ -581,14 +582,32 @@ $item.ArticleText$
 
             string tempFile = Guid.NewGuid().ToString();    // CAUSES ACL PROBLEMS --> Path.GetTempFileName();
 
+            log.Info($"Writing out temp file '{tempFile}'");
             using (var writer = new StreamWriter(tempFile, false, System.Text.Encoding.UTF8))
             {
                 writer.WriteLine(t.ToString());
             }
 
-            // Rename the temp file
-            File.Delete(feed.OutputFile);
+            // Delete the existing destination file
+            // Added a 2 sec sleep to allow the delete process to finish
+            int retries = 1;
+            do
+            {
+                log.Info($"Deleting existing destination file '{feed.OutputFile}', try # {retries}");
+                if (retries > 1)
+                {
+                    Thread.Sleep(2000);
+                }
+
+                File.Delete(feed.OutputFile);
+                retries++;
+
+            } while (File.Exists(feed.OutputFile) && retries <= 5);
+
+            log.Info($"Rename temp file to destination file '{feed.OutputFile}'");
             File.Move(tempFile, feed.OutputFile);
+
+            log.Info($"Deleting temp file '{tempFile}'");
             File.Delete(tempFile);
         }
     }
