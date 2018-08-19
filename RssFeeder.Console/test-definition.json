@@ -1,7 +1,7 @@
 ﻿{
-  "ArticleSelector": ".content__article-body",
+  "ArticleSelector": "article",
   "ParagraphSelector": "p",
   "Parser": "RssFeeder.Console.Parsers.GenericParser",
-  "TestUrl": "https://www.theguardian.com/us-news/video/2018/aug/11/plane-stolen-from-seattle-airport-chased-by-fighter-jets-video",
-  "TestFilename": ""
+  "TestUrl": "",
+  "TestFilename": "C:\\Projects\\RssFeeder\\RssFeeder.Console\\bin\\Release\\working\\8dcb23751b7c466992833fc276a5951b.html"
 }

@@ -69,7 +69,9 @@ $item.ArticleText$
         /// <summary>
         /// The DocumentDB client instance.
         /// </summary>
-        private static DocumentClient client;
+        private static DocumentClient _client = null;
+
+        private static DocumentClient CosmosClient {  get => _client ?? new DocumentClient(new Uri(EndpointUri), PrimaryKey); }
 
         /// <summary>
         /// The list of site definitions that describe how to get an article
@@ -87,10 +89,6 @@ $item.ArticleText$
         [STAThread]
         static void Main(string[] args)
         {
-            // DEBUG ONLY
-            //TestParser();
-            //return;
-
             // Process the command line arguments
             Parser.Default.ParseArguments<Options>(args)
                 .WithParsed<Options>(opts => ProcessWithExitCode(opts))
@@ -141,8 +139,8 @@ $item.ArticleText$
             // Init the log4net through the config
             log4net.Config.XmlConfigurator.Configure();
             log.Info("--------------------------------");
-            log.InfoFormat("Machine: {0}", Environment.MachineName);
-            log.InfoFormat("Assembly: {0}", assemblyName.FullName);
+            log.Info($"Machine: {Environment.MachineName}");
+            log.Info($"Assembly: {assemblyName.FullName}");
             log.Info("--------------------------------");
 
             // set up TLS defaults
@@ -152,30 +150,33 @@ $item.ArticleText$
             {
                 // A config file was specified so read in the options from there
                 List<Options> optionsList;
-                if (string.IsNullOrWhiteSpace(opts.Config))
+                if (!string.IsNullOrWhiteSpace(opts.TestDefinition))
                 {
                     optionsList = new List<Options> { opts };
                 }
-                else
+                else if (!string.IsNullOrWhiteSpace(opts.Config))
                 {
                     // Get the directory of the current executable, all config 
                     // files should be in this path
                     string configFile = Path.Combine(AssemblyDirectory, opts.Config);
-                    log.InfoFormat("Reading from config file: {0}", configFile);
+                    log.Info($"Reading from config file: {configFile}");
 
                     using (StreamReader sr = new StreamReader(configFile))
                     {
                         // Read the options in JSON format
                         string json = sr.ReadToEnd();
-                        log.InfoFormat("Options: {0}", json);
+                        log.Info($"Options: {json}");
 
                         // Deserialize into our options class
                         optionsList = JsonConvert.DeserializeObject<List<Options>>(json);
                     }
                 }
-
-                // Create a new instance of the DocumentClient
-                client = new DocumentClient(new Uri(EndpointUri), PrimaryKey);
+                else
+                {
+                    string databaseName = "rssfeeder";
+                    string collectionName = "feeds";
+                    optionsList = GetAllDocuments<Options>(databaseName, collectionName);
+                }
 
                 foreach (var option in optionsList)
                 {
@@ -185,7 +186,7 @@ $item.ArticleText$
                         {
                             // Read the options in JSON format
                             string json = sr.ReadToEnd();
-                            log.InfoFormat("Test article parser: {0}", json);
+                            log.Info($"Test article parser: {json}");
 
                             // Deserialize into our options class
                             var definition = JsonConvert.DeserializeObject<SiteArticleDefinition>(json);
@@ -376,7 +377,7 @@ $item.ArticleText$
         /// <param name="item"></param>
         private static void CreateDocument(string databaseName, string collectionName, RssFeedItem item)
         {
-            var result = client.CreateDocumentAsync(
+            var result = CosmosClient.CreateDocumentAsync(
                 UriFactory.CreateDocumentCollectionUri(databaseName, collectionName), item)
                 .Result;
 
@@ -395,7 +396,7 @@ $item.ArticleText$
 
             // Run a simple query via LINQ. DocumentDB indexes all properties, so queries 
             // can be completed efficiently and with low latency
-            return client.CreateDocumentQuery<RssFeedItem>(
+            return CosmosClient.CreateDocumentQuery<RssFeedItem>(
                 UriFactory.CreateDocumentCollectionUri(databaseName, collectionName), queryOptions)
                 .Where(f => f.DateAdded <= targetDate)
                 .ToList();
@@ -408,7 +409,7 @@ $item.ArticleText$
 
             // Run a simple query via LINQ. DocumentDB indexes all properties, so queries 
             // can be completed efficiently and with low latency
-            var result = client.CreateDocumentQuery<RssFeedItem>(
+            var result = CosmosClient.CreateDocumentQuery<RssFeedItem>(
                 UriFactory.CreateDocumentCollectionUri(databaseName, collectionName), queryOptions)
                 .Where(f => f.UrlHash == item.UrlHash);
 
@@ -422,7 +423,7 @@ $item.ArticleText$
 
             // Run a simple query via LINQ. DocumentDB indexes all properties, so queries 
             // can be completed efficiently and with low latency
-            return client.CreateDocumentQuery<T>(
+            return CosmosClient.CreateDocumentQuery<T>(
                 UriFactory.CreateDocumentCollectionUri(databaseName, collectionName), queryOptions)
                 .ToList();
         }
@@ -434,7 +435,7 @@ $item.ArticleText$
 
         private static void DeleteDocument(string databaseName, string collectionName, string documentID)
         {
-            var result = client.DeleteDocumentAsync(UriFactory.CreateDocumentUri(databaseName, collectionName, documentID)).Result;
+            var result = _client.DeleteDocumentAsync(UriFactory.CreateDocumentUri(databaseName, collectionName, documentID)).Result;
 
             if (result.StatusCode != HttpStatusCode.NoContent)
             {

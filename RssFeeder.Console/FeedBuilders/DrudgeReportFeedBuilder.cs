@@ -53,12 +53,21 @@ namespace RssFeeder.Console.CustomBuilders
 
                     string hash = Utility.Utility.CreateMD5Hash(linkUrl);
                     if (filters.Contains(hash))
+                    {
+                        log.Debug($"Hash '{hash}' found in filter list");
                         continue;
+                    }
 
                     if (!linkUrl.StartsWith("http"))
+                    {
+                        log.Info($"Attempting to repair link '{linkUrl}'");
                         linkUrl = WebTools.MakeFullURL(relativeRoot, linkUrl);
+                    }
                     if (imageUrl != null && !imageUrl.StartsWith("http"))
+                    {
+                        log.Info($"Attempting to repair link '{imageUrl}'");
                         imageUrl = WebTools.MakeFullURL(relativeRoot, imageUrl);
+                    }
 
                     if (linkUrl.Length > 0 && title.Length > 0)
                     {
@@ -100,7 +109,10 @@ namespace RssFeeder.Console.CustomBuilders
                         continue;
 
                     if (!linkUrl.StartsWith("http"))
+                    {
+                        log.Info($"Attempting to repair link '{linkUrl}'");
                         linkUrl = WebTools.MakeFullURL(relativeRoot, linkUrl);
+                    }
 
                     if (linkUrl.Length > 0 && title.Length > 0)
                     {
