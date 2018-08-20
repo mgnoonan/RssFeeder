@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
@@ -33,9 +29,12 @@ namespace RssFeeder.Mvc
             .AddAzureAd(options => Configuration.Bind("AzureAd", options))
             .AddCookie();
 
+            // Repositories
+            services.AddScoped<IRepository<RssFeederRepository>, RssFeederRepository>();
+
             services.AddMvc();
 
-            Repository<SiteParserModel>.Initialize(Configuration);
+            RepositoryInitializer.Initialize(Configuration);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

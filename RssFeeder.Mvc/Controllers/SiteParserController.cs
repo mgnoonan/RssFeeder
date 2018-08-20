@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using RssFeeder.Mvc.Models;
 
 namespace RssFeeder.Mvc.Controllers
@@ -11,11 +12,26 @@ namespace RssFeeder.Mvc.Controllers
     [Authorize]
     public class SiteParserController : Controller
     {
+        private IRepository<RssFeederRepository> _repo;
+        private readonly string _collectionID = "site-parsers";
+
+        public SiteParserController(IRepository<RssFeederRepository> repository)
+        {
+            _repo = repository;
+        }
+
+        public override void OnActionExecuting(ActionExecutingContext context)
+        {
+            _repo.Init(_collectionID);
+            base.OnActionExecuting(context);
+        }
+
         // GET: SiteParser
         [ActionName("Index")]
         public async Task<ActionResult> Index()
         {
-            var items = await Repository<SiteParserModel>.GetItemsAsync();
+            var items = await _repo.GetItemsAsync<SiteParserModel>();
+
             return View(items.OrderBy(i => i.SiteName));
         }
 
@@ -23,7 +39,7 @@ namespace RssFeeder.Mvc.Controllers
         [ActionName("Details")]
         public async Task<ActionResult> Details(string id)
         {
-            var item = await Repository<SiteParserModel>.GetItemAsync(id);
+            var item = await _repo.GetItemAsync<SiteParserModel>(id);
             return View(item);
         }
 
@@ -31,7 +47,7 @@ namespace RssFeeder.Mvc.Controllers
         [ActionName("Clone")]
         public async Task<ActionResult> Clone(string sourceID)
         {
-            var item = await Repository<SiteParserModel>.GetItemAsync(sourceID);
+            var item = await _repo.GetItemAsync<SiteParserModel>(sourceID);
 
             // Set some reasonable defaults
             var model = new SiteParserModel
@@ -78,14 +94,15 @@ namespace RssFeeder.Mvc.Controllers
                     model.ParagraphSelector = model.ParagraphSelector.Trim();
                     model.Parser = model.Parser.Trim();
 
-                    var items = await Repository<SiteParserModel>.GetItemsAsync(i => i.SiteName == model.SiteName);
+                    var items = await _repo.GetItemsAsync<SiteParserModel>(i => i.SiteName == model.SiteName);
+
                     if (items.Any())
                     {
                         ModelState.AddModelError("duplicate", $"A SiteParser for site name '{model.SiteName}' already exists.");
                         return View(model);
                     }
 
-                    await Repository<SiteParserModel>.CreateItemAsync(model);
+                    await _repo.CreateItemAsync<SiteParserModel>(model);
                     return RedirectToAction(nameof(Index));
                 }
 
@@ -102,7 +119,7 @@ namespace RssFeeder.Mvc.Controllers
         [ActionName("Edit")]
         public async Task<ActionResult> Edit(string id)
         {
-            var item = await Repository<SiteParserModel>.GetItemAsync(id);
+            var item = await _repo.GetItemAsync<SiteParserModel>(id);
             return View(item);
         }
 
@@ -120,7 +137,7 @@ namespace RssFeeder.Mvc.Controllers
                     model.id = model.id.ToLower();
                     model.SiteName = model.SiteName.ToLower();
 
-                    await Repository<SiteParserModel>.UpdateItemAsync(id, model);
+                    await _repo.UpdateItemAsync<SiteParserModel>(id, model);
                     return RedirectToAction(nameof(Index));
                 }
 
@@ -135,19 +152,18 @@ namespace RssFeeder.Mvc.Controllers
         // GET: SiteParser/Delete/5
         public async Task<ActionResult> Delete(string id)
         {
-            var item = await Repository<SiteParserModel>.GetItemAsync(id);
+            var item = await _repo.GetItemAsync<SiteParserModel>(id);
             return View(item);
         }
 
         // POST: SiteParser/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public async Task<ActionResult> Delete(string id, IFormCollection collection)
         {
             try
             {
-                // TODO: Add delete logic here
-
+                await _repo.DeleteItemAsync(id.ToLower());
                 return RedirectToAction(nameof(Index));
             }
             catch
