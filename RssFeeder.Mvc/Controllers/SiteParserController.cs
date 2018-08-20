@@ -27,6 +27,24 @@ namespace RssFeeder.Mvc.Controllers
             return View(item);
         }
 
+        // GET: SiteParser/Clone
+        [ActionName("Clone")]
+        public async Task<ActionResult> Clone(string sourceID)
+        {
+            var item = await Repository<SiteParserModel>.GetItemAsync(sourceID);
+
+            // Set some reasonable defaults
+            var model = new SiteParserModel
+            {
+                id = Guid.NewGuid().ToString(),
+                ArticleSelector = item.ArticleSelector,
+                ParagraphSelector = item.ParagraphSelector,
+                Parser = item.Parser
+            };
+
+            return View("Create", model);
+        }
+
         // GET: SiteParser/Create
         [ActionName("Create")]
         public ActionResult Create()
@@ -63,7 +81,7 @@ namespace RssFeeder.Mvc.Controllers
                     var items = await Repository<SiteParserModel>.GetItemsAsync(i => i.SiteName == model.SiteName);
                     if (items.Any())
                     {
-                        ModelState.AddModelError("duplicate", $"A SiteParser for site name {model.SiteName} already exists.");
+                        ModelState.AddModelError("duplicate", $"A SiteParser for site name '{model.SiteName}' already exists.");
                         return View(model);
                     }
 

@@ -335,7 +335,7 @@ $item.ArticleText$
             list = GetStaleDocuments(databaseName, collectionName, 7);
             foreach (var item in list)
             {
-                log.Info($"Removing {item.UrlHash}");
+                log.Info($"Removing UrlHash '{item.UrlHash}'");
                 DeleteDocument(databaseName, collectionName, item.Id);
             }
 
@@ -435,7 +435,7 @@ $item.ArticleText$
 
         private static void DeleteDocument(string databaseName, string collectionName, string documentID)
         {
-            var result = _client.DeleteDocumentAsync(UriFactory.CreateDocumentUri(databaseName, collectionName, documentID)).Result;
+            var result = CosmosClient.DeleteDocumentAsync(UriFactory.CreateDocumentUri(databaseName, collectionName, documentID)).Result;
 
             if (result.StatusCode != HttpStatusCode.NoContent)
             {
