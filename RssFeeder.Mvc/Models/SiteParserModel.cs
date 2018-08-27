@@ -10,7 +10,6 @@ namespace RssFeeder.Mvc.Models
         public string SiteName { get; set; }
         [Required]
         public string ArticleSelector { get; set; }
-        [Required]
         public string ParagraphSelector { get; set; }
         [Required]
         public string Parser { get; set; }
