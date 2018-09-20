@@ -152,6 +152,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ArticleParsers\JsonParser.cs" />
     <Compile Include="ArticleParsers\UnformattedTextParser.cs" />
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
@@ -161,6 +162,7 @@
     <Compile Include="FeedBuilders\DrudgeReportFeedBuilder.cs" />
     <Compile Include="FeedBuilders\IRssFeedBuilder.cs" />
     <Compile Include="Models\SiteArticleDefinition.cs" />
+    <Compile Include="Models\StoryModel.cs" />
     <Compile Include="Options.cs" />
     <Compile Include="ArticleParsers\ParagraphAndBulletParser.cs" />
     <Compile Include="ArticleParsers\GenericParser.cs" />

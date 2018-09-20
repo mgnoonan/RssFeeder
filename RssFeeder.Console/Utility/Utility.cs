@@ -283,39 +283,5 @@ namespace RssFeeder.Console.Utility
 
             return re.Replace(text, replacementString);
         }
-
-        public static void CreateThumbnail(Uri imageUri, string targetFileName, int maxWidth, int maxHeight)
-        {
-            if (imageUri == null)
-                throw new ArgumentNullException("imageLink");
-            if (string.IsNullOrWhiteSpace(targetFileName))
-                throw new ArgumentNullException("targetFileName");
-
-            using (var image = Image.FromStream(WebTools.GetUrlResponse(imageUri)))
-            {
-                Rectangle r = CalculateRectangle(image, maxWidth, maxHeight);
-
-                using (var thumbnail = image.GetThumbnailImage(r.Width, r.Height, null, new IntPtr()))
-                {
-                    thumbnail.Save(targetFileName, image.RawFormat);
-                }
-            }
-        }
-
-        private static Rectangle CalculateRectangle(Image image, int maxWidth, int maxHeight)
-        {
-            double aspectRatio = (double)image.Width / (double)image.Height;
-            Rectangle r = new Rectangle(0, 0, image.Width, image.Height);
-
-            if (image.Width > maxWidth)
-            {
-                int targetWidth = maxWidth;
-                int targetHeight = (int)Math.Floor(image.Height / aspectRatio);
-                r.Width = targetWidth;
-                r.Height = targetHeight;
-            }
-
-            return r;
-        }
     }
 }
