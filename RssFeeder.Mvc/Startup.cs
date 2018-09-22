@@ -31,6 +31,7 @@ namespace RssFeeder.Mvc
 
             // Repositories
             services.AddScoped<IRepository<RssFeederRepository>, RssFeederRepository>();
+            services.AddMemoryCache();
 
             services.AddMvc();
 

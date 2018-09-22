@@ -113,6 +113,18 @@ namespace RssFeeder.Mvc.Models
             return results;
         }
 
+        public IEnumerable<T> GetAllDocuments<T>(string databaseName, string collectionName)
+        {
+            // Set some common query options
+            FeedOptions queryOptions = new FeedOptions { MaxItemCount = -1 };
+
+            // Run a simple query via LINQ. DocumentDB indexes all properties, so queries 
+            // can be completed efficiently and with low latency
+            return client.CreateDocumentQuery<T>(
+                UriFactory.CreateDocumentCollectionUri(databaseName, collectionName), queryOptions);
+            //.ToList();
+        }
+
         public IEnumerable<T> CreateDocumentQuery<T>(string query, FeedOptions options) where T : class
         {
             return client.CreateDocumentQuery<T>(collection.DocumentsLink, query, options).AsEnumerable();

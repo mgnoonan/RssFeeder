@@ -19,6 +19,8 @@ namespace RssFeeder.Mvc.Models
 
         Task<IEnumerable<T>> GetItemsAsync<T>(Expression<Func<T, bool>> predicate) where T : class;
 
+        IEnumerable<T> GetAllDocuments<T>(string databaseName, string collectionName);
+
         IEnumerable<T> CreateDocumentQuery<T>(string query, FeedOptions options) where T : class;
 
         Task<Document> CreateItemAsync<T>(T item) where T : class;

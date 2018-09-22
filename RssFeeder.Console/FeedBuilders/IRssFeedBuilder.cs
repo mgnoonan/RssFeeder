@@ -1,6 +1,6 @@
-﻿using log4net;
-using RssFeeder.Console.Models;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using log4net;
+using RssFeeder.Models;
 
 namespace RssFeeder.Console.CustomBuilders
 {

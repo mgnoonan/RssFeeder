@@ -1,4 +1,4 @@
-﻿namespace RssFeeder.Console.Models
+﻿namespace RssFeeder.Models
 {
     public class SiteArticleDefinition
     {

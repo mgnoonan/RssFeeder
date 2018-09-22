@@ -1,4 +1,4 @@
-﻿using RssFeeder.Console.Models;
+﻿using RssFeeder.Models;
 
 namespace RssFeeder.Console.Parsers
 {
