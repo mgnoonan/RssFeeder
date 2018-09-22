@@ -2,7 +2,7 @@
 using AngleSharp.Dom;
 using AngleSharp.Parser.Html;
 using Newtonsoft.Json;
-using RssFeeder.Console.Models;
+using RssFeeder.Models;
 using RssFeeder.Console.Parsers;
 
 namespace RssFeeder.Console.ArticleParsers

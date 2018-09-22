@@ -14,8 +14,8 @@ using log4net;
 using Microsoft.Azure.Documents.Client;
 using Newtonsoft.Json;
 using RssFeeder.Console.CustomBuilders;
-using RssFeeder.Console.Models;
 using RssFeeder.Console.Parsers;
+using RssFeeder.Models;
 
 namespace RssFeeder.Console
 {
@@ -71,7 +71,7 @@ $item.ArticleText$
         /// </summary>
         private static DocumentClient _client = null;
 
-        private static DocumentClient CosmosClient {  get => _client ?? new DocumentClient(new Uri(EndpointUri), PrimaryKey); }
+        private static DocumentClient CosmosClient { get => _client ?? new DocumentClient(new Uri(EndpointUri), PrimaryKey); }
 
         /// <summary>
         /// The list of site definitions that describe how to get an article

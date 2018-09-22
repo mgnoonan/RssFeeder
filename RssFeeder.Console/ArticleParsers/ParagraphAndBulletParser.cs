@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using AngleSharp.Dom;
 using AngleSharp.Parser.Html;
-using RssFeeder.Console.Models;
+using RssFeeder.Models;
 
 namespace RssFeeder.Console.Parsers
 {

@@ -35,7 +35,7 @@
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <OldToolsVersion>2.0</OldToolsVersion>
     <TargetFrameworkProfile />
     <IsWebBootstrapper>false</IsWebBootstrapper>
@@ -157,11 +157,8 @@
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Models\RssFeedItem.cs" />
-    <Compile Include="Models\RssFeed.cs" />
     <Compile Include="FeedBuilders\DrudgeReportFeedBuilder.cs" />
     <Compile Include="FeedBuilders\IRssFeedBuilder.cs" />
-    <Compile Include="Models\SiteArticleDefinition.cs" />
     <Compile Include="Models\StoryModel.cs" />
     <Compile Include="Options.cs" />
     <Compile Include="ArticleParsers\ParagraphAndBulletParser.cs" />
@@ -233,7 +230,12 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\RssFeeder.Models\RssFeeder.Models.csproj">
+      <Project>{b97f8a0f-1b96-44a1-9fc6-f6a04471e52c}</Project>
+      <Name>RssFeeder.Models</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>
