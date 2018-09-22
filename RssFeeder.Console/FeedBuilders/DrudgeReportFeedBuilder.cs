@@ -5,8 +5,8 @@ using System.Linq;
 using System.Web;
 using HtmlAgilityPack;
 using log4net;
-using RssFeeder.Console.Models;
 using RssFeeder.Console.Utility;
+using RssFeeder.Models;
 
 namespace RssFeeder.Console.CustomBuilders
 {
