@@ -39,7 +39,7 @@ namespace RssFeeder.Mvc.Controllers
         }
 
         [HttpGet, Route("{id}")]
-        [Produces("text/xml")]
+        [Produces("application/xml")]
         public async Task<IActionResult> Get(string id)
         {
             var sw = new StringWriter();
