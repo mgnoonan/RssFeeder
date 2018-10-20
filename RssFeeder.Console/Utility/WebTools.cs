@@ -33,22 +33,50 @@ namespace RssFeeder.Console.Utility
             return response.GetResponseStream();
         }
 
-        public static string MakeFullURL(string baseURL, string filePath)
+        /// <summary>
+        /// Attempt to repair typos in the URL, usually in the protocol section
+        /// </summary>
+        /// <param name="defaultBaseUrl">The default base URL to use if a relative URL is detected</param>
+        /// <param name="pathAndQuery">The path and query of the URL which may be a relative URL or a botched URL with some kind of typo in it</param>
+        /// <returns>
+        /// The sanitized and repaired URL, although not all repairs will be successful
+        /// </returns>
+        public static string RepairUrl(string defaultBaseUrl, string pathAndQuery)
         {
-            StringBuilder sb = new StringBuilder();
-
-            if (baseURL.Trim().Length > 0)
+            if (string.IsNullOrWhiteSpace(defaultBaseUrl))
             {
-                sb.Append(baseURL.Trim());
-
-                if (!baseURL.EndsWith("/"))
-                    sb.Append("/");
+                throw new ArgumentNullException(nameof(defaultBaseUrl));
             }
 
-            if (filePath.StartsWith("/"))
-                sb.Append(filePath.Trim().Substring(1));
+            StringBuilder sb = new StringBuilder();
+
+            if (pathAndQuery.Contains("//"))
+            {
+                // They did try to specify a base url, but clearly messed it up because it doesn't start with 'http'
+                // Get the starting position of the double-slash, we'll use everything after that
+                int pos = pathAndQuery.IndexOf("//") + 2;
+
+                // At this point in web history, we should be able to just use SSL/TLS for the protocol
+                // However, this may fail if the destination site doesn't support SSL/TLS so we are taking a risk
+                sb.AppendFormat("https://{0}", pathAndQuery.Substring(pos));
+            }
             else
-                sb.Append(filePath.Trim());
+            {
+                // Relative path specified, or they goofed the url beyond repair so this is the best we can do
+                // Start with the defaultBaseUrl and add a trailing forward slash
+                sb.AppendFormat("{0}{1}", defaultBaseUrl.Trim(), defaultBaseUrl.EndsWith("/") ? "" : "/");
+
+                // Add the path and query portion of the relative url, remove
+                // the starting forward slash if there is one
+                if (pathAndQuery.StartsWith("/"))
+                {
+                    sb.Append(pathAndQuery.Substring(1));
+                }
+                else
+                {
+                    sb.Append(pathAndQuery);
+                }
+            }
 
             return sb.ToString();
         }

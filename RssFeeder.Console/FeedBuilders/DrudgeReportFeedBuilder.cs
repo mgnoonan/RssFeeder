@@ -19,7 +19,6 @@ namespace RssFeeder.Console.CustomBuilders
 
             string url = feed.Url;
             string channelTitle = feed.Title;
-            string relativeRoot = feed.Url;
 
             string html = WebTools.GetUrl(url);
             var doc = new HtmlDocument();
@@ -40,17 +39,19 @@ namespace RssFeeder.Console.CustomBuilders
                 if (headlineNode != null)
                 {
                     string title = HttpUtility.HtmlDecode(headlineNode.InnerText.Trim());
-                    HtmlAttribute attr = headlineNode.Attributes["href"];
-                    string linkUrl = attr.Value.Trim();
 
-                    var imageNode = link.Descendants("img").FirstOrDefault();
-                    string imageUrl = null;
-                    if (imageNode != null)
+                    // Replace all errant spaces, which sometimes creep into Drudge's URLs
+                    HtmlAttribute attr = headlineNode.Attributes["href"];
+                    string linkUrl = attr.Value.Trim().Replace(" ", string.Empty).ToLower();
+
+                    // Repair any protocol typos if possible
+                    if (!linkUrl.StartsWith("http"))
                     {
-                        attr = imageNode.Attributes["src"];
-                        imageUrl = attr.Value.Trim();
+                        log.Info($"Attempting to repair link '{linkUrl}'");
+                        linkUrl = WebTools.RepairUrl(feed.Url, linkUrl);
                     }
 
+                    // Calculate the MD5 hash for the link so we can be sure of uniqueness
                     string hash = Utility.Utility.CreateMD5Hash(linkUrl);
                     if (filters.Contains(hash))
                     {
@@ -58,33 +59,18 @@ namespace RssFeeder.Console.CustomBuilders
                         continue;
                     }
 
-                    if (!linkUrl.StartsWith("http"))
-                    {
-                        log.Info($"Attempting to repair link '{linkUrl}'");
-                        linkUrl = WebTools.MakeFullURL(relativeRoot, linkUrl);
-                    }
-                    if (imageUrl != null && !imageUrl.StartsWith("http"))
-                    {
-                        log.Info($"Attempting to repair link '{imageUrl}'");
-                        imageUrl = WebTools.MakeFullURL(relativeRoot, imageUrl);
-                    }
-
                     if (linkUrl.Length > 0 && title.Length > 0)
                     {
                         log.Info($"FOUND: {hash}|{title}|{linkUrl}");
-                        var item = new RssFeedItem()
+                        list.Add(new RssFeedItem()
                         {
                             Id = Guid.NewGuid().ToString(),
                             FeedId = feed.Id,
                             Title = HttpUtility.HtmlDecode(title),
-                            //Description = Utility.Utility.GetDescriptionFromMeta(linkUrl),
                             Url = linkUrl,
                             UrlHash = hash,
-                            DateAdded = DateTime.Now,
-                            ImageUrl = imageUrl
-                        };
-
-                        list.Add(item);
+                            DateAdded = DateTime.Now
+                        });
                     }
                 }
             }
@@ -101,34 +87,37 @@ namespace RssFeeder.Console.CustomBuilders
 
                 if (title.EndsWith("...") || title.EndsWith("?") || title.EndsWith("!"))
                 {
+                    // Replace all errant spaces, which sometimes creep into Drudge's URLs
                     HtmlAttribute attr = link.Attributes["href"];
-                    string linkUrl = attr.Value.Trim();
+                    string linkUrl = attr.Value.Trim().Replace(" ", string.Empty).ToLower();
 
-                    string hash = Utility.Utility.CreateMD5Hash(linkUrl);
-                    if (filters.Contains(hash))
-                        continue;
-
+                    // Repair any protocol typos if possible
                     if (!linkUrl.StartsWith("http"))
                     {
                         log.Info($"Attempting to repair link '{linkUrl}'");
-                        linkUrl = WebTools.MakeFullURL(relativeRoot, linkUrl);
+                        linkUrl = WebTools.RepairUrl(feed.Url, linkUrl);
+                    }
+
+                    // Calculate the MD5 hash for the link so we can be sure of uniqueness
+                    string hash = Utility.Utility.CreateMD5Hash(linkUrl);
+                    if (filters.Contains(hash))
+                    {
+                        log.Debug($"Hash '{hash}' found in filter list");
+                        continue;
                     }
 
                     if (linkUrl.Length > 0 && title.Length > 0)
                     {
                         log.InfoFormat("FOUND: {0}|{1}|{2}", hash, title, linkUrl);
-                        var item = new RssFeedItem()
+                        list.Add(new RssFeedItem()
                         {
                             Id = Guid.NewGuid().ToString(),
                             FeedId = feed.Id,
                             Title = HttpUtility.HtmlDecode(title),
-                            //Description = Utility.Utility.GetDescriptionFromMeta(linkUrl),
                             Url = linkUrl,
                             UrlHash = hash,
                             DateAdded = DateTime.Now
-                        };
-
-                        list.Add(item);
+                        });
                     }
                 }
             }

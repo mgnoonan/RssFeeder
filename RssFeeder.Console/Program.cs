@@ -101,16 +101,16 @@ $item.ArticleText$
             string html;
             IArticleParser parser;
 
-            if (!string.IsNullOrEmpty(definition.TestFilename))
-            {
-                html = File.ReadAllText(definition.TestFilename);
-            }
-            else
+            if (!string.IsNullOrEmpty(definition.TestUrl))
             {
                 // set up TLS defaults
                 ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
 
                 html = GetResponse(definition.TestUrl);
+            }
+            else
+            {
+                html = File.ReadAllText(definition.TestFilename);
             }
 
             Type type = Assembly.GetExecutingAssembly().GetType(definition.Parser);
