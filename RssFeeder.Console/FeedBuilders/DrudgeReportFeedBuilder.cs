@@ -69,7 +69,7 @@ namespace RssFeeder.Console.CustomBuilders
                             Title = HttpUtility.HtmlDecode(title),
                             Url = linkUrl,
                             UrlHash = hash,
-                            DateAdded = DateTime.Now
+                            DateAdded = DateTime.Now.ToUniversalTime()
                         });
                     }
                 }
@@ -116,7 +116,7 @@ namespace RssFeeder.Console.CustomBuilders
                             Title = HttpUtility.HtmlDecode(title),
                             Url = linkUrl,
                             UrlHash = hash,
-                            DateAdded = DateTime.Now
+                            DateAdded = DateTime.Now.ToUniversalTime()
                         });
                     }
                 }
