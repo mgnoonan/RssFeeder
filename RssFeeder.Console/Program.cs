@@ -30,26 +30,29 @@ namespace RssFeeder.Console
         /// Name of the working area folder
         /// </summary>
         private const string WORKING_FOLDER = "working";
+
+        private const string MetaDataTemplate = @"
+<hr />
+<p>
+    <small>
+    <ul>
+        <li><strong>og:site:</strong> $item.SiteName$</li>
+        <li><strong>host:</strong> $item.HostName$</li>
+        <li><strong>url:</strong> <a href=""$item.Url$"">$item.Url$</a></li>
+        <li><strong>captured:</strong> $item.DateAdded$ UTC</li>
+        <li><strong>hash:</strong> $item.UrlHash$</li>
+    </ul>
+    </small>
+</p>
+";
+
         private const string ExtendedTemplate = @"<img src=""$item.ImageUrl$"" />
 <h3>$item.Subtitle$</h3>
 $item.ArticleText$
-<p>
-    <ul>
-        <li><strong>Site Name:</strong> $item.SiteName$</li>
-        <li><strong>URL:</strong> <a href=""$item.Url$"">$item.Url$</a></li>
-        <li><strong>Hash:</strong> $item.UrlHash$</li>
-    </ul>
-</p>
-";
+" + MetaDataTemplate;
+
         private const string BasicTemplate = @"<h3>$item.Title$</h3>
-<p>
-    <ul>
-        <li><strong>Site Name:</strong> $item.SiteName$</li>
-        <li><strong>URL:</strong> <a href=""$item.Url$"">$item.Url$</a></li>
-        <li><strong>Hash:</strong> $item.UrlHash$</li>
-    </ul>
-</p>
-";
+" + MetaDataTemplate;
 
         /// <summary>
         /// The Azure DocumentDB endpoint for running this GetStarted sample.
@@ -110,8 +113,14 @@ $item.ArticleText$
             }
             else
             {
-                html = File.ReadAllText(definition.TestFilename);
+                string workingFolder = Path.Combine(AssemblyDirectory, WORKING_FOLDER);
+                html = File.ReadAllText(Path.Combine(workingFolder.Replace("\\Debug\\", "\\Release\\"), definition.TestFilename));
             }
+
+            var doc = new HtmlDocument();
+            doc.Load(new StringReader(html));
+            var item = new RssFeedItem { Url = "http://www.test.com" };
+            SetExtendedArticleMetaData(item, doc);
 
             Type type = Assembly.GetExecutingAssembly().GetType(definition.Parser);
             parser = (IArticleParser)Activator.CreateInstance(type);
@@ -121,6 +130,7 @@ $item.ArticleText$
                 .Replace("<p>", "")
                 .Replace("</p>", "\n");
 
+            System.Console.WriteLine(JsonConvert.SerializeObject(item, Formatting.Indented));
             System.Console.WriteLine(text);
         }
 
@@ -462,23 +472,23 @@ $item.ArticleText$
 
                 // Meta tags provide extended data about the item, display as much as possible
                 SetExtendedArticleMetaData(item, doc);
-                ApplyTemplateToDescription(item, ExtendedTemplate);
+                item.Description = ApplyTemplateToDescription(item, ExtendedTemplate);
             }
             else
             {
                 // Article failed to download, display minimal basic meta data
                 SetBasicArticleMetaData(item);
-                ApplyTemplateToDescription(item, BasicTemplate);
+                item.Description = ApplyTemplateToDescription(item, BasicTemplate);
             }
 
             log.Info(JsonConvert.SerializeObject(item, Formatting.Indented));
         }
 
-        private static void ApplyTemplateToDescription(RssFeedItem item, string template)
+        private static string ApplyTemplateToDescription(RssFeedItem item, string template)
         {
             StringTemplate t = new StringTemplate(template);
             t.SetAttribute("item", item);
-            item.Description = t.ToString();
+            return t.ToString();
         }
 
         private static void SetExtendedArticleMetaData(RssFeedItem item, HtmlDocument doc)
@@ -487,14 +497,15 @@ $item.ArticleText$
             item.Subtitle = ParseMetaTagAttributes(doc, "og:title", "content");
             item.ImageUrl = ParseMetaTagAttributes(doc, "og:image", "content");
             item.MetaDescription = ParseMetaTagAttributes(doc, "og:description", "content");
+            item.HostName = new Uri(item.Url).GetComponents(UriComponents.Host, UriFormat.Unescaped).ToLower();
             item.SiteName = ParseMetaTagAttributes(doc, "og:site_name", "content").ToLower();
             if (string.IsNullOrWhiteSpace(item.SiteName))
             {
-                item.SiteName = string.IsNullOrWhiteSpace(item.Url) ? "" : new Uri(item.Url).GetComponents(UriComponents.Host, UriFormat.Unescaped).ToLower();
+                item.SiteName = item.HostName;
             }
 
             // Check if we have a site parser defined for the site name
-            var definition = ArticleDefinitions.SingleOrDefault(p => p.SiteName == item.SiteName);
+            var definition = ArticleDefinitions?.SingleOrDefault(p => p.SiteName == item.SiteName);
 
             if (definition == null)
             {
@@ -518,7 +529,8 @@ $item.ArticleText$
 
         private static void SetBasicArticleMetaData(RssFeedItem item)
         {
-            item.SiteName = string.IsNullOrWhiteSpace(item.Url) ? "" : new Uri(item.Url).GetComponents(UriComponents.Host, UriFormat.Unescaped).ToLower();
+            item.HostName = new Uri(item.Url).GetComponents(UriComponents.Host, UriFormat.Unescaped).ToLower();
+            item.SiteName = item.HostName;
         }
 
         private static string ParseMetaTagAttributes(HtmlDocument doc, string property, string attribute)
