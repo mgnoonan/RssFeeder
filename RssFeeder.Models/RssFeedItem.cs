@@ -19,6 +19,7 @@ namespace RssFeeder.Models
         public DateTime DateAdded { get; set; }
         public string FileName { get; set; }
         public string SiteName { get; set; }
+        public string HostName { get; set; }
 
         [JsonIgnore]
         public string EncodedDescription
