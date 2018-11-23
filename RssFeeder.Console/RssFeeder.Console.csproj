@@ -177,6 +177,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ArticleParsers\BlockedParser.cs" />
     <Compile Include="ArticleParsers\JsonParser.cs" />
     <Compile Include="ArticleParsers\UnformattedTextParser.cs" />
     <Compile Include="AssemblyInfo.cs">
