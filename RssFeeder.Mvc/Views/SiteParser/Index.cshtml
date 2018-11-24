@@ -1,4 +1,4 @@
-﻿@model IEnumerable<RssFeeder.Mvc.Models.SiteParserModel>
+﻿@model RssFeeder.Mvc.Models.SiteParserSearchModel
 
 @{
     ViewData["Title"] = "Index";
@@ -6,56 +6,32 @@
 
 <h2>Index</h2>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.id)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.SiteName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ArticleSelector)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ParagraphSelector)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Parser)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.id)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.SiteName)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.ArticleSelector)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.ParagraphSelector)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Parser)
-                </td>
-                <td>
-                    @Html.ActionLink("Edit", "Edit", new { id = item.id }) |
-                    @Html.ActionLink("Clone", "Clone", new { sourceID = item.id }) |
-                    @Html.ActionLink("Details", "Details", new { id = item.id }) |
-                    @Html.ActionLink("Delete", "Delete", new { id = item.id })
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+<h4>SiteParserSearchModel</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Index">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="SiteName" class="control-label"></label>
+                <input asp-for="SiteName" class="form-control" />
+                <span asp-validation-for="SiteName" class="text-danger"></span>
+            </div>
+            <!--div class="form-group">
+                <label asp-for="SiteGuid" class="control-label"></label>
+                <input asp-for="SiteGuid" class="form-control" />
+                <span asp-validation-for="SiteGuid" class="text-danger"></span>
+            </div-->
+            <div class="form-group">
+                <input type="submit" value="Search" class="btn btn-default" />
+            </div>
+        </form>
+    </div>
+</div>
+<div>
+    <a asp-action="Search">Display all</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

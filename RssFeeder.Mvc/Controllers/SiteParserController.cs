@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -28,9 +29,60 @@ namespace RssFeeder.Mvc.Controllers
 
         // GET: SiteParser
         [ActionName("Index")]
-        public async Task<ActionResult> Index()
+        public IActionResult Index()
         {
-            var items = await _repo.GetItemsAsync<SiteParserModel>();
+            return View();
+        }
+
+        // POST: SiteParser/Create
+        [HttpPost]
+        [ActionName("Index")]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> Index(SiteParserSearchModel model)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    // Standardize a few properties on lowercase
+                    model.SiteName = model.SiteName.Trim().ToLower();
+
+                    var items = await _repo.GetItemsAsync<SiteParserModel>(i => i.SiteName.Contains(model.SiteName));
+
+                    switch (items.Count())
+                    {
+                        case 0:
+                            return RedirectToAction("Create");
+                        case 1:
+                            return RedirectToAction("Edit", new { id = items.First().id.ToString() });
+                        default:
+                            return RedirectToAction("Search", new { q = model.SiteName });
+                    }
+                }
+
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("error", ex.Message);
+                return View(model);
+            }
+        }
+
+        // GET: SiteParser
+        [ActionName("Search")]
+        public async Task<ActionResult> Search(string q)
+        {
+            IEnumerable<SiteParserModel> items;
+
+            if (string.IsNullOrWhiteSpace(q))
+            {
+                items = await _repo.GetItemsAsync<SiteParserModel>();
+            }
+            else
+            {
+                items = await _repo.GetItemsAsync<SiteParserModel>(i => i.SiteName.Contains(q));
+            }
 
             return View(items.OrderBy(i => i.SiteName));
         }
