@@ -52,7 +52,7 @@ namespace RssFeeder.Mvc.Controllers
                     switch (items.Count())
                     {
                         case 0:
-                            return RedirectToAction("Create");
+                            return RedirectToAction("Create", new { name = model.SiteName });
                         case 1:
                             return RedirectToAction("Edit", new { id = items.First().id.ToString() });
                         default:
@@ -115,12 +115,13 @@ namespace RssFeeder.Mvc.Controllers
 
         // GET: SiteParser/Create
         [ActionName("Create")]
-        public ActionResult Create()
+        public ActionResult Create(string name)
         {
             // Set some reasonable defaults
             var model = new SiteParserModel
             {
                 id = Guid.NewGuid().ToString(),
+                SiteName = name,
                 ArticleSelector = "article",
                 ParagraphSelector = "p",
                 Parser = "RssFeeder.Console.Parsers.GenericParser"
