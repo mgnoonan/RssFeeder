@@ -12,117 +12,184 @@ namespace RssFeeder.Console.CustomBuilders
 {
     class DrudgeReportFeedBuilder : IRssFeedBuilder
     {
-        public List<RssFeedItem> ParseRssFeedItems(ILog log, RssFeed feed)
+        public List<RssFeedItem> ParseRssFeedItems(ILog log, RssFeed feed, out string html)
         {
-            var list = new List<RssFeedItem>();
             var filters = feed.Filters ?? new List<string>();
 
             string url = feed.Url;
             string channelTitle = feed.Title;
 
-            string html = WebTools.GetUrl(url);
+            html = WebTools.GetUrl(url);
+
+            var items = ParseRssFeedItems(log, html, filters);
+
+            // Replace any relative paths and add the feed id
+            foreach (var item in items)
+            {
+                item.FeedId = feed.Id;
+                if (item.Url.StartsWith("/"))
+                {
+                    item.Url = feed.Url + item.Url;
+                }
+            }
+
+            return items;
+        }
+
+        public List<RssFeedItem> ParseRssFeedItems(ILog log, string html, List<string> filters)
+        {
+            var list = new List<RssFeedItem>();
+
             var doc = new HtmlDocument();
             doc.Load(new StringReader(html));
 
 
-            //
-            // Headline link and title
-            //
+            // Centered main headline(s)
 
             var nodes = doc.DocumentNode.SelectNodes("//center");
+            int count = 1;
             foreach (HtmlNode link in nodes)
             {
                 if (!link.InnerHtml.Contains("MAIN HEADLINE"))
-                    continue;
-
-                var headlineNode = link.Descendants("a").FirstOrDefault();
-                if (headlineNode != null)
                 {
-                    string title = HttpUtility.HtmlDecode(headlineNode.InnerText.Trim());
+                    continue;
+                }
 
-                    // Replace all errant spaces, which sometimes creep into Drudge's URLs
-                    HtmlAttribute attr = headlineNode.Attributes["href"];
-                    string linkUrl = attr.Value.Trim().Replace(" ", string.Empty).ToLower();
-
-                    // Repair any protocol typos if possible
-                    if (!linkUrl.StartsWith("http"))
+                var nodeList = link.Descendants("a").ToList();
+                foreach (var node in nodeList)
+                {
+                    var item = CreateNodeLinks(log, filters, node, "main headline", count++);
+                    if (item != null)
                     {
-                        log.Info($"Attempting to repair link '{linkUrl}'");
-                        linkUrl = WebTools.RepairUrl(feed.Url, linkUrl);
+                        log.Info($"FOUND: {item.UrlHash}|{item.LinkLocation}|{item.Title}|{item.Url}");
+                        list.Add(item);
                     }
+                }
 
-                    // Calculate the MD5 hash for the link so we can be sure of uniqueness
-                    string hash = Utility.Utility.CreateMD5Hash(linkUrl);
-                    if (filters.Contains(hash))
-                    {
-                        log.Debug($"Hash '{hash}' found in filter list");
-                        continue;
-                    }
+                // Get out of the loop, there are no more headlines
+                break;
+            }
 
-                    if (linkUrl.Length > 0 && title.Length > 0)
+
+            // Above the fold top headlines
+
+            nodes = doc.DocumentNode.SelectNodes("/html/body/tt/b/tt/b/a[@href]");
+            count = 1;
+            foreach (HtmlNode node in nodes)
+            {
+                string title = HttpUtility.HtmlDecode(node.InnerText.Trim());
+
+                if (title.EndsWith("...") || title.EndsWith("?") || title.EndsWith("!"))
+                {
+                    var item = CreateNodeLinks(log, filters, node, "top", count++);
+                    if (item != null)
                     {
-                        log.Info($"FOUND: {hash}|{title}|{linkUrl}");
-                        list.Add(new RssFeedItem()
-                        {
-                            Id = Guid.NewGuid().ToString(),
-                            FeedId = feed.Id,
-                            Title = HttpUtility.HtmlDecode(title),
-                            Url = linkUrl,
-                            UrlHash = hash,
-                            DateAdded = DateTime.Now.ToUniversalTime()
-                        });
+                        log.Info($"FOUND: {item.UrlHash}|{item.LinkLocation}|{item.Title}|{item.Url}");
+                        list.Add(item);
                     }
                 }
             }
 
 
-            //
-            // All links that end in '...'
-            //
+            // Left column articles
 
-            nodes = doc.DocumentNode.SelectNodes("//a[@href]");
-            foreach (HtmlNode link in nodes)
+            nodes = doc.DocumentNode.SelectNodes("//table/tr/td[1]/tt/b/a[@href]");
+            count = 1;
+            foreach (HtmlNode node in nodes)
             {
-                string title = HttpUtility.HtmlDecode(link.InnerText.Trim());
+                string title = HttpUtility.HtmlDecode(node.InnerText.Trim());
 
                 if (title.EndsWith("...") || title.EndsWith("?") || title.EndsWith("!"))
                 {
-                    // Replace all errant spaces, which sometimes creep into Drudge's URLs
-                    HtmlAttribute attr = link.Attributes["href"];
-                    string linkUrl = attr.Value.Trim().Replace(" ", string.Empty).ToLower();
-
-                    // Repair any protocol typos if possible
-                    if (!linkUrl.StartsWith("http"))
+                    var item = CreateNodeLinks(log, filters, node, "left column", count++);
+                    if (item != null)
                     {
-                        log.Info($"Attempting to repair link '{linkUrl}'");
-                        linkUrl = WebTools.RepairUrl(feed.Url, linkUrl);
+                        log.Info($"FOUND: {item.UrlHash}|{item.LinkLocation}|{item.Title}|{item.Url}");
+                        list.Add(item);
                     }
+                }
+            }
 
-                    // Calculate the MD5 hash for the link so we can be sure of uniqueness
-                    string hash = Utility.Utility.CreateMD5Hash(linkUrl);
-                    if (filters.Contains(hash))
+
+            // Middle column articles
+
+            nodes = doc.DocumentNode.SelectNodes("//table/tr/td[3]/tt/b/a[@href]");
+            count = 1;
+            foreach (HtmlNode node in nodes)
+            {
+                string title = HttpUtility.HtmlDecode(node.InnerText.Trim());
+
+                if (title.EndsWith("...") || title.EndsWith("?") || title.EndsWith("!"))
+                {
+                    var item = CreateNodeLinks(log, filters, node, "middle column", count++);
+                    if (item != null)
                     {
-                        log.Debug($"Hash '{hash}' found in filter list");
-                        continue;
+                        log.Info($"FOUND: {item.UrlHash}|{item.LinkLocation}|{item.Title}|{item.Url}");
+                        list.Add(item);
                     }
+                }
+            }
 
-                    if (linkUrl.Length > 0 && title.Length > 0)
+
+            // Right column articles
+
+            nodes = doc.DocumentNode.SelectNodes("//table/tr/td[5]/tt/b/a[@href]");
+            count = 1;
+            foreach (HtmlNode node in nodes)
+            {
+                string title = HttpUtility.HtmlDecode(node.InnerText.Trim());
+
+                if (title.EndsWith("...") || title.EndsWith("?") || title.EndsWith("!"))
+                {
+                    var item = CreateNodeLinks(log, filters, node, "right column", count++);
+                    if (item != null)
                     {
-                        log.InfoFormat("FOUND: {0}|{1}|{2}", hash, title, linkUrl);
-                        list.Add(new RssFeedItem()
-                        {
-                            Id = Guid.NewGuid().ToString(),
-                            FeedId = feed.Id,
-                            Title = HttpUtility.HtmlDecode(title),
-                            Url = linkUrl,
-                            UrlHash = hash,
-                            DateAdded = DateTime.Now.ToUniversalTime()
-                        });
+                        log.Info($"FOUND: {item.UrlHash}|{item.LinkLocation}|{item.Title}|{item.Url}");
+                        list.Add(item);
                     }
                 }
             }
 
             return list;
+        }
+
+        private RssFeedItem CreateNodeLinks(ILog log, List<string> filters, HtmlNode node, string location, int count)
+        {
+            string title = HttpUtility.HtmlDecode(node.InnerText.Trim());
+
+            // Replace all errant spaces, which sometimes creep into Drudge's URLs
+            HtmlAttribute attr = node.Attributes["href"];
+            string linkUrl = attr.Value.Trim().Replace(" ", string.Empty).ToLower();
+
+            // Repair any protocol typos if possible
+            if (!linkUrl.StartsWith("http"))
+            {
+                log.Info($"Attempting to repair link '{linkUrl}'");
+                linkUrl = WebTools.RepairUrl(linkUrl);
+            }
+
+            // Calculate the MD5 hash for the link so we can be sure of uniqueness
+            string hash = Utility.Utility.CreateMD5Hash(linkUrl);
+            if (filters.Contains(hash))
+            {
+                log.Debug($"Hash '{hash}' found in filter list");
+                return null;
+            }
+
+            if (linkUrl.Length > 0 && title.Length > 0)
+            {
+                return new RssFeedItem()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Title = HttpUtility.HtmlDecode(title),
+                    Url = linkUrl,
+                    UrlHash = hash,
+                    DateAdded = DateTime.Now.ToUniversalTime(),
+                    LinkLocation = $"{location}, article {count}"
+                };
+            }
+
+            return null;
         }
     }
 }

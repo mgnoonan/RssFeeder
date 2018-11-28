@@ -41,13 +41,8 @@ namespace RssFeeder.Console.Utility
         /// <returns>
         /// The sanitized and repaired URL, although not all repairs will be successful
         /// </returns>
-        public static string RepairUrl(string defaultBaseUrl, string pathAndQuery)
+        public static string RepairUrl(string pathAndQuery)
         {
-            if (string.IsNullOrWhiteSpace(defaultBaseUrl))
-            {
-                throw new ArgumentNullException(nameof(defaultBaseUrl));
-            }
-
             StringBuilder sb = new StringBuilder();
 
             if (pathAndQuery.Contains("//"))
@@ -64,18 +59,15 @@ namespace RssFeeder.Console.Utility
             {
                 // Relative path specified, or they goofed the url beyond repair so this is the best we can do
                 // Start with the defaultBaseUrl and add a trailing forward slash
-                sb.AppendFormat("{0}{1}", defaultBaseUrl.Trim(), defaultBaseUrl.EndsWith("/") ? "" : "/");
+                //sb.AppendFormat("{0}{1}", defaultBaseUrl.Trim(), defaultBaseUrl.EndsWith("/") ? "" : "/");
 
-                // Add the path and query portion of the relative url, remove
-                // the starting forward slash if there is one
-                if (pathAndQuery.StartsWith("/"))
+                // Add the starting forward slash if there isn't one
+                if (!pathAndQuery.StartsWith("/"))
                 {
-                    sb.Append(pathAndQuery.Substring(1));
+                    sb.Append("/");
                 }
-                else
-                {
-                    sb.Append(pathAndQuery);
-                }
+
+                sb.Append(pathAndQuery);
             }
 
             return sb.ToString();

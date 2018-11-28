@@ -36,11 +36,12 @@ namespace RssFeeder.Console
 <p>
     <small>
     <ul>
-        <li><strong>og:site:</strong> $item.SiteName$</li>
+        <li><strong>site_name:</strong> $item.SiteName$</li>
         <li><strong>host:</strong> $item.HostName$</li>
         <li><strong>url:</strong> <a href=""$item.Url$"">$item.Url$</a></li>
         <li><strong>captured:</strong> $item.DateAdded$ UTC</li>
         <li><strong>hash:</strong> $item.UrlHash$</li>
+        <li><strong>location:</strong> $item.LinkLocation$</li>
     </ul>
     </small>
 </p>
@@ -104,17 +105,17 @@ $item.ArticleText$
             string html;
             IArticleParser parser;
 
-            if (!string.IsNullOrEmpty(definition.TestUrl))
+            if (!string.IsNullOrEmpty(definition.TestArticleUrl))
             {
                 // set up TLS defaults
                 ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
 
-                html = GetResponse(definition.TestUrl);
+                html = GetResponse(definition.TestArticleUrl);
             }
             else
             {
                 string workingFolder = Path.Combine(AssemblyDirectory, WORKING_FOLDER);
-                html = File.ReadAllText(Path.Combine(workingFolder.Replace("\\Debug\\", "\\Release\\"), definition.TestFilename));
+                html = File.ReadAllText(Path.Combine(workingFolder.Replace("\\Debug\\", "\\Release\\"), definition.TestArticleFilename));
             }
 
             var doc = new HtmlDocument();
@@ -132,6 +133,20 @@ $item.ArticleText$
 
             System.Console.WriteLine(JsonConvert.SerializeObject(item, Formatting.Indented));
             System.Console.WriteLine(text);
+        }
+
+        private static void TestFeedDefinition(SiteArticleDefinition definition)
+        {
+            string workingFolder = Path.Combine(AssemblyDirectory, WORKING_FOLDER);
+            string html = File.ReadAllText(Path.Combine(workingFolder.Replace("\\Debug\\", "\\Release\\"), definition.TestFeedFilename));
+
+            var doc = new HtmlDocument();
+            doc.Load(new StringReader(html));
+
+            Type type = Assembly.GetExecutingAssembly().GetType("RssFeeder.Console.CustomBuilders.DrudgeReportFeedBuilder");
+            var parser = (IRssFeedBuilder)Activator.CreateInstance(type);
+
+            parser.ParseRssFeedItems(log, html, new List<string> { "fb27ce207f3ca32d97999d182ec93576", "0cc6fcfe73c643623766047524ab10e5" });
         }
 
         static void HandleParserError(IEnumerable<Error> errors, string[] args)
@@ -196,12 +211,19 @@ $item.ArticleText$
                         {
                             // Read the options in JSON format
                             string json = sr.ReadToEnd();
-                            log.Info($"Test article parser: {json}");
+                            log.Info($"Test configuration: {json}");
 
                             // Deserialize into our options class
                             var definition = JsonConvert.DeserializeObject<SiteArticleDefinition>(json);
 
-                            TestArticleDefinition(definition);
+                            if (string.IsNullOrWhiteSpace(definition.TestArticleFilename) && string.IsNullOrWhiteSpace(definition.TestArticleUrl))
+                            {
+                                TestFeedDefinition(definition);
+                            }
+                            else
+                            {
+                                TestArticleDefinition(definition);
+                            }
                         }
                     }
                     else
@@ -302,7 +324,7 @@ $item.ArticleText$
 
             Type type = Assembly.GetExecutingAssembly().GetType(builderName);
             IRssFeedBuilder builder = (IRssFeedBuilder)Activator.CreateInstance(type);
-            var list = builder.ParseRssFeedItems(log, feed)
+            var list = builder.ParseRssFeedItems(log, feed, out string html)
                 //.Take(10) FOR DEBUG PURPOSES
                 ;
 
@@ -320,13 +342,9 @@ $item.ArticleText$
                 Directory.CreateDirectory(workingFolder);
             }
 
-#if DEBUG
-            log.Debug($"Removing all files from '{workingFolder}'");
-            foreach (var filename in Directory.EnumerateFiles(workingFolder))
-            {
-                File.Delete(filename);
-            }
-#endif
+            // Save the feed source for posterity
+            string feedSource = Path.Combine(workingFolder, $"{DateTime.Now.ToUniversalTime().ToString("yyyyMMddhhmmss")}_{feed.Url.Replace("://", "_").Replace(".", "_")}.html");
+            SaveTextToDisk(html, feedSource, false);
 
             // Add any links that don't already exist
             log.Info("Adding links to the database");
@@ -562,7 +580,12 @@ $item.ArticleText$
                 doc.OptionFixNestedTags = true;
 
                 // Construct unique file name
-                item.FileName = Path.Combine(workingFolder, $"{item.UrlHash}.html");
+                string friendlyHostname = item.Url.Replace("://", "_").Replace(".", "_");
+                friendlyHostname = friendlyHostname.Substring(0, friendlyHostname.IndexOf("/"));
+
+                item.FileName = Path.Combine(workingFolder, $"{item.UrlHash}_{friendlyHostname}.html");
+
+                // Delete the file if it already exists
                 if (File.Exists(item.FileName))
                 {
                     File.Delete(item.FileName);
@@ -579,6 +602,20 @@ $item.ArticleText$
             {
                 log.Warn($"Unexpected error loading url '{ex.Message}'");
             }
+        }
+
+        private static void SaveTextToDisk(string text, string filepath, bool deleteIfExists)
+        {
+            if (deleteIfExists && File.Exists(filepath))
+            {
+                File.Delete(filepath);
+            }
+
+            log.Info($"Saving file '{filepath}'");
+
+            // WriteAllText creates a file, writes the specified string to the file,
+            // and then closes the file.    You do NOT need to call Flush() or Close().
+            File.WriteAllText(filepath, text);
         }
 
         private static void BuildRssFileUsingTemplate(RssFeed feed, List<RssFeedItem> items)
