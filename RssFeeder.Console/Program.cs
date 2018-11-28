@@ -549,6 +549,7 @@ $item.ArticleText$
         {
             item.HostName = new Uri(item.Url).GetComponents(UriComponents.Host, UriFormat.Unescaped).ToLower();
             item.SiteName = item.HostName;
+            item.ArticleText = $"<p>Unable to crawl article content. Click the link below to view in your browser.</p>";
         }
 
         private static string ParseMetaTagAttributes(HtmlDocument doc, string property, string attribute)
