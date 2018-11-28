@@ -20,6 +20,7 @@ namespace RssFeeder.Models
         public string FileName { get; set; }
         public string SiteName { get; set; }
         public string HostName { get; set; }
+        public string LinkLocation { get; set; }
 
         [JsonIgnore]
         public string EncodedDescription

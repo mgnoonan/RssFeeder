@@ -53,8 +53,6 @@ namespace RssFeeder.Mvc.Controllers
                     {
                         case 0:
                             return RedirectToAction("Create", new { name = model.SiteName });
-                        case 1:
-                            return RedirectToAction("Edit", new { id = items.First().id.ToString() });
                         default:
                             return RedirectToAction("Search", new { q = model.SiteName });
                     }

@@ -8,7 +8,8 @@
         public string ArticleSelector { get; set; }
         public string ParagraphSelector { get; set; }
         public string Parser { get; set; }
-        public string TestFilename { get; set; }
-        public string TestUrl { get; set; }
+        public string TestArticleFilename { get; set; }
+        public string TestArticleUrl { get; set; }
+        public string TestFeedFilename { get; set; }
     }
 }
