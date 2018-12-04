@@ -166,6 +166,7 @@ namespace RssFeeder.Console.CustomBuilders
             {
                 log.Info($"Attempting to repair link '{linkUrl}'");
                 linkUrl = WebTools.RepairUrl(linkUrl);
+                log.Info($"Repaired link '{linkUrl}'");
             }
 
             // Calculate the MD5 hash for the link so we can be sure of uniqueness
