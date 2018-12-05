@@ -74,18 +74,21 @@ namespace RssFeeder.Console.CustomBuilders
             // Above the fold top headlines
 
             nodes = doc.DocumentNode.SelectNodes("/html/body/tt/b/tt/b/a[@href]");
-            count = 1;
-            foreach (HtmlNode node in nodes)
+            if (nodes != null)
             {
-                string title = HttpUtility.HtmlDecode(node.InnerText.Trim());
-
-                if (title.EndsWith("...") || title.EndsWith("?") || title.EndsWith("!"))
+                count = 1;
+                foreach (HtmlNode node in nodes)
                 {
-                    var item = CreateNodeLinks(log, filters, node, "top", count++);
-                    if (item != null)
+                    string title = HttpUtility.HtmlDecode(node.InnerText.Trim());
+
+                    if (title.EndsWith("...") || title.EndsWith("?") || title.EndsWith("!"))
                     {
-                        log.Info($"FOUND: {item.UrlHash}|{item.LinkLocation}|{item.Title}|{item.Url}");
-                        list.Add(item);
+                        var item = CreateNodeLinks(log, filters, node, "above the fold", count++);
+                        if (item != null)
+                        {
+                            log.Info($"FOUND: {item.UrlHash}|{item.LinkLocation}|{item.Title}|{item.Url}");
+                            list.Add(item);
+                        }
                     }
                 }
             }
@@ -94,18 +97,21 @@ namespace RssFeeder.Console.CustomBuilders
             // Left column articles
 
             nodes = doc.DocumentNode.SelectNodes("//table/tr/td[1]/tt/b/a[@href]");
-            count = 1;
-            foreach (HtmlNode node in nodes)
+            if (nodes != null)
             {
-                string title = HttpUtility.HtmlDecode(node.InnerText.Trim());
-
-                if (title.EndsWith("...") || title.EndsWith("?") || title.EndsWith("!"))
+                count = 1;
+                foreach (HtmlNode node in nodes)
                 {
-                    var item = CreateNodeLinks(log, filters, node, "left column", count++);
-                    if (item != null)
+                    string title = HttpUtility.HtmlDecode(node.InnerText.Trim());
+
+                    if (title.EndsWith("...") || title.EndsWith("?") || title.EndsWith("!"))
                     {
-                        log.Info($"FOUND: {item.UrlHash}|{item.LinkLocation}|{item.Title}|{item.Url}");
-                        list.Add(item);
+                        var item = CreateNodeLinks(log, filters, node, "left column", count++);
+                        if (item != null)
+                        {
+                            log.Info($"FOUND: {item.UrlHash}|{item.LinkLocation}|{item.Title}|{item.Url}");
+                            list.Add(item);
+                        }
                     }
                 }
             }
@@ -114,18 +120,21 @@ namespace RssFeeder.Console.CustomBuilders
             // Middle column articles
 
             nodes = doc.DocumentNode.SelectNodes("//table/tr/td[3]/tt/b/a[@href]");
-            count = 1;
-            foreach (HtmlNode node in nodes)
+            if (nodes != null)
             {
-                string title = HttpUtility.HtmlDecode(node.InnerText.Trim());
-
-                if (title.EndsWith("...") || title.EndsWith("?") || title.EndsWith("!"))
+                count = 1;
+                foreach (HtmlNode node in nodes)
                 {
-                    var item = CreateNodeLinks(log, filters, node, "middle column", count++);
-                    if (item != null)
+                    string title = HttpUtility.HtmlDecode(node.InnerText.Trim());
+
+                    if (title.EndsWith("...") || title.EndsWith("?") || title.EndsWith("!"))
                     {
-                        log.Info($"FOUND: {item.UrlHash}|{item.LinkLocation}|{item.Title}|{item.Url}");
-                        list.Add(item);
+                        var item = CreateNodeLinks(log, filters, node, "middle column", count++);
+                        if (item != null)
+                        {
+                            log.Info($"FOUND: {item.UrlHash}|{item.LinkLocation}|{item.Title}|{item.Url}");
+                            list.Add(item);
+                        }
                     }
                 }
             }
@@ -134,18 +143,21 @@ namespace RssFeeder.Console.CustomBuilders
             // Right column articles
 
             nodes = doc.DocumentNode.SelectNodes("//table/tr/td[5]/tt/b/a[@href]");
-            count = 1;
-            foreach (HtmlNode node in nodes)
+            if (nodes != null)
             {
-                string title = HttpUtility.HtmlDecode(node.InnerText.Trim());
-
-                if (title.EndsWith("...") || title.EndsWith("?") || title.EndsWith("!"))
+                count = 1;
+                foreach (HtmlNode node in nodes)
                 {
-                    var item = CreateNodeLinks(log, filters, node, "right column", count++);
-                    if (item != null)
+                    string title = HttpUtility.HtmlDecode(node.InnerText.Trim());
+
+                    if (title.EndsWith("...") || title.EndsWith("?") || title.EndsWith("!"))
                     {
-                        log.Info($"FOUND: {item.UrlHash}|{item.LinkLocation}|{item.Title}|{item.Url}");
-                        list.Add(item);
+                        var item = CreateNodeLinks(log, filters, node, "right column", count++);
+                        if (item != null)
+                        {
+                            log.Info($"FOUND: {item.UrlHash}|{item.LinkLocation}|{item.Title}|{item.Url}");
+                            list.Add(item);
+                        }
                     }
                 }
             }
