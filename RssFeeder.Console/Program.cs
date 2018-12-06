@@ -6,7 +6,9 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.ServiceModel.Syndication;
 using System.Threading;
+using System.Xml;
 using Antlr3.ST;
 using CommandLine;
 using HtmlAgilityPack;
@@ -131,7 +133,7 @@ $item.ArticleText$
                 .Replace("<p>", "")
                 .Replace("</p>", "\n");
 
-            System.Console.WriteLine(JsonConvert.SerializeObject(item, Formatting.Indented));
+            System.Console.WriteLine(JsonConvert.SerializeObject(item, Newtonsoft.Json.Formatting.Indented));
             System.Console.WriteLine(text);
         }
 
@@ -499,7 +501,7 @@ $item.ArticleText$
                 item.Description = ApplyTemplateToDescription(item, BasicTemplate);
             }
 
-            log.Info(JsonConvert.SerializeObject(item, Formatting.Indented));
+            log.Info(JsonConvert.SerializeObject(item, Newtonsoft.Json.Formatting.Indented));
         }
 
         private static string ApplyTemplateToDescription(RssFeedItem item, string template)
@@ -619,44 +621,63 @@ $item.ArticleText$
             File.WriteAllText(filepath, text);
         }
 
-        private static void BuildRssFileUsingTemplate(RssFeed feed, List<RssFeedItem> items)
+        private static void BuildRssFileUsingTemplate(RssFeed sourceFeed, List<RssFeedItem> feedItems)
         {
-            var group = new StringTemplateGroup("myGroup", Path.Combine(AssemblyDirectory, "Templates"));
-            var t = group.GetInstanceOf("DrudgeFeed");
+            SyndicationFeed feed = new SyndicationFeed(sourceFeed.Title, sourceFeed.Description, new Uri(sourceFeed.Url), sourceFeed.Id.ToString(), DateTime.Now);
 
-            t.SetAttribute("feed", feed);
-            t.SetAttribute("items", items);
-            t.SetAttribute("copyrightYear", DateTime.Now.Year);
-            t.SetAttribute("feedGenerator", "NCI RSSFeeder " + Assembly.GetExecutingAssembly().GetName().Version);
-            t.SetAttribute("feedPubDate", DateTime.Now.Date.ToUniversalTime().ToString(DATEFORMAT));
-            t.SetAttribute("feedLastBuildDate", DateTime.Now.ToUniversalTime().ToString(DATEFORMAT));
+            List<SyndicationItem> syndicationItems = new List<SyndicationItem>();
+
+            foreach (var item in feedItems)
+            {
+                syndicationItems.Add(new SyndicationItem(
+                    item.Title, 
+                    item.Description, 
+                    new Uri(item.Url), 
+                    item.UrlHash, 
+                    DateTime.Now));
+            }
+
+            feed.Items = syndicationItems;
 
             string tempFile = Guid.NewGuid().ToString();    // CAUSES ACL PROBLEMS --> Path.GetTempFileName();
-
             log.Info($"Writing out temp file '{tempFile}'");
-            using (var writer = new StreamWriter(tempFile, false, System.Text.Encoding.UTF8))
-            {
-                writer.WriteLine(t.ToString());
-            }
+            XmlWriter rssWriter = XmlWriter.Create(tempFile);
+
+            Rss20FeedFormatter rssFormatter = new Rss20FeedFormatter(feed);
+            rssFormatter.WriteTo(rssWriter);
+            rssWriter.Close();
 
             // Delete the existing destination file
             // Added a 2 sec sleep to allow the delete process to finish
             int retries = 1;
             do
             {
-                log.Info($"Deleting existing destination file '{feed.OutputFile}', try # {retries}");
+                log.Info($"Deleting existing destination file '{sourceFeed.OutputFile}', try # {retries}");
                 if (retries > 1)
                 {
-                    Thread.Sleep(2000);
+                    var r = new Random(DateTime.Now.Second);
+                    Thread.Sleep(r.Next(2,10));
                 }
 
-                File.Delete(feed.OutputFile);
-                retries++;
+                try
+                {
+                    File.Delete(sourceFeed.OutputFile);
+                }
+                catch (IOException ex)
+                {
+                    log.Warn($"Error deleting file on try # {retries}:{ex.Message}");
+                    retries++;
+                }
+                catch (Exception ex)
+                {
+                    log.Error($"Unexpected error deleting file on try # {retries}", ex);
+                    throw;
+                }
 
-            } while (File.Exists(feed.OutputFile) && retries <= 5);
+            } while (File.Exists(sourceFeed.OutputFile) && retries <= 5);
 
-            log.Info($"Rename temp file to destination file '{feed.OutputFile}'");
-            File.Move(tempFile, feed.OutputFile);
+            log.Info($"Rename temp file to destination file '{sourceFeed.OutputFile}'");
+            File.Move(tempFile, sourceFeed.OutputFile);
 
             log.Info($"Deleting temp file '{tempFile}'");
             File.Delete(tempFile);
