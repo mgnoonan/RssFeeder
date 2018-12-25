@@ -19,6 +19,10 @@ steps:
     version: 2.2.100
 
 - task: NuGetToolInstaller@0
+  displayName: 'Use NuGet 4.9.1'
+  inputs:
+    versionSpec: 4.9.1
+    checkLatest: true
 
 - task: NuGetCommand@2
   inputs:
