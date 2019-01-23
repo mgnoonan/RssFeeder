@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using System.Xml;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.SyndicationFeed;
@@ -12,6 +15,7 @@ using RssFeeder.Mvc.Models;
 
 namespace RssFeeder.Mvc.Controllers
 {
+    [AllowAnonymous]
     [Route("api/[controller]")]
     [ApiController]
     public class RssController : ControllerBase
@@ -38,9 +42,15 @@ namespace RssFeeder.Mvc.Controllers
             });
         }
 
-        [HttpGet, Route("{id}")]
+        [HttpGet, Route("{id}"), Produces("text/xml")]
         public async Task<IActionResult> Get(string id)
         {
+            // Hack until I can find a better way to handle this
+            if (id.ToLowerInvariant() != "drudge-report")
+            {
+                return NotFound();
+            }
+
             var sw = new StringWriter();
             using (XmlWriter xmlWriter = XmlWriter.Create(sw, new XmlWriterSettings() { Async = true, Indent = true }))
             {
@@ -77,7 +87,7 @@ namespace RssFeeder.Mvc.Controllers
 
                 //
                 // Add Items
-                foreach (var item in GetFeedItems(id))
+                foreach (var item in GetFeedItems(id.ToLowerInvariant()).OrderByDescending(i => i.DateAdded))
                 {
                     var si = new SyndicationItem()
                     {
@@ -99,7 +109,13 @@ namespace RssFeeder.Mvc.Controllers
                 xmlWriter.Flush();
             }
 
-            return Ok(sw.ToString());
+            //return Ok(sw.ToString());
+            return new ContentResult
+            {
+                Content = sw.ToString(),
+                ContentType = "text/xml",
+                StatusCode = 200
+            };
         }
     }
 }

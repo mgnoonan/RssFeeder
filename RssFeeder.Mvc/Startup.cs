@@ -33,7 +33,7 @@ namespace RssFeeder.Mvc
             services.AddScoped<IRepository<RssFeederRepository>, RssFeederRepository>();
             services.AddMemoryCache();
 
-            services.AddMvc();
+            services.AddMvc().AddXmlDataContractSerializerFormatters();
 
             RepositoryInitializer.Initialize(Configuration);
         }
