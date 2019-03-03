@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.AspNetCore.Authorization;
@@ -49,6 +48,25 @@ namespace RssFeeder.Mvc.Controllers
             if (id.ToLowerInvariant() != "drudge-report")
             {
                 return NotFound();
+            }
+
+            string s = await GetSyndicationItems(id);
+
+            //return Ok(sw.ToString());
+            return new ContentResult
+            {
+                Content = s.ToString(),
+                ContentType = "text/xml",
+                StatusCode = 200
+            };
+        }
+
+        private async Task<string> GetSyndicationItems(string id)
+        {
+            // See if we already have the items in the cache
+            if (_cache.TryGetValue($"{id}_items", out string s))
+            {
+                return s;
             }
 
             var sw = new StringWriter();
@@ -109,13 +127,11 @@ namespace RssFeeder.Mvc.Controllers
                 xmlWriter.Flush();
             }
 
-            //return Ok(sw.ToString());
-            return new ContentResult
-            {
-                Content = sw.ToString(),
-                ContentType = "text/xml",
-                StatusCode = 200
-            };
+            // Add the items to the cache before returning
+            s = sw.ToString();
+            _cache.Set<string>($"{id}_items", s, TimeSpan.FromMinutes(60));
+
+            return s;
         }
     }
 }
