@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RssFeeder.Mvc.Models;
+using Microsoft.AspNetCore.Rewrite;
 
 namespace RssFeeder.Mvc
 {
@@ -50,7 +51,10 @@ namespace RssFeeder.Mvc
             {
                 app.UseExceptionHandler("/Home/Error");
             }
-
+            var options = new RewriteOptions()
+                    .AddRewrite(@"^content/rss/drudge\.xml", "api/rss/drudge-report",
+                        skipRemainingRules: true);
+            app.UseRewriter(options);
             app.UseStaticFiles();
 
             app.UseAuthentication();
