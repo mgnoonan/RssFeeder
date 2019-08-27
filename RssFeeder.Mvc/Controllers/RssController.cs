@@ -37,7 +37,10 @@ namespace RssFeeder.Mvc.Controllers
                 entry.SetAbsoluteExpiration(TimeSpan.FromMinutes(60));
                 _repo.Init(id);
                 _items = _repo.GetAllDocuments<RssFeedItem>("rssfeeder", id);
-                return _items.Where(q => q.DateAdded >= DateTime.Now.Date.AddDays(-3));
+
+                return _items
+                    .Where(q => q.DateAdded >= DateTime.Now.Date.AddDays(-3))
+                    .OrderByDescending(q => q.DateAdded);
             });
         }
 
