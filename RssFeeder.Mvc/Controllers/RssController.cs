@@ -45,7 +45,7 @@ namespace RssFeeder.Mvc.Controllers
             });
         }
 
-        [HttpGet, Route("{id}"), Produces("text/xml")]
+        [HttpGet, Route("{id}"), Produces("application/rss+xml")]
         public async Task<IActionResult> Get(string id)
         {
             // Hack until I can find a better way to handle this
@@ -73,22 +73,24 @@ namespace RssFeeder.Mvc.Controllers
                 return s;
             }
 
-            var sw = new StringWriter();
-            using (XmlWriter xmlWriter = XmlWriter.Create(sw, new XmlWriterSettings() { Async = true, Indent = true, Encoding = Encoding.UTF8 }))
+            var sb = new StringBuilder();
+            var stringWriter = new StringWriterWithEncoding(sb, Encoding.UTF8);
+
+            using (XmlWriter xmlWriter = XmlWriter.Create(stringWriter, new XmlWriterSettings() { Async = true, Indent = true, Encoding = Encoding.UTF8 }))
             {
-                var writer = new RssFeedWriter(xmlWriter);
+                var rssWriter = new RssFeedWriter(xmlWriter);
 
                 //
                 // Add Title
-                await writer.WriteTitle("The Drudge Report");
+                await rssWriter.WriteTitle("The Drudge Report");
 
                 //
                 // Add Description
-                await writer.WriteDescription("The Drudge Report");
+                await rssWriter.WriteDescription("The Drudge Report");
 
                 //
                 // Add Link
-                await writer.Write(new SyndicationLink(new Uri("https://www.drudgereport.com/")));
+                await rssWriter.Write(new SyndicationLink(new Uri("https://www.drudgereport.com/")));
 
                 //
                 // Add managing editor
@@ -96,7 +98,7 @@ namespace RssFeeder.Mvc.Controllers
 
                 //
                 // Add publish date
-                await writer.WritePubDate(DateTimeOffset.UtcNow);
+                await rssWriter.WritePubDate(DateTimeOffset.UtcNow);
 
                 //
                 // Add custom element
@@ -123,7 +125,7 @@ namespace RssFeeder.Mvc.Controllers
                     //si.AddCategory(new SyndicationCategory("Technology"));
                     //si.AddContributor(new SyndicationPerson(null, "user@contoso.com", RssContributorTypes.Author));
 
-                    await writer.Write(si);
+                    await rssWriter.Write(si);
                 }
 
                 //
@@ -132,7 +134,7 @@ namespace RssFeeder.Mvc.Controllers
             }
 
             // Add the items to the cache before returning
-            s = sw.ToString();
+            s = stringWriter.ToString();
             _cache.Set<string>($"{id}_items", s, TimeSpan.FromMinutes(60));
 
             return s;
