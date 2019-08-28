@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.SyndicationFeed;
-using Microsoft.SyndicationFeed.Rss;
+using Microsoft.SyndicationFeed.Atom;
 using RssFeeder.Models;
 using RssFeeder.Mvc.Models;
 
@@ -76,7 +76,7 @@ namespace RssFeeder.Mvc.Controllers
             var sw = new StringWriter();
             using (XmlWriter xmlWriter = XmlWriter.Create(sw, new XmlWriterSettings() { Async = true, Indent = true, Encoding = Encoding.UTF8 }))
             {
-                var writer = new RssFeedWriter(xmlWriter);
+                var writer = new AtomFeedWriter(xmlWriter);
 
                 //
                 // Add Title
@@ -84,7 +84,7 @@ namespace RssFeeder.Mvc.Controllers
 
                 //
                 // Add Description
-                await writer.WriteDescription("The Drudge Report");
+                //await writer.WriteDescription("The Drudge Report");
 
                 //
                 // Add Link
@@ -96,7 +96,7 @@ namespace RssFeeder.Mvc.Controllers
 
                 //
                 // Add publish date
-                await writer.WritePubDate(DateTimeOffset.UtcNow);
+                await writer.WriteUpdated(DateTimeOffset.UtcNow);
 
                 //
                 // Add custom element
