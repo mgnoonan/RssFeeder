@@ -118,12 +118,13 @@ namespace RssFeeder.Mvc.Controllers
                         Id = item.Id,
                         Title = item.Title,
                         Description = item.Description,
-                        Published = item.DateAdded
+                        Published = item.DateAdded,
+                        LastUpdated = item.DateAdded
                     };
 
                     si.AddLink(new SyndicationLink(new Uri(item.Url)));
                     //si.AddCategory(new SyndicationCategory("Technology"));
-                    //si.AddContributor(new SyndicationPerson(null, "user@contoso.com", RssContributorTypes.Author));
+                    si.AddContributor(new SyndicationPerson("Matt Drudge", "drudge@drudgereport.com", AtomContributorTypes.Author));
 
                     await rssWriter.Write(si);
                 }
