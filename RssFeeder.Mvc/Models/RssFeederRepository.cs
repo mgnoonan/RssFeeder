@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Microsoft.Azure.Documents.Client;
 using Microsoft.Extensions.Configuration;
 
@@ -21,7 +20,6 @@ namespace RssFeeder.Mvc.Models
                 client = new DocumentClient(new Uri(Endpoint), Key);
 
             CollectionId = collectionId;
-            //collection = await client.ReadDocumentCollectionAsync(UriFactory.CreateDocumentCollectionUri(DatabaseId, CollectionId));
         }
     }
 }

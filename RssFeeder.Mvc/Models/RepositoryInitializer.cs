@@ -7,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace RssFeeder.Mvc.Models
 {
-    public class RepositoryInitializer
+    public static class RepositoryInitializer
     {
         private static DocumentClient client;
 
