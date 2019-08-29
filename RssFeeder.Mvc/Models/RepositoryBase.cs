@@ -18,8 +18,6 @@ namespace RssFeeder.Mvc.Models
         protected DocumentClient client;
         protected DocumentCollection collection;
 
-        public RepositoryBase() { }
-
         public async Task<T> GetItemAsync<T>(string id) where T : class
         {
             try
@@ -122,7 +120,6 @@ namespace RssFeeder.Mvc.Models
             // can be completed efficiently and with low latency
             return client.CreateDocumentQuery<T>(
                 UriFactory.CreateDocumentCollectionUri(databaseName, collectionName), queryOptions);
-            //.ToList();
         }
 
         public IEnumerable<T> CreateDocumentQuery<T>(string query, FeedOptions options) where T : class

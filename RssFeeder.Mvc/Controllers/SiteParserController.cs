@@ -13,7 +13,7 @@ namespace RssFeeder.Mvc.Controllers
     [Authorize]
     public class SiteParserController : Controller
     {
-        private IRepository<RssFeederRepository> _repo;
+        private readonly IRepository<RssFeederRepository> _repo;
         private readonly string _collectionID = "site-parsers";
 
         public SiteParserController(IRepository<RssFeederRepository> repository)
