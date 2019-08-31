@@ -44,7 +44,7 @@ namespace RssFeeder.Mvc.Controllers
             });
         }
 
-        [HttpGet, Route("{id}"), Produces("application/rss+xml")]
+        [HttpGet, HttpHead, Route("{id}"), ResponseCache(Duration = 55 * 60), Produces("text/xml")]
         public async Task<IActionResult> Get(string id)
         {
             // Hack until I can find a better way to handle this
@@ -55,12 +55,20 @@ namespace RssFeeder.Mvc.Controllers
 
             string s = await GetSyndicationItems(id);
 
-            return new ContentResult
+            if (Request.Method.Equals("HEAD"))
             {
-                Content = s.ToString(),
-                ContentType = "text/xml",
-                StatusCode = 200
-            };
+                Response.ContentLength = s.Length;
+                return Ok();
+            }
+            else
+            {
+                return new ContentResult
+                {
+                    Content = s.ToString(),
+                    ContentType = "text/xml",
+                    StatusCode = 200
+                };
+            }
         }
 
         private async Task<string> GetSyndicationItems(string id)
