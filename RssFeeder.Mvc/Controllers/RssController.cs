@@ -44,10 +44,36 @@ namespace RssFeeder.Mvc.Controllers
             });
         }
 
-        [HttpGet, HttpHead, Route("{id}"), ResponseCache(Duration = 55 * 60), Produces("text/xml")]
+        [HttpGet, HttpHead, Route(""), ResponseCache(Duration = 59 * 60)]
+        public IActionResult Get()
+        {
+            // FIXME: Hack until I can find a better way to handle this
+            var list = new List<Feed>
+            {
+                new Feed
+                {
+                    id = "drudge-report",
+                    description = "The Drudge Report",
+                    url = "https://rssfeedermvc.azurewebsites.net/api/rss/drudge-report"
+                }
+            };
+
+            if (Request.Method.Equals("HEAD"))
+            {
+                // FIXME: Hard coded for JSON bytes for now, no easy way to calculate size for a reference type
+                Response.ContentLength = 402;
+                return Ok();
+            }
+            else
+            {
+                return Ok(list);
+            }
+        }
+
+        [HttpGet, HttpHead, Route("{id}"), ResponseCache(Duration = 59 * 60), Produces("text/xml")]
         public async Task<IActionResult> Get(string id)
         {
-            // Hack until I can find a better way to handle this
+            // FIXME: Hack until I can find a better way to handle this
             if (id.ToLowerInvariant() != _collectionID)
             {
                 return NotFound();
