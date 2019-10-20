@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27703.2042
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29411.108
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RssFeeder.Mvc", "RssFeeder.Mvc\RssFeeder.Mvc.csproj", "{FBE8C75B-9905-455F-B5CA-5993F7DF3FA3}"
 EndProject
@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RssFeeder.Console", "RssFee
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RssFeeder.Models", "RssFeeder.Models\RssFeeder.Models.csproj", "{B97F8A0F-1B96-44A1-9FC6-F6A04471E52C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RssFeederFunctionApp", "RssFeederFunctionApp\RssFeederFunctionApp.csproj", "{6E4C350F-3599-4E09-A7B4-FAE27A5FDEC3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RssFeederFunctionApp", "RssFeederFunctionApp\RssFeederFunctionApp.csproj", "{6E4C350F-3599-4E09-A7B4-FAE27A5FDEC3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
