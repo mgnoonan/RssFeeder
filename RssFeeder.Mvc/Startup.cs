@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using RssFeeder.Mvc.Models;
+using Serilog;
 
 namespace RssFeeder.Mvc
 {
@@ -33,6 +34,7 @@ namespace RssFeeder.Mvc
                     .RequireAuthenticatedUser()
                     .Build();
                 options.Filters.Add(new AuthorizeFilter(policy));
+                options.Filters.Add<SerilogMvcLoggingAttribute>();
             });
             services.AddRazorPages();
 
@@ -66,6 +68,7 @@ namespace RssFeeder.Mvc
             app.UseRewriter(options);
             app.UseStaticFiles();
 
+            app.UseSerilogRequestLogging();
             app.UseRouting();
 
             app.UseAuthentication();
