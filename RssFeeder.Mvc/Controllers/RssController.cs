@@ -122,8 +122,8 @@ namespace RssFeeder.Mvc.Controllers
                     var si = new SyndicationItem()
                     {
                         Id = item.Id,
-                        Title = item.Title,
-                        Description = item.Description,
+                        Title = item.Title.Replace("\u0008", ""),
+                        Description = item.Description.Replace("\u0008", ""),
                         Published = item.DateAdded,
                         LastUpdated = item.DateAdded
                     };

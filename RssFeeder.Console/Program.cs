@@ -630,8 +630,8 @@ $item.ArticleText$
             foreach (var item in feedItems)
             {
                 syndicationItems.Add(new SyndicationItem(
-                    item.Title, 
-                    item.Description, 
+                    item.Title.Replace("\u0008", ""),
+                    item.Description.Replace("\u0008", ""), 
                     new Uri(item.Url), 
                     item.UrlHash, 
                     DateTime.Now));
