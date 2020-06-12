@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
-using log4net;
 using RssFeeder.Models;
+using Serilog;
 
 namespace RssFeeder.Console.CustomBuilders
 {
     public interface IRssFeedBuilder
     {
-        List<RssFeedItem> ParseRssFeedItems(ILog log, RssFeed feed, out string html);
-        List<RssFeedItem> ParseRssFeedItems(ILog log, string html, List<string> filters);
+        List<RssFeedItem> ParseRssFeedItems(ILogger log, RssFeed feed, out string html);
+        List<RssFeedItem> ParseRssFeedItems(ILogger log, string html, List<string> filters);
     }
 }

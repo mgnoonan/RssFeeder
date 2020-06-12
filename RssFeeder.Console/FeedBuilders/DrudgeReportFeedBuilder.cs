@@ -4,22 +4,19 @@ using System.IO;
 using System.Linq;
 using System.Web;
 using HtmlAgilityPack;
-using log4net;
 using RssFeeder.Console.Utility;
 using RssFeeder.Models;
+using Serilog;
 
 namespace RssFeeder.Console.CustomBuilders
 {
     class DrudgeReportFeedBuilder : IRssFeedBuilder
     {
-        public List<RssFeedItem> ParseRssFeedItems(ILog log, RssFeed feed, out string html)
+        public List<RssFeedItem> ParseRssFeedItems(ILogger log, RssFeed feed, out string html)
         {
             var filters = feed.Filters ?? new List<string>();
 
-            string url = feed.Url;
-            string channelTitle = feed.Title;
-
-            html = WebTools.GetUrl(url);
+            html = WebTools.GetUrl(feed.Url);
 
             var items = ParseRssFeedItems(log, html, filters);
 
@@ -36,13 +33,12 @@ namespace RssFeeder.Console.CustomBuilders
             return items;
         }
 
-        public List<RssFeedItem> ParseRssFeedItems(ILog log, string html, List<string> filters)
+        public List<RssFeedItem> ParseRssFeedItems(ILogger log, string html, List<string> filters)
         {
             var list = new List<RssFeedItem>();
 
             var doc = new HtmlDocument();
             doc.Load(new StringReader(html));
-
 
             // Centered main headline(s)
 
@@ -61,7 +57,7 @@ namespace RssFeeder.Console.CustomBuilders
                     var item = CreateNodeLinks(log, filters, node, "main headline", count++);
                     if (item != null)
                     {
-                        log.Info($"FOUND: {item.UrlHash}|{item.LinkLocation}|{item.Title}|{item.Url}");
+                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
                         list.Add(item);
                     }
                 }
@@ -86,7 +82,7 @@ namespace RssFeeder.Console.CustomBuilders
                         var item = CreateNodeLinks(log, filters, node, "above the fold", count++);
                         if (item != null)
                         {
-                            log.Info($"FOUND: {item.UrlHash}|{item.LinkLocation}|{item.Title}|{item.Url}");
+                            log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
                             list.Add(item);
                         }
                     }
@@ -109,7 +105,7 @@ namespace RssFeeder.Console.CustomBuilders
                         var item = CreateNodeLinks(log, filters, node, "left column", count++);
                         if (item != null)
                         {
-                            log.Info($"FOUND: {item.UrlHash}|{item.LinkLocation}|{item.Title}|{item.Url}");
+                            log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
                             list.Add(item);
                         }
                     }
@@ -132,7 +128,7 @@ namespace RssFeeder.Console.CustomBuilders
                         var item = CreateNodeLinks(log, filters, node, "middle column", count++);
                         if (item != null)
                         {
-                            log.Info($"FOUND: {item.UrlHash}|{item.LinkLocation}|{item.Title}|{item.Url}");
+                            log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
                             list.Add(item);
                         }
                     }
@@ -155,7 +151,7 @@ namespace RssFeeder.Console.CustomBuilders
                         var item = CreateNodeLinks(log, filters, node, "right column", count++);
                         if (item != null)
                         {
-                            log.Info($"FOUND: {item.UrlHash}|{item.LinkLocation}|{item.Title}|{item.Url}");
+                            log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
                             list.Add(item);
                         }
                     }
@@ -165,7 +161,7 @@ namespace RssFeeder.Console.CustomBuilders
             return list;
         }
 
-        private RssFeedItem CreateNodeLinks(ILog log, List<string> filters, HtmlNode node, string location, int count)
+        private RssFeedItem CreateNodeLinks(ILogger log, List<string> filters, HtmlNode node, string location, int count)
         {
             string title = HttpUtility.HtmlDecode(node.InnerText.Trim());
 
@@ -176,16 +172,16 @@ namespace RssFeeder.Console.CustomBuilders
             // Repair any protocol typos if possible
             if (!linkUrl.StartsWith("http"))
             {
-                log.Info($"Attempting to repair link '{linkUrl}'");
+                log.Information("Attempting to repair link '{url}'", linkUrl);
                 linkUrl = WebTools.RepairUrl(linkUrl);
-                log.Info($"Repaired link '{linkUrl}'");
+                log.Information("Repaired link '{url}'", linkUrl);
             }
 
             // Calculate the MD5 hash for the link so we can be sure of uniqueness
             string hash = Utility.Utility.CreateMD5Hash(linkUrl);
             if (filters.Contains(hash))
             {
-                log.Debug($"Hash '{hash}' found in filter list");
+                log.Debug("Hash '{hash}' found in filter list", hash);
                 return null;
             }
 
