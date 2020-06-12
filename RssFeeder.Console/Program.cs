@@ -506,7 +506,7 @@ $item.ArticleText$
                 item.Description = ApplyTemplateToDescription(item, BasicTemplate);
             }
 
-            log.Information("{@item}", item);
+            log.Debug("{@item}", item);
         }
 
         private static string ApplyTemplateToDescription(RssFeedItem item, string template)
