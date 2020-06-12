@@ -250,6 +250,8 @@ $item.ArticleText$
                     }
                 }
 
+                log.Information("END: Completed successfully");
+
                 if (Environment.UserInteractive)
                 {
                     System.Console.WriteLine("\nPress <Enter> to continue...");
@@ -257,7 +259,6 @@ $item.ArticleText$
                 }
 
                 // Zero return value means everything processed normally
-                log.Information("Completed successfully");
                 Environment.Exit(0);
             }
             catch (Exception ex)
