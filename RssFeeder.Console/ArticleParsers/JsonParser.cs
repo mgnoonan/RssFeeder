@@ -1,9 +1,9 @@
 ﻿using System.Text;
 using AngleSharp.Dom;
-using AngleSharp.Parser.Html;
+using AngleSharp.Html.Parser;
 using Newtonsoft.Json;
-using RssFeeder.Models;
 using RssFeeder.Console.Parsers;
+using RssFeeder.Models;
 
 namespace RssFeeder.Console.ArticleParsers
 {
@@ -17,7 +17,7 @@ namespace RssFeeder.Console.ArticleParsers
 
             // Load and parse the html from the source file
             var parser = new HtmlParser();
-            var document = parser.Parse($"<html><body>{story.articles[0].body}</body></html>");
+            var document = parser.ParseDocument($"<html><body>{story.articles[0].body}</body></html>");
 
             // Query the document by CSS selectors to get the article text
             var container = document.QuerySelector("body");
