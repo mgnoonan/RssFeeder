@@ -12,12 +12,14 @@ using System.Xml;
 using Antlr3.ST;
 using CommandLine;
 using HtmlAgilityPack;
-using log4net;
 using Microsoft.Azure.Documents.Client;
 using Newtonsoft.Json;
 using RssFeeder.Console.CustomBuilders;
 using RssFeeder.Console.Parsers;
 using RssFeeder.Models;
+using Serilog;
+using Serilog.Formatting.Compact;
+using Serilog.Sinks.SystemConsole.Themes;
 
 namespace RssFeeder.Console
 {
@@ -67,10 +69,7 @@ $item.ArticleText$
         /// </summary>
         private static readonly string PrimaryKey = ConfigurationManager.AppSettings["PrimaryKey"];
 
-        /// <summary>
-        /// Instance of the log4net logger
-        /// </summary>
-        private static readonly ILog log = LogManager.GetLogger(typeof(Program));
+        private static ILogger log;
 
         /// <summary>
         /// The DocumentDB client instance.
@@ -95,6 +94,23 @@ $item.ArticleText$
         [STAThread]
         static void Main(string[] args)
         {
+            // Grab the current assembly name
+            AssemblyName assemblyName = Assembly.GetExecutingAssembly().GetName();
+
+            // Init Serilog
+            log = new LoggerConfiguration()
+                .MinimumLevel.Information()
+                .WriteTo.Console(theme: AnsiConsoleTheme.Code)
+                .WriteTo.File(new RenderedCompactJsonFormatter(), "RssFeeder.log", rollingInterval: RollingInterval.Day, retainedFileCountLimit: 14)
+                .WriteTo.Seq("http://localhost:5341")
+                .CreateLogger();
+            Log.Logger = log;
+
+            log.Information("START: Machine: {machineName} Assembly: {assembly}", Environment.MachineName, assemblyName.FullName);
+
+            // set up TLS defaults
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+
             // Process the command line arguments
             Parser.Default.ParseArguments<Options>(args)
                 .WithParsed<Options>(opts => ProcessWithExitCode(opts))
@@ -148,31 +164,18 @@ $item.ArticleText$
             Type type = Assembly.GetExecutingAssembly().GetType("RssFeeder.Console.CustomBuilders.DrudgeReportFeedBuilder");
             var parser = (IRssFeedBuilder)Activator.CreateInstance(type);
 
-            parser.ParseRssFeedItems(log, html, new List<string> { "fb27ce207f3ca32d97999d182ec93576", "0cc6fcfe73c643623766047524ab10e5" });
+            parser.ParseRssFeedItems(Log.Logger, html, new List<string> { "fb27ce207f3ca32d97999d182ec93576", "0cc6fcfe73c643623766047524ab10e5" });
         }
 
-        static void HandleParserError(IEnumerable<Error> errors, string[] args)
+        static void HandleParserError(IEnumerable<CommandLine.Error> errors, string[] args)
         {
             // Return an error code
-            log.Error(string.Format("Invalid arguments: '{0}'", string.Join(",", args)));
+            log.Error("Invalid arguments: '{@args}'", args);
             Environment.Exit(255);
         }
 
         static void ProcessWithExitCode(Options opts)
         {
-            // Grab the current assembly name
-            AssemblyName assemblyName = Assembly.GetExecutingAssembly().GetName();
-
-            // Init the log4net through the config
-            log4net.Config.XmlConfigurator.Configure();
-            log.Info("--------------------------------");
-            log.Info($"Machine: {Environment.MachineName}");
-            log.Info($"Assembly: {assemblyName.FullName}");
-            log.Info("--------------------------------");
-
-            // set up TLS defaults
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
-
             try
             {
                 // A config file was specified so read in the options from there
@@ -186,13 +189,13 @@ $item.ArticleText$
                     // Get the directory of the current executable, all config 
                     // files should be in this path
                     string configFile = Path.Combine(AssemblyDirectory, opts.Config);
-                    log.Info($"Reading from config file: {configFile}");
+                    log.Information("Reading from config file: {configFile}", configFile);
 
                     using (StreamReader sr = new StreamReader(configFile))
                     {
                         // Read the options in JSON format
                         string json = sr.ReadToEnd();
-                        log.Info($"Options: {json}");
+                        log.Information("Options: {@options}", json);
 
                         // Deserialize into our options class
                         optionsList = JsonConvert.DeserializeObject<List<Options>>(json);
@@ -213,7 +216,7 @@ $item.ArticleText$
                         {
                             // Read the options in JSON format
                             string json = sr.ReadToEnd();
-                            log.Info($"Test configuration: {json}");
+                            log.Information("Test configuration: {@options}", json);
 
                             // Deserialize into our options class
                             var definition = JsonConvert.DeserializeObject<SiteArticleDefinition>(json);
@@ -254,12 +257,12 @@ $item.ArticleText$
                 }
 
                 // Zero return value means everything processed normally
-                log.Info("Completed successfully");
+                log.Information("Completed successfully");
                 Environment.Exit(0);
             }
             catch (Exception ex)
             {
-                log.Error("Error during processing", ex);
+                log.Error(ex, "Error during processing");
                 if (Environment.UserInteractive)
                 {
                     System.Console.WriteLine("\nPress <Enter> to continue...");
@@ -340,7 +343,7 @@ $item.ArticleText$
             string workingFolder = Path.Combine(AssemblyDirectory, WORKING_FOLDER);
             if (!Directory.Exists(workingFolder))
             {
-                log.Info($"Creating folder '{workingFolder}'");
+                log.Information("Creating folder '{workingFolder}'", workingFolder);
                 Directory.CreateDirectory(workingFolder);
             }
 
@@ -349,7 +352,7 @@ $item.ArticleText$
             SaveTextToDisk(html, feedSource, false);
 
             // Add any links that don't already exist
-            log.Info("Adding links to the database");
+            log.Information("Adding links to the database");
             foreach (var item in list)
             {
                 if (!DocumentExists(databaseName, collectionName, item))
@@ -361,16 +364,16 @@ $item.ArticleText$
             }
 
             // Remove any stale documents
-            log.Info($"Removing stale links from {databaseName}");
+            log.Information("Removing stale links from {databaseName}", databaseName);
             list = GetStaleDocuments(databaseName, collectionName, 7);
             foreach (var item in list)
             {
-                log.Info($"Removing UrlHash '{item.UrlHash}'");
+                log.Information("Removing UrlHash '{urlHash}'", item.UrlHash);
                 DeleteDocument(databaseName, collectionName, item.Id);
             }
 
             // Purge stale files from working folder
-            log.Info($"Removing stale files from {workingFolder}");
+            log.Information("Removing stale files from {workingFolder}", workingFolder);
             PurgeStaleFiles(workingFolder, 7);
 
             // Return whatever documents are left in the database
@@ -394,7 +397,7 @@ $item.ArticleText$
             var file = new FileInfo(path);
             if (file.CreationTime < date)
             {
-                log.Info($"Removing {file.FullName}");
+                log.Information("Removing {fileName}", file.FullName);
                 file.Delete();
             }
         }
@@ -478,14 +481,14 @@ $item.ArticleText$
             if (File.Exists(item.FileName))
             {
                 // Article was successfully downloaded from the target site
-                log.Info($"Parsing meta tags from file '{item.FileName}'");
+                log.Information("Parsing meta tags from file '{fileName}'", item.FileName);
 
                 var doc = new HtmlDocument();
                 doc.Load(item.FileName);
 
                 if (!doc.DocumentNode.HasChildNodes)
                 {
-                    log.Warn("No file content found, skipping.");
+                    log.Warning("No file content found, skipping.");
                     SetBasicArticleMetaData(item);
                     return;
                 }
@@ -501,7 +504,7 @@ $item.ArticleText$
                 item.Description = ApplyTemplateToDescription(item, BasicTemplate);
             }
 
-            log.Info(JsonConvert.SerializeObject(item, Newtonsoft.Json.Formatting.Indented));
+            log.Information("{@item}", item);
         }
 
         private static string ApplyTemplateToDescription(RssFeedItem item, string template)
@@ -565,7 +568,7 @@ $item.ArticleText$
 
             if (string.IsNullOrWhiteSpace(value))
             {
-                log.Warn($"Error reading attribute '{attribute}' from meta tag '{property}'");
+                log.Warning("Error reading attribute '{attribute}' from meta tag '{property}'", attribute, property);
             }
 
             return value;
@@ -575,7 +578,7 @@ $item.ArticleText$
         {
             try
             {
-                log.Info($"Loading URL '{item.UrlHash}':'{item.Url}'");
+                log.Information("Loading URL '{urlHash}':'{url}'", item.UrlHash, item.Url);
 
                 // Use custom load method to account for compression headers
                 HtmlDocument doc = new HtmlDocument();
@@ -594,16 +597,16 @@ $item.ArticleText$
                     File.Delete(item.FileName);
                 }
 
-                log.Info($"Saving file '{item.FileName}'");
+                log.Information("Saving file '{fileName}'", item.FileName);
                 doc.Save(item.FileName);
             }
             catch (WebException ex)
             {
-                log.Warn($"Error loading url '{ex.Message}'");
+                log.Warning("Error loading url '{message}'", ex.Message);
             }
             catch (Exception ex)
             {
-                log.Warn($"Unexpected error loading url '{ex.Message}'");
+                log.Warning("Unexpected error loading url '{message}'", ex.Message);
             }
         }
 
@@ -614,7 +617,7 @@ $item.ArticleText$
                 File.Delete(filepath);
             }
 
-            log.Info($"Saving file '{filepath}'");
+            log.Information("Saving file '{filepath}'", filepath);
 
             // WriteAllText creates a file, writes the specified string to the file,
             // and then closes the file.    You do NOT need to call Flush() or Close().
@@ -631,16 +634,16 @@ $item.ArticleText$
             {
                 syndicationItems.Add(new SyndicationItem(
                     item.Title.Replace("\u0008", ""),
-                    item.Description.Replace("\u0008", ""), 
-                    new Uri(item.Url), 
-                    item.UrlHash, 
+                    item.Description.Replace("\u0008", ""),
+                    new Uri(item.Url),
+                    item.UrlHash,
                     DateTime.Now));
             }
 
             feed.Items = syndicationItems;
 
             string tempFile = Guid.NewGuid().ToString();    // CAUSES ACL PROBLEMS --> Path.GetTempFileName();
-            log.Info($"Writing out temp file '{tempFile}'");
+            log.Information("Writing out temp file '{fileName}'", tempFile);
             XmlWriter rssWriter = XmlWriter.Create(tempFile);
 
             Rss20FeedFormatter rssFormatter = new Rss20FeedFormatter(feed);
@@ -652,11 +655,11 @@ $item.ArticleText$
             int retries = 1;
             do
             {
-                log.Info($"Deleting existing destination file '{sourceFeed.OutputFile}', try # {retries}");
+                log.Information("Deleting existing destination file '{fileName}', try # {retries}", sourceFeed.OutputFile, retries);
                 if (retries > 1)
                 {
                     var r = new Random(DateTime.Now.Second);
-                    Thread.Sleep(r.Next(2,10));
+                    Thread.Sleep(r.Next(2, 10));
                 }
 
                 try
@@ -665,21 +668,21 @@ $item.ArticleText$
                 }
                 catch (IOException ex)
                 {
-                    log.Warn($"Error deleting file on try # {retries}:{ex.Message}");
+                    log.Warning("Error deleting file on try # {retries}:{message}", retries, ex.Message);
                     retries++;
                 }
                 catch (Exception ex)
                 {
-                    log.Error($"Unexpected error deleting file on try # {retries}", ex);
+                    log.Error(ex, "Unexpected error deleting file on try # {retries}", retries);
                     throw;
                 }
 
             } while (File.Exists(sourceFeed.OutputFile) && retries <= 5);
 
-            log.Info($"Rename temp file to destination file '{sourceFeed.OutputFile}'");
+            log.Information("Rename temp file to destination file '{fileName}'", sourceFeed.OutputFile);
             File.Move(tempFile, sourceFeed.OutputFile);
 
-            log.Info($"Deleting temp file '{tempFile}'");
+            log.Information("Deleting temp file '{fileName}'", tempFile);
             File.Delete(tempFile);
         }
     }
