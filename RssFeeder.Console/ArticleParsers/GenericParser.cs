@@ -1,6 +1,6 @@
 ﻿using System.Text;
 using AngleSharp.Dom;
-using AngleSharp.Parser.Html;
+using AngleSharp.Html.Parser;
 using RssFeeder.Models;
 
 namespace RssFeeder.Console.Parsers
@@ -11,7 +11,7 @@ namespace RssFeeder.Console.Parsers
         {
             // Load and parse the html from the source file
             var parser = new HtmlParser();
-            var document = parser.Parse(html);
+            var document = parser.ParseDocument(html);
 
             // Query the document by CSS selectors to get the article text
             var container = document.QuerySelector(options.ArticleSelector);
