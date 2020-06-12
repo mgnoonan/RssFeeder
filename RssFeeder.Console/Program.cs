@@ -271,6 +271,10 @@ $item.ArticleText$
                 }
                 Environment.Exit(250);
             }
+            finally
+            {
+                Log.CloseAndFlush();
+            }
         }
 
         public static string GetResponse(string url)
