@@ -176,6 +176,9 @@ $item.ArticleText$
 
         static void ProcessWithExitCode(Options opts)
         {
+            // Zero return value means everything processed normally
+            int returnCode = 0;
+
             try
             {
                 // A config file was specified so read in the options from there
@@ -251,30 +254,24 @@ $item.ArticleText$
                 }
 
                 log.Information("END: Completed successfully");
-
-                if (Environment.UserInteractive)
-                {
-                    System.Console.WriteLine("\nPress <Enter> to continue...");
-                    System.Console.ReadLine();
-                }
-
-                // Zero return value means everything processed normally
-                Environment.Exit(0);
             }
             catch (Exception ex)
             {
                 log.Error(ex, "Error during processing");
-                if (Environment.UserInteractive)
-                {
-                    System.Console.WriteLine("\nPress <Enter> to continue...");
-                    System.Console.ReadLine();
-                }
-                Environment.Exit(250);
+                returnCode = 250;
             }
             finally
             {
                 Log.CloseAndFlush();
             }
+
+            if (Environment.UserInteractive)
+            {
+                System.Console.WriteLine("\nPress <Enter> to continue...");
+                System.Console.ReadLine();
+            }
+
+            Environment.Exit(returnCode);
         }
 
         public static string GetResponse(string url)
