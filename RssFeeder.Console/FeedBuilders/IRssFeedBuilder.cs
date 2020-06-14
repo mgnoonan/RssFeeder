@@ -2,7 +2,7 @@
 using RssFeeder.Models;
 using Serilog;
 
-namespace RssFeeder.Console.CustomBuilders
+namespace RssFeeder.Console.FeedBuilders
 {
     public interface IRssFeedBuilder
     {

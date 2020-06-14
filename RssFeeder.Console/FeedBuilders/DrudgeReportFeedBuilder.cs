@@ -8,10 +8,15 @@ using RssFeeder.Console.Utility;
 using RssFeeder.Models;
 using Serilog;
 
-namespace RssFeeder.Console.CustomBuilders
+namespace RssFeeder.Console.FeedBuilders
 {
-    class DrudgeReportFeedBuilder : IRssFeedBuilder
+    class DrudgeReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
     {
+        private readonly string collectionName = "drudge-report";
+
+        public DrudgeReportFeedBuilder(ILogger log) : base(log)
+        { }
+
         public List<RssFeedItem> ParseRssFeedItems(ILogger log, RssFeed feed, out string html)
         {
             var filters = feed.Filters ?? new List<string>();

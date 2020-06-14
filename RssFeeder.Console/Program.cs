@@ -14,7 +14,9 @@ using CommandLine;
 using HtmlAgilityPack;
 using Microsoft.Azure.Documents.Client;
 using Newtonsoft.Json;
-using RssFeeder.Console.CustomBuilders;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
+using RssFeeder.Console.FeedBuilders;
 using RssFeeder.Console.Parsers;
 using RssFeeder.Models;
 using Serilog;
@@ -330,7 +332,7 @@ $item.ArticleText$
                 return new List<RssFeedItem>();
 
             Type type = Assembly.GetExecutingAssembly().GetType(builderName);
-            IRssFeedBuilder builder = (IRssFeedBuilder)Activator.CreateInstance(type);
+            IRssFeedBuilder builder = (IRssFeedBuilder)Activator.CreateInstance(type, new object[] { log });
             var list = builder.ParseRssFeedItems(log, feed, out string html)
                 //.Take(10) FOR DEBUG PURPOSES
                 ;
@@ -341,8 +343,8 @@ $item.ArticleText$
             // Load the collection of site parsers
             ArticleDefinitions = GetAllDocuments<SiteArticleDefinition>(databaseName, "site-parsers");
 
-            // Create the working folder if it doesn't exist
-            string workingFolder = Path.Combine(AssemblyDirectory, WORKING_FOLDER);
+            // Create the working folder for the collection if it doesn't exist
+            string workingFolder = Path.Combine(AssemblyDirectory, collectionName);
             if (!Directory.Exists(workingFolder))
             {
                 log.Information("Creating folder '{workingFolder}'", workingFolder);
@@ -350,8 +352,11 @@ $item.ArticleText$
             }
 
             // Save the feed source for posterity
-            string feedSource = Path.Combine(workingFolder, $"{DateTime.Now.ToUniversalTime().ToString("yyyyMMddhhmmss")}_{feed.Url.Replace("://", "_").Replace(".", "_")}.html");
+            string feedSource = Path.Combine(workingFolder, $"{DateTime.Now.ToUniversalTime():yyyyMMddhhmmss}_{feed.Url.Replace("://", "_").Replace(".", "_")}.html");
             SaveTextToDisk(html, feedSource, false);
+
+            // Save thumbnail snapshot of the page
+            SaveThumbnailToDisk(feed.Url, $"{feedSource.Replace(".html", "")}.png");
 
             // Add any links that don't already exist
             log.Information("Adding links to the database");
@@ -380,6 +385,23 @@ $item.ArticleText$
 
             // Return whatever documents are left in the database
             return GetAllDocuments<RssFeedItem>(databaseName, collectionName);
+        }
+
+        private static void SaveThumbnailToDisk(string url, string filename)
+        {
+            ChromeOptions options = new ChromeOptions();
+            options.AddArgument("headless");//Comment if we want to see the window. 
+
+            string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var driver = new ChromeDriver(path, options);
+            driver.Manage().Window.Size = new System.Drawing.Size(2000, 4000);
+            driver.Navigate().GoToUrl(url);
+            var screenshot = (driver as ITakesScreenshot).GetScreenshot();
+            
+            log.Information("Saving file '{filename}'", filename);
+            screenshot.SaveAsFile(filename);
+            driver.Close();
+            driver.Quit();
         }
 
         public static void PurgeStaleFiles(string folderPath, short maximumAgeInDays)
