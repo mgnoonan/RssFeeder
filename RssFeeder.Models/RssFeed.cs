@@ -13,5 +13,6 @@ namespace RssFeeder.Models
         public string CustomParser { get; set; }
         public List<RssFeedItem> Items { get; set; }
         public List<string> Filters { get; set; }
+        public string CollectionName { get; set; }
     }
 }

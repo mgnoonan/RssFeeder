@@ -252,6 +252,7 @@
     </Compile>
     <Compile Include="FeedBuilders\BaseFeedBuilder.cs" />
     <Compile Include="FeedBuilders\DrudgeReportFeedBuilder.cs" />
+    <Compile Include="FeedBuilders\EagleSlantFeedBuilder.cs" />
     <Compile Include="FeedBuilders\IRssFeedBuilder.cs" />
     <Compile Include="Models\StoryModel.cs" />
     <Compile Include="Options.cs" />
@@ -277,6 +278,9 @@
     <Compile Include="Utility\XmlTools.cs">
       <SubType>Code</SubType>
     </Compile>
+    <None Include="feed-eagle.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="settings.job">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
