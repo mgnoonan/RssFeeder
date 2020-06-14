@@ -18,6 +18,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using RssFeeder.Console.FeedBuilders;
 using RssFeeder.Console.Parsers;
+using RssFeeder.Console.Utility;
 using RssFeeder.Models;
 using Serilog;
 using Serilog.Formatting.Compact;
@@ -247,11 +248,16 @@ $item.ArticleText$
                             Language = option.Language,
                             Url = option.Url,
                             CustomParser = option.CustomParser,
-                            Filters = option.Filters.ToList()
+                            Filters = option.Filters.ToList(),
+                            CollectionName = option.CollectionName
                         };
 
-                        var items = BuildFeedLinks(f);
-                        BuildRssFileUsingTemplate(f, items.OrderByDescending(i => i.DateAdded).ToList());
+                        string databaseName = "rssfeeder";
+
+                        // Load the collection of site parsers
+                        ArticleDefinitions = GetAllDocuments<SiteArticleDefinition>(databaseName, "site-parsers");
+
+                        BuildFeedLinks(f, databaseName);
                     }
                 }
 
@@ -325,66 +331,59 @@ $item.ArticleText$
             }
         }
 
-        private static List<RssFeedItem> BuildFeedLinks(RssFeed feed)
+        private static void BuildFeedLinks(RssFeed feed, string databaseName)
         {
-            string builderName = feed.CustomParser;
-            if (string.IsNullOrWhiteSpace(builderName))
-                return new List<RssFeedItem>();
-
-            Type type = Assembly.GetExecutingAssembly().GetType(builderName);
-            IRssFeedBuilder builder = (IRssFeedBuilder)Activator.CreateInstance(type, new object[] { log });
-            var list = builder.ParseRssFeedItems(log, feed, out string html)
-                //.Take(10) FOR DEBUG PURPOSES
-                ;
-
-            string databaseName = "rssfeeder";
-            string collectionName = "drudge-report";
-
-            // Load the collection of site parsers
-            ArticleDefinitions = GetAllDocuments<SiteArticleDefinition>(databaseName, "site-parsers");
+            string html = WebTools.GetUrl(feed.Url);
 
             // Create the working folder for the collection if it doesn't exist
-            string workingFolder = Path.Combine(AssemblyDirectory, collectionName);
+            string workingFolder = Path.Combine(AssemblyDirectory, feed.CollectionName);
             if (!Directory.Exists(workingFolder))
             {
                 log.Information("Creating folder '{workingFolder}'", workingFolder);
                 Directory.CreateDirectory(workingFolder);
             }
 
-            // Save the feed source for posterity
-            string feedSource = Path.Combine(workingFolder, $"{DateTime.Now.ToUniversalTime():yyyyMMddhhmmss}_{feed.Url.Replace("://", "_").Replace(".", "_")}.html");
-            SaveTextToDisk(html, feedSource, false);
+            // Save the feed html source for posterity
+            string fileStem = Path.Combine(workingFolder, $"{DateTime.Now.ToUniversalTime():yyyyMMddhhmmss}_{feed.Url.Replace("://", "_").Replace(".", "_").Replace("/", "")}");
+            SaveTextToDisk(html, fileStem + ".html", false);
 
             // Save thumbnail snapshot of the page
-            SaveThumbnailToDisk(feed.Url, $"{feedSource.Replace(".html", "")}.png");
+            SaveThumbnailToDisk(feed.Url, fileStem + ".png");
+
+            string builderName = feed.CustomParser;
+            if (string.IsNullOrWhiteSpace(builderName))
+                return;
+
+            Type type = Assembly.GetExecutingAssembly().GetType(builderName);
+            IRssFeedBuilder builder = (IRssFeedBuilder)Activator.CreateInstance(type, new object[] { log });
+            var list = builder.ParseRssFeedItems(log, feed, html)
+                //.Take(10) FOR DEBUG PURPOSES
+                ;
 
             // Add any links that don't already exist
             log.Information("Adding links to the database");
             foreach (var item in list)
             {
-                if (!DocumentExists(databaseName, collectionName, item))
+                if (!DocumentExists(databaseName, feed.CollectionName, item))
                 {
                     SaveUrlToDisk(item, workingFolder);
                     ParseArticleMetaTags(item);
-                    CreateDocument(databaseName, collectionName, item);
+                    CreateDocument(databaseName, feed.CollectionName, item);
                 }
-            }
-
-            // Remove any stale documents
-            log.Information("Removing stale links from {databaseName}", databaseName);
-            list = GetStaleDocuments(databaseName, collectionName, 7);
-            foreach (var item in list)
-            {
-                log.Information("Removing UrlHash '{urlHash}'", item.UrlHash);
-                DeleteDocument(databaseName, collectionName, item.Id);
             }
 
             // Purge stale files from working folder
             log.Information("Removing stale files from {workingFolder}", workingFolder);
             PurgeStaleFiles(workingFolder, 7);
 
-            // Return whatever documents are left in the database
-            return GetAllDocuments<RssFeedItem>(databaseName, collectionName);
+            // Remove any stale documents
+            log.Information("Removing stale links from {databaseName}", databaseName);
+            list = GetStaleDocuments(databaseName, feed.CollectionName, 7);
+            foreach (var item in list)
+            {
+                log.Information("Removing UrlHash '{urlHash}'", item.UrlHash);
+                DeleteDocument(databaseName, feed.CollectionName, item.Id);
+            }
         }
 
         private static void SaveThumbnailToDisk(string url, string filename)
@@ -397,7 +396,7 @@ $item.ArticleText$
             driver.Manage().Window.Size = new System.Drawing.Size(2000, 4000);
             driver.Navigate().GoToUrl(url);
             var screenshot = (driver as ITakesScreenshot).GetScreenshot();
-            
+
             log.Information("Saving file '{filename}'", filename);
             screenshot.SaveAsFile(filename);
             driver.Close();
@@ -449,7 +448,7 @@ $item.ArticleText$
             DateTime targetDate = DateTime.Now.AddDays(-maximumAgeInDays);
 
             // Set some common query options
-            FeedOptions queryOptions = new FeedOptions { MaxItemCount = -1 };
+            FeedOptions queryOptions = new FeedOptions { MaxItemCount = -1, EnableCrossPartitionQuery = true };
 
             // Run a simple query via LINQ. DocumentDB indexes all properties, so queries 
             // can be completed efficiently and with low latency

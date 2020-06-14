@@ -30,5 +30,8 @@ namespace RssFeeder.Console
 
         [Option("test-definition", Default = null)]
         public string TestDefinition { get; set; }
+
+        [Option("collection-name", Default = null)]
+        public string CollectionName { get; set; }
     }
 }
