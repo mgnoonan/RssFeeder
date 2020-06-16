@@ -31,14 +31,15 @@ namespace RssFeeder.Console
     /// </summary>
     class Program
     {
-        private const string DATEFORMAT = "ddd, dd MMM yyyy HH':'mm':'ss 'GMT'";
-
         /// <summary>
         /// Name of the working area folder
         /// </summary>
         private const string WORKING_FOLDER = "working";
 
         private const string MetaDataTemplate = @"
+<p>
+    The post <a href=""$item.Url$"">$item.Title$</a> captured from <a href=""$feed.Url$"">$feed.Title$</a> $item.LinkLocation$ on $item.DateAdded$ UTC.
+</p>
 <hr />
 <p>
     <small>
@@ -367,7 +368,7 @@ $item.ArticleText$
                 if (!DocumentExists(databaseName, feed.CollectionName, item))
                 {
                     SaveUrlToDisk(item, workingFolder);
-                    ParseArticleMetaTags(item);
+                    ParseArticleMetaTags(item, feed);
                     CreateDocument(databaseName, feed.CollectionName, item);
                 }
             }
@@ -392,15 +393,30 @@ $item.ArticleText$
             options.AddArgument("headless");//Comment if we want to see the window. 
 
             string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            var driver = new ChromeDriver(path, options);
-            driver.Manage().Window.Size = new System.Drawing.Size(2000, 4000);
-            driver.Navigate().GoToUrl(url);
-            var screenshot = (driver as ITakesScreenshot).GetScreenshot();
+            ChromeDriver driver = null;
 
-            log.Information("Saving file '{filename}'", filename);
-            screenshot.SaveAsFile(filename);
-            driver.Close();
-            driver.Quit();
+            try
+            {
+                driver = new ChromeDriver(path, options);
+                driver.Manage().Window.Size = new System.Drawing.Size(2000, 4000);
+                driver.Navigate().GoToUrl(url);
+                var screenshot = (driver as ITakesScreenshot).GetScreenshot();
+
+                log.Information("Saving file '{filename}'", filename);
+                screenshot.SaveAsFile(filename);
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex, "ERROR: Unable to save webpage thumbnail");
+            }
+            finally
+            {
+                if (driver != null)
+                {
+                    driver.Close();
+                    driver.Quit();
+                }
+            }
         }
 
         public static void PurgeStaleFiles(string folderPath, short maximumAgeInDays)
@@ -499,7 +515,7 @@ $item.ArticleText$
             }
         }
 
-        private static void ParseArticleMetaTags(RssFeedItem item)
+        private static void ParseArticleMetaTags(RssFeedItem item, RssFeed feed)
         {
             if (File.Exists(item.FileName))
             {
@@ -518,22 +534,23 @@ $item.ArticleText$
 
                 // Meta tags provide extended data about the item, display as much as possible
                 SetExtendedArticleMetaData(item, doc);
-                item.Description = ApplyTemplateToDescription(item, ExtendedTemplate);
+                item.Description = ApplyTemplateToDescription(item, feed, ExtendedTemplate);
             }
             else
             {
                 // Article failed to download, display minimal basic meta data
                 SetBasicArticleMetaData(item);
-                item.Description = ApplyTemplateToDescription(item, BasicTemplate);
+                item.Description = ApplyTemplateToDescription(item, feed, BasicTemplate);
             }
 
             log.Debug("{@item}", item);
         }
 
-        private static string ApplyTemplateToDescription(RssFeedItem item, string template)
+        private static string ApplyTemplateToDescription(RssFeedItem item, RssFeed feed, string template)
         {
             StringTemplate t = new StringTemplate(template);
             t.SetAttribute("item", item);
+            t.SetAttribute("feed", feed);
             return t.ToString();
         }
 
