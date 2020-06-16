@@ -40,13 +40,27 @@ namespace RssFeeder.Console.FeedBuilders
             doc.Load(new StringReader(html));
 
             // Centered main headline(s)
-            // TODO: I've seen it but need to wait
-            // until the next occurrence is captured.
 
+            var nodes = doc.DocumentNode.SelectNodes("//div[@id=\"featured\"]/div/h2/a");
+            if (nodes != null)
+            {
+                count = 1;
+                foreach (HtmlNode node in nodes)
+                {
+                    string title = HttpUtility.HtmlDecode(node.InnerText.Trim());
+
+                    var item = CreateNodeLinks(log, filters, node, "main headline", count++);
+                    if (item != null)
+                    {
+                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
+                        list.Add(item);
+                    }
+                }
+            }
 
             // Left column articles
 
-            var nodes = doc.DocumentNode.SelectNodes("//div[@id=\"column-1\"]/div/div/ul/li/a");
+            nodes = doc.DocumentNode.SelectNodes("//div[@id=\"column-1\"]/div/div/ul/li/a");
             if (nodes != null)
             {
                 count = 1;
