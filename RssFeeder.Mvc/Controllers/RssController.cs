@@ -21,7 +21,7 @@ namespace RssFeeder.Mvc.Controllers
     {
         private readonly IRepository<RssFeederRepository> _repo;
         private readonly IMemoryCache _cache;
-        private readonly string _collectionID = "drudge-report";
+        private readonly IEnumerable<string> _collectionList = new string[] { "drudge-report", "eagle-slant" };
 
         public RssController(IRepository<RssFeederRepository> repository, IMemoryCache cache)
         {
@@ -29,52 +29,11 @@ namespace RssFeeder.Mvc.Controllers
             _cache = cache;
         }
 
-        private IEnumerable<RssFeedItem> GetFeedItems(string id)
-        {
-            return _cache.GetOrCreate<IEnumerable<RssFeedItem>>(id, entry =>
-            {
-                entry.SetAbsoluteExpiration(TimeSpan.FromMinutes(60));
-                _repo.Init(id);
-
-                var _items = _repo.GetAllDocuments<RssFeedItem>("rssfeeder", id);
-
-                return _items
-                    .Where(q => q.DateAdded >= DateTime.Now.Date.AddDays(-3))
-                    .OrderByDescending(q => q.DateAdded);
-            });
-        }
-
-        [HttpGet, HttpHead, Route(""), ResponseCache(Duration = 59 * 60)]
-        public IActionResult Get()
-        {
-            // FIXME: Hack until I can find a better way to handle this
-            var list = new List<Feed>
-            {
-                new Feed
-                {
-                    id = "drudge-report",
-                    description = "The Drudge Report",
-                    url = "https://rssfeedermvc.azurewebsites.net/api/rss/drudge-report"
-                }
-            };
-
-            if (Request.Method.Equals("HEAD"))
-            {
-                // FIXME: Hard coded for JSON bytes for now, no easy way to calculate size for a reference type
-                Response.ContentLength = 402;
-                return Ok();
-            }
-            else
-            {
-                return Ok(list);
-            }
-        }
-
-        [HttpGet, HttpHead, Route("{id}"), ResponseCache(Duration = 59 * 60), Produces("text/xml")]
+        [HttpGet, HttpHead, Route("{id}"), ResponseCache(Duration = 60 * 60), Produces("text/xml")]
         public async Task<IActionResult> Get(string id)
         {
             // FIXME: Hack until I can find a better way to handle this
-            if (id.ToLowerInvariant() != _collectionID)
+            if (_collectionList.Contains(id.ToLowerInvariant()))
             {
                 return NotFound();
             }
@@ -112,8 +71,9 @@ namespace RssFeeder.Mvc.Controllers
             {
                 var rssWriter = new AtomFeedWriter(xmlWriter);
 
-                await rssWriter.WriteTitle("The Drudge Report");
-                await rssWriter.Write(new SyndicationLink(new Uri("https://www.drudgereport.com/")));
+                var feed = GetFeed(id);
+                await rssWriter.WriteTitle(feed.title);
+                await rssWriter.Write(new SyndicationLink(new Uri(feed.url)));
                 await rssWriter.WriteUpdated(DateTimeOffset.UtcNow);
 
                 // Add Items
@@ -142,6 +102,24 @@ namespace RssFeeder.Mvc.Controllers
             _cache.Set<string>($"{id}_items", s, TimeSpan.FromMinutes(60));
 
             return s;
+        }
+
+        private FeedModel GetFeed(string id)
+        {
+            _repo.Init("feeds");
+
+            return _repo.GetItemAsync<FeedModel>(id).Result;
+        }
+
+        private IEnumerable<RssFeedItem> GetFeedItems(string id)
+        {
+            _repo.Init(id);
+
+            var _items = _repo.GetAllDocuments<RssFeedItem>("rssfeeder", id);
+
+            return _items
+                .Where(q => q.DateAdded >= DateTime.Now.Date.AddDays(-3))
+                .OrderByDescending(q => q.DateAdded);
         }
     }
 }
