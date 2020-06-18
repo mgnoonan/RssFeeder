@@ -33,7 +33,7 @@ namespace RssFeeder.Mvc.Controllers
         public async Task<IActionResult> Get(string id)
         {
             // FIXME: Hack until I can find a better way to handle this
-            if (_collectionList.Contains(id.ToLowerInvariant()))
+            if (!_collectionList.Contains(id.ToLowerInvariant()))
             {
                 return NotFound();
             }
