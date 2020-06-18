@@ -89,7 +89,7 @@ namespace RssFeeder.Mvc.Controllers
                     };
 
                     si.AddLink(new SyndicationLink(new Uri(item.Url)));
-                    si.AddContributor(new SyndicationPerson(item.SiteName, "drudge@drudgereport.com", AtomContributorTypes.Author));
+                    si.AddContributor(new SyndicationPerson(item.SiteName, feed.authoremail, AtomContributorTypes.Author));
 
                     await rssWriter.Write(si);
                 }
@@ -108,7 +108,9 @@ namespace RssFeeder.Mvc.Controllers
         {
             _repo.Init("feeds");
 
-            return _repo.GetItemAsync<FeedModel>(id).Result;
+            var feeds = _repo.GetAllDocuments<FeedModel>("rssfeeder", "feeds");
+
+            return feeds.FirstOrDefault(q => q.collectionname == id);
         }
 
         private IEnumerable<RssFeedItem> GetFeedItems(string id)
