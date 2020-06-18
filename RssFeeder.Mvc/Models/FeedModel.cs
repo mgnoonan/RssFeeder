@@ -20,5 +20,7 @@ namespace RssFeeder.Mvc.Models
         [Required]
         public string customparser { get; set; }
         public List<string> filters { get; set; }
+        public string collectionname { get; set; }
+        public string authoremail { get; set; }
     }
 }
