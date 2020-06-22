@@ -8,6 +8,7 @@ using System.Net;
 using System.Reflection;
 using System.ServiceModel.Syndication;
 using System.Threading;
+using System.Web.UI.WebControls.WebParts;
 using System.Xml;
 using Antlr3.ST;
 using CommandLine;
@@ -383,7 +384,7 @@ $item.ArticleText$
             foreach (var item in list)
             {
                 log.Information("Removing UrlHash '{urlHash}'", item.UrlHash);
-                DeleteDocument(databaseName, feed.CollectionName, item.Id);
+                DeleteDocument(databaseName, feed.CollectionName, item);
             }
         }
 
@@ -502,16 +503,25 @@ $item.ArticleText$
 
         private static void DeleteDocument(string databaseName, string collectionName, RssFeedItem item)
         {
-            DeleteDocument(databaseName, collectionName, item.Id);
+            DeleteDocument(databaseName, collectionName, item.Id, collectionName.Equals("drudge-report") ? "" : item.HostName);
         }
 
-        private static void DeleteDocument(string databaseName, string collectionName, string documentID)
+        private static void DeleteDocument(string databaseName, string collectionName, string documentID, string partitionKey)
         {
-            var result = CosmosClient.DeleteDocumentAsync(UriFactory.CreateDocumentUri(databaseName, collectionName, documentID)).Result;
-
-            if (result.StatusCode != HttpStatusCode.NoContent)
+            try
             {
-                throw new Exception($"Unable to delete document for '{documentID}'");
+                var options = string.IsNullOrEmpty(partitionKey) ? null : new RequestOptions { PartitionKey = new Microsoft.Azure.Documents.PartitionKey(partitionKey) };
+
+                var result = CosmosClient.DeleteDocumentAsync(UriFactory.CreateDocumentUri(databaseName, collectionName, documentID), options).Result;
+
+                if (result.StatusCode != HttpStatusCode.NoContent)
+                {
+                    log.Warning("Unable to delete document for {documentID}", documentID);
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex, "Unabled to delete document for {documentID}", documentID);
             }
         }
 
