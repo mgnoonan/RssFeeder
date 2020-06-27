@@ -4,7 +4,7 @@
     ViewData["Title"] = "Index";
 }
 
-<h2>Index</h2>
+<h1>Index</h1>
 
 <h4>SiteParserSearchModel</h4>
 <hr />
@@ -18,13 +18,14 @@
                 <span asp-validation-for="SiteName" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="submit" value="Search" class="btn btn-default" />
+                <input type="submit" value="Search" class="btn btn-primary" />
             </div>
         </form>
     </div>
 </div>
+
 <div>
-    <a asp-action="Search">Display all</a>
+    <a asp-action="Search">Display All</a>
 </div>
 
 @section Scripts {

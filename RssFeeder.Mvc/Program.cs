@@ -1,9 +1,7 @@
-﻿using System;
-using Microsoft.ApplicationInsights;
-using Microsoft.ApplicationInsights.DependencyCollector;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
 
@@ -11,36 +9,38 @@ namespace RssFeeder.Mvc
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static int Main(string[] args)
         {
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
-                .Enrich.FromLogContext()
-                .WriteTo.Console()
-                .WriteTo.ApplicationInsights(TelemetryConfiguration.CreateDefault(), TelemetryConverter.Traces)
-                .CreateLogger();
-
-            try
-            {
-                Log.Information("Starting up");
-                CreateHostBuilder(args).Build().Run();
-            }
-            catch (Exception ex)
-            {
-                Log.Fatal(ex, "Application start-up failed");
-            }
-            finally
-            {
-                Log.CloseAndFlush();
-            }
+            CreateHostBuilder(args).Build().Run();
+            return 0;
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .UseSerilog()
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseStartup<Startup>();
+                    webBuilder
+                        .ConfigureLogging((hostingContext, logging) => logging.ClearProviders())
+                        .UseSerilog((hostingContext, loggerConfiguration) =>
+                        {
+                            var telemetryConfiguration = TelemetryConfiguration.CreateDefault();
+                            telemetryConfiguration.InstrumentationKey = hostingContext.Configuration["ApplicationInsights:InstrumentationKey"];
+
+                            loggerConfiguration
+                                .MinimumLevel.Information()
+                                .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+                                .MinimumLevel.Override("System", LogEventLevel.Warning)
+#if DEBUG
+                                .MinimumLevel.Verbose()
+                                .WriteTo.Console()
+                                .WriteTo.Debug()
+                                .WriteTo.Seq("http://localhost:5341")       // docker run --rm -it -e ACCEPT_EULA=Y -p 5341:80 datalust/seq
+#endif
+                        .Enrich.FromLogContext()
+                                .Enrich.WithMachineName()
+                                .WriteTo.ApplicationInsights(telemetryConfiguration, TelemetryConverter.Traces);
+                        })
+                    .UseStartup<Startup>();
                 });
     }
 }
