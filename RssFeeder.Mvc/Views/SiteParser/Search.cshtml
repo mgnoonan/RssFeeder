@@ -4,7 +4,7 @@
     ViewData["Title"] = "Search";
 }
 
-<h2>Search</h2>
+<h1>Search</h1>
 
 <p>
     <a asp-action="Create">Create New</a>
@@ -12,9 +12,6 @@
 <table class="table">
     <thead>
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.id)
-            </th>
             <th>
                 @Html.DisplayNameFor(model => model.SiteName)
             </th>
@@ -34,9 +31,6 @@
         @foreach (var item in Model)
         {
             <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.id)
-                </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.SiteName)
                 </td>

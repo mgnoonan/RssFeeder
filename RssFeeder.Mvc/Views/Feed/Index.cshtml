@@ -4,7 +4,7 @@
     ViewData["Title"] = "Index";
 }
 
-<h2>Index</h2>
+<h1>Index</h1>
 
 <p>
     <a asp-action="Create">Create New</a>
@@ -22,7 +22,22 @@
                 @Html.DisplayNameFor(model => model.url)
             </th>
             <th>
+                @Html.DisplayNameFor(model => model.description)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.outputfile)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.language)
+            </th>
+            <th>
                 @Html.DisplayNameFor(model => model.customparser)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.collectionname)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.authoremail)
             </th>
             <th></th>
         </tr>
@@ -38,10 +53,25 @@
                     @Html.DisplayFor(modelItem => item.title)
                 </td>
                 <td>
-                    <a href="@item.url" target="_blank">@Html.DisplayFor(modelItem => item.url)</a>
+                    @Html.DisplayFor(modelItem => item.url)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.description)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.outputfile)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.language)
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.customparser)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.collectionname)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.authoremail)
                 </td>
                 <td>
                     @Html.ActionLink("Edit", "Edit", new { id = item.id }) |

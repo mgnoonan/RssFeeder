@@ -49,13 +49,11 @@ namespace RssFeeder.Mvc.Controllers
 
                     var items = await _repo.GetItemsAsync<SiteParserModel>(i => i.SiteName.Contains(model.SiteName));
 
-                    switch (items.Count())
+                    return (items.Count()) switch
                     {
-                        case 0:
-                            return RedirectToAction("Create", new { name = model.SiteName });
-                        default:
-                            return RedirectToAction("Search", new { q = model.SiteName });
-                    }
+                        0 => RedirectToAction("Create", new { name = model.SiteName }),
+                        _ => RedirectToAction("Search", new { q = model.SiteName }),
+                    };
                 }
 
                 return View(model);

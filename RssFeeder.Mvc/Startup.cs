@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.AzureAD.UI;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -66,9 +66,11 @@ namespace RssFeeder.Mvc
                     .AddRewrite(@"^content/rss/drudge\.xml", "api/rss/drudge-report",
                         skipRemainingRules: true);
             app.UseRewriter(options);
+            app.UseHttpsRedirection();
             app.UseStaticFiles();
 
-            app.UseSerilogRequestLogging();
+            app.UseSerilogRequestLogging(opts => opts.EnrichDiagnosticContext = LogHelper.EnrichFromRequest);
+
             app.UseRouting();
 
             app.UseAuthentication();
