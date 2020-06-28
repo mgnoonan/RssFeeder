@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Web;
+using System.Net;
 using HtmlAgilityPack;
-using RssFeeder.Console.Utility;
 using RssFeeder.Models;
 using Serilog;
 
@@ -76,7 +74,7 @@ namespace RssFeeder.Console.FeedBuilders
                 count = 1;
                 foreach (HtmlNode node in nodes)
                 {
-                    string title = HttpUtility.HtmlDecode(node.InnerText.Trim());
+                    string title = WebUtility.HtmlDecode(node.InnerText.Trim());
 
                     if (title.EndsWith("...") || title.EndsWith("?") || title.EndsWith("!"))
                     {
@@ -99,7 +97,7 @@ namespace RssFeeder.Console.FeedBuilders
                 count = 1;
                 foreach (HtmlNode node in nodes)
                 {
-                    string title = HttpUtility.HtmlDecode(node.InnerText.Trim());
+                    string title = WebUtility.HtmlDecode(node.InnerText.Trim());
 
                     if (title.EndsWith("...") || title.EndsWith("?") || title.EndsWith("!"))
                     {
@@ -122,7 +120,7 @@ namespace RssFeeder.Console.FeedBuilders
                 count = 1;
                 foreach (HtmlNode node in nodes)
                 {
-                    string title = HttpUtility.HtmlDecode(node.InnerText.Trim());
+                    string title = WebUtility.HtmlDecode(node.InnerText.Trim());
 
                     if (title.EndsWith("...") || title.EndsWith("?") || title.EndsWith("!"))
                     {
@@ -145,7 +143,7 @@ namespace RssFeeder.Console.FeedBuilders
                 count = 1;
                 foreach (HtmlNode node in nodes)
                 {
-                    string title = HttpUtility.HtmlDecode(node.InnerText.Trim());
+                    string title = WebUtility.HtmlDecode(node.InnerText.Trim());
 
                     if (title.EndsWith("...") || title.EndsWith("?") || title.EndsWith("!"))
                     {

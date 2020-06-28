@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Web;
+using System.Net;
 using HtmlAgilityPack;
 using RssFeeder.Console.Utility;
 using RssFeeder.Models;
@@ -19,7 +19,7 @@ namespace RssFeeder.Console.FeedBuilders
 
         protected RssFeedItem CreateNodeLinks(ILogger log, List<string> filters, HtmlNode node, string location, int count)
         {
-            string title = HttpUtility.HtmlDecode(node.InnerText.Trim());
+            string title = WebUtility.HtmlDecode(node.InnerText.Trim());
 
             // Replace all errant spaces, which sometimes creep into Drudge's URLs
             HtmlAttribute attr = node.Attributes["href"];
@@ -46,7 +46,7 @@ namespace RssFeeder.Console.FeedBuilders
                 return new RssFeedItem()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Title = HttpUtility.HtmlDecode(title),
+                    Title = WebUtility.HtmlDecode(title),
                     Url = linkUrl,
                     UrlHash = hash,
                     DateAdded = DateTime.Now.ToUniversalTime(),

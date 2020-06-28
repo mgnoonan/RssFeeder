@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Web;
+using System.Net;
 using HtmlAgilityPack;
 using RssFeeder.Models;
 using Serilog;
@@ -47,7 +47,7 @@ namespace RssFeeder.Console.FeedBuilders
                 count = 1;
                 foreach (HtmlNode node in nodes)
                 {
-                    string title = HttpUtility.HtmlDecode(node.InnerText.Trim());
+                    string title = WebUtility.HtmlDecode(node.InnerText.Trim());
 
                     var item = CreateNodeLinks(log, filters, node, "main headline", count++);
                     if (item != null)
@@ -66,7 +66,7 @@ namespace RssFeeder.Console.FeedBuilders
                 count = 1;
                 foreach (HtmlNode node in nodes)
                 {
-                    string title = HttpUtility.HtmlDecode(node.InnerText.Trim());
+                    string title = WebUtility.HtmlDecode(node.InnerText.Trim());
 
                     var item = CreateNodeLinks(log, filters, node, "left column", count++);
                     if (item != null)
@@ -86,7 +86,7 @@ namespace RssFeeder.Console.FeedBuilders
                 count = 1;
                 foreach (HtmlNode node in nodes)
                 {
-                    string title = HttpUtility.HtmlDecode(node.InnerText.Trim());
+                    string title = WebUtility.HtmlDecode(node.InnerText.Trim());
 
                     var item = CreateNodeLinks(log, filters, node, "left column", count++);
                     if (item != null)
