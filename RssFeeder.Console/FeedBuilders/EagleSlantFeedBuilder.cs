@@ -17,6 +17,7 @@ namespace RssFeeder.Console.FeedBuilders
             var filters = feed.Filters ?? new List<string>();
 
             var items = ParseRssFeedItems(log, html, filters);
+            log.Information("FOUND {count} articles in {url}", items.Count, feed.Url);
 
             // Replace any relative paths and add the feed id
             foreach (var item in items)
@@ -34,14 +35,13 @@ namespace RssFeeder.Console.FeedBuilders
         public List<RssFeedItem> ParseRssFeedItems(ILogger log, string html, List<string> filters)
         {
             var list = new List<RssFeedItem>();
-            int count = 1;
-
             var doc = new HtmlDocument();
             doc.Load(new StringReader(html));
 
             // Centered main headline(s)
 
             var nodes = doc.DocumentNode.SelectNodes("//div[@id=\"featured\"]/div/h2/a");
+            int count;
             if (nodes != null)
             {
                 count = 1;
@@ -52,7 +52,7 @@ namespace RssFeeder.Console.FeedBuilders
                     var item = CreateNodeLinks(log, filters, node, "main headline", count++);
                     if (item != null)
                     {
-                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
+                        log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
                         list.Add(item);
                     }
                 }
@@ -71,7 +71,7 @@ namespace RssFeeder.Console.FeedBuilders
                     var item = CreateNodeLinks(log, filters, node, "left column", count++);
                     if (item != null)
                     {
-                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
+                        log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
                         list.Add(item);
                     }
                 }
@@ -91,7 +91,7 @@ namespace RssFeeder.Console.FeedBuilders
                     var item = CreateNodeLinks(log, filters, node, "left column", count++);
                     if (item != null)
                     {
-                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
+                        log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
                         list.Add(item);
                     }
                 }

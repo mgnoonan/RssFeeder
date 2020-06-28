@@ -8,7 +8,6 @@ using System.Net;
 using System.Reflection;
 using System.ServiceModel.Syndication;
 using System.Threading;
-using System.Web.UI.WebControls.WebParts;
 using System.Xml;
 using Antlr3.ST;
 using CommandLine;
@@ -22,6 +21,7 @@ using RssFeeder.Console.Parsers;
 using RssFeeder.Console.Utility;
 using RssFeeder.Models;
 using Serilog;
+using Serilog.Context;
 using Serilog.Formatting.Compact;
 using Serilog.Sinks.SystemConsole.Themes;
 
@@ -104,6 +104,7 @@ $item.ArticleText$
 
             // Init Serilog
             log = new LoggerConfiguration()
+                .Enrich.FromLogContext()
                 .MinimumLevel.Information()
                 .WriteTo.Console(theme: AnsiConsoleTheme.Code)
                 .WriteTo.File(new RenderedCompactJsonFormatter(), "RssFeeder.log", rollingInterval: RollingInterval.Day, retainedFileCountLimit: 14)
@@ -256,10 +257,13 @@ $item.ArticleText$
 
                         string databaseName = "rssfeeder";
 
-                        // Load the collection of site parsers
-                        ArticleDefinitions = GetAllDocuments<SiteArticleDefinition>(databaseName, "site-parsers");
+                        using (LogContext.PushProperty("collectionName", f.CollectionName))
+                        {
+                            // Load the collection of site parsers
+                            ArticleDefinitions = GetAllDocuments<SiteArticleDefinition>(databaseName, "site-parsers");
 
-                        BuildFeedLinks(f, databaseName);
+                            BuildFeedLinks(f, databaseName);
+                        }
                     }
                 }
 
@@ -363,29 +367,31 @@ $item.ArticleText$
                 ;
 
             // Add any links that don't already exist
-            log.Information("Adding links to the database");
+            log.Information("Adding new articles to the {collectionName} collection", feed.CollectionName);
+            int count = 0;
             foreach (var item in list)
             {
                 if (!DocumentExists(databaseName, feed.CollectionName, item))
                 {
+                    count++;
                     SaveUrlToDisk(item, workingFolder);
                     ParseArticleMetaTags(item, feed);
                     CreateDocument(databaseName, feed.CollectionName, item);
                 }
             }
+            log.Information("Added {count} new articles to the {collectionName} collection", count, feed.CollectionName);
 
             // Purge stale files from working folder
-            log.Information("Removing stale files from {workingFolder}", workingFolder);
             PurgeStaleFiles(workingFolder, 7);
 
             // Remove any stale documents
-            log.Information("Removing stale links from {databaseName}", databaseName);
             list = GetStaleDocuments(databaseName, feed.CollectionName, 7);
             foreach (var item in list)
             {
-                log.Information("Removing UrlHash '{urlHash}'", item.UrlHash);
+                log.Debug("Removing UrlHash '{urlHash}' from {collectionName}", item.UrlHash, feed.CollectionName);
                 DeleteDocument(databaseName, feed.CollectionName, item);
             }
+            log.Information("Removed {count} documents older than {maximumAgeInDays} days from {collectionName}", list.Count(), 7, feed.CollectionName);
         }
 
         private static void SaveThumbnailToDisk(string url, string filename)
@@ -425,21 +431,29 @@ $item.ArticleText$
             DateTime minimumDate = DateTime.Now.AddDays(-maximumAgeInDays);
 
             var files = Directory.EnumerateFiles(folderPath);
+            int count = 0;
 
             foreach (var file in files)
             {
-                DeleteFileIfOlderThan(file, minimumDate);
+                if (DeleteFileIfOlderThan(file, minimumDate))
+                {
+                    count++;
+                }
             }
+            log.Information("Removed {count} files older than {maximumAgeInDays} days from {folderPath}", count, maximumAgeInDays, folderPath);
         }
 
-        private static void DeleteFileIfOlderThan(string path, DateTime date)
+        private static bool DeleteFileIfOlderThan(string path, DateTime date)
         {
             var file = new FileInfo(path);
             if (file.CreationTime < date)
             {
-                log.Information("Removing {fileName}", file.FullName);
+                log.Debug("Removing {fileName}", file.FullName);
                 file.Delete();
+                return true;
             }
+
+            return false;
         }
 
         /// <summary>
