@@ -9,10 +9,10 @@ using System.Reflection;
 using System.ServiceModel.Syndication;
 using System.Threading;
 using System.Xml;
-using Antlr3.ST;
+using Antlr4.StringTemplate;
 using CommandLine;
 using HtmlAgilityPack;
-using Microsoft.Azure.Documents.Client;
+using Microsoft.Azure.Cosmos;
 using Newtonsoft.Json;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
@@ -79,9 +79,9 @@ $item.ArticleText$
         /// <summary>
         /// The DocumentDB client instance.
         /// </summary>
-        private static DocumentClient _client = null;
+        private static CosmosClient _client = null;
 
-        private static DocumentClient CosmosClient { get => _client ?? new DocumentClient(new Uri(EndpointUri), PrimaryKey); }
+        private static CosmosClient CosmosClient { get => _client ?? new CosmosClient(EndpointUri, PrimaryKey); }
 
         /// <summary>
         /// The list of site definitions that describe how to get an article
@@ -464,9 +464,8 @@ $item.ArticleText$
         /// <param name="item"></param>
         private static void CreateDocument(string databaseName, string collectionName, RssFeedItem item)
         {
-            var result = CosmosClient.CreateDocumentAsync(
-                UriFactory.CreateDocumentCollectionUri(databaseName, collectionName), item)
-                .Result;
+            var container = CosmosClient.GetContainer(databaseName, collectionName);
+            var result = container.CreateItemAsync(item).Result;
 
             if (result.StatusCode != HttpStatusCode.Created)
             {
@@ -479,12 +478,12 @@ $item.ArticleText$
             DateTime targetDate = DateTime.Now.AddDays(-maximumAgeInDays);
 
             // Set some common query options
-            FeedOptions queryOptions = new FeedOptions { MaxItemCount = -1, EnableCrossPartitionQuery = true };
+            var queryOptions = new QueryRequestOptions { MaxItemCount = -1 };
 
             // Run a simple query via LINQ. DocumentDB indexes all properties, so queries 
             // can be completed efficiently and with low latency
-            return CosmosClient.CreateDocumentQuery<RssFeedItem>(
-                UriFactory.CreateDocumentCollectionUri(databaseName, collectionName), queryOptions)
+            var container = CosmosClient.GetContainer(databaseName, collectionName);
+            return container.GetItemLinqQueryable<RssFeedItem>(requestOptions: queryOptions)
                 .Where(f => f.DateAdded <= targetDate)
                 .ToList();
         }
@@ -492,12 +491,12 @@ $item.ArticleText$
         private static bool DocumentExists(string databaseName, string collectionName, RssFeedItem item)
         {
             // Set some common query options
-            FeedOptions queryOptions = new FeedOptions { MaxItemCount = -1 };
+            var queryOptions = new QueryRequestOptions { MaxItemCount = -1 };
 
             // Run a simple query via LINQ. DocumentDB indexes all properties, so queries 
             // can be completed efficiently and with low latency
-            var result = CosmosClient.CreateDocumentQuery<RssFeedItem>(
-                UriFactory.CreateDocumentCollectionUri(databaseName, collectionName), queryOptions)
+            var container = CosmosClient.GetContainer(databaseName, collectionName);
+            var result = container.GetItemLinqQueryable<RssFeedItem>(requestOptions: queryOptions)
                 .Where(f => f.UrlHash == item.UrlHash);
 
             return result.Count() > 0;
@@ -506,13 +505,15 @@ $item.ArticleText$
         private static List<T> GetAllDocuments<T>(string databaseName, string collectionName)
         {
             // Set some common query options
-            FeedOptions queryOptions = new FeedOptions { MaxItemCount = -1 };
+            var queryOptions = new QueryRequestOptions { MaxItemCount = -1 };
 
             // Run a simple query via LINQ. DocumentDB indexes all properties, so queries 
             // can be completed efficiently and with low latency
-            return CosmosClient.CreateDocumentQuery<T>(
-                UriFactory.CreateDocumentCollectionUri(databaseName, collectionName), queryOptions)
+            var container = CosmosClient.GetContainer(databaseName, collectionName);
+            var result = container.GetItemLinqQueryable<T>(requestOptions: queryOptions)
                 .ToList();
+
+            return result;
         }
 
         private static void DeleteDocument(string databaseName, string collectionName, RssFeedItem item)
@@ -524,9 +525,10 @@ $item.ArticleText$
         {
             try
             {
-                var options = string.IsNullOrEmpty(partitionKey) ? null : new RequestOptions { PartitionKey = new Microsoft.Azure.Documents.PartitionKey(partitionKey) };
+                var pk = new PartitionKey(partitionKey);
 
-                var result = CosmosClient.DeleteDocumentAsync(UriFactory.CreateDocumentUri(databaseName, collectionName, documentID), options).Result;
+                var container = CosmosClient.GetContainer(databaseName, collectionName);
+                var result = container.DeleteItemAsync<RssFeedItem>(documentID, pk).Result;
 
                 if (result.StatusCode != HttpStatusCode.NoContent)
                 {
@@ -535,7 +537,7 @@ $item.ArticleText$
             }
             catch (Exception ex)
             {
-                log.Error(ex, "Unabled to delete document for {documentID}", documentID);
+                log.Error(ex, "Unable to delete document for {documentID}", documentID);
             }
         }
 
@@ -572,9 +574,9 @@ $item.ArticleText$
 
         private static string ApplyTemplateToDescription(RssFeedItem item, RssFeed feed, string template)
         {
-            StringTemplate t = new StringTemplate(template);
-            t.SetAttribute("item", item);
-            t.SetAttribute("feed", feed);
+            var t = new Template(template);
+            t.Add("item", item);
+            t.Add("feed", feed);
             return t.ToString();
         }
 
