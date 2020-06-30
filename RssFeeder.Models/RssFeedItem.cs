@@ -6,6 +6,7 @@ namespace RssFeeder.Models
 {
     public class RssFeedItem
     {
+        [JsonProperty(PropertyName = "id")]
         public string Id { get; set; }
         public int FeedId { get; set; }
         public string Url { get; set; }
