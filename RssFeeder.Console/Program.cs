@@ -18,6 +18,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using RssFeeder.Console.FeedBuilders;
 using RssFeeder.Console.Parsers;
+using RssFeeder.Console.Utility;
 using RssFeeder.Models;
 using Serilog;
 using Serilog.Formatting.Compact;
