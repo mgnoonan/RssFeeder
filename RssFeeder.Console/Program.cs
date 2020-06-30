@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -13,12 +12,12 @@ using Antlr4.StringTemplate;
 using CommandLine;
 using HtmlAgilityPack;
 using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using RssFeeder.Console.FeedBuilders;
 using RssFeeder.Console.Parsers;
-using RssFeeder.Console.Utility;
 using RssFeeder.Models;
 using Serilog;
 using Serilog.Formatting.Compact;
@@ -66,12 +65,12 @@ $item.ArticleText$
         /// <summary>
         /// The Azure DocumentDB endpoint for running this GetStarted sample.
         /// </summary>
-        private static readonly string EndpointUri = ConfigurationManager.AppSettings["EndPointUrl"];
+        private static string EndpointUri;
 
         /// <summary>
         /// The primary key for the Azure DocumentDB account.
         /// </summary>
-        private static readonly string PrimaryKey = ConfigurationManager.AppSettings["PrimaryKey"];
+        private static string PrimaryKey;
 
         private static ILogger log;
 
@@ -185,6 +184,15 @@ $item.ArticleText$
 
             try
             {
+                // Build configuration
+                var config = new ConfigurationBuilder()
+                    .SetBasePath(Directory.GetParent(AppContext.BaseDirectory).FullName)
+                    .AddJsonFile("appsettings.json", false)
+                    .Build();
+
+                EndpointUri = config.GetSection("CosmosDB")["endpoint"];
+                PrimaryKey = config.GetSection("CosmosDB")["authKey"];
+
                 // A config file was specified so read in the options from there
                 List<Options> optionsList;
                 if (!string.IsNullOrWhiteSpace(opts.TestDefinition))
@@ -294,11 +302,11 @@ $item.ArticleText$
                 using (HttpWebResponse httpWebResponse = webResponse as HttpWebResponse)
                 {
                     StreamReader reader;
-                    if (httpWebResponse.ContentEncoding.ToLower().Contains("gzip"))
+                    if (httpWebResponse.ContentEncoding?.ToLower().Contains("gzip") ?? false)
                     {
                         reader = new StreamReader(new GZipStream(httpWebResponse.GetResponseStream(), CompressionMode.Decompress));
                     }
-                    else if (httpWebResponse.ContentEncoding.ToLower().Contains("deflate"))
+                    else if (httpWebResponse.ContentEncoding?.ToLower().Contains("deflate") ?? false)
                     {
                         reader = new StreamReader(new DeflateStream(httpWebResponse.GetResponseStream(), CompressionMode.Decompress));
                     }
@@ -468,7 +476,7 @@ $item.ArticleText$
             // Run a simple query via LINQ. DocumentDB indexes all properties, so queries 
             // can be completed efficiently and with low latency
             var container = CosmosClient.GetContainer(databaseName, collectionName);
-            return container.GetItemLinqQueryable<RssFeedItem>(requestOptions: queryOptions)
+            return container.GetItemLinqQueryable<RssFeedItem>(allowSynchronousQueryExecution: true, requestOptions: queryOptions)
                 .Where(f => f.DateAdded <= targetDate)
                 .ToList();
         }
@@ -481,7 +489,7 @@ $item.ArticleText$
             // Run a simple query via LINQ. DocumentDB indexes all properties, so queries 
             // can be completed efficiently and with low latency
             var container = CosmosClient.GetContainer(databaseName, collectionName);
-            var result = container.GetItemLinqQueryable<RssFeedItem>(requestOptions: queryOptions)
+            var result = container.GetItemLinqQueryable<RssFeedItem>(allowSynchronousQueryExecution: true, requestOptions: queryOptions)
                 .Where(f => f.UrlHash == item.UrlHash);
 
             return result.Count() > 0;
@@ -495,7 +503,7 @@ $item.ArticleText$
             // Run a simple query via LINQ. DocumentDB indexes all properties, so queries 
             // can be completed efficiently and with low latency
             var container = CosmosClient.GetContainer(databaseName, collectionName);
-            var result = container.GetItemLinqQueryable<T>(requestOptions: queryOptions)
+            var result = container.GetItemLinqQueryable<T>(allowSynchronousQueryExecution: true, requestOptions: queryOptions)
                 .ToList();
 
             return result;
@@ -510,7 +518,7 @@ $item.ArticleText$
         {
             try
             {
-                var pk = new PartitionKey(partitionKey);
+                var pk = string.IsNullOrEmpty(partitionKey) ? PartitionKey.None : new PartitionKey(partitionKey);
 
                 var container = CosmosClient.GetContainer(databaseName, collectionName);
                 var result = container.DeleteItemAsync<RssFeedItem>(documentID, pk).Result;
@@ -559,7 +567,7 @@ $item.ArticleText$
 
         private static string ApplyTemplateToDescription(RssFeedItem item, RssFeed feed, string template)
         {
-            var t = new Template(template);
+            var t = new Template(template, '$', '$');
             t.Add("item", item);
             t.Add("feed", feed);
             return t.ToString();
