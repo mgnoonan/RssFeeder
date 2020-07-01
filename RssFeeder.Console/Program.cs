@@ -397,7 +397,7 @@ $item.ArticleText$
             list = GetStaleDocuments(databaseName, feed.CollectionName, 7);
             foreach (var item in list)
             {
-                log.Debug("Removing UrlHash '{urlHash}' from {collectionName}", item.UrlHash, feed.CollectionName);
+                log.Information("Removing UrlHash '{urlHash}' from {collectionName}", item.UrlHash, feed.CollectionName);
                 DeleteDocument(databaseName, feed.CollectionName, item);
             }
             log.Information("Removed {count} documents older than {maximumAgeInDays} days from {collectionName}", list.Count(), 7, feed.CollectionName);
@@ -457,7 +457,7 @@ $item.ArticleText$
             var file = new FileInfo(path);
             if (file.CreationTime < date)
             {
-                log.Debug("Removing {fileName}", file.FullName);
+                log.Information("Removing {fileName}", file.FullName);
                 file.Delete();
                 return true;
             }
@@ -586,7 +586,8 @@ $item.ArticleText$
             var t = new Template(template, '$', '$');
             t.Add("item", item);
             t.Add("feed", feed);
-            return t.ToString();
+
+            return t.Render();
         }
 
         private static void SetExtendedArticleMetaData(RssFeedItem item, HtmlDocument doc)
@@ -675,13 +676,9 @@ $item.ArticleText$
                 log.Information("Saving file '{fileName}'", item.FileName);
                 doc.Save(item.FileName);
             }
-            catch (WebException ex)
-            {
-                log.Warning("Error loading url '{message}'", ex.Message);
-            }
             catch (Exception ex)
             {
-                log.Warning("Unexpected error loading url '{message}'", ex.Message);
+                log.Error(ex, "Unexpected error loading url '{message}'", ex.Message);
             }
         }
 
