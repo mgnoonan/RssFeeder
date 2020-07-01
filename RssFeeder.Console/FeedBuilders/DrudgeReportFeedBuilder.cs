@@ -57,7 +57,7 @@ namespace RssFeeder.Console.FeedBuilders
                     var item = CreateNodeLinks(log, filters, node, "main headline", count++);
                     if (item != null)
                     {
-                        log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
+                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
                         list.Add(item);
                     }
                 }
@@ -82,7 +82,7 @@ namespace RssFeeder.Console.FeedBuilders
                         var item = CreateNodeLinks(log, filters, node, "above the fold", count++);
                         if (item != null)
                         {
-                            log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
+                            log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
                             list.Add(item);
                         }
                     }
@@ -105,7 +105,7 @@ namespace RssFeeder.Console.FeedBuilders
                         var item = CreateNodeLinks(log, filters, node, "left column", count++);
                         if (item != null)
                         {
-                            log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
+                            log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
                             list.Add(item);
                         }
                     }
@@ -128,7 +128,7 @@ namespace RssFeeder.Console.FeedBuilders
                         var item = CreateNodeLinks(log, filters, node, "middle column", count++);
                         if (item != null)
                         {
-                            log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
+                            log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
                             list.Add(item);
                         }
                     }
@@ -151,7 +151,7 @@ namespace RssFeeder.Console.FeedBuilders
                         var item = CreateNodeLinks(log, filters, node, "right column", count++);
                         if (item != null)
                         {
-                            log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
+                            log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
                             list.Add(item);
                         }
                     }
