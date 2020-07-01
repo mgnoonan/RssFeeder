@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using HtmlAgilityPack;
+﻿using HtmlAgilityPack;
 using RssFeeder.Models;
 using Serilog;
+using System.Collections.Generic;
+using System.IO;
+using System.Net;
 
 namespace RssFeeder.Console.FeedBuilders
 {
@@ -12,11 +12,11 @@ namespace RssFeeder.Console.FeedBuilders
         public EagleSlantFeedBuilder(ILogger log) : base(log)
         { }
 
-        public List<RssFeedItem> ParseRssFeedItems(ILogger log, RssFeed feed, string html)
+        public List<RssFeedItem> ParseRssFeedItems(RssFeed feed, string html)
         {
             var filters = feed.Filters ?? new List<string>();
 
-            var items = ParseRssFeedItems(log, html, filters);
+            var items = ParseRssFeedItems(html, filters);
             log.Information("FOUND {count} articles in {url}", items.Count, feed.Url);
 
             // Replace any relative paths and add the feed id
@@ -32,7 +32,7 @@ namespace RssFeeder.Console.FeedBuilders
             return items;
         }
 
-        public List<RssFeedItem> ParseRssFeedItems(ILogger log, string html, List<string> filters)
+        public List<RssFeedItem> ParseRssFeedItems(string html, List<string> filters)
         {
             var list = new List<RssFeedItem>();
             var doc = new HtmlDocument();
@@ -49,7 +49,7 @@ namespace RssFeeder.Console.FeedBuilders
                 {
                     string title = WebUtility.HtmlDecode(node.InnerText.Trim());
 
-                    var item = CreateNodeLinks(log, filters, node, "main headline", count++);
+                    var item = CreateNodeLinks(filters, node, "main headline", count++);
                     if (item != null)
                     {
                         log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
@@ -68,7 +68,7 @@ namespace RssFeeder.Console.FeedBuilders
                 {
                     string title = WebUtility.HtmlDecode(node.InnerText.Trim());
 
-                    var item = CreateNodeLinks(log, filters, node, "left column", count++);
+                    var item = CreateNodeLinks(filters, node, "left column", count++);
                     if (item != null)
                     {
                         log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
@@ -88,7 +88,7 @@ namespace RssFeeder.Console.FeedBuilders
                 {
                     string title = WebUtility.HtmlDecode(node.InnerText.Trim());
 
-                    var item = CreateNodeLinks(log, filters, node, "left column", count++);
+                    var item = CreateNodeLinks(filters, node, "left column", count++);
                     if (item != null)
                     {
                         log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);

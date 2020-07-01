@@ -1,23 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
-using HtmlAgilityPack;
+﻿using HtmlAgilityPack;
 using RssFeeder.Console.Utility;
 using RssFeeder.Models;
 using Serilog;
+using System;
+using System.Collections.Generic;
+using System.Net;
 
 namespace RssFeeder.Console.FeedBuilders
 {
     class BaseFeedBuilder
     {
-        private readonly ILogger log;
+        protected readonly ILogger log;
 
         public BaseFeedBuilder(ILogger logger)
         {
             log = logger;
         }
 
-        protected RssFeedItem CreateNodeLinks(ILogger log, List<string> filters, HtmlNode node, string location, int count)
+        protected RssFeedItem CreateNodeLinks(List<string> filters, HtmlNode node, string location, int count)
         {
             string title = WebUtility.HtmlDecode(node.InnerText.Trim());
 
