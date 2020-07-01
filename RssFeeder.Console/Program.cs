@@ -17,6 +17,7 @@ using Newtonsoft.Json;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using RssFeeder.Console.FeedBuilders;
+using RssFeeder.Console.Models;
 using RssFeeder.Console.Parsers;
 using RssFeeder.Console.Utility;
 using RssFeeder.Models;
@@ -114,6 +115,20 @@ $item.ArticleText$
 
             log.Information("START: Machine: {machineName} Assembly: {assembly}", Environment.MachineName, assemblyName.FullName);
 
+            // Load configuration
+            var builder = new ConfigurationBuilder()
+               .SetBasePath(Directory.GetCurrentDirectory())
+               .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+               .AddUserSecrets<Program>()
+               .AddEnvironmentVariables();
+
+            IConfigurationRoot configuration = builder.Build();
+            var config = new CosmosDbConfig();
+            configuration.GetSection("CosmosDB").Bind(config);
+
+            EndpointUri = config.endpoint;
+            PrimaryKey = config.authKey;
+
             // set up TLS defaults
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
 
@@ -187,15 +202,6 @@ $item.ArticleText$
 
             try
             {
-                // Build configuration
-                var config = new ConfigurationBuilder()
-                    .SetBasePath(Directory.GetParent(AppContext.BaseDirectory).FullName)
-                    .AddJsonFile("appsettings.json", false)
-                    .Build();
-
-                EndpointUri = config.GetSection("CosmosDB")["endpoint"];
-                PrimaryKey = config.GetSection("CosmosDB")["authKey"];
-
                 // A config file was specified so read in the options from there
                 List<Options> optionsList;
                 if (!string.IsNullOrWhiteSpace(opts.TestDefinition))
