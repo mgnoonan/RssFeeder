@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using HtmlAgilityPack;
+using RssFeeder.Models;
+using Serilog;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using HtmlAgilityPack;
-using RssFeeder.Models;
-using Serilog;
 
 namespace RssFeeder.Console.FeedBuilders
 {
@@ -13,11 +13,11 @@ namespace RssFeeder.Console.FeedBuilders
         public DrudgeReportFeedBuilder(ILogger log) : base(log)
         { }
 
-        public List<RssFeedItem> ParseRssFeedItems(ILogger log, RssFeed feed, string html)
+        public List<RssFeedItem> ParseRssFeedItems(RssFeed feed, string html)
         {
             var filters = feed.Filters ?? new List<string>();
 
-            var items = ParseRssFeedItems(log, html, filters);
+            var items = ParseRssFeedItems(html, filters);
             log.Information("FOUND {count} articles in {url}", items.Count, feed.Url);
 
             // Replace any relative paths and add the feed id
@@ -33,7 +33,7 @@ namespace RssFeeder.Console.FeedBuilders
             return items;
         }
 
-        public List<RssFeedItem> ParseRssFeedItems(ILogger log, string html, List<string> filters)
+        public List<RssFeedItem> ParseRssFeedItems(string html, List<string> filters)
         {
             var list = new List<RssFeedItem>();
 
@@ -54,7 +54,7 @@ namespace RssFeeder.Console.FeedBuilders
                 var nodeList = link.Descendants("a").ToList();
                 foreach (var node in nodeList)
                 {
-                    var item = CreateNodeLinks(log, filters, node, "main headline", count++);
+                    var item = CreateNodeLinks(filters, node, "main headline", count++);
                     if (item != null)
                     {
                         log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
@@ -79,7 +79,7 @@ namespace RssFeeder.Console.FeedBuilders
 
                     if (title.EndsWith("...") || title.EndsWith("?") || title.EndsWith("!"))
                     {
-                        var item = CreateNodeLinks(log, filters, node, "above the fold", count++);
+                        var item = CreateNodeLinks(filters, node, "above the fold", count++);
                         if (item != null)
                         {
                             log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
@@ -102,7 +102,7 @@ namespace RssFeeder.Console.FeedBuilders
 
                     if (title.EndsWith("...") || title.EndsWith("?") || title.EndsWith("!"))
                     {
-                        var item = CreateNodeLinks(log, filters, node, "left column", count++);
+                        var item = CreateNodeLinks(filters, node, "left column", count++);
                         if (item != null)
                         {
                             log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
@@ -125,7 +125,7 @@ namespace RssFeeder.Console.FeedBuilders
 
                     if (title.EndsWith("...") || title.EndsWith("?") || title.EndsWith("!"))
                     {
-                        var item = CreateNodeLinks(log, filters, node, "middle column", count++);
+                        var item = CreateNodeLinks(filters, node, "middle column", count++);
                         if (item != null)
                         {
                             log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
@@ -148,7 +148,7 @@ namespace RssFeeder.Console.FeedBuilders
 
                     if (title.EndsWith("...") || title.EndsWith("?") || title.EndsWith("!"))
                     {
-                        var item = CreateNodeLinks(log, filters, node, "right column", count++);
+                        var item = CreateNodeLinks(filters, node, "right column", count++);
                         if (item != null)
                         {
                             log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);

@@ -1,7 +1,0 @@
-﻿{
-  "ArticleSelector": "article",
-  "ParagraphSelector": "p",
-  "Parser": "RssFeeder.Console.Parsers.GenericParser",
-  "TestUrl": "",
-  "TestFilename": "C:\\Projects\\RssFeeder\\RssFeeder.Console\\bin\\Release\\working\\8dcb23751b7c466992833fc276a5951b.html"
-}

@@ -9,6 +9,8 @@ using System.ServiceModel.Syndication;
 using System.Threading;
 using System.Xml;
 using Antlr4.StringTemplate;
+using Autofac;
+using Autofac.Extensions.DependencyInjection;
 using CommandLine;
 using HtmlAgilityPack;
 using Microsoft.Azure.Cosmos;
@@ -116,76 +118,37 @@ $item.ArticleText$
             log.Information("START: Machine: {machineName} Assembly: {assembly}", Environment.MachineName, assemblyName.FullName);
 
             // Load configuration
-            var builder = new ConfigurationBuilder()
+            var configBuilder = new ConfigurationBuilder()
                .SetBasePath(Directory.GetCurrentDirectory())
                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                .AddUserSecrets<Program>()
                .AddEnvironmentVariables();
 
-            IConfigurationRoot configuration = builder.Build();
+            IConfigurationRoot configuration = configBuilder.Build();
             var config = new CosmosDbConfig();
             configuration.GetSection("CosmosDB").Bind(config);
 
             EndpointUri = config.endpoint;
             PrimaryKey = config.authKey;
 
+            // Setup dependency injection
+            var builder = new ContainerBuilder();
+
+            builder.RegisterInstance(Log.Logger).As<ILogger>();
+            builder.RegisterType<DrudgeReportFeedBuilder>();
+            builder.RegisterType<EagleSlantFeedBuilder>();
+
+            var container = builder.Build();
+            var serviceProvider = new AutofacServiceProvider(container);
+
             // set up TLS defaults
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
 
             // Process the command line arguments
             Parser.Default.ParseArguments<Options>(args)
-                .WithParsed<Options>(opts => ProcessWithExitCode(opts))
+                .WithParsed<Options>(opts => ProcessWithExitCode(opts, container))
                 .WithNotParsed<Options>(errs => HandleParserError(errs, args))
                 ;
-        }
-
-        private static void TestArticleDefinition(SiteArticleDefinition definition)
-        {
-            string html;
-            IArticleParser parser;
-
-            if (!string.IsNullOrEmpty(definition.TestArticleUrl))
-            {
-                // set up TLS defaults
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
-
-                html = GetResponse(definition.TestArticleUrl);
-            }
-            else
-            {
-                string workingFolder = Path.Combine(AssemblyDirectory, WORKING_FOLDER);
-                html = File.ReadAllText(Path.Combine(workingFolder.Replace("\\Debug\\", "\\Release\\"), definition.TestArticleFilename));
-            }
-
-            var doc = new HtmlDocument();
-            doc.Load(new StringReader(html));
-            var item = new RssFeedItem { Url = "http://www.test.com" };
-            SetExtendedArticleMetaData(item, doc);
-
-            Type type = Assembly.GetExecutingAssembly().GetType(definition.Parser);
-            parser = (IArticleParser)Activator.CreateInstance(type);
-
-            // For console display, strip out the paragraph tags
-            string text = parser.GetArticleBySelector(html, definition)
-                .Replace("<p>", "")
-                .Replace("</p>", "\n");
-
-            System.Console.WriteLine(JsonConvert.SerializeObject(item, Newtonsoft.Json.Formatting.Indented));
-            System.Console.WriteLine(text);
-        }
-
-        private static void TestFeedDefinition(SiteArticleDefinition definition)
-        {
-            string workingFolder = Path.Combine(AssemblyDirectory, WORKING_FOLDER);
-            string html = File.ReadAllText(Path.Combine(workingFolder.Replace("\\Debug\\", "\\Release\\"), definition.TestFeedFilename));
-
-            var doc = new HtmlDocument();
-            doc.Load(new StringReader(html));
-
-            Type type = Assembly.GetExecutingAssembly().GetType("RssFeeder.Console.CustomBuilders.DrudgeReportFeedBuilder");
-            var parser = (IRssFeedBuilder)Activator.CreateInstance(type);
-
-            parser.ParseRssFeedItems(Log.Logger, html, new List<string> { "fb27ce207f3ca32d97999d182ec93576", "0cc6fcfe73c643623766047524ab10e5" });
         }
 
         static void HandleParserError(IEnumerable<CommandLine.Error> errors, string[] args)
@@ -195,7 +158,7 @@ $item.ArticleText$
             Environment.Exit(255);
         }
 
-        static void ProcessWithExitCode(Options opts)
+        static void ProcessWithExitCode(Options opts, IContainer container)
         {
             // Zero return value means everything processed normally
             int returnCode = 0;
@@ -234,51 +197,27 @@ $item.ArticleText$
 
                 foreach (var option in optionsList)
                 {
-                    if (!string.IsNullOrWhiteSpace(option.TestDefinition))
+                    // Transform the option to the old style feed
+                    var f = new RssFeed
                     {
-                        using (StreamReader sr = new StreamReader(option.TestDefinition))
-                        {
-                            // Read the options in JSON format
-                            string json = sr.ReadToEnd();
-                            log.Information("Test configuration: {@options}", json);
+                        Title = option.Title,
+                        Description = option.Description,
+                        OutputFile = option.OutputFile,
+                        Language = option.Language,
+                        Url = option.Url,
+                        CustomParser = option.CustomParser,
+                        Filters = option.Filters.ToList(),
+                        CollectionName = option.CollectionName
+                    };
 
-                            // Deserialize into our options class
-                            var definition = JsonConvert.DeserializeObject<SiteArticleDefinition>(json);
+                    string databaseName = "rssfeeder";
 
-                            if (string.IsNullOrWhiteSpace(definition.TestArticleFilename) && string.IsNullOrWhiteSpace(definition.TestArticleUrl))
-                            {
-                                TestFeedDefinition(definition);
-                            }
-                            else
-                            {
-                                TestArticleDefinition(definition);
-                            }
-                        }
-                    }
-                    else
+                    using (LogContext.PushProperty("collectionName", f.CollectionName))
                     {
-                        // Transform the option to the old style feed
-                        var f = new RssFeed
-                        {
-                            Title = option.Title,
-                            Description = option.Description,
-                            OutputFile = option.OutputFile,
-                            Language = option.Language,
-                            Url = option.Url,
-                            CustomParser = option.CustomParser,
-                            Filters = option.Filters.ToList(),
-                            CollectionName = option.CollectionName
-                        };
+                        // Load the collection of site parsers
+                        ArticleDefinitions = GetAllDocuments<SiteArticleDefinition>(databaseName, "site-parsers");
 
-                        string databaseName = "rssfeeder";
-
-                        using (LogContext.PushProperty("collectionName", f.CollectionName))
-                        {
-                            // Load the collection of site parsers
-                            ArticleDefinitions = GetAllDocuments<SiteArticleDefinition>(databaseName, "site-parsers");
-
-                            BuildFeedLinks(f, databaseName);
-                        }
+                        BuildFeedLinks(container, f, databaseName);
                     }
                 }
 
@@ -352,7 +291,7 @@ $item.ArticleText$
             }
         }
 
-        private static void BuildFeedLinks(RssFeed feed, string databaseName)
+        private static void BuildFeedLinks(IContainer container, RssFeed feed, string databaseName)
         {
             string html = WebTools.GetUrl(feed.Url);
 
@@ -375,9 +314,14 @@ $item.ArticleText$
             if (string.IsNullOrWhiteSpace(builderName))
                 return;
 
-            Type type = Assembly.GetExecutingAssembly().GetType(builderName);
-            IRssFeedBuilder builder = (IRssFeedBuilder)Activator.CreateInstance(type, new object[] { log });
-            var list = builder.ParseRssFeedItems(log, feed, html)
+            IRssFeedBuilder builder = builderName switch
+            {
+                "EagleSlantFeedBuilder" => container.Resolve<EagleSlantFeedBuilder>(),
+                "DrudgeReportFeedBuilder" => container.Resolve<DrudgeReportFeedBuilder>(),
+                _ => throw new ArgumentException($"Unknown feed builder '{builderName}'"),
+            };
+
+            var list = builder.ParseRssFeedItems(feed, html)
                 //.Take(10) FOR DEBUG PURPOSES
                 ;
 
