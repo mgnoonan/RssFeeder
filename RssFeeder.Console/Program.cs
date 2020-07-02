@@ -233,12 +233,6 @@ $item.ArticleText$
                 Log.CloseAndFlush();
             }
 
-            if (Environment.UserInteractive)
-            {
-                System.Console.WriteLine("\nPress <Enter> to continue...");
-                System.Console.ReadLine();
-            }
-
             Environment.Exit(returnCode);
         }
 
@@ -314,13 +308,8 @@ $item.ArticleText$
             if (string.IsNullOrWhiteSpace(builderName))
                 return;
 
-            IRssFeedBuilder builder = builderName switch
-            {
-                "EagleSlantFeedBuilder" => container.Resolve<EagleSlantFeedBuilder>(),
-                "DrudgeReportFeedBuilder" => container.Resolve<DrudgeReportFeedBuilder>(),
-                _ => throw new ArgumentException($"Unknown feed builder '{builderName}'"),
-            };
-
+            Type type = Assembly.GetExecutingAssembly().GetType(builderName);
+            IRssFeedBuilder builder = (IRssFeedBuilder)Activator.CreateInstance(type, new object[] { log });
             var list = builder.ParseRssFeedItems(feed, html)
                 //.Take(10) FOR DEBUG PURPOSES
                 ;

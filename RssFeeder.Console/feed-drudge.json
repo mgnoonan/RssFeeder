@@ -5,7 +5,7 @@
     "Description": "The Drudge Report",
     "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\drudge.xml",
     "Language": "en-US",
-    "CustomParser": "DrudgeReportFeedBuilder",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.DrudgeReportFeedBuilder",
     "CollectionName": "drudge-report",
     "Filters": [
       "cd0802700cef27a775ab057a2ef54aea",

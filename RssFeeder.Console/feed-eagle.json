@@ -5,7 +5,7 @@
     "Description": "Eagle Slant",
     "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\eagle.xml",
     "Language": "en-US",
-    "CustomParser": "EagleSlantFeedBuilder",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.EagleSlantFeedBuilder",
     "CollectionName": "eagle-slant",
     "Filters": []
   }
