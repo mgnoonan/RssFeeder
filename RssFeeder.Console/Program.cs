@@ -461,7 +461,7 @@ $item.ArticleText$
 
         private static void DeleteDocument(string databaseName, string collectionName, RssFeedItem item)
         {
-            DeleteDocument(databaseName, collectionName, item.Id, collectionName.Equals("drudge-report") ? "" : item.HostName);
+            DeleteDocument(databaseName, collectionName, item.Id, item.HostName);
         }
 
         private static void DeleteDocument(string databaseName, string collectionName, string documentID, string partitionKey)
