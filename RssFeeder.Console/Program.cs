@@ -5,9 +5,6 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.ServiceModel.Syndication;
-using System.Threading;
-using System.Xml;
 using Antlr4.StringTemplate;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
@@ -128,6 +125,7 @@ $item.ArticleText$
             var config = new CosmosDbConfig();
             configuration.GetSection("CosmosDB").Bind(config);
 
+            log.Information("Loaded CosmosDB from config. Endpoint='{endpointUri}', authKey='{authKeyPartial}*****'", config.endpoint, config.authKey.Substring(0, 5));
             EndpointUri = config.endpoint;
             PrimaryKey = config.authKey;
 
@@ -135,8 +133,8 @@ $item.ArticleText$
             var builder = new ContainerBuilder();
 
             builder.RegisterInstance(Log.Logger).As<ILogger>();
-            builder.RegisterType<DrudgeReportFeedBuilder>();
-            builder.RegisterType<EagleSlantFeedBuilder>();
+            builder.RegisterType<DrudgeReportFeedBuilder>().Named<IRssFeedBuilder>("drudge-report");
+            builder.RegisterType<EagleSlantFeedBuilder>().Named<IRssFeedBuilder>("eagle-slant");
 
             var container = builder.Build();
             var serviceProvider = new AutofacServiceProvider(container);
@@ -304,17 +302,13 @@ $item.ArticleText$
             // Save thumbnail snapshot of the page
             SaveThumbnailToDisk(feed.Url, fileStem + ".png");
 
-            string builderName = feed.CustomParser;
-            if (string.IsNullOrWhiteSpace(builderName))
-                return;
-
-            Type type = Assembly.GetExecutingAssembly().GetType(builderName);
-            IRssFeedBuilder builder = (IRssFeedBuilder)Activator.CreateInstance(type, new object[] { log });
+            // Parse the target links from the source to build the article crawl list
+            var builder = container.ResolveNamed<IRssFeedBuilder>(feed.CollectionName);
             var list = builder.ParseRssFeedItems(feed, html)
                 //.Take(10) FOR DEBUG PURPOSES
                 ;
 
-            // Add any links that don't already exist
+            // Crawl any new articles and add them to the database
             log.Information("Adding new articles to the {collectionName} collection", feed.CollectionName);
             int count = 0;
             foreach (var item in list)
@@ -332,7 +326,7 @@ $item.ArticleText$
             // Purge stale files from working folder
             PurgeStaleFiles(workingFolder, 7);
 
-            // Remove any stale documents
+            // Purge stale documents from the database collection
             list = GetStaleDocuments(databaseName, feed.CollectionName, 7);
             foreach (var item in list)
             {
@@ -461,6 +455,7 @@ $item.ArticleText$
             var result = container.GetItemLinqQueryable<T>(allowSynchronousQueryExecution: true, requestOptions: queryOptions)
                 .ToList();
 
+            log.Information("GetAllDocuments returned {count} documents from collection '{collectionName}'", result.Count, collectionName);
             return result;
         }
 
@@ -480,12 +475,12 @@ $item.ArticleText$
 
                 if (result.StatusCode != HttpStatusCode.NoContent)
                 {
-                    log.Warning("Unable to delete document for {documentID}", documentID);
+                    log.Warning("Unable to delete document '{documentID}' from collection '{collectionName}'", documentID, collectionName);
                 }
             }
             catch (Exception ex)
             {
-                log.Error(ex, "Unable to delete document for {documentID}", documentID);
+                log.Error(ex, "Error deleting document '{documentID}' from collection '{collectionName}'", documentID, collectionName);
             }
         }
 
@@ -633,68 +628,6 @@ $item.ArticleText$
             // WriteAllText creates a file, writes the specified string to the file,
             // and then closes the file.    You do NOT need to call Flush() or Close().
             File.WriteAllText(filepath, text);
-        }
-
-        private static void BuildRssFileUsingTemplate(RssFeed sourceFeed, List<RssFeedItem> feedItems)
-        {
-            SyndicationFeed feed = new SyndicationFeed(sourceFeed.Title, sourceFeed.Description, new Uri(sourceFeed.Url), sourceFeed.Id.ToString(), DateTime.Now);
-
-            List<SyndicationItem> syndicationItems = new List<SyndicationItem>();
-
-            foreach (var item in feedItems)
-            {
-                syndicationItems.Add(new SyndicationItem(
-                    item.Title.Replace("\u0008", ""),
-                    item.Description.Replace("\u0008", ""),
-                    new Uri(item.Url),
-                    item.UrlHash,
-                    DateTime.Now));
-            }
-
-            feed.Items = syndicationItems;
-
-            string tempFile = Guid.NewGuid().ToString();    // CAUSES ACL PROBLEMS --> Path.GetTempFileName();
-            log.Information("Writing out temp file '{fileName}'", tempFile);
-            XmlWriter rssWriter = XmlWriter.Create(tempFile);
-
-            Rss20FeedFormatter rssFormatter = new Rss20FeedFormatter(feed);
-            rssFormatter.WriteTo(rssWriter);
-            rssWriter.Close();
-
-            // Delete the existing destination file
-            // Added a 2 sec sleep to allow the delete process to finish
-            int retries = 1;
-            do
-            {
-                log.Information("Deleting existing destination file '{fileName}', try # {retries}", sourceFeed.OutputFile, retries);
-                if (retries > 1)
-                {
-                    var r = new Random(DateTime.Now.Second);
-                    Thread.Sleep(r.Next(2, 10));
-                }
-
-                try
-                {
-                    File.Delete(sourceFeed.OutputFile);
-                }
-                catch (IOException ex)
-                {
-                    log.Warning("Error deleting file on try # {retries}:{message}", retries, ex.Message);
-                    retries++;
-                }
-                catch (Exception ex)
-                {
-                    log.Error(ex, "Unexpected error deleting file on try # {retries}", retries);
-                    throw;
-                }
-
-            } while (File.Exists(sourceFeed.OutputFile) && retries <= 5);
-
-            log.Information("Rename temp file to destination file '{fileName}'", sourceFeed.OutputFile);
-            File.Move(tempFile, sourceFeed.OutputFile);
-
-            log.Information("Deleting temp file '{fileName}'", tempFile);
-            File.Delete(tempFile);
         }
     }
 }
