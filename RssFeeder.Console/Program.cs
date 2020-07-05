@@ -24,6 +24,7 @@ using Serilog;
 using Serilog.Context;
 using Serilog.Formatting.Compact;
 using Serilog.Sinks.SystemConsole.Themes;
+using StackExchange.Profiling;
 
 namespace RssFeeder.Console
 {
@@ -142,6 +143,9 @@ $item.ArticleText$
             // Zero return value means everything processed normally
             int returnCode = 0;
 
+            // Setup mini profiler
+            var profiler = MiniProfiler.StartNew("RssFeeder Profile");
+
             try
             {
                 List<Options> optionsList;
@@ -190,10 +194,11 @@ $item.ArticleText$
 
                     using (LogContext.PushProperty("collectionName", f.CollectionName))
                     {
-                        BuildFeedLinks(container, repository, f);
+                        BuildFeedLinks(container, repository, profiler, f);
                     }
                 }
 
+                log.Information("Profiler results: {results}", profiler.RenderPlainText());
                 log.Information("END: Completed successfully");
             }
             catch (Exception ex)
@@ -258,7 +263,7 @@ $item.ArticleText$
             }
         }
 
-        private static void BuildFeedLinks(IContainer container, IRepository repository, RssFeed feed)
+        private static void BuildFeedLinks(IContainer container, IRepository repository, MiniProfiler profiler, RssFeed feed)
         {
             string html = WebTools.GetUrl(feed.Url);
 
@@ -288,18 +293,24 @@ $item.ArticleText$
 
             // Crawl any new articles and add them to the database
             log.Information("Adding new articles to the {collectionName} collection", feed.CollectionName);
-            int count = 0;
-            foreach (var item in list)
+            using (profiler.Step("Adding new articles"))
             {
-                if (!repository.DocumentExists<RssFeedItem>(feed.CollectionName, q => q.UrlHash == item.UrlHash))
+                int count = 0;
+                foreach (var item in list)
                 {
-                    count++;
-                    SaveUrlToDisk(item, workingFolder);
-                    ParseArticleMetaTags(item, feed);
-                    repository.CreateDocument<RssFeedItem>(feed.CollectionName, item);
+                    //bool exists = profiler.Inline<bool>(() => repository.DocumentExists<RssFeedItem>(feed.CollectionName, q => q.UrlHash == item.UrlHash), "DocumentExists");
+                    bool exists = profiler.Inline<bool>(() => repository.DocumentExists(feed.CollectionName, item.UrlHash), "DocumentExists");
+
+                    if (!exists)
+                    {
+                        count++;
+                        SaveUrlToDisk(item, workingFolder);
+                        ParseArticleMetaTags(item, feed);
+                        repository.CreateDocument<RssFeedItem>(feed.CollectionName, item);
+                    }
                 }
+                log.Information("Added {count} new articles to the {collectionName} collection", count, feed.CollectionName);
             }
-            log.Information("Added {count} new articles to the {collectionName} collection", count, feed.CollectionName);
 
             // Purge stale files from working folder
             short maximumAgeInDays = 7;
