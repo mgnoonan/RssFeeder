@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using Microsoft.Azure.Cosmos;
+using RssFeeder.Models;
 using Serilog;
 
 namespace RssFeeder.Console.Database
@@ -11,7 +12,7 @@ namespace RssFeeder.Console.Database
     {
         string _databaseName;
         ILogger _log;
-        private static CosmosClient _client = null;
+        CosmosClient _client = null;
 
         public CosmosDbRepository(string databaseName, string endpointUrl, string authKey, ILogger log)
         {
@@ -73,6 +74,20 @@ namespace RssFeeder.Console.Database
             var container = _client.GetContainer(_databaseName, collectionName);
             var result = container.GetItemLinqQueryable<T>(allowSynchronousQueryExecution: true, requestOptions: queryOptions)
                 .Where(predicate);
+
+            return result.Count() > 0;
+        }
+
+        public bool DocumentExists(string collectionName, string urlHash)
+        {
+            // Set some common query options
+            var queryOptions = new QueryRequestOptions { MaxItemCount = -1 };
+
+            // Run a simple query via LINQ. DocumentDB indexes all properties, so queries 
+            // can be completed efficiently and with low latency
+            var container = _client.GetContainer(_databaseName, collectionName);
+            var result = container.GetItemLinqQueryable<RssFeedItem>(allowSynchronousQueryExecution: true, requestOptions: queryOptions)
+                .Where(f => f.UrlHash == urlHash);
 
             return result.Count() > 0;
         }
