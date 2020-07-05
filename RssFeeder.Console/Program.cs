@@ -10,11 +10,11 @@ using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using CommandLine;
 using HtmlAgilityPack;
-using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
+using RssFeeder.Console.Database;
 using RssFeeder.Console.FeedBuilders;
 using RssFeeder.Console.Models;
 using RssFeeder.Console.Parsers;
@@ -64,24 +64,7 @@ $item.ArticleText$
         private const string BasicTemplate = @"<h3>$item.Title$</h3>
 " + MetaDataTemplate;
 
-        /// <summary>
-        /// The Azure DocumentDB endpoint for running this GetStarted sample.
-        /// </summary>
-        private static string EndpointUri;
-
-        /// <summary>
-        /// The primary key for the Azure DocumentDB account.
-        /// </summary>
-        private static string PrimaryKey;
-
         private static ILogger log;
-
-        /// <summary>
-        /// The DocumentDB client instance.
-        /// </summary>
-        private static CosmosClient _client = null;
-
-        private static CosmosClient CosmosClient { get => _client ?? new CosmosClient(EndpointUri, PrimaryKey); }
 
         /// <summary>
         /// The list of site definitions that describe how to get an article
@@ -124,15 +107,13 @@ $item.ArticleText$
             IConfigurationRoot configuration = configBuilder.Build();
             var config = new CosmosDbConfig();
             configuration.GetSection("CosmosDB").Bind(config);
-
             log.Information("Loaded CosmosDB from config. Endpoint='{endpointUri}', authKey='{authKeyPartial}*****'", config.endpoint, config.authKey.Substring(0, 5));
-            EndpointUri = config.endpoint;
-            PrimaryKey = config.authKey;
 
             // Setup dependency injection
             var builder = new ContainerBuilder();
 
             builder.RegisterInstance(Log.Logger).As<ILogger>();
+            builder.Register(c => new CosmosDbRepository("rssfeeder", config.endpoint, config.authKey, Log.Logger)).As<IRepository>();
             builder.RegisterType<DrudgeReportFeedBuilder>().Named<IRssFeedBuilder>("drudge-report");
             builder.RegisterType<EagleSlantFeedBuilder>().Named<IRssFeedBuilder>("eagle-slant");
 
@@ -163,8 +144,9 @@ $item.ArticleText$
 
             try
             {
-                // A config file was specified so read in the options from there
                 List<Options> optionsList;
+                var repository = container.Resolve<IRepository>();
+
                 if (!string.IsNullOrWhiteSpace(opts.TestDefinition))
                 {
                     optionsList = new List<Options> { opts };
@@ -188,9 +170,7 @@ $item.ArticleText$
                 }
                 else
                 {
-                    string databaseName = "rssfeeder";
-                    string collectionName = "feeds";
-                    optionsList = GetAllDocuments<Options>(databaseName, collectionName);
+                    optionsList = repository.GetDocuments<Options>("feeds", q => q.Title.Length > 0);
                 }
 
                 foreach (var option in optionsList)
@@ -208,14 +188,9 @@ $item.ArticleText$
                         CollectionName = option.CollectionName
                     };
 
-                    string databaseName = "rssfeeder";
-
                     using (LogContext.PushProperty("collectionName", f.CollectionName))
                     {
-                        // Load the collection of site parsers
-                        ArticleDefinitions = GetAllDocuments<SiteArticleDefinition>(databaseName, "site-parsers");
-
-                        BuildFeedLinks(container, f, databaseName);
+                        BuildFeedLinks(container, repository, f);
                     }
                 }
 
@@ -283,7 +258,7 @@ $item.ArticleText$
             }
         }
 
-        private static void BuildFeedLinks(IContainer container, RssFeed feed, string databaseName)
+        private static void BuildFeedLinks(IContainer container, IRepository repository, RssFeed feed)
         {
             string html = WebTools.GetUrl(feed.Url);
 
@@ -308,30 +283,34 @@ $item.ArticleText$
                 //.Take(10) FOR DEBUG PURPOSES
                 ;
 
+            // Load the collection of site parsers
+            ArticleDefinitions = repository.GetDocuments<SiteArticleDefinition>("site-parsers", q => q.ArticleSelector.Length > 0);
+
             // Crawl any new articles and add them to the database
             log.Information("Adding new articles to the {collectionName} collection", feed.CollectionName);
             int count = 0;
             foreach (var item in list)
             {
-                if (!DocumentExists(databaseName, feed.CollectionName, item))
+                if (!repository.DocumentExists<RssFeedItem>(feed.CollectionName, q => q.UrlHash == item.UrlHash))
                 {
                     count++;
                     SaveUrlToDisk(item, workingFolder);
                     ParseArticleMetaTags(item, feed);
-                    CreateDocument(databaseName, feed.CollectionName, item);
+                    repository.CreateDocument<RssFeedItem>(feed.CollectionName, item);
                 }
             }
             log.Information("Added {count} new articles to the {collectionName} collection", count, feed.CollectionName);
 
             // Purge stale files from working folder
-            PurgeStaleFiles(workingFolder, 7);
+            short maximumAgeInDays = 7;
+            PurgeStaleFiles(workingFolder, maximumAgeInDays);
 
             // Purge stale documents from the database collection
-            list = GetStaleDocuments(databaseName, feed.CollectionName, 7);
+            list = repository.GetDocuments<RssFeedItem>(feed.CollectionName, q => q.DateAdded <= DateTime.Now.AddDays(-maximumAgeInDays));
             foreach (var item in list)
             {
                 log.Information("Removing UrlHash '{urlHash}' from {collectionName}", item.UrlHash, feed.CollectionName);
-                DeleteDocument(databaseName, feed.CollectionName, item);
+                repository.DeleteDocument<RssFeedItem>(feed.CollectionName, item.Id, item.HostName);
             }
             log.Information("Removed {count} documents older than {maximumAgeInDays} days from {collectionName}", list.Count(), 7, feed.CollectionName);
         }
@@ -396,92 +375,6 @@ $item.ArticleText$
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// Create the Family document in the collection if another by the same partition key/item key doesn't already exist.
-        /// </summary>
-        /// <param name="databaseName">The name/ID of the database.</param>
-        /// <param name="collectionName">The name/ID of the collection.</param>
-        /// <param name="item"></param>
-        private static void CreateDocument(string databaseName, string collectionName, RssFeedItem item)
-        {
-            var container = CosmosClient.GetContainer(databaseName, collectionName);
-            var result = container.CreateItemAsync(item).Result;
-
-            if (result.StatusCode != HttpStatusCode.Created)
-            {
-                throw new Exception($"Unable to create document for '{item.UrlHash}'");
-            }
-        }
-
-        private static List<RssFeedItem> GetStaleDocuments(string databaseName, string collectionName, short maximumAgeInDays)
-        {
-            DateTime targetDate = DateTime.Now.AddDays(-maximumAgeInDays);
-
-            // Set some common query options
-            var queryOptions = new QueryRequestOptions { MaxItemCount = -1 };
-
-            // Run a simple query via LINQ. DocumentDB indexes all properties, so queries 
-            // can be completed efficiently and with low latency
-            var container = CosmosClient.GetContainer(databaseName, collectionName);
-            return container.GetItemLinqQueryable<RssFeedItem>(allowSynchronousQueryExecution: true, requestOptions: queryOptions)
-                .Where(f => f.DateAdded <= targetDate)
-                .ToList();
-        }
-
-        private static bool DocumentExists(string databaseName, string collectionName, RssFeedItem item)
-        {
-            // Set some common query options
-            var queryOptions = new QueryRequestOptions { MaxItemCount = -1 };
-
-            // Run a simple query via LINQ. DocumentDB indexes all properties, so queries 
-            // can be completed efficiently and with low latency
-            var container = CosmosClient.GetContainer(databaseName, collectionName);
-            var result = container.GetItemLinqQueryable<RssFeedItem>(allowSynchronousQueryExecution: true, requestOptions: queryOptions)
-                .Where(f => f.UrlHash == item.UrlHash);
-
-            return result.Count() > 0;
-        }
-
-        private static List<T> GetAllDocuments<T>(string databaseName, string collectionName)
-        {
-            // Set some common query options
-            var queryOptions = new QueryRequestOptions { MaxItemCount = -1 };
-
-            // Run a simple query via LINQ. DocumentDB indexes all properties, so queries 
-            // can be completed efficiently and with low latency
-            var container = CosmosClient.GetContainer(databaseName, collectionName);
-            var result = container.GetItemLinqQueryable<T>(allowSynchronousQueryExecution: true, requestOptions: queryOptions)
-                .ToList();
-
-            log.Information("GetAllDocuments returned {count} documents from collection '{collectionName}'", result.Count, collectionName);
-            return result;
-        }
-
-        private static void DeleteDocument(string databaseName, string collectionName, RssFeedItem item)
-        {
-            DeleteDocument(databaseName, collectionName, item.Id, item.HostName);
-        }
-
-        private static void DeleteDocument(string databaseName, string collectionName, string documentID, string partitionKey)
-        {
-            try
-            {
-                var pk = string.IsNullOrEmpty(partitionKey) ? PartitionKey.None : new PartitionKey(partitionKey);
-
-                var container = CosmosClient.GetContainer(databaseName, collectionName);
-                var result = container.DeleteItemAsync<RssFeedItem>(documentID, pk).Result;
-
-                if (result.StatusCode != HttpStatusCode.NoContent)
-                {
-                    log.Warning("Unable to delete document '{documentID}' from collection '{collectionName}'", documentID, collectionName);
-                }
-            }
-            catch (Exception ex)
-            {
-                log.Error(ex, "Error deleting document '{documentID}' from collection '{collectionName}'", documentID, collectionName);
-            }
         }
 
         private static void ParseArticleMetaTags(RssFeedItem item, RssFeed feed)
