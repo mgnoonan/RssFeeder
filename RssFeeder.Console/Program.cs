@@ -289,7 +289,10 @@ $item.ArticleText$
                 ;
 
             // Load the collection of site parsers
-            ArticleDefinitions = repository.GetDocuments<SiteArticleDefinition>("site-parsers", q => q.ArticleSelector.Length > 0);
+            if (!ArticleDefinitions.Any())
+            {
+                ArticleDefinitions = repository.GetDocuments<SiteArticleDefinition>("site-parsers", q => q.ArticleSelector.Length > 0);
+            }
 
             // Crawl any new articles and add them to the database
             log.Information("Adding new articles to the {collectionName} collection", feed.CollectionName);
