@@ -301,7 +301,10 @@ $item.ArticleText$
                 int count = 0;
                 foreach (var item in list)
                 {
-                    //bool exists = profiler.Inline<bool>(() => repository.DocumentExists<RssFeedItem>(feed.CollectionName, q => q.UrlHash == item.UrlHash), "DocumentExists");
+                    // With expression wrapped around func
+                    //Expression<Func<RssFeedItem, bool>> predicate = q => q.UrlHash == item.UrlHash;
+                    //bool exists = profiler.Inline<bool>(() => repository.DocumentExists<RssFeedItem>(feed.CollectionName, predicate), "DocumentExists");
+
                     bool exists = profiler.Inline<bool>(() => repository.DocumentExists(feed.CollectionName, item.UrlHash), "DocumentExists");
 
                     if (!exists)
