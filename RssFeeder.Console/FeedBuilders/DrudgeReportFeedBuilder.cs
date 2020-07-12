@@ -1,4 +1,5 @@
 ﻿using HtmlAgilityPack;
+using RssFeeder.Console.Utility;
 using RssFeeder.Models;
 using Serilog;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ namespace RssFeeder.Console.FeedBuilders
 {
     class DrudgeReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
     {
-        public DrudgeReportFeedBuilder(ILogger log) : base(log)
+        public DrudgeReportFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities) : base(log, webUtilities, utilities)
         { }
 
         public List<RssFeedItem> ParseRssFeedItems(RssFeed feed, string html)
