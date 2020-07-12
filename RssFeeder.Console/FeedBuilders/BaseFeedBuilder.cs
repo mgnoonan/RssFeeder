@@ -1,20 +1,24 @@
-﻿using HtmlAgilityPack;
+﻿using System;
+using System.Collections.Generic;
+using System.Net;
+using HtmlAgilityPack;
 using RssFeeder.Console.Utility;
 using RssFeeder.Models;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Net;
 
 namespace RssFeeder.Console.FeedBuilders
 {
     class BaseFeedBuilder
     {
         protected readonly ILogger log;
+        readonly IWebUtils webUtils;
+        readonly IUtils utils;
 
-        public BaseFeedBuilder(ILogger logger)
+        public BaseFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities)
         {
             log = logger;
+            webUtils = webUtilities;
+            utils = utilities;
         }
 
         protected RssFeedItem CreateNodeLinks(List<string> filters, HtmlNode node, string location, int count)
@@ -29,12 +33,12 @@ namespace RssFeeder.Console.FeedBuilders
             if (!linkUrl.StartsWith("http"))
             {
                 log.Information("Attempting to repair link '{url}'", linkUrl);
-                linkUrl = WebTools.RepairUrl(linkUrl);
+                linkUrl = webUtils.RepairUrl(linkUrl);
                 log.Information("Repaired link '{url}'", linkUrl);
             }
 
             // Calculate the MD5 hash for the link so we can be sure of uniqueness
-            string hash = Utility.Utility.CreateMD5Hash(linkUrl);
+            string hash = utils.CreateMD5Hash(linkUrl);
             if (filters.Contains(hash))
             {
                 log.Debug("Hash '{hash}' found in filter list", hash);
