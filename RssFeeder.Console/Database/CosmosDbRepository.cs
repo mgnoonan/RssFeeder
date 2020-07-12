@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net;
 using Microsoft.Azure.Cosmos;
 using RssFeeder.Models;
@@ -64,7 +65,7 @@ namespace RssFeeder.Console.Database
         //        .ToList();
         //}
 
-        public bool DocumentExists<T>(string collectionName, Func<T, bool> predicate)
+        public bool DocumentExists<T>(string collectionName, Expression<Func<T, bool>> predicate)
         {
             // Set some common query options
             var queryOptions = new QueryRequestOptions { MaxItemCount = -1 };
