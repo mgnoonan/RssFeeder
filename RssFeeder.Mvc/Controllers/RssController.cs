@@ -7,10 +7,12 @@ using System.Xml;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Net.Http.Headers;
 using Microsoft.SyndicationFeed;
 using Microsoft.SyndicationFeed.Atom;
 using RssFeeder.Models;
 using RssFeeder.Mvc.Models;
+using Serilog;
 
 namespace RssFeeder.Mvc.Controllers
 {
@@ -37,6 +39,17 @@ namespace RssFeeder.Mvc.Controllers
             {
                 return NotFound();
             }
+
+            // Create document with incoming parameter values
+            var agent = new Agent
+            {
+                BrowserAgent = HttpContext.Request.Headers[HeaderNames.UserAgent].ToString() ?? "",
+                IpAddress = HttpContext.Connection.RemoteIpAddress.ToString(),
+                Referrer = HttpContext.Request.Headers[HeaderNames.Referer].ToString() ?? "",
+                Timestamp = DateTime.Now
+            };
+
+            Log.Information("Detected user info: {@UserAgent}", agent);
 
             string s = await GetSyndicationItems(id);
 
