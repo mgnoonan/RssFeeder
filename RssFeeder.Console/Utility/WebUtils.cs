@@ -123,6 +123,20 @@ namespace RssFeeder.Console.Utility
             }
         }
 
+        public string StripJavascriptAndCss(string text)
+        {
+            string commentPattern = @"(?'comment'<!--.*?--[ \n\r]*>)";
+            string embeddedScriptComments = @"(\/\*.*?\*\/|\/\/.*?[\n\r])";
+            string scriptPattern = string.Format(@"(?'script'<[ \n\r]*script[^>]*>(.*?{0}?)*<[ \n\r]*/script[^>]*>)", embeddedScriptComments);
+            string cssPattern = string.Format(@"(?'style'<[ \n\r]*style[^>]*>(.*?{0}?)*<[ \n\r]*/style[^>]*>)", embeddedScriptComments);
+
+            // the pattern includes the comment and script sub-patterns
+            string pattern = string.Format(@"(?s)({0}|{1}|{2})", commentPattern, scriptPattern, cssPattern);
+            Regex re = new Regex(pattern, RegexOptions.IgnoreCase);
+
+            return re.Replace(text, string.Empty);
+        }
+
         /// <summary>
         /// Attempt to repair typos in the URL, usually in the protocol section
         /// </summary>
