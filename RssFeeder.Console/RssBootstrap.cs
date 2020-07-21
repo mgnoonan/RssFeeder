@@ -114,8 +114,15 @@ $item.ArticleText$
                         string friendlyHostname = item.Url.Replace("://", "_").Replace(".", "_");
                         friendlyHostname = friendlyHostname.Substring(0, friendlyHostname.IndexOf("/"));
                         string filename = Path.Combine(workingFolder, $"{item.UrlHash}_{friendlyHostname}.html");
-
                         item.FileName = webUtils.SaveUrlToDisk(item.Url, item.UrlHash, filename);
+
+                        using (StreamReader reader = File.OpenText(filename))
+                        {
+                            var value = webUtils.StripJavascriptAndCss(reader.ReadToEnd());
+                            filename = Path.Combine(workingFolder, $"{item.UrlHash}_{friendlyHostname}.clean.html");
+                            utils.SaveTextToDisk(value, filename, true);
+                        }
+
                         ParseArticleMetaTags(item, feed, ArticleDefinitions?.SingleOrDefault(p => p.SiteName == item.SiteName));
                         repository.CreateDocument<RssFeedItem>(feed.CollectionName, item);
                     }
