@@ -5,6 +5,7 @@ using System.Linq;
 using Antlr4.StringTemplate;
 using Autofac;
 using HtmlAgilityPack;
+using RssFeeder.Console.ArticleDefinitions;
 using RssFeeder.Console.Database;
 using RssFeeder.Console.FeedBuilders;
 using RssFeeder.Console.Parsers;
@@ -19,6 +20,7 @@ namespace RssFeeder.Console
     {
         readonly IRepository repository;
         readonly IArticleParser parser;
+        readonly IArticleDefinitionFactory definitions;
         readonly IWebUtils webUtils;
         readonly IUtils utils;
 
@@ -49,17 +51,13 @@ $item.ArticleText$
         private const string BasicTemplate = @"<h3>$item.Title$</h3>
 " + MetaDataTemplate;
 
-        /// <summary>
-        /// The list of site definitions that describe how to get an article
-        /// </summary>
-        private static List<SiteArticleDefinition> ArticleDefinitions;
-
-        public RssBootstrap(IRepository _repository, IArticleParser _parser, IWebUtils _webUtils, IUtils _utils)
+        public RssBootstrap(IRepository _repository, IArticleParser _parser, IArticleDefinitionFactory _definitions, IWebUtils _webUtils, IUtils _utils)
         {
             repository = _repository;
             parser = _parser;
             webUtils = _webUtils;
             utils = _utils;
+            definitions = _definitions;
         }
 
         public void Start(IContainer container, MiniProfiler profiler, RssFeed feed)
@@ -83,15 +81,7 @@ $item.ArticleText$
 
             // Parse the target links from the source to build the article crawl list
             var builder = container.ResolveNamed<IRssFeedBuilder>(feed.CollectionName);
-            var list = builder.ParseRssFeedItems(feed, html)
-                //.Take(10) FOR DEBUG PURPOSES
-                ;
-
-            // Load the collection of site parsers
-            if (ArticleDefinitions == null || !ArticleDefinitions.Any())
-            {
-                ArticleDefinitions = repository.GetDocuments<SiteArticleDefinition>("site-parsers", q => q.ArticleSelector.Length > 0);
-            }
+            var list = builder.ParseRssFeedItems(feed, html);
 
             // Crawl any new articles and add them to the database
             Log.Logger.Information("Adding new articles to the {collectionName} collection", feed.CollectionName);
@@ -116,7 +106,7 @@ $item.ArticleText$
                         string filename = Path.Combine(workingFolder, $"{item.UrlHash}_{friendlyHostname}.html");
                         item.FileName = webUtils.SaveUrlToDisk(item.Url, item.UrlHash, filename);
 
-                        ParseArticleMetaTags(item, feed, ArticleDefinitions?.SingleOrDefault(p => p.SiteName == item.SiteName));
+                        ParseArticleMetaTags(item, feed, definitions);
                         repository.CreateDocument<RssFeedItem>(feed.CollectionName, item);
                     }
                 }
@@ -138,7 +128,7 @@ $item.ArticleText$
             Log.Logger.Information("Removed {count} documents older than {maximumAgeInDays} days from {collectionName}", list.Count(), 7, feed.CollectionName);
         }
 
-        private void ParseArticleMetaTags(RssFeedItem item, RssFeed feed, SiteArticleDefinition definition)
+        private void ParseArticleMetaTags(RssFeedItem item, RssFeed feed, IArticleDefinitionFactory definitions)
         {
             if (File.Exists(item.FileName))
             {
@@ -156,7 +146,7 @@ $item.ArticleText$
                 }
 
                 // Meta tags provide extended data about the item, display as much as possible
-                SetExtendedArticleMetaData(item, doc, definition);
+                SetExtendedArticleMetaData(item, doc, definitions);
                 item.Description = ApplyTemplateToDescription(item, feed, ExtendedTemplate);
             }
             else
@@ -178,7 +168,7 @@ $item.ArticleText$
             return t.Render();
         }
 
-        private void SetExtendedArticleMetaData(RssFeedItem item, HtmlDocument doc, SiteArticleDefinition definition)
+        private void SetExtendedArticleMetaData(RssFeedItem item, HtmlDocument doc, IArticleDefinitionFactory definitions)
         {
             // Extract the meta data from the Open Graph tags helpfully provided with almost every article
             item.Subtitle = ParseMetaTagAttributes(doc, "og:title", "content");
@@ -192,7 +182,7 @@ $item.ArticleText$
             }
 
             // Check if we have a site parser defined for the site name
-            //var definition = ArticleDefinitions?.SingleOrDefault(p => p.SiteName == item.SiteName);
+            var definition = definitions.Get(item.SiteName);
 
             if (definition == null)
             {

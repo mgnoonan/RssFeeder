@@ -21,11 +21,9 @@ namespace RssFeeder.Console.Utility
 
         public string DownloadString(string url)
         {
-            using (WebClient client = new WebClient())
-            {
-                client.Headers.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4170.0 Safari/537.36 Edg/85.0.552.1");
-                return client.DownloadString(url);
-            }
+            using WebClient client = new WebClient();
+            client.Headers.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4170.0 Safari/537.36 Edg/85.0.552.1");
+            return client.DownloadString(url);
         }
 
         public string DownloadStringWithCompression(string url)
@@ -38,23 +36,21 @@ namespace RssFeeder.Console.Utility
 
             using (WebResponse webResponse = req.GetResponse())
             {
-                using (HttpWebResponse httpWebResponse = webResponse as HttpWebResponse)
+                using HttpWebResponse httpWebResponse = webResponse as HttpWebResponse;
+                StreamReader reader;
+                if (httpWebResponse.ContentEncoding?.ToLower().Contains("gzip") ?? false)
                 {
-                    StreamReader reader;
-                    if (httpWebResponse.ContentEncoding?.ToLower().Contains("gzip") ?? false)
-                    {
-                        reader = new StreamReader(new GZipStream(httpWebResponse.GetResponseStream(), CompressionMode.Decompress));
-                    }
-                    else if (httpWebResponse.ContentEncoding?.ToLower().Contains("deflate") ?? false)
-                    {
-                        reader = new StreamReader(new DeflateStream(httpWebResponse.GetResponseStream(), CompressionMode.Decompress));
-                    }
-                    else
-                    {
-                        reader = new StreamReader(httpWebResponse.GetResponseStream());
-                    }
-                    source = reader.ReadToEnd();
+                    reader = new StreamReader(new GZipStream(httpWebResponse.GetResponseStream(), CompressionMode.Decompress));
                 }
+                else if (httpWebResponse.ContentEncoding?.ToLower().Contains("deflate") ?? false)
+                {
+                    reader = new StreamReader(new DeflateStream(httpWebResponse.GetResponseStream(), CompressionMode.Decompress));
+                }
+                else
+                {
+                    reader = new StreamReader(httpWebResponse.GetResponseStream());
+                }
+                source = reader.ReadToEnd();
             }
 
             req.Abort();

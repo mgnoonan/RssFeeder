@@ -9,6 +9,7 @@ using Autofac.Extensions.DependencyInjection;
 using CommandLine;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
+using RssFeeder.Console.ArticleDefinitions;
 using RssFeeder.Console.Database;
 using RssFeeder.Console.FeedBuilders;
 using RssFeeder.Console.Models;
@@ -70,8 +71,9 @@ namespace RssFeeder.Console
             builder.RegisterType<DrudgeReportFeedBuilder>().Named<IRssFeedBuilder>("drudge-report");
             builder.RegisterType<EagleSlantFeedBuilder>().Named<IRssFeedBuilder>("eagle-slant");
             builder.RegisterType<GenericParser>().As<IArticleParser>();
-            builder.RegisterType<WebUtils>().As<IWebUtils>();
-            builder.RegisterType<Utils>().As<IUtils>();
+            builder.RegisterType<WebUtils>().As<IWebUtils>().SingleInstance();
+            builder.RegisterType<Utils>().As<IUtils>().SingleInstance();
+            builder.RegisterType<ArticleDefinitionFactory>().As<IArticleDefinitionFactory>().SingleInstance();
 
             var container = builder.Build();
             var serviceProvider = new AutofacServiceProvider(container);
@@ -86,10 +88,10 @@ namespace RssFeeder.Console
                 ;
         }
 
-        static void HandleParserError(IEnumerable<CommandLine.Error> errors, string[] args)
+        static void HandleParserError(IEnumerable<Error> errors, string[] args)
         {
             // Return an error code
-            Log.Logger.Error("Invalid arguments: '{@args}'", args);
+            Log.Logger.Error("Invalid arguments: '{@args}'. Errors: {@errors}", args, errors);
             Environment.Exit(255);
         }
 
@@ -106,34 +108,31 @@ namespace RssFeeder.Console
                 List<Options> optionsList;
                 var repository = container.Resolve<IRepository>();
                 var bootstrap = container.Resolve<IRssBootstrap>();
+                var utils = container.Resolve<IUtils>();
 
                 //if (!string.IsNullOrWhiteSpace(opts.TestDefinition))
                 //{
                 //    optionsList = new List<Options> { opts };
                 //}
-                //else if (!string.IsNullOrWhiteSpace(opts.Config))
-                //{
-                //    // Get the directory of the current executable, all config 
-                //    // files should be in this path
-                //    string configFile = Path.Combine(Utils.GetAssemblyDirectory(), opts.Config);
-                //    Log.Logger.Information("Reading from config file: {configFile}", configFile);
+                if (!string.IsNullOrWhiteSpace(opts.Config))
+                {
+                    // Get the directory of the current executable, all config 
+                    // files should be in this path
+                    string configFile = Path.Combine(utils.GetAssemblyDirectory(), opts.Config);
+                    Log.Logger.Information("Reading from config file: {configFile}", configFile);
 
-                //    using (StreamReader sr = new StreamReader(configFile))
-                //    {
-                //        // Read the options in JSON format
-                //        string json = sr.ReadToEnd();
-                //        Log.Logger.Information("Options: {@options}", json);
+                    // Read the options in JSON format
+                    using StreamReader sr = new StreamReader(configFile);
+                    string json = sr.ReadToEnd();
+                    Log.Logger.Information("Options: {@options}", json);
 
-                //        // Deserialize into our options class
-                //        optionsList = JsonConvert.DeserializeObject<List<Options>>(json);
-                //    }
-                //}
-                //else
-                //{
-                //    optionsList = repository.GetDocuments<Options>("feeds", q => q.Title.Length > 0);
-                //}
-
-                optionsList = repository.GetDocuments<Options>("feeds", q => q.Title.Length > 0);
+                    // Deserialize into our options class
+                    optionsList = JsonConvert.DeserializeObject<List<Options>>(json);
+                }
+                else
+                {
+                    optionsList = repository.GetDocuments<Options>("feeds", q => q.Title.Length > 0);
+                }
 
                 foreach (var option in optionsList)
                 {
