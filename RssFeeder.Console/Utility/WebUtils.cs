@@ -1,10 +1,10 @@
 using System;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Text;
-using System.Text.RegularExpressions;
 using HtmlAgilityPack;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
@@ -62,7 +62,7 @@ namespace RssFeeder.Console.Utility
             return source;
         }
 
-        public string SaveUrlToDisk(string url, string urlHash, string filename)
+        public string SaveUrlToDisk(string url, string urlHash, string filename, bool removeScriptElements = true)
         {
             try
             {
@@ -72,6 +72,15 @@ namespace RssFeeder.Console.Utility
                 HtmlDocument doc = new HtmlDocument();
                 doc.LoadHtml(DownloadStringWithCompression(url));
                 doc.OptionFixNestedTags = true;
+
+                if (removeScriptElements)
+                {
+                    doc.DocumentNode
+                        .Descendants()
+                        .Where(n => n.Name == "script" || n.Name == "style")
+                        .ToList()
+                        .ForEach(n => n.Remove());
+                }
 
                 // Delete the file if it already exists
                 if (File.Exists(filename))
@@ -122,20 +131,6 @@ namespace RssFeeder.Console.Utility
                     driver.Quit();
                 }
             }
-        }
-
-        public string StripJavascriptAndCss(string text)
-        {
-            string commentPattern = @"(?'comment'<!--.*?--[ \n\r]*>)";
-            string embeddedScriptComments = @"(\/\*.*?\*\/|\/\/.*?[\n\r])";
-            string scriptPattern = string.Format(@"(?'script'<[ \n\r]*script[^>]*>(.*?{0}?)*<[ \n\r]*/script[^>]*>)", embeddedScriptComments);
-            string cssPattern = string.Format(@"(?'style'<[ \n\r]*style[^>]*>(.*?{0}?)*<[ \n\r]*/style[^>]*>)", embeddedScriptComments);
-
-            // the pattern includes the comment and script sub-patterns
-            string pattern = string.Format(@"(?s)({0}|{1}|{2})", commentPattern, scriptPattern, cssPattern);
-            Regex re = new Regex(pattern, RegexOptions.IgnoreCase);
-
-            return re.Replace(text, string.Empty);
         }
 
         /// <summary>
