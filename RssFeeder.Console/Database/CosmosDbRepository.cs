@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Net;
 using Microsoft.Azure.Cosmos;
-using RssFeeder.Models;
 using Serilog;
 
 namespace RssFeeder.Console.Database
@@ -23,19 +21,11 @@ namespace RssFeeder.Console.Database
             _client = new CosmosClient(endpointUrl, authKey);
         }
 
-        public List<T> GetDocuments<T>(string collectionName, Func<T, bool> predicate)
+        public List<T> GetDocuments<T>(string collectionName, string sqlQueryText)
         {
-            // Set some common query options
-            var queryOptions = new QueryRequestOptions { MaxItemCount = -1 };
+            var result = QueryItems<T>(collectionName, sqlQueryText);
 
-            // Run a simple query via LINQ. DocumentDB indexes all properties, so queries 
-            // can be completed efficiently and with low latency
-            var container = _client.GetContainer(_databaseName, collectionName);
-            var result = container.GetItemLinqQueryable<T>(allowSynchronousQueryExecution: true, requestOptions: queryOptions)
-                .Where(predicate)
-                .ToList();
-
-            _log.Information("GetAllDocuments returned {count} documents from collection '{collectionName}'", result.Count, collectionName);
+            _log.Information("GetDocuments returned {count} documents from collection '{collectionName}'", result.Count, collectionName);
             return result;
         }
 
@@ -65,32 +55,10 @@ namespace RssFeeder.Console.Database
         //        .ToList();
         //}
 
-        public bool DocumentExists<T>(string collectionName, Expression<Func<T, bool>> predicate)
+        public bool DocumentExists<T>(string collectionName, string sqlQueryText)
         {
-            // Set some common query options
-            var queryOptions = new QueryRequestOptions { MaxItemCount = -1 };
-
-            // Run a simple query via LINQ. DocumentDB indexes all properties, so queries 
-            // can be completed efficiently and with low latency
-            var container = _client.GetContainer(_databaseName, collectionName);
-            var result = container.GetItemLinqQueryable<T>(allowSynchronousQueryExecution: true, requestOptions: queryOptions)
-                .Where(predicate);
-
-            return result.Count() > 0;
-        }
-
-        public bool DocumentExists(string collectionName, string urlHash)
-        {
-            // Set some common query options
-            var queryOptions = new QueryRequestOptions { MaxItemCount = -1 };
-
-            // Run a simple query via LINQ. DocumentDB indexes all properties, so queries 
-            // can be completed efficiently and with low latency
-            var container = _client.GetContainer(_databaseName, collectionName);
-            var result = container.GetItemLinqQueryable<RssFeedItem>(allowSynchronousQueryExecution: true, requestOptions: queryOptions)
-                .Where(f => f.UrlHash == urlHash);
-
-            return result.Count() > 0;
+            return QueryItems<T>(collectionName, sqlQueryText)
+                .Count() > 0;
         }
 
         public void DeleteDocument<T>(string collectionName, string documentID, string partitionKey)
@@ -111,6 +79,27 @@ namespace RssFeeder.Console.Database
             {
                 _log.Error(ex, "Error deleting document '{documentID}' from collection '{collectionName}'", documentID, collectionName);
             }
+        }
+
+        public List<T> QueryItems<T>(string collectionName, string sqlQueryText)
+        {
+            var container = _client.GetContainer(_databaseName, collectionName);
+
+            QueryDefinition queryDefinition = new QueryDefinition(sqlQueryText);
+            FeedIterator<T> iterator = container.GetItemQueryIterator<T>(queryDefinition);
+
+            List<T> results = new List<T>();
+
+            while (iterator.HasMoreResults)
+            {
+                FeedResponse<T> response = iterator.ReadNextAsync().Result;
+                foreach (T item in response)
+                {
+                    results.Add(item);
+                }
+            }
+
+            return results;
         }
     }
 }

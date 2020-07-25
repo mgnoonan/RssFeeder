@@ -131,7 +131,7 @@ namespace RssFeeder.Console
                 }
                 else
                 {
-                    optionsList = repository.GetDocuments<Options>("feeds", q => q.Title.Length > 0);
+                    optionsList = repository.GetDocuments<Options>("feeds", "SELECT * FROM c");
                 }
 
                 foreach (var option in optionsList)
