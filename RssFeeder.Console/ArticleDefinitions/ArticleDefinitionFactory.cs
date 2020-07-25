@@ -16,7 +16,7 @@ namespace RssFeeder.Console.ArticleDefinitions
         {
             repository = _repository;
 
-            ArticleDefinitions = repository.GetDocuments<SiteArticleDefinition>("site-parsers", q => q.ArticleSelector.Length > 0);
+            ArticleDefinitions = repository.GetDocuments<SiteArticleDefinition>("site-parsers", "SELECT * FROM c");
         }
 
         public SiteArticleDefinition Get(string sitename)
