@@ -73,7 +73,7 @@ namespace RssFeeder.Console.Utility
                 {
                     doc.DocumentNode
                         .Descendants()
-                        .Where(n => n.Name == "script" || n.Name == "style")
+                        .Where(n => n.Name == "script" || n.Name == "style" || n.Name == "link")
                         .ToList()
                         .ForEach(n => n.Remove());
                 }
