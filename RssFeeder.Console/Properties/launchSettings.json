@@ -1,8 +1,7 @@
 {
   "profiles": {
     "RssFeeder.Console": {
-      "commandName": "Project",
-      "commandLineArgs": "--config feed-eagle.json"
+      "commandName": "Project"
     }
   }
 }
