@@ -118,7 +118,7 @@ $item.ArticleText$
             utils.PurgeStaleFiles(workingFolder, maximumAgeInDays);
 
             // Purge stale documents from the database collection
-            list = repository.GetDocuments<RssFeedItem>(feed.CollectionName, $"SELECT c.id, c.HostName FROM c WHERE c.DateAdded <= '{DateTime.UtcNow.AddDays(-maximumAgeInDays):o}'");
+            list = repository.GetDocuments<RssFeedItem>(feed.CollectionName, $"SELECT c.id, c.UrlHash, c.HostName FROM c WHERE c.DateAdded <= '{DateTime.UtcNow.AddDays(-maximumAgeInDays):o}'");
             foreach (var item in list)
             {
                 Log.Logger.Information("Removing UrlHash '{urlHash}' from {collectionName}", item.UrlHash, feed.CollectionName);
@@ -186,7 +186,7 @@ $item.ArticleText$
 
             if (definition == null)
             {
-                Log.Warning("No parsing definition found for {siteName}", item.SiteName);
+                Log.Warning("No parsing definition found for '{siteName}' on hash '{urlHash}'", item.SiteName, item.UrlHash);
 
                 // We don't have an article parser definition for this site, so just use the meta description
                 item.ArticleText = $"<p>{item.MetaDescription}</p>";

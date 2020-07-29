@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -64,6 +65,9 @@ namespace RssFeeder.Console.Utility
             {
                 Log.Logger.Information("Loading URL '{urlHash}':'{url}'", urlHash, url);
 
+                // List of html tags we really don't care to save
+                var excludeHtmlTags = new List<string> { "script", "style", "link", "svg" };
+
                 // Use custom load method to account for compression headers
                 HtmlDocument doc = new HtmlDocument();
                 doc.LoadHtml(DownloadStringWithCompression(url));
@@ -73,7 +77,7 @@ namespace RssFeeder.Console.Utility
                 {
                     doc.DocumentNode
                         .Descendants()
-                        .Where(n => n.Name == "script" || n.Name == "style" || n.Name == "link")
+                        .Where(n => excludeHtmlTags.Contains(n.Name))
                         .ToList()
                         .ForEach(n => n.Remove());
                 }
@@ -91,7 +95,7 @@ namespace RssFeeder.Console.Utility
             }
             catch (Exception ex)
             {
-                Log.Logger.Error(ex, "SaveUrlToDisk: Unexpected error '{message}'", ex.Message);
+                Log.Logger.Error(ex, "SaveUrlToDisk: '{urlHash}':'{url}' - Unexpected error '{message}'", urlHash, url, ex.Message);
             }
 
             return string.Empty;
