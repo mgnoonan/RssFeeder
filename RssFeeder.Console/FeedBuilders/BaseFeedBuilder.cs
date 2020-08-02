@@ -27,10 +27,10 @@ namespace RssFeeder.Console.FeedBuilders
 
             // Replace all errant spaces, which sometimes creep into Drudge's URLs
             HtmlAttribute attr = node.Attributes["href"];
-            string linkUrl = attr.Value.Trim().Replace(" ", string.Empty).ToLower();
+            string linkUrl = attr.Value.Trim().Replace(" ", string.Empty);
 
             // Repair any protocol typos if possible
-            if (!linkUrl.StartsWith("http"))
+            if (!linkUrl.ToLower().StartsWith("http"))
             {
                 log.Information("Attempting to repair link '{url}'", linkUrl);
                 linkUrl = webUtils.RepairUrl(linkUrl);
@@ -38,7 +38,7 @@ namespace RssFeeder.Console.FeedBuilders
             }
 
             // Calculate the MD5 hash for the link so we can be sure of uniqueness
-            string hash = utils.CreateMD5Hash(linkUrl);
+            string hash = utils.CreateMD5Hash(linkUrl.ToLower());
             if (filters.Contains(hash))
             {
                 log.Debug("Hash '{hash}' found in filter list", hash);
