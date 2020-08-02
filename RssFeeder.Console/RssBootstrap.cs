@@ -90,9 +90,14 @@ $item.ArticleText$
                 foreach (var item in list)
                 {
                     // With expression wrapped around func
+                    // bool exists = profiler.Inline<bool>(() => repository.DocumentExists<RssFeedItem>(
+                    //     feed.CollectionName,
+                    //     $"SELECT c.UrlHash FROM c WHERE c.UrlHash = '{item.UrlHash}'"),
+                    //     "DocumentExists"
+                    // );
                     bool exists = profiler.Inline<bool>(() => repository.DocumentExists<RssFeedItem>(
                         feed.CollectionName,
-                        $"SELECT c.UrlHash FROM c WHERE c.UrlHash = '{item.UrlHash}'"),
+                        $"from RssFeedItems where UrlHash = \"{item.UrlHash}\""),
                         "DocumentExists"
                     );
 

@@ -67,7 +67,7 @@ namespace RssFeeder.Console
             var builder = new ContainerBuilder();
 
             // Setup RavenDb
-            // docker run --rm -d -p 8080:8080 -p 38888:38888 -v c:/RavenDb/Data:/opt/RavenDB/Server/RavenData ravendb/ravendb
+            // docker run --rm -d -p 8080:8080 -p 38888:38888 ravendb/ravendb
             IDocumentStore store = new DocumentStore
             {
                 Urls = new[] { "http://127.0.0.1:8080/" }
@@ -76,11 +76,12 @@ namespace RssFeeder.Console
 
             builder.RegisterInstance(Log.Logger).As<ILogger>();
             builder.RegisterInstance(store).As<IDocumentStore>();
-            builder.Register(c => new CosmosDbRepository("rssfeeder", config.endpoint, config.authKey, Log.Logger)).As<IRepository>();
-            //builder.RegisterType<RavenDbRepository>().As<IRepository>();
+            //builder.Register(c => new CosmosDbRepository("rssfeeder", config.endpoint, config.authKey, Log.Logger)).As<IRepository>();
+            builder.RegisterType<RavenDbRepository>().As<IRepository>();
             builder.RegisterType<RssBootstrap>().As<IRssBootstrap>();
             builder.RegisterType<DrudgeReportFeedBuilder>().Named<IRssFeedBuilder>("drudge-report");
             builder.RegisterType<EagleSlantFeedBuilder>().Named<IRssFeedBuilder>("eagle-slant");
+            builder.RegisterType<LibertyDailyFeedBuilder>().Named<IRssFeedBuilder>("liberty-daily");
             builder.RegisterType<GenericParser>().As<IArticleParser>();
             builder.RegisterType<WebUtils>().As<IWebUtils>().SingleInstance();
             builder.RegisterType<Utils>().As<IUtils>().SingleInstance();

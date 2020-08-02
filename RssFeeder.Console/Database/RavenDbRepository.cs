@@ -38,8 +38,7 @@ namespace RssFeeder.Console.Database
 
             using (IDocumentSession session = _store.OpenSession(database: collectionName))
             {
-                count = session.Advanced.DocumentQuery<T>()
-                    .WhereEquals("urlhash", sqlQueryText)
+                count = session.Advanced.RawQuery<T>(sqlQueryText)
                     .ToList()
                     .Count;
             }
