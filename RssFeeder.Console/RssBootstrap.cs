@@ -106,7 +106,17 @@ $item.ArticleText$
                         string filename = Path.Combine(workingFolder, $"{item.UrlHash}_{friendlyHostname}.html");
                         item.FileName = webUtils.SaveUrlToDisk(item.Url, item.UrlHash, filename);
 
-                        ParseArticleMetaTags(item, feed, definitions);
+                        if (File.Exists(item.FileName))
+                        {
+                            ParseArticleMetaTags(item, feed, definitions);
+                        }
+                        else
+                        {
+                            // Article failed to download, display minimal basic meta data
+                            SetBasicArticleMetaData(item);
+                            item.Description = ApplyTemplateToDescription(item, feed, BasicTemplate);
+                        }
+
                         repository.CreateDocument<RssFeedItem>(feed.CollectionName, item);
                     }
                 }
@@ -130,31 +140,21 @@ $item.ArticleText$
 
         private void ParseArticleMetaTags(RssFeedItem item, RssFeed feed, IArticleDefinitionFactory definitions)
         {
-            if (File.Exists(item.FileName))
+            Log.Logger.Information("Parsing meta tags from file '{fileName}'", item.FileName);
+
+            var doc = new HtmlDocument();
+            doc.Load(item.FileName);
+
+            if (!doc.DocumentNode.HasChildNodes)
             {
-                // Article was successfully downloaded from the target site
-                Log.Logger.Information("Parsing meta tags from file '{fileName}'", item.FileName);
-
-                var doc = new HtmlDocument();
-                doc.Load(item.FileName);
-
-                if (!doc.DocumentNode.HasChildNodes)
-                {
-                    Log.Logger.Warning("No file content found, skipping.");
-                    SetBasicArticleMetaData(item);
-                    return;
-                }
-
-                // Meta tags provide extended data about the item, display as much as possible
-                SetExtendedArticleMetaData(item, doc, definitions);
-                item.Description = ApplyTemplateToDescription(item, feed, ExtendedTemplate);
-            }
-            else
-            {
-                // Article failed to download, display minimal basic meta data
+                Log.Logger.Warning("No file content found, skipping.");
                 SetBasicArticleMetaData(item);
-                item.Description = ApplyTemplateToDescription(item, feed, BasicTemplate);
+                return;
             }
+
+            // Meta tags provide extended data about the item, display as much as possible
+            SetExtendedArticleMetaData(item, doc, definitions);
+            item.Description = ApplyTemplateToDescription(item, feed, ExtendedTemplate);
 
             Log.Logger.Debug("{@item}", item);
         }
@@ -193,15 +193,7 @@ $item.ArticleText$
             }
             else
             {
-                // Add a cached instance of this parser if we don't already have one, using reflection
-                //if (!ArticleParserCache.ContainsKey(item.SiteName))
-                //{
-                //    Type type = Assembly.GetExecutingAssembly().GetType(definition.Parser);
-                //    ArticleParserCache.Add(item.SiteName, (IArticleParser)Activator.CreateInstance(type));
-                //}
-
                 // Parse the article from the html
-                //var inst = ArticleParserCache[item.SiteName];
                 item.ArticleText = parser.GetArticleBySelector(doc.Text, definition);
             }
         }
