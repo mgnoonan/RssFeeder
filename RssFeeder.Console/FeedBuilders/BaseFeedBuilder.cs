@@ -29,6 +29,12 @@ namespace RssFeeder.Console.FeedBuilders
             HtmlAttribute attr = node.Attributes["href"];
             string linkUrl = attr.Value.Trim().Replace(" ", string.Empty);
 
+            // Sometimes Drudge has completely empty links, ignore them
+            if (string.IsNullOrEmpty(linkUrl))
+            {
+                return null;
+            }
+
             // Repair any protocol typos if possible
             if (!linkUrl.ToLower().StartsWith("http"))
             {
