@@ -47,6 +47,11 @@ namespace RssFeeder.Console
 $item.ArticleText$
 " + MetaDataTemplate;
 
+        private const string YouTubeTemplate = @"<iframe width=""$item.VideoWidth$"" height=""$item.VideoHeight$"" src=""$item.VideoUrl$"" frameborder=""0"" allow=""accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"" allowfullscreen></iframe>
+<h3>$item.Subtitle$</h3>
+$item.ArticleText$
+" + MetaDataTemplate;
+
         private const string BasicTemplate = @"<h3>$item.Title$</h3>
 " + MetaDataTemplate;
 
@@ -96,30 +101,24 @@ $item.ArticleText$
                         "DocumentExists"
                     );
 
-                    if (!exists)
-                    {
-                        count++;
+                    // No need to continue if we already crawled the article
+                    if (exists)
+                        continue;
 
-                        // Construct unique file name
-                        string friendlyHostname = item.Url.Replace("://", "_").Replace(".", "_");
-                        friendlyHostname = friendlyHostname.Substring(0, friendlyHostname.IndexOf("/"));
-                        string filename = Path.Combine(workingFolder, $"{item.UrlHash}_{friendlyHostname}.html");
-                        item.FileName = webUtils.SaveUrlToDisk(item.Url, item.UrlHash, filename);
+                    // Increment for new article crawl
+                    count++;
 
-                        if (File.Exists(item.FileName))
-                        {
-                            ParseArticleMetaTags(item, feed, definitions);
-                        }
-                        else
-                        {
-                            // Article failed to download, display minimal basic meta data
-                            SetBasicArticleMetaData(item);
-                            item.Description = ApplyTemplateToDescription(item, feed, BasicTemplate);
-                        }
-
-                        repository.CreateDocument<RssFeedItem>(feed.CollectionName, item);
-                    }
+                    // Construct unique file name
+                    string friendlyHostname = item.Url.Replace("://", "_").Replace(".", "_");
+                    friendlyHostname = friendlyHostname.Substring(0, friendlyHostname.IndexOf("/"));
+                    string filename = Path.Combine(workingFolder, $"{item.UrlHash}_{friendlyHostname}.html");
+                    
+                    // Download the Url and crawl the content
+                    item.FileName = webUtils.SaveUrlToDisk(item.Url, item.UrlHash, filename);
+                    ParseArticleMetaTags(item, feed, definitions);
+                    repository.CreateDocument<RssFeedItem>(feed.CollectionName, item);
                 }
+
                 Log.Logger.Information("Added {count} new articles to the {collectionName} collection", count, feed.CollectionName);
             }
 
@@ -142,19 +141,32 @@ $item.ArticleText$
         {
             Log.Logger.Information("Parsing meta tags from file '{fileName}'", item.FileName);
 
-            var doc = new HtmlDocument();
-            doc.Load(item.FileName);
+            Uri uri = new Uri(item.Url);
+            string hostName = uri.GetComponents(UriComponents.Host, UriFormat.Unescaped).ToLower();
 
-            if (!doc.DocumentNode.HasChildNodes)
+            if (File.Exists(item.FileName))
             {
-                Log.Logger.Warning("No file content found, skipping.");
-                SetBasicArticleMetaData(item);
-                return;
-            }
+                var doc = new HtmlDocument();
+                doc.Load(item.FileName);
 
-            // Meta tags provide extended data about the item, display as much as possible
-            SetExtendedArticleMetaData(item, doc, definitions);
-            item.Description = ApplyTemplateToDescription(item, feed, ExtendedTemplate);
+                // Meta tags provide extended data about the item, display as much as possible
+                if (hostName == "www.youtube.com")
+                {
+                    SetYouTubeMetaData(item, doc, hostName);
+                    item.Description = ApplyTemplateToDescription(item, feed, YouTubeTemplate);
+                }
+                else
+                {
+                    SetExtendedArticleMetaData(item, doc, definitions, hostName);
+                    item.Description = ApplyTemplateToDescription(item, feed, ExtendedTemplate);
+                }
+            }
+            else
+            {
+                // Article failed to download, display minimal basic meta data
+                SetBasicArticleMetaData(item, hostName);
+                item.Description = ApplyTemplateToDescription(item, feed, BasicTemplate);
+            }
 
             Log.Logger.Debug("{@item}", item);
         }
@@ -168,14 +180,15 @@ $item.ArticleText$
             return t.Render();
         }
 
-        private void SetExtendedArticleMetaData(RssFeedItem item, HtmlDocument doc, IArticleDefinitionFactory definitions)
+        private void SetExtendedArticleMetaData(RssFeedItem item, HtmlDocument doc, IArticleDefinitionFactory definitions, string hostName)
         {
             // Extract the meta data from the Open Graph tags helpfully provided with almost every article
             item.Subtitle = ParseMetaTagAttributes(doc, "og:title", "content");
             item.ImageUrl = ParseMetaTagAttributes(doc, "og:image", "content");
             item.MetaDescription = ParseMetaTagAttributes(doc, "og:description", "content");
-            item.HostName = new Uri(item.Url).GetComponents(UriComponents.Host, UriFormat.Unescaped).ToLower();
+            item.HostName = hostName;
             item.SiteName = ParseMetaTagAttributes(doc, "og:site_name", "content").ToLower();
+
             if (string.IsNullOrWhiteSpace(item.SiteName))
             {
                 item.SiteName = item.HostName;
@@ -198,11 +211,32 @@ $item.ArticleText$
             }
         }
 
-        private void SetBasicArticleMetaData(RssFeedItem item)
+        private void SetBasicArticleMetaData(RssFeedItem item, string hostName)
         {
-            item.HostName = new Uri(item.Url).GetComponents(UriComponents.Host, UriFormat.Unescaped).ToLower();
+            item.HostName = hostName;
             item.SiteName = item.HostName;
             item.ArticleText = $"<p>Unable to crawl article content. Click the link below to view in your browser.</p>";
+        }
+
+        private void SetYouTubeMetaData(RssFeedItem item, HtmlDocument doc, string hostName)
+        {
+            // Extract the meta data from the Open Graph tags customized for YouTube
+            item.Subtitle = ParseMetaTagAttributes(doc, "og:title", "content");
+            item.ImageUrl = ParseMetaTagAttributes(doc, "og:image", "content");
+            item.VideoUrl = ParseMetaTagAttributes(doc, "og:video:url", "content");
+            item.VideoHeight = Convert.ToInt32(ParseMetaTagAttributes(doc, "og:video:height", "content"));
+            item.VideoWidth = Convert.ToInt32(ParseMetaTagAttributes(doc, "og:video:width", "content"));
+            item.MetaDescription = ParseMetaTagAttributes(doc, "og:description", "content");
+            item.HostName = hostName;
+            item.SiteName = ParseMetaTagAttributes(doc, "og:site_name", "content").ToLower();
+
+            if (string.IsNullOrWhiteSpace(item.SiteName))
+            {
+                item.SiteName = item.HostName;
+            }
+
+            // There's no article text for YT, so just use the meta description
+            item.ArticleText = $"<p>{item.MetaDescription}</p>";
         }
 
         private string ParseMetaTagAttributes(HtmlDocument doc, string property, string attribute)
