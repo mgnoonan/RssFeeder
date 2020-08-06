@@ -12,6 +12,9 @@ namespace RssFeeder.Models
         public string Url { get; set; }
         public string UrlHash { get; set; }
         public string ImageUrl { get; set; }
+        public string VideoUrl { get; set; }
+        public int VideoHeight { get; set; }
+        public int VideoWidth { get; set; }
         public string Title { get; set; }
         public string Subtitle { get; set; }
         public string ArticleText { get; set; }
