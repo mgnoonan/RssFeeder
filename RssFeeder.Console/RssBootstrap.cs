@@ -66,7 +66,7 @@ $item.ArticleText$
 
         public void Start(IContainer container, MiniProfiler profiler, RssFeed feed)
         {
-            string html = webUtils.DownloadString(feed.Url);
+            string html = webUtils.DownloadStringWithCompression(feed.Url);
 
             // Create the working folder for the collection if it doesn't exist
             string workingFolder = Path.Combine(utils.GetAssemblyDirectory(), feed.CollectionName);
