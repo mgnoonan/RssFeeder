@@ -7,9 +7,11 @@ using System.Net.Http;
 using System.Net.Security;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using HtmlAgilityPack;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
+using Polly;
 using Serilog;
 
 namespace RssFeeder.Console.Utility
@@ -42,14 +44,25 @@ namespace RssFeeder.Console.Utility
             }
         }
 
-        public string DownloadString(string url)
-        {
-            return DownloadStringWithCompression(url);
-        }
-
         public string DownloadStringWithCompression(string url)
         {
-            return _client.GetStringAsync(url).Result;
+            return DownloadStringWithCompressionAsync(url).GetAwaiter().GetResult();
+        }
+
+        public async Task<string> DownloadStringWithCompressionAsync(string url)
+        {
+            string result = await Policy
+            .Handle<HttpRequestException>()
+            .WaitAndRetryAsync(
+                3,
+                retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
+                (ex, timeSpan, retryCount, context) =>
+                {
+                    Log.Error(ex, "Error downloading '{url}' retry={retryCount} waiting {ts} seconds", url, retryCount, timeSpan.TotalSeconds);
+                })
+            .ExecuteAsync(() => _client.GetStringAsync(url));
+
+            return result;
         }
 
         public string SaveUrlToDisk(string url, string urlHash, string filename, bool removeScriptElements = true)
