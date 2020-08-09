@@ -8,7 +8,7 @@ namespace RssFeeder.Models
     {
         [JsonProperty(PropertyName = "id")]
         public string Id { get; set; }
-        public int FeedId { get; set; }
+        public string FeedId { get; set; }
         public string Url { get; set; }
         public string UrlHash { get; set; }
         public string ImageUrl { get; set; }
