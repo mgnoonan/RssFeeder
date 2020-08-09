@@ -1,10 +1,10 @@
-﻿using HtmlAgilityPack;
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Net;
+using HtmlAgilityPack;
 using RssFeeder.Console.Utility;
 using RssFeeder.Models;
 using Serilog;
-using System.Collections.Generic;
-using System.IO;
-using System.Net;
 
 namespace RssFeeder.Console.FeedBuilders
 {
@@ -23,7 +23,7 @@ namespace RssFeeder.Console.FeedBuilders
             // Replace any relative paths and add the feed id
             foreach (var item in items)
             {
-                item.FeedId = feed.Id;
+                item.FeedId = feed.CollectionName;
                 if (item.Url.StartsWith("/"))
                 {
                     item.Url = feed.Url + item.Url;

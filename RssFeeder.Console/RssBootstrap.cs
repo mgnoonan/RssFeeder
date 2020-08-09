@@ -112,7 +112,7 @@ $item.ArticleText$
                     string friendlyHostname = item.Url.Replace("://", "_").Replace(".", "_");
                     friendlyHostname = friendlyHostname.Substring(0, friendlyHostname.IndexOf("/"));
                     string filename = Path.Combine(workingFolder, $"{item.UrlHash}_{friendlyHostname}.html");
-                    
+
                     // Download the Url and crawl the content
                     item.FileName = webUtils.SaveUrlToDisk(item.Url, item.UrlHash, filename);
                     ParseArticleMetaTags(item, feed, definitions);
@@ -192,6 +192,12 @@ $item.ArticleText$
             if (string.IsNullOrWhiteSpace(item.SiteName))
             {
                 item.SiteName = item.HostName;
+            }
+
+            // Remove the protocol portion if there is one, i.e. 'https://'
+            if (item.SiteName.IndexOf('/') > 0)
+            {
+                item.SiteName = item.SiteName.Substring(item.SiteName.LastIndexOf('/') + 1);
             }
 
             // Check if we have a site parser defined for the site name
