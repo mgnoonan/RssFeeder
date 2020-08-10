@@ -58,7 +58,7 @@ namespace RssFeeder.Console.Utility
                 retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
                 (ex, timeSpan, retryCount, context) =>
                 {
-                    Log.Error(ex, "Error downloading '{url}' retry={retryCount} waiting {ts} seconds", url, retryCount, timeSpan.TotalSeconds);
+                    Log.Warning("Error downloading '{url}' retry={retryCount} waiting {ts} seconds. Stack trace={stackTrace}", url, retryCount, timeSpan.TotalSeconds, ex.StackTrace);
                 })
             .ExecuteAsync(() => _client.GetStringAsync(url));
 
