@@ -35,7 +35,8 @@ namespace RssFeeder.Console.Utility
                     SslOptions = new SslClientAuthenticationOptions
                     {
                         AllowRenegotiation = true,
-                        EnabledSslProtocols = System.Security.Authentication.SslProtocols.Tls11 | System.Security.Authentication.SslProtocols.Tls12
+                        EnabledSslProtocols = System.Security.Authentication.SslProtocols.Tls13 | System.Security.Authentication.SslProtocols.Tls12 |
+                                              System.Security.Authentication.SslProtocols.Tls11 | System.Security.Authentication.SslProtocols.Tls
                     },
                     UseCookies = true
                 });
@@ -99,9 +100,56 @@ namespace RssFeeder.Console.Utility
 
                 return filename;
             }
+            catch (HttpRequestException)
+            {
+                // Since we're unable to resolve the exception with retries, attempt with Selenium
+                WebDriverUrlToDisk(url, urlHash, filename);
+            }
             catch (Exception ex)
             {
                 Log.Logger.Error(ex, "SaveUrlToDisk: '{urlHash}':'{url}' - Unexpected error '{message}'", urlHash, url, ex.Message);
+            }
+
+            return string.Empty;
+        }
+
+        public string WebDriverUrlToDisk(string url, string urlHash, string filename)
+        {
+            Log.Logger.Information("Loading Selenium URL '{urlHash}':'{url}'", urlHash, url);
+
+            ChromeOptions options = new ChromeOptions();
+            options.AddArgument("headless");//Comment if we want to see the window. 
+
+            string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            ChromeDriver driver = null;
+
+            try
+            {
+                driver = new ChromeDriver(path, options);
+                driver.Navigate().GoToUrl(url);
+
+                // Delete the file if it already exists
+                if (File.Exists(filename))
+                {
+                    File.Delete(filename);
+                }
+
+                Log.Logger.Information("Saving text file '{fileName}'", filename);
+                File.WriteAllText(filename, driver.PageSource);
+
+                return filename;
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.Error(ex, "WebDriverUrlToDisk: '{urlHash}':'{url}' - Unexpected error '{message}'", urlHash, url, ex.Message);
+            }
+            finally
+            {
+                if (driver != null)
+                {
+                    driver.Close();
+                    driver.Quit();
+                }
             }
 
             return string.Empty;
