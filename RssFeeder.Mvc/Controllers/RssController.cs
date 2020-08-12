@@ -90,7 +90,7 @@ namespace RssFeeder.Mvc.Controllers
                 await rssWriter.WriteUpdated(DateTimeOffset.UtcNow);
 
                 // Add Items
-                foreach (var item in GetFeedItems(id.ToLowerInvariant()).OrderByDescending(i => i.DateAdded))
+                foreach (var item in await GetFeedItems(id.ToLowerInvariant()))
                 {
                     var si = new SyndicationItem()
                     {
@@ -126,11 +126,11 @@ namespace RssFeeder.Mvc.Controllers
             return feeds.FirstOrDefault(q => q.collectionname == id);
         }
 
-        private IEnumerable<RssFeedItem> GetFeedItems(string id)
+        private async Task<IEnumerable<RssFeedItem>> GetFeedItems(string id)
         {
-            _repo.Init(id);
+            _repo.Init("drudge-report");
 
-            var _items = _repo.GetAllDocuments<RssFeedItem>("rssfeeder", id);
+            var _items = await _repo.GetItemsAsync<RssFeedItem>(q => q.FeedId == id);
 
             return _items
                 .Where(q => q.DateAdded >= DateTime.Now.Date.AddDays(-3))
