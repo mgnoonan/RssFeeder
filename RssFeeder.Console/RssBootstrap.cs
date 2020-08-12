@@ -23,6 +23,7 @@ namespace RssFeeder.Console
         readonly IWebUtils webUtils;
         readonly IUtils utils;
 
+        private const string _collectionName = "drudge-report";
         private const string MetaDataTemplate = @"
 <p>
     The post <a href=""$item.Url$"">$item.Title$</a> captured from <a href=""$feed.Url$"">$feed.Title$</a> $item.LinkLocation$ on $item.DateAdded$ UTC.
@@ -96,8 +97,8 @@ $item.ArticleText$
                 {
                     // With expression wrapped around func
                     bool exists = profiler.Inline<bool>(() => repository.DocumentExists<RssFeedItem>(
-                        feed.CollectionName,
-                        $"SELECT c.UrlHash FROM c WHERE c.UrlHash = '{item.UrlHash}'"),
+                        _collectionName,
+                        $"SELECT c.UrlHash FROM c WHERE c.UrlHash = '{item.UrlHash}' AND c.FeedId = '{feed.CollectionName}'"),
                         "DocumentExists"
                     );
 
@@ -116,7 +117,7 @@ $item.ArticleText$
                     // Download the Url and crawl the content
                     item.FileName = webUtils.SaveUrlToDisk(item.Url, item.UrlHash, filename);
                     ParseArticleMetaTags(item, feed, definitions);
-                    repository.CreateDocument<RssFeedItem>(feed.CollectionName, item);
+                    repository.CreateDocument<RssFeedItem>(_collectionName, item);
                 }
 
                 Log.Logger.Information("Added {count} new articles to the {collectionName} collection", count, feed.CollectionName);
@@ -127,11 +128,11 @@ $item.ArticleText$
             utils.PurgeStaleFiles(workingFolder, maximumAgeInDays);
 
             // Purge stale documents from the database collection
-            list = repository.GetDocuments<RssFeedItem>(feed.CollectionName, $"SELECT c.id, c.UrlHash, c.HostName FROM c WHERE c.DateAdded <= '{DateTime.UtcNow.AddDays(-maximumAgeInDays):o}'");
+            list = repository.GetDocuments<RssFeedItem>(_collectionName, $"SELECT c.id, c.UrlHash, c.HostName FROM c WHERE c.DateAdded <= '{DateTime.UtcNow.AddDays(-maximumAgeInDays):o}' AND c.FeedId = '{feed.CollectionName}'");
             foreach (var item in list)
             {
                 Log.Logger.Information("Removing UrlHash '{urlHash}' from {collectionName}", item.UrlHash, feed.CollectionName);
-                repository.DeleteDocument<RssFeedItem>(feed.CollectionName, item.Id, item.HostName);
+                repository.DeleteDocument<RssFeedItem>(_collectionName, item.Id, item.HostName);
             }
 
             Log.Logger.Information("Removed {count} documents older than {maximumAgeInDays} days from {collectionName}", list.Count(), 7, feed.CollectionName);
