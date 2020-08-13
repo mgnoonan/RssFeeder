@@ -52,6 +52,11 @@ namespace RssFeeder.Console.Utility
 
         public async Task<string> DownloadStringWithCompressionAsync(string url)
         {
+            return await _client.GetStringAsync(url);
+        }
+
+        public async Task<string> DownloadStringWithRetriesAsync(string url)
+        {
             string result = await Policy
             .Handle<HttpRequestException>()
             .WaitAndRetryAsync(
@@ -99,11 +104,6 @@ namespace RssFeeder.Console.Utility
                 doc.Save(filename);
 
                 return filename;
-            }
-            catch (HttpRequestException)
-            {
-                // Since we're unable to resolve the exception with retries, attempt with Selenium
-                WebDriverUrlToDisk(url, urlHash, filename);
             }
             catch (Exception ex)
             {

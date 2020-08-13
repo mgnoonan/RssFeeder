@@ -114,8 +114,15 @@ $item.ArticleText$
                     friendlyHostname = friendlyHostname.Substring(0, friendlyHostname.IndexOf("/"));
                     string filename = Path.Combine(workingFolder, $"{item.UrlHash}_{friendlyHostname}.html");
 
-                    // Download the Url and crawl the content
+                    // Download the Url contents, first using HttpClient but if that fails use Selenium
                     item.FileName = webUtils.SaveUrlToDisk(item.Url, item.UrlHash, filename);
+                    if (string.IsNullOrEmpty(item.FileName))
+                    {
+                        // Must have had an error on loading the url so attempt with Selenium
+                        item.FileName = webUtils.WebDriverUrlToDisk(item.Url, item.UrlHash, filename);
+                    }
+
+                    // Parse the saved file as dictated by the site definitions
                     ParseArticleMetaTags(item, feed, definitions);
                     repository.CreateDocument<RssFeedItem>(_collectionName, item);
                 }
@@ -128,7 +135,7 @@ $item.ArticleText$
             utils.PurgeStaleFiles(workingFolder, maximumAgeInDays);
 
             // Purge stale documents from the database collection
-            list = repository.GetDocuments<RssFeedItem>(_collectionName, $"SELECT c.id, c.UrlHash, c.HostName FROM c WHERE c.DateAdded <= '{DateTime.UtcNow.AddDays(-maximumAgeInDays):o}' AND c.FeedId = '{feed.CollectionName}'");
+            list = repository.GetDocuments<RssFeedItem>(_collectionName, $"SELECT c.id, c.UrlHash, c.HostName FROM c WHERE c.DateAdded <= '{DateTime.UtcNow.AddDays(-maximumAgeInDays):o}' AND (c.FeedId = '{feed.CollectionName}' OR c.FeedId = 0)");
             foreach (var item in list)
             {
                 Log.Logger.Information("Removing UrlHash '{urlHash}' from {collectionName}", item.UrlHash, feed.CollectionName);
