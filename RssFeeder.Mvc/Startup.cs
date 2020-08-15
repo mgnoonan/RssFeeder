@@ -28,6 +28,9 @@ namespace RssFeeder.Mvc
             services.AddAuthentication(AzureADDefaults.AuthenticationScheme)
                 .AddAzureAD(options => Configuration.Bind("AzureAd", options));
 
+            services.AddHealthChecks()
+                .AddCosmosDb(string.Format("AccountEndpoint={0};AccountKey={1};", Configuration["endpoint"], Configuration["authKey"]));
+
             services.AddControllersWithViews(options =>
             {
                 var policy = new AuthorizationPolicyBuilder()
@@ -78,6 +81,7 @@ namespace RssFeeder.Mvc
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapHealthChecks("/health");
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
