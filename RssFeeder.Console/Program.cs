@@ -109,6 +109,7 @@ namespace RssFeeder.Console
                 var repository = container.Resolve<IRepository>();
                 var bootstrap = container.Resolve<IRssBootstrap>();
                 var utils = container.Resolve<IUtils>();
+                var webUtils = container.Resolve<IWebUtils>();
 
                 //if (!string.IsNullOrWhiteSpace(opts.TestDefinition))
                 //{
@@ -131,7 +132,15 @@ namespace RssFeeder.Console
                 }
                 else
                 {
-                    optionsList = repository.GetDocuments<Options>("feeds", "SELECT * FROM c");
+#if DEBUG
+                    string filename = @"C:\Projects\RssFeeder\RssFeeder.Mvc\feeds.json";
+                    string json = File.ReadAllText(filename);
+#else
+                    string url = "https://rssfeedermvc.azurewebsites.net/Feed/List";
+                    string json = webUtils.DownloadStringWithCompression(url);
+#endif
+                    // Deserialize into our options class
+                    optionsList = JsonConvert.DeserializeObject<List<Options>>(json);
                 }
 
                 foreach (var option in optionsList)
