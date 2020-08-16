@@ -24,11 +24,16 @@ namespace RssFeeder.Mvc.Controllers
         private readonly IRepository<RssFeederRepository> _repo;
         private readonly IMemoryCache _cache;
         private readonly IEnumerable<string> _collectionList = new string[] { "drudge-report", "eagle-slant" };
+        private readonly string _sourceFile = "feeds.json";
+        private readonly List<FeedModel> _feeds;
 
         public RssController(IRepository<RssFeederRepository> repository, IMemoryCache cache)
         {
             _repo = repository;
             _cache = cache;
+            _feeds = System.Text.Json.JsonSerializer.Deserialize<List<FeedModel>>(
+                System.IO.File.ReadAllText(_sourceFile),
+                new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         }
 
         [HttpGet, HttpHead, Route("{id}"), ResponseCache(Duration = 60 * 60), Produces("text/xml")]
@@ -119,11 +124,7 @@ namespace RssFeeder.Mvc.Controllers
 
         private FeedModel GetFeed(string id)
         {
-            _repo.Init("feeds");
-
-            var feeds = _repo.GetAllDocuments<FeedModel>("rssfeeder", "feeds");
-
-            return feeds.FirstOrDefault(q => q.collectionname == id);
+            return _feeds.FirstOrDefault(q => q.collectionname == id);
         }
 
         private async Task<IEnumerable<RssFeedItem>> GetFeedItems(string id)
