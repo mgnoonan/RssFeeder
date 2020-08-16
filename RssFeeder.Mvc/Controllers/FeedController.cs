@@ -1,9 +1,7 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
 using RssFeeder.Mvc.Models;
 
 namespace RssFeeder.Mvc.Controllers
@@ -11,57 +9,33 @@ namespace RssFeeder.Mvc.Controllers
     [Authorize]
     public class FeedController : Controller
     {
-        private readonly IRepository<RssFeederRepository> _repo;
-        private readonly string _collectionID = "feeds";
+        private readonly string _sourceFile = "feeds.json";
+        private readonly List<FeedModel> _feeds;
 
-        public FeedController(IRepository<RssFeederRepository> repository)
+        public FeedController()
         {
-            _repo = repository;
-        }
-
-        public override void OnActionExecuting(ActionExecutingContext context)
-        {
-            _repo.Init(_collectionID);
-            base.OnActionExecuting(context);
+            _feeds = System.Text.Json.JsonSerializer.Deserialize<List<FeedModel>>(
+                System.IO.File.ReadAllText(_sourceFile),
+                new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         }
 
         // GET: Feed
-        public async Task<ActionResult> Index()
+        public ActionResult Index()
         {
-            var items = await _repo.GetItemsAsync<FeedModel>();
+            return View(_feeds.OrderBy(i => i.title).AsEnumerable());
+        }
 
-            return View(items.OrderBy(i => i.title));
+        [AllowAnonymous]
+        public IActionResult List()
+        {
+            return Json(_feeds);
         }
 
         // GET: Feed/Details/5
-        public async Task<ActionResult> Details(string id)
+        public ActionResult Details(string id)
         {
-            var item = await _repo.GetItemAsync<FeedModel>(id);
+            var item = _feeds.FirstOrDefault(q => q.id == id);
             return View(item);
-        }
-
-        // GET: Feed/Edit/5
-        public async Task<ActionResult> Edit(string id)
-        {
-            var item = await _repo.GetItemAsync<FeedModel>(id);
-            return View(item);
-        }
-
-        // POST: Feed/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
-        {
-            try
-            {
-                // TODO: Add update logic here
-
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
         }
     }
 }

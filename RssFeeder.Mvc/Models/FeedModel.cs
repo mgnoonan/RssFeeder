@@ -22,5 +22,7 @@ namespace RssFeeder.Mvc.Models
         public List<string> filters { get; set; }
         public string collectionname { get; set; }
         public string authoremail { get; set; }
+        public string FeedlyUrl { get; set; }
+        public string RssUrl { get; set; }
     }
 }
