@@ -22,14 +22,14 @@
             @foreach (var item in Model)
             {
                 <tr>
-                    <td><a href="@item.url">@item.title</a></td>
+                    <td><a href="@item.url" target="_blank">@item.title</a></td>
                     <td>
                         <a href='@item.FeedlyUrl' target='blank'>
                             <img id='feedlyFollow' src='https://s3.feedly.com/img/follows/feedly-follow-rectangle-volume-medium_2x.png' alt='follow us in feedly' width='71' height='28'>
                         </a>
                     </td>
                     <td>
-                        <a href="@item.RssUrl">
+                        <a href="@item.RssUrl" target="_blank">
                             <img src="https://rssfeedermvc.azurewebsites.net/feed-icon-28x28.png" width='28' height='28'>
                         </a>
                     </td>
