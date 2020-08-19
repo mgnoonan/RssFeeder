@@ -1,13 +1,17 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Net.Security;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using HtmlAgilityPack;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
+using Polly;
 using Serilog;
 
 namespace RssFeeder.Console.Utility
@@ -17,45 +21,54 @@ namespace RssFeeder.Console.Utility
     /// </summary>
     public class WebUtils : IWebUtils
     {
-        public WebUtils() { }
+        private const string USERAGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4170.0 Safari/537.36 Edg/85.0.552.1";
+        private static HttpClient _client;
 
-        public string DownloadString(string url)
+        public WebUtils()
         {
-            using WebClient client = new WebClient();
-            client.Headers.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4170.0 Safari/537.36 Edg/85.0.552.1");
-            return client.DownloadString(url);
+            if (_client == null)
+            {
+                _client = new HttpClient(new SocketsHttpHandler
+                {
+                    AllowAutoRedirect = true,
+                    AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+                    SslOptions = new SslClientAuthenticationOptions
+                    {
+                        AllowRenegotiation = true,
+                        EnabledSslProtocols = System.Security.Authentication.SslProtocols.Tls13 | System.Security.Authentication.SslProtocols.Tls12 |
+                                              System.Security.Authentication.SslProtocols.Tls11 | System.Security.Authentication.SslProtocols.Tls
+                    },
+                    UseCookies = true
+                });
+
+                _client.DefaultRequestHeaders.Add("user-agent", USERAGENT);
+            }
         }
 
         public string DownloadStringWithCompression(string url)
         {
-            // Create web request that allows for compressed content
-            HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
-            req.Headers[HttpRequestHeader.AcceptEncoding] = "gzip, deflate";
+            return DownloadStringWithCompressionAsync(url).GetAwaiter().GetResult();
+        }
 
-            string source = String.Empty;
+        public async Task<string> DownloadStringWithCompressionAsync(string url)
+        {
+            return await _client.GetStringAsync(url);
+        }
 
-            using (WebResponse webResponse = req.GetResponse())
-            {
-                using HttpWebResponse httpWebResponse = webResponse as HttpWebResponse;
-                StreamReader reader;
-                if (httpWebResponse.ContentEncoding?.ToLower().Contains("gzip") ?? false)
+        public async Task<string> DownloadStringWithRetriesAsync(string url)
+        {
+            string result = await Policy
+            .Handle<HttpRequestException>()
+            .WaitAndRetryAsync(
+                3,
+                retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
+                (ex, timeSpan, retryCount, context) =>
                 {
-                    reader = new StreamReader(new GZipStream(httpWebResponse.GetResponseStream(), CompressionMode.Decompress));
-                }
-                else if (httpWebResponse.ContentEncoding?.ToLower().Contains("deflate") ?? false)
-                {
-                    reader = new StreamReader(new DeflateStream(httpWebResponse.GetResponseStream(), CompressionMode.Decompress));
-                }
-                else
-                {
-                    reader = new StreamReader(httpWebResponse.GetResponseStream());
-                }
-                source = reader.ReadToEnd();
-            }
+                    Log.Warning("Error downloading '{url}' retry={retryCount} waiting {ts} seconds. Stack trace={stackTrace}", url, retryCount, timeSpan.TotalSeconds, ex.StackTrace);
+                })
+            .ExecuteAsync(() => _client.GetStringAsync(url));
 
-            req.Abort();
-
-            return source;
+            return result;
         }
 
         public string SaveUrlToDisk(string url, string urlHash, string filename, bool removeScriptElements = true)
@@ -63,6 +76,9 @@ namespace RssFeeder.Console.Utility
             try
             {
                 Log.Logger.Information("Loading URL '{urlHash}':'{url}'", urlHash, url);
+
+                // List of html tags we really don't care to save
+                var excludeHtmlTags = new List<string> { "script", "style", "link", "svg" };
 
                 // Use custom load method to account for compression headers
                 HtmlDocument doc = new HtmlDocument();
@@ -73,7 +89,7 @@ namespace RssFeeder.Console.Utility
                 {
                     doc.DocumentNode
                         .Descendants()
-                        .Where(n => n.Name == "script" || n.Name == "style" || n.Name == "link")
+                        .Where(n => excludeHtmlTags.Contains(n.Name))
                         .ToList()
                         .ForEach(n => n.Remove());
                 }
@@ -91,7 +107,49 @@ namespace RssFeeder.Console.Utility
             }
             catch (Exception ex)
             {
-                Log.Logger.Error(ex, "SaveUrlToDisk: Unexpected error '{message}'", ex.Message);
+                Log.Logger.Error(ex, "SaveUrlToDisk: '{urlHash}':'{url}' - Unexpected error '{message}'", urlHash, url, ex.Message);
+            }
+
+            return string.Empty;
+        }
+
+        public string WebDriverUrlToDisk(string url, string urlHash, string filename)
+        {
+            Log.Logger.Information("Loading Selenium URL '{urlHash}':'{url}'", urlHash, url);
+
+            ChromeOptions options = new ChromeOptions();
+            options.AddArgument("headless");//Comment if we want to see the window. 
+
+            string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            ChromeDriver driver = null;
+
+            try
+            {
+                driver = new ChromeDriver(path, options);
+                driver.Navigate().GoToUrl(url);
+
+                // Delete the file if it already exists
+                if (File.Exists(filename))
+                {
+                    File.Delete(filename);
+                }
+
+                Log.Logger.Information("Saving text file '{fileName}'", filename);
+                File.WriteAllText(filename, driver.PageSource);
+
+                return filename;
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.Error(ex, "WebDriverUrlToDisk: '{urlHash}':'{url}' - Unexpected error '{message}'", urlHash, url, ex.Message);
+            }
+            finally
+            {
+                if (driver != null)
+                {
+                    driver.Close();
+                    driver.Quit();
+                }
             }
 
             return string.Empty;

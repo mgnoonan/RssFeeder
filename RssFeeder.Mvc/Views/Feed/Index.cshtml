@@ -19,22 +19,7 @@
                 @Html.DisplayNameFor(model => model.title)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.url)
-            </th>
-            <th>
                 @Html.DisplayNameFor(model => model.description)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.outputfile)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.language)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.customparser)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.collectionname)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.authoremail)
@@ -50,33 +35,16 @@
                     @Html.DisplayFor(modelItem => item.id)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.title)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.url)
+                    <a href="@item.url" target="_blank">@Html.DisplayFor(modelItem => item.title)</a>
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.description)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.outputfile)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.language)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.customparser)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.collectionname)
-                </td>
-                <td>
                     @Html.DisplayFor(modelItem => item.authoremail)
                 </td>
                 <td>
-                    @Html.ActionLink("Edit", "Edit", new { id = item.id }) |
-                    @Html.ActionLink("Details", "Details", new { id = item.id }) |
-                    @Html.ActionLink("Delete", "Delete", new { id = item.id })
+                    @Html.ActionLink("Details", "Details", new { id = item.id })
                 </td>
             </tr>
         }

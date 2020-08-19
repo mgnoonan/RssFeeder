@@ -5,7 +5,7 @@ namespace RssFeeder.Mvc.Models
     public class FeedItemModel
     {
         public string id { get; set; }
-        public int FeedId { get; set; }
+        public string FeedId { get; set; }
         public string Url { get; set; }
         public string UrlHash { get; set; }
         public string ImageUrl { get; set; }

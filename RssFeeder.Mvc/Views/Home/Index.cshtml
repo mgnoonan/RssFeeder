@@ -1,4 +1,6 @@
-﻿@{
+﻿@model IEnumerable<RssFeeder.Mvc.Models.FeedModel>
+
+@{
     ViewData["Title"] = "Home Page";
 }
 
@@ -17,32 +19,22 @@
             </tr>
         </thead>
         <tbody>
-            <tr>
-                <td>The Drudge Report</td>
-                <td>
-                    <a href='https://feedly.com/i/subscription/feed%2Fhttps%3A%2F%2Frssfeedermvc.azurewebsites.net%2Fapi%2Frss%2Fdrudge-report'  target='blank'>
-                        <img id='feedlyFollow' src='https://s3.feedly.com/img/follows/feedly-follow-rectangle-volume-medium_2x.png' alt='follow us in feedly' width='71' height='28'>
-                    </a>
-                </td>
-                <td>
-                    <a href="https://rssfeedermvc.azurewebsites.net/api/rss/drudge-report">
-                        <img src="https://rssfeedermvc.azurewebsites.net/feed-icon-28x28.png" width='28' height='28'>
-                    </a>
-                </td>
-            </tr>
-            <tr>
-                <td>Eagle Slant</td>
-                <td>
-                    <a href='https://feedly.com/i/subscription/feed%2Fhttps%3A%2F%2Frssfeedermvc.azurewebsites.net%2Fapi%2Frss%2Feagle-slant'  target='blank'>
-                        <img id='feedlyFollow' src='https://s3.feedly.com/img/follows/feedly-follow-rectangle-volume-medium_2x.png' alt='follow us in feedly' width='71' height='28'>
-                    </a>
-                </td>
-                <td>
-                    <a href="https://rssfeedermvc.azurewebsites.net/api/rss/eagle-slant">
-                        <img src="https://rssfeedermvc.azurewebsites.net/feed-icon-28x28.png" width='28' height='28'>
-                    </a>
-                </td>
-            </tr>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td><a href="@item.url" target="_blank">@item.title</a></td>
+                    <td>
+                        <a href='@item.FeedlyUrl' target='blank'>
+                            <img id='feedlyFollow' src='https://s3.feedly.com/img/follows/feedly-follow-rectangle-volume-medium_2x.png' alt='follow us in feedly' width='71' height='28'>
+                        </a>
+                    </td>
+                    <td>
+                        <a href="@item.RssUrl" target="_blank">
+                            <img src="https://rssfeedermvc.azurewebsites.net/feed-icon-28x28.png" width='28' height='28'>
+                        </a>
+                    </td>
+                </tr>
+            }
         </tbody>
     </table>
 </div>

@@ -17,12 +17,6 @@ namespace RssFeeder.Mvc.Models
 
             client = new DocumentClient(new Uri(config["endpoint"]), config["authKey"]);
             CreateDatabaseIfNotExistsAsync(databaseId).Wait();
-
-            // Feed Collection
-            CreateCollectionIfNotExistsAsync(databaseId, "feeds").Wait();
-
-            // Site Parser collection
-            CreateCollectionIfNotExistsAsync(databaseId, "site-parsers").Wait();
         }
 
         private static async Task CreateDatabaseIfNotExistsAsync(string databaseId)
@@ -59,7 +53,7 @@ namespace RssFeeder.Mvc.Models
                         await client.CreateDocumentCollectionAsync(
                             UriFactory.CreateDatabaseUri(databaseId),
                             new DocumentCollection { Id = collectionId },
-                            new RequestOptions { OfferThroughput = 1000 });
+                            new RequestOptions { OfferThroughput = 400 });
                     }
                     else
                     {
@@ -73,7 +67,7 @@ namespace RssFeeder.Mvc.Models
                                     Paths = new Collection<string> { "/" + partitionkey }
                                 }
                             },
-                            new RequestOptions { OfferThroughput = 1000 });
+                            new RequestOptions { OfferThroughput = 400 });
                     }
 
                 }

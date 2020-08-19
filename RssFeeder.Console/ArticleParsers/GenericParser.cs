@@ -2,6 +2,7 @@
 using AngleSharp.Dom;
 using AngleSharp.Html.Parser;
 using RssFeeder.Models;
+using Serilog;
 
 namespace RssFeeder.Console.Parsers
 {
@@ -17,6 +18,7 @@ namespace RssFeeder.Console.Parsers
             var container = document.QuerySelector(options.ArticleSelector);
             if (container == null)
             {
+                Log.Warning($"Error reading article: '{options.ArticleSelector}' article selector not found.");
                 return $"<p>Error reading article: '{options.ArticleSelector}' article selector not found.</p>";
             }
 
