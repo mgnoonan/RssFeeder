@@ -84,6 +84,7 @@ namespace RssFeeder.Mvc.Controllers
 
             var sb = new StringBuilder();
             var stringWriter = new StringWriterWithEncoding(sb, Encoding.UTF8);
+            int days = (id.ToLowerInvariant() == "drudge-report" ? 3 : 2);
 
             using (XmlWriter xmlWriter = XmlWriter.Create(stringWriter, new XmlWriterSettings() { Async = true, Indent = true, Encoding = Encoding.UTF8 }))
             {
@@ -95,7 +96,7 @@ namespace RssFeeder.Mvc.Controllers
                 await rssWriter.WriteUpdated(DateTimeOffset.UtcNow);
 
                 // Add Items
-                foreach (var item in await GetFeedItems(id.ToLowerInvariant()))
+                foreach (var item in await GetFeedItems(id.ToLowerInvariant(), days))
                 {
                     var si = new SyndicationItem()
                     {
@@ -127,16 +128,15 @@ namespace RssFeeder.Mvc.Controllers
             return _feeds.FirstOrDefault(q => q.collectionname == id);
         }
 
-        private async Task<IEnumerable<RssFeedItem>> GetFeedItems(string id)
+        private async Task<IEnumerable<RssFeedItem>> GetFeedItems(string id, int days)
         {
             _repo.Init("drudge-report");
+            Log.Information("Retrieving {days} days items for '{id}'", agent);
             
-            int days = id == "drudge-report" ? -3 : -2;
-
             var _items = await _repo.GetItemsAsync<RssFeedItem>(q => q.FeedId == id);
 
             return _items
-                .Where(q => q.DateAdded >= DateTime.Now.Date.AddDays(days))
+                .Where(q => q.DateAdded >= DateTime.Now.Date.AddDays(-days))
                 .OrderByDescending(q => q.DateAdded);
         }
     }
