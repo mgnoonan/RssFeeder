@@ -130,11 +130,13 @@ namespace RssFeeder.Mvc.Controllers
         private async Task<IEnumerable<RssFeedItem>> GetFeedItems(string id)
         {
             _repo.Init("drudge-report");
+            
+            int days = id == "drudge-report" ? -3 : -2;
 
             var _items = await _repo.GetItemsAsync<RssFeedItem>(q => q.FeedId == id);
 
             return _items
-                .Where(q => q.DateAdded >= DateTime.Now.Date.AddDays(-3))
+                .Where(q => q.DateAdded >= DateTime.Now.Date.AddDays(days))
                 .OrderByDescending(q => q.DateAdded);
         }
     }
