@@ -131,7 +131,7 @@ namespace RssFeeder.Mvc.Controllers
         private async Task<IEnumerable<RssFeedItem>> GetFeedItems(string id, int days)
         {
             _repo.Init("drudge-report");
-            Log.Information("Retrieving {days} days items for '{id}'", agent);
+            Log.Information("Retrieving {days} days items for '{id}'", days, id);
             
             var _items = await _repo.GetItemsAsync<RssFeedItem>(q => q.FeedId == id);
 
