@@ -84,7 +84,7 @@ namespace RssFeeder.Mvc.Controllers
 
             var sb = new StringBuilder();
             var stringWriter = new StringWriterWithEncoding(sb, Encoding.UTF8);
-            int days = (id.ToLowerInvariant() == "drudge-report" ? 3 : 2);
+            int days = (id.ToLowerInvariant() == "drudge-report" ? 3 : 1);
 
             using (XmlWriter xmlWriter = XmlWriter.Create(stringWriter, new XmlWriterSettings() { Async = true, Indent = true, Encoding = Encoding.UTF8 }))
             {
