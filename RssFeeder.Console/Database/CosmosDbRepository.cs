@@ -40,23 +40,10 @@ namespace RssFeeder.Console.Database
             }
         }
 
-        //private List<T> GetStaleDocuments<T>(string collectionName, short maximumAgeInDays)
-        //{
-        //    DateTime targetDate = DateTime.Now.AddDays(-maximumAgeInDays);
-
-        //    // Set some common query options
-        //    var queryOptions = new QueryRequestOptions { MaxItemCount = -1 };
-
-        //    // Run a simple query via LINQ. DocumentDB indexes all properties, so queries 
-        //    // can be completed efficiently and with low latency
-        //    var container = _client.GetContainer(_databaseName, collectionName);
-        //    return container.GetItemLinqQueryable<T>(allowSynchronousQueryExecution: true, requestOptions: queryOptions)
-        //        .Where(f => f.DateAdded <= targetDate)
-        //        .ToList();
-        //}
-
-        public bool DocumentExists<T>(string collectionName, string sqlQueryText)
+        public bool DocumentExists<T>(string collectionName, string feedID, string urlHash)
         {
+            string sqlQueryText = $"SELECT c.UrlHash FROM c WHERE c.UrlHash = '{urlHash}' AND c.FeedId = '{feedID}'";
+
             return QueryItems<T>(collectionName, sqlQueryText)
                 .Count() > 0;
         }
