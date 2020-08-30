@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Raven.Client.Documents;
 using RssFeeder.Console.ArticleDefinitions;
+using RssFeeder.Console.ArticleParsers;
 using RssFeeder.Console.Database;
 using RssFeeder.Console.FeedBuilders;
 using RssFeeder.Console.Models;
@@ -76,13 +77,14 @@ namespace RssFeeder.Console
 
             builder.RegisterInstance(Log.Logger).As<ILogger>();
             builder.RegisterInstance(store).As<IDocumentStore>();
-            //builder.Register(c => new CosmosDbRepository("rssfeeder", config.endpoint, config.authKey, Log.Logger)).As<IRepository>();
-            builder.RegisterType<RavenDbRepository>().As<IRepository>();
+            builder.Register(c => new CosmosDbRepository("rssfeeder", config.endpoint, config.authKey, Log.Logger)).As<IRepository>();
+            //builder.RegisterType<RavenDbRepository>().As<IRepository>();
             builder.RegisterType<RssBootstrap>().As<IRssBootstrap>();
             builder.RegisterType<DrudgeReportFeedBuilder>().Named<IRssFeedBuilder>("drudge-report");
             builder.RegisterType<EagleSlantFeedBuilder>().Named<IRssFeedBuilder>("eagle-slant");
             builder.RegisterType<LibertyDailyFeedBuilder>().Named<IRssFeedBuilder>("liberty-daily");
-            builder.RegisterType<GenericParser>().As<IArticleParser>();
+            builder.RegisterType<GenericParser>().Named<IArticleParser>("generic-parser");
+            builder.RegisterType<AdaptiveParser>().Named<IArticleParser>("adaptive-parser");
             builder.RegisterType<WebUtils>().As<IWebUtils>().SingleInstance();
             builder.RegisterType<Utils>().As<IUtils>().SingleInstance();
             builder.RegisterType<ArticleDefinitionFactory>().As<IArticleDefinitionFactory>().SingleInstance();

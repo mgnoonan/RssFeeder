@@ -18,10 +18,12 @@ namespace RssFeeder.Console
     public class RssBootstrap : IRssBootstrap
     {
         readonly IRepository repository;
-        readonly IArticleParser parser;
         readonly IArticleDefinitionFactory definitions;
         readonly IWebUtils webUtils;
         readonly IUtils utils;
+
+        private IArticleParser primaryParser;
+        private IArticleParser fallbackParser;
 
         private const string _collectionName = "drudge-report";
         private const string MetaDataTemplate = @"
@@ -53,13 +55,15 @@ $item.ArticleText$
 $item.ArticleText$
 " + MetaDataTemplate;
 
+        private const string GraphicTemplate = @"<img src=""$item.ImageUrl$"" />
+" + MetaDataTemplate;
+
         private const string BasicTemplate = @"<h3>$item.Title$</h3>
 " + MetaDataTemplate;
 
-        public RssBootstrap(IRepository _repository, IArticleParser _parser, IArticleDefinitionFactory _definitions, IWebUtils _webUtils, IUtils _utils)
+        public RssBootstrap(IRepository _repository, IArticleDefinitionFactory _definitions, IWebUtils _webUtils, IUtils _utils)
         {
             repository = _repository;
-            parser = _parser;
             webUtils = _webUtils;
             utils = _utils;
             definitions = _definitions;
@@ -86,6 +90,8 @@ $item.ArticleText$
 
             // Parse the target links from the source to build the article crawl list
             var builder = container.ResolveNamed<IRssFeedBuilder>(feed.CollectionName);
+            primaryParser = container.ResolveNamed<IArticleParser>("generic-parser");
+            fallbackParser = container.ResolveNamed<IArticleParser>("adaptive-parser");
             var list = builder.ParseRssFeedItems(feed, html);
 
             // Crawl any new articles and add them to the database
@@ -95,29 +101,21 @@ $item.ArticleText$
                 int count = 0;
                 foreach (var item in list)
                 {
-                    // With expression wrapped around func
-                    // bool exists = profiler.Inline<bool>(() => repository.DocumentExists<RssFeedItem>(
-                    //     feed.CollectionName,
-                    //     $"SELECT c.UrlHash FROM c WHERE c.UrlHash = '{item.UrlHash}'"),
-                    //     "DocumentExists"
-                    // );
-                    bool exists = profiler.Inline<bool>(() => repository.DocumentExists<RssFeedItem>(
-                        _collectionName,
-                        $"SELECT c.UrlHash FROM c WHERE c.UrlHash = '{item.UrlHash}' AND c.FeedId = '{feed.CollectionName}'"),
-                        "DocumentExists"
-                    );
-
                     // No need to continue if we already crawled the article
-                    if (exists)
+                    if (repository.DocumentExists<RssFeedItem>(_collectionName, feed.CollectionName, item.UrlHash))
                         continue;
 
                     // Increment for new article crawl
                     count++;
 
+                    Uri uri = new Uri(item.Url);
+                    string path = uri.GetComponents(UriComponents.Path, UriFormat.Unescaped).ToLower();
+                    string extension = path.EndsWith(".png") ? ".png" : path.EndsWith(".jpg") ? ".jpg" : ".html";
+
                     // Construct unique file name
                     string friendlyHostname = item.Url.Replace("://", "_").Replace(".", "_");
                     friendlyHostname = friendlyHostname.Substring(0, friendlyHostname.IndexOf("/"));
-                    string filename = Path.Combine(workingFolder, $"{item.UrlHash}_{friendlyHostname}.html");
+                    string filename = Path.Combine(workingFolder, $"{item.UrlHash}_{friendlyHostname}{extension}");
 
                     // Download the Url contents, first using HttpClient but if that fails use Selenium
                     item.FileName = webUtils.SaveUrlToDisk(item.Url, item.UrlHash, filename);
@@ -141,6 +139,11 @@ $item.ArticleText$
 
             // Purge stale documents from the database collection
             list = repository.GetDocuments<RssFeedItem>(_collectionName, $"SELECT c.id, c.UrlHash, c.HostName FROM c WHERE c.DateAdded <= '{DateTime.UtcNow.AddDays(-maximumAgeInDays):o}' AND (c.FeedId = '{feed.CollectionName}' OR c.FeedId = 0)");
+            //list = repository.GetDocuments<RssFeedItem>(_collectionName,
+            //    $@"from index 'Auto/AllDocs/ByDateAddedAndFeedId'
+            //       where DateAdded <= '{DateTime.UtcNow.AddDays(-maximumAgeInDays):o}' 
+            //       and FeedId = '{feed.CollectionName}'");
+
             foreach (var item in list)
             {
                 Log.Logger.Information("Removing UrlHash '{urlHash}' from {collectionName}", item.UrlHash, feed.CollectionName);
@@ -159,19 +162,27 @@ $item.ArticleText$
 
             if (File.Exists(item.FileName))
             {
-                var doc = new HtmlDocument();
-                doc.Load(item.FileName);
-
-                // Meta tags provide extended data about the item, display as much as possible
-                if (hostName == "www.youtube.com")
+                if (item.FileName.EndsWith(".png") || item.FileName.EndsWith(".jpg"))
                 {
-                    SetYouTubeMetaData(item, doc, hostName);
-                    item.Description = ApplyTemplateToDescription(item, feed, YouTubeTemplate);
+                    SetGraphicMetaData(item, hostName);
+                    item.Description = ApplyTemplateToDescription(item, feed, GraphicTemplate);
                 }
                 else
                 {
-                    SetExtendedArticleMetaData(item, doc, definitions, hostName);
-                    item.Description = ApplyTemplateToDescription(item, feed, ExtendedTemplate);
+                    var doc = new HtmlDocument();
+                    doc.Load(item.FileName);
+
+                    // Meta tags provide extended data about the item, display as much as possible
+                    if (hostName == "www.youtube.com")
+                    {
+                        SetYouTubeMetaData(item, doc, hostName);
+                        item.Description = ApplyTemplateToDescription(item, feed, YouTubeTemplate);
+                    }
+                    else
+                    {
+                        SetExtendedArticleMetaData(item, doc, definitions, hostName);
+                        item.Description = ApplyTemplateToDescription(item, feed, ExtendedTemplate);
+                    }
                 }
             }
             else
@@ -220,13 +231,22 @@ $item.ArticleText$
             {
                 Log.Warning("No parsing definition found for '{siteName}' on hash '{urlHash}'", item.SiteName, item.UrlHash);
 
-                // We don't have an article parser definition for this site, so just use the meta description
-                item.ArticleText = $"<p>{item.MetaDescription}</p>";
+                // If a specific article parser was not found in the database then
+                // use the fallback adaptive parser (experimental)
+                string articleText = fallbackParser.GetArticleBySelector(doc.Text, definition);
+                if (string.IsNullOrEmpty(articleText))
+                {
+                    item.ArticleText = $"<p>{item.MetaDescription}</p>";
+                }
+                else
+                {
+                    item.ArticleText = articleText;
+                }
             }
             else
             {
-                // Parse the article from the html
-                item.ArticleText = parser.GetArticleBySelector(doc.Text, definition);
+                // Parse the article from the default parser and definitions
+                item.ArticleText = primaryParser.GetArticleBySelector(doc.Text, definition);
             }
         }
 
@@ -256,6 +276,14 @@ $item.ArticleText$
 
             // There's no article text for YT, so just use the meta description
             item.ArticleText = $"<p>{item.MetaDescription}</p>";
+        }
+
+        private void SetGraphicMetaData(RssFeedItem item, string hostName)
+        {
+            // Extract the meta data from the Open Graph tags customized for YouTube
+            item.ImageUrl = item.Url;
+            item.HostName = hostName;
+            item.SiteName = item.HostName;
         }
 
         private string ParseMetaTagAttributes(HtmlDocument doc, string property, string attribute)

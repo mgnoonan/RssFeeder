@@ -32,9 +32,10 @@ namespace RssFeeder.Console.Database
             throw new System.NotImplementedException();
         }
 
-        public bool DocumentExists<T>(string collectionName, string sqlQueryText)
+        public bool DocumentExists<T>(string collectionName, string feedID, string urlHash)
         {
             int count = 0;
+            string sqlQueryText = $"from RssFeedItems where UrlHash = \"{urlHash}\" and FeedId = \"{feedID}\"";
 
             using (IDocumentSession session = _store.OpenSession(database: collectionName))
             {
@@ -50,7 +51,7 @@ namespace RssFeeder.Console.Database
         {
             using (IDocumentSession session = _store.OpenSession(database: collectionName))
             {
-                return session.Query<T>()
+                return session.Advanced.RawQuery<T>(sqlQueryText)
                     .ToList();
             }
         }
