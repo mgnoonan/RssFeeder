@@ -1,12 +1,17 @@
 ﻿[
   {
     "Title": "The Drudge Report",
-    "Url": "http://www.drudgereport.com",
+    "Enabled": "false",
+    "EnableThumbnail": "false",
+    "Exportable": "false",
     "Description": "The Drudge Report",
     "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\drudge.xml",
     "Language": "en-US",
+    "Url": "http://www.drudgereport.com",
     "CustomParser": "RssFeeder.Console.FeedBuilders.DrudgeReportFeedBuilder",
     "CollectionName": "drudge-report",
+    "FileRetentionDays": 7,
+    "DatabaseRetentionDays": 7,
     "Filters": [
       "cd0802700cef27a775ab057a2ef54aea",
       "cf69b6dd74d44010fdd0eff6d778e70f",
@@ -18,5 +23,35 @@
       "fb27ce207f3ca32d97999d182ec93576",
       "0cc6fcfe73c643623766047524ab10e5"
     ]
+  },
+  {
+    "Title": "Liberty Daily",
+    "Enabled": "true",
+    "EnableThumbnail": "false",
+    "Exportable": "false",
+    "Description": "Liberty Daily",
+    "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\liberty.xml",
+    "Language": "en-US",
+    "Url": "https://thelibertydaily.com/",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.EagleSlantFeedBuilder",
+    "CollectionName": "liberty-daily",
+    "FileRetentionDays": 7,
+    "DatabaseRetentionDays": 7,
+    "Filters": []
+  },
+  {
+    "Title": "Eagle Slant",
+    "Enabled": "false",
+    "EnableThumbnail": "false",
+    "Exportable": "false",
+    "Description": "Eagle Slant",
+    "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\eagle.xml",
+    "Language": "en-US",
+    "Url": "https://eagleslant.com/",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.EagleSlantFeedBuilder",
+    "CollectionName": "eagle-slant",
+    "FileRetentionDays": 7,
+    "DatabaseRetentionDays": 7,
+    "Filters": []
   }
 ]

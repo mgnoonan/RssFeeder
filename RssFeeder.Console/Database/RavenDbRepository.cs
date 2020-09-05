@@ -1,6 +1,6 @@
 
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Session;
 using Serilog;
@@ -29,7 +29,11 @@ namespace RssFeeder.Console.Database
 
         public void DeleteDocument<T>(string collectionName, string documentID, string partitionKey)
         {
-            throw new System.NotImplementedException();
+            using (IDocumentSession session = _store.OpenSession(database: collectionName))
+            {
+                session.Delete(documentID);
+                session.SaveChanges();
+            }
         }
 
         public bool DocumentExists<T>(string collectionName, string feedID, string urlHash)
@@ -49,11 +53,29 @@ namespace RssFeeder.Console.Database
 
         public List<T> GetDocuments<T>(string collectionName, string sqlQueryText)
         {
+            Log.Information("Query: {query}", sqlQueryText);
+
             using (IDocumentSession session = _store.OpenSession(database: collectionName))
             {
                 return session.Advanced.RawQuery<T>(sqlQueryText)
                     .ToList();
             }
+        }
+
+        public List<T> GetStaleDocuments<T>(string collectionName, string feedId, short maximumAgeInDays)
+        {
+            string sqlQueryText = $@"from index 'Auto/AllDocs/ByDateAddedAndFeedIdAndSiteNameAndUrl'
+                   where DateAdded <= '{DateTime.UtcNow.AddDays(-maximumAgeInDays):o}' 
+                   and FeedId = '{feedId}'";
+
+            return GetDocuments<T>(collectionName, sqlQueryText);
+        }
+
+        public List<T> GetAllDocuments<T>(string collectionName)
+        {
+            string sqlQueryText = $"from @all_docs";
+
+            return GetDocuments<T>(collectionName, sqlQueryText);
         }
     }
 }

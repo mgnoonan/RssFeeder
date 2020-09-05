@@ -39,9 +39,8 @@ namespace RssFeeder.Console.FeedBuilders
             var doc = new HtmlDocument();
             doc.Load(new StringReader(html));
 
-            // Centered main headline(s)
+            // Above the fold headline(s)
             // //div[@class=\"drudgery-top-links\"]/div/a
-            // //*[@id="page"]/div[1]/div[1]/a
             var nodes = doc.DocumentNode.SelectNodes("//div[@class=\"drudgery-top-links\"]/div/a");
             int count;
             if (nodes != null)
@@ -60,44 +59,84 @@ namespace RssFeeder.Console.FeedBuilders
                 }
             }
 
-            //// Left column articles
+            // Featured headline(s)
+            // //div[@class=\"drudgery-featured\"]/div/a
+            nodes = doc.DocumentNode.SelectNodes("//div[@class=\"drudgery-featured\"]/div/a");
+            if (nodes != null)
+            {
+                count = 1;
+                foreach (HtmlNode node in nodes)
+                {
+                    string title = WebUtility.HtmlDecode(node.InnerText.Trim());
 
-            //nodes = doc.DocumentNode.SelectNodes("//div[@id=\"column-1\"]/div/div/ul/li/a");
-            //if (nodes != null)
-            //{
-            //    count = 1;
-            //    foreach (HtmlNode node in nodes)
-            //    {
-            //        string title = WebUtility.HtmlDecode(node.InnerText.Trim());
+                    var item = CreateNodeLinks(filters, node, "headline", count++);
+                    if (item != null)
+                    {
+                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
+                        list.Add(item);
+                    }
+                }
+            }
 
-            //        var item = CreateNodeLinks(filters, node, "left column", count++);
-            //        if (item != null)
-            //        {
-            //            log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
-            //            list.Add(item);
-            //        }
-            //    }
-            //}
+            // Column 1 Articles
+            // //div[@class=\"drudgery-column-1\"]/div[@class=\"drudgery-articles\"]/div/a
+            // #main > div.drudgery-column-1 > div:nth-child(2) > div:nth-child(1) > a
+            nodes = doc.DocumentNode.SelectNodes("//div[@class=\"drudgery-column-1\"]/div[@class=\"drudgery-articles\"]/div/a");
+            if (nodes != null)
+            {
+                count = 1;
+                foreach (HtmlNode node in nodes)
+                {
+                    string title = WebUtility.HtmlDecode(node.InnerText.Trim());
 
+                    var item = CreateNodeLinks(filters, node, "left column", count++);
+                    if (item != null)
+                    {
+                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
+                        list.Add(item);
+                    }
+                }
+            }
 
-            //// Middle column articles
+            // Column 2 Articles
+            // //div[@class=\"drudgery-column-2\"]/div[@class=\"drudgery-articles\"]/div/a
+            // #main > div.drudgery-column-2 > div:nth-child(2) > div:nth-child(1) > a
+            nodes = doc.DocumentNode.SelectNodes("//div[@class=\"drudgery-column-2\"]/div[@class=\"drudgery-articles\"]/div/a");
+            if (nodes != null)
+            {
+                count = 1;
+                foreach (HtmlNode node in nodes)
+                {
+                    string title = WebUtility.HtmlDecode(node.InnerText.Trim());
 
-            //nodes = doc.DocumentNode.SelectNodes("//div[@id=\"column-2\"]/div/div/ul/li/a");
-            //if (nodes != null)
-            //{
-            //    count = 1;
-            //    foreach (HtmlNode node in nodes)
-            //    {
-            //        string title = WebUtility.HtmlDecode(node.InnerText.Trim());
+                    var item = CreateNodeLinks(filters, node, "middle column", count++);
+                    if (item != null)
+                    {
+                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
+                        list.Add(item);
+                    }
+                }
+            }
 
-            //        var item = CreateNodeLinks(filters, node, "left column", count++);
-            //        if (item != null)
-            //        {
-            //            log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
-            //            list.Add(item);
-            //        }
-            //    }
-            //}
+            // Column 3 Articles
+            // //div[@class=\"drudgery-column-3\"]/div[@class=\"drudgery-articles\"]/div/a
+            // #main > div.drudgery-column-3 > div:nth-child(2) > div:nth-child(1) > a
+            nodes = doc.DocumentNode.SelectNodes("//div[@class=\"drudgery-column-3\"]/div[@class=\"drudgery-articles\"]/div/a");
+            if (nodes != null)
+            {
+                count = 1;
+                foreach (HtmlNode node in nodes)
+                {
+                    string title = WebUtility.HtmlDecode(node.InnerText.Trim());
+
+                    var item = CreateNodeLinks(filters, node, "right column", count++);
+                    if (item != null)
+                    {
+                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
+                        list.Add(item);
+                    }
+                }
+            }
 
             return list;
         }

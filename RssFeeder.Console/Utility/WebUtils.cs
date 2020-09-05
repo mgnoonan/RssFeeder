@@ -73,6 +73,9 @@ namespace RssFeeder.Console.Utility
 
         public string SaveUrlToDisk(string url, string urlHash, string filename, bool removeScriptElements = true)
         {
+            if (!filename.EndsWith(".html"))
+                return SaveImageToDisk(url, urlHash, filename);
+
             try
             {
                 Log.Logger.Information("Loading URL '{urlHash}':'{url}'", urlHash, url);
@@ -104,6 +107,55 @@ namespace RssFeeder.Console.Utility
                 doc.Save(filename);
 
                 return filename;
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.Error(ex, "SaveUrlToDisk: '{urlHash}':'{url}' - Unexpected error '{message}'", urlHash, url, ex.Message);
+            }
+
+            return string.Empty;
+        }
+
+        private string SaveImageToDisk(string url, string urlHash, string filename)
+        {
+            try
+            {
+                Log.Logger.Information("Loading image URL '{urlHash}':'{url}'", urlHash, url);
+
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+
+                // Check that the remote file was found. The ContentType
+                // check is performed since a request for a non-existent
+                // image file might be redirected to a 404-page, which would
+                // yield the StatusCode "OK", even though the image was not
+                // found.
+                if ((response.StatusCode == HttpStatusCode.OK ||
+                    response.StatusCode == HttpStatusCode.Moved ||
+                    response.StatusCode == HttpStatusCode.Redirect) &&
+                    response.ContentType.StartsWith("image", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Delete the file if it already exists
+                    if (File.Exists(filename))
+                    {
+                        File.Delete(filename);
+                    }
+
+                    Log.Logger.Information("Saving image file '{fileName}'", filename);
+
+                    // if the remote file was found, download it
+                    using Stream inputStream = response.GetResponseStream();
+                    using Stream outputStream = File.OpenWrite(filename);
+                    byte[] buffer = new byte[4096];
+                    int bytesRead;
+                    do
+                    {
+                        bytesRead = inputStream.Read(buffer, 0, buffer.Length);
+                        outputStream.Write(buffer, 0, bytesRead);
+                    } while (bytesRead != 0);
+
+                    return filename;
+                }
             }
             catch (Exception ex)
             {

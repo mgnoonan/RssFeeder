@@ -1,0 +1,16 @@
+[
+  {
+    "Title": "Liberty Daily",
+    "Enabled": "true",
+    "Exportable": "false",
+    "Description": "Liberty Daily",
+    "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\liberty.xml",
+    "Language": "en-US",
+    "Url": "https://thelibertydaily.com/",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.EagleSlantFeedBuilder",
+    "CollectionName": "liberty-daily",
+    "FileRetentionDays": 7,
+    "DatabaseRetentionDays": 7,
+    "Filters": []
+  }
+]

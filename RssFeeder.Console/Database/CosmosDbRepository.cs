@@ -88,5 +88,19 @@ namespace RssFeeder.Console.Database
 
             return results;
         }
+
+        public List<T> GetStaleDocuments<T>(string collectionName, string feedId, short maximumAgeInDays)
+        {
+            string sqlQueryText = $"SELECT c.id, c.UrlHash, c.HostName FROM c WHERE c.DateAdded <= '{DateTime.UtcNow.AddDays(-maximumAgeInDays):o}' AND (c.FeedId = '{feedId}' OR c.FeedId = 0)";
+
+            return GetDocuments<T>(collectionName, sqlQueryText);
+        }
+
+        public List<T> GetAllDocuments<T>(string collectionName)
+        {
+            string sqlQueryText = $"SELECT * FROM c";
+
+            return GetDocuments<T>(collectionName, sqlQueryText);
+        }
     }
 }
