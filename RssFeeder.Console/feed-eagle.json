@@ -1,10 +1,10 @@
 ﻿[
   {
     "Title": "Eagle Slant",
-    "Url": "https://eagleslant.com/",
     "Description": "Eagle Slant",
     "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\eagle.xml",
     "Language": "en-US",
+    "Url": "https://eagleslant.com/",
     "CustomParser": "RssFeeder.Console.FeedBuilders.EagleSlantFeedBuilder",
     "CollectionName": "eagle-slant",
     "Filters": []

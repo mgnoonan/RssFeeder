@@ -11,12 +11,15 @@ namespace RssFeeder.Console.ArticleDefinitions
     {
         readonly IRepository repository;
         readonly List<SiteArticleDefinition> ArticleDefinitions;
+        private const string _collectionName = "site-parsers";
 
         public ArticleDefinitionFactory(IRepository _repository)
         {
             repository = _repository;
 
-            ArticleDefinitions = repository.GetDocuments<SiteArticleDefinition>("site-parsers", "SELECT * FROM c");
+            repository.EnsureDatabaseExists(_collectionName, true);
+
+            ArticleDefinitions = repository.GetAllDocuments<SiteArticleDefinition>(_collectionName);
         }
 
         public SiteArticleDefinition Get(string sitename)

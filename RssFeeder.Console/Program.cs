@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Reflection;
 using Autofac;
@@ -77,12 +76,13 @@ namespace RssFeeder.Console
 
             builder.RegisterInstance(Log.Logger).As<ILogger>();
             builder.RegisterInstance(store).As<IDocumentStore>();
-            builder.Register(c => new CosmosDbRepository("rssfeeder", config.endpoint, config.authKey, Log.Logger)).As<IRepository>();
-            //builder.RegisterType<RavenDbRepository>().As<IRepository>();
+            builder.Register(c => new CosmosDbRepository("rssfeeder", config.endpoint, config.authKey, Log.Logger)).As<IExportRepository>();
+            builder.RegisterType<RavenDbRepository>().As<IRepository>();
             builder.RegisterType<RssBootstrap>().As<IRssBootstrap>();
             builder.RegisterType<DrudgeReportFeedBuilder>().Named<IRssFeedBuilder>("drudge-report");
             builder.RegisterType<EagleSlantFeedBuilder>().Named<IRssFeedBuilder>("eagle-slant");
             builder.RegisterType<LibertyDailyFeedBuilder>().Named<IRssFeedBuilder>("liberty-daily");
+            builder.RegisterType<BonginoReportFeedBuilder>().Named<IRssFeedBuilder>("bongino-report");
             builder.RegisterType<GenericParser>().Named<IArticleParser>("generic-parser");
             builder.RegisterType<AdaptiveParser>().Named<IArticleParser>("adaptive-parser");
             builder.RegisterType<WebUtils>().As<IWebUtils>().SingleInstance();
@@ -119,16 +119,12 @@ namespace RssFeeder.Console
 
             try
             {
-                List<Options> optionsList;
+                List<RssFeed> feedList;
                 var repository = container.Resolve<IRepository>();
                 var bootstrap = container.Resolve<IRssBootstrap>();
                 var utils = container.Resolve<IUtils>();
                 var webUtils = container.Resolve<IWebUtils>();
 
-                //if (!string.IsNullOrWhiteSpace(opts.TestDefinition))
-                //{
-                //    optionsList = new List<Options> { opts };
-                //}
                 if (!string.IsNullOrWhiteSpace(opts.Config))
                 {
                     // Get the directory of the current executable, all config 
@@ -142,7 +138,7 @@ namespace RssFeeder.Console
                     Log.Logger.Information("Options: {@options}", json);
 
                     // Deserialize into our options class
-                    optionsList = JsonConvert.DeserializeObject<List<Options>>(json);
+                    feedList = JsonConvert.DeserializeObject<List<RssFeed>>(json);
                 }
                 else
                 {
@@ -154,27 +150,18 @@ namespace RssFeeder.Console
                     string json = webUtils.DownloadStringWithCompression(url);
 #endif
                     // Deserialize into our options class
-                    optionsList = JsonConvert.DeserializeObject<List<Options>>(json);
+                    feedList = JsonConvert.DeserializeObject<List<RssFeed>>(json);
                 }
 
-                foreach (var option in optionsList)
+                foreach (var feed in feedList)
                 {
-                    // Transform the option to the old style feed
-                    var f = new RssFeed
-                    {
-                        Title = option.Title,
-                        Description = option.Description,
-                        OutputFile = option.OutputFile,
-                        Language = option.Language,
-                        Url = option.Url,
-                        CustomParser = option.CustomParser,
-                        Filters = option.Filters.ToList(),
-                        CollectionName = option.CollectionName
-                    };
+                    if (!feed.Enabled)
+                        continue;
 
-                    using (LogContext.PushProperty("collectionName", f.CollectionName))
+                    using (LogContext.PushProperty("collectionName", feed.CollectionName))
                     {
-                        bootstrap.Start(container, profiler, f);
+                        bootstrap.Start(container, profiler, feed);
+                        bootstrap.Export(container, profiler, feed);
                     }
                 }
 
@@ -183,7 +170,7 @@ namespace RssFeeder.Console
             }
             catch (Exception ex)
             {
-                Log.Logger.Error(ex, "Error during processing");
+                Log.Logger.Error(ex, "Error during processing '{message}'", ex.Message);
                 returnCode = 250;
             }
             finally

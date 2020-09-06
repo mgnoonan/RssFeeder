@@ -64,13 +64,22 @@ namespace RssFeeder.Console.ArticleParsers
                 return string.Empty;
             }
 
-            // Query the document by CSS selectors to get the article text
-            var container = document.QuerySelector(highKey);
+            try
+            {
+                // Query the document by CSS selectors to get the article text
+                var container = document.QuerySelector(highKey);
 
-            // Get only the paragraphs under the parent
-            var paragraphs2 = container.QuerySelectorAll("p");
+                // Get only the paragraphs under the parent
+                var paragraphs2 = container.QuerySelectorAll("p");
 
-            return BuildArticleText(paragraphs2);
+                return BuildArticleText(paragraphs2);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error selecting paragraphs '{message}'", ex.Message);
+            }
+
+            return string.Empty;
         }
 
         protected virtual string BuildArticleText(IHtmlCollection<IElement> paragraphs)
