@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using AngleSharp.Dom;
 using HtmlAgilityPack;
 using RssFeeder.Console.Utility;
 using RssFeeder.Models;
@@ -21,6 +22,17 @@ namespace RssFeeder.Console.FeedBuilders
             utils = utilities;
         }
 
+        protected RssFeedItem CreateNodeLinks(List<string> filters, IElement node, string location, int count)
+        {
+            string title = WebUtility.HtmlDecode(node.Text().Trim());
+
+            // Replace all errant spaces, which sometimes creep into Drudge's URLs
+            var attr = node.Attributes.GetNamedItem("href");
+            string linkUrl = attr.Value.Trim().Replace(" ", string.Empty);
+
+            return CreateNodeLinks(filters, location, count, title, ref linkUrl);
+        }
+
         protected RssFeedItem CreateNodeLinks(List<string> filters, HtmlNode node, string location, int count)
         {
             string title = WebUtility.HtmlDecode(node.InnerText.Trim());
@@ -28,6 +40,12 @@ namespace RssFeeder.Console.FeedBuilders
             // Replace all errant spaces, which sometimes creep into Drudge's URLs
             HtmlAttribute attr = node.Attributes["href"];
             string linkUrl = attr.Value.Trim().Replace(" ", string.Empty);
+
+            return CreateNodeLinks(filters, location, count, title, ref linkUrl);
+        }
+
+        private RssFeedItem CreateNodeLinks(List<string> filters, string location, int count, string title, ref string linkUrl)
+        {
 
             // Sometimes Drudge has completely empty links, ignore them
             if (string.IsNullOrEmpty(linkUrl))

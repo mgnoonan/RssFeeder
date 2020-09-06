@@ -7,7 +7,7 @@ using Serilog;
 
 namespace RssFeeder.Console.Database
 {
-    public class CosmosDbRepository : IRepository
+    public class CosmosDbRepository : IRepository, IExportRepository
     {
         string _databaseName;
         ILogger _log;
@@ -101,6 +101,29 @@ namespace RssFeeder.Console.Database
             string sqlQueryText = $"SELECT * FROM c";
 
             return GetDocuments<T>(collectionName, sqlQueryText);
+        }
+
+        public void EnsureDatabaseExists(string database = null, bool createDatabaseIfNotExists = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<T> GetExportDocuments<T>(string collectionName, string feedId, int minutes)
+        {
+            string sqlQueryText = $"SELECT * FROM c WHERE c.DateAdded >= '{DateTime.UtcNow.AddMinutes(-minutes):o}' AND c.FeedId = '{feedId}'";
+
+            return GetDocuments<T>(collectionName, sqlQueryText);
+        }
+
+        public void UpsertDocument<T>(string collectionName, T item)
+        {
+            var container = _client.GetContainer(_databaseName, collectionName);
+            var result = container.UpsertItemAsync(item).Result;
+
+            if (result.StatusCode != HttpStatusCode.Created)
+            {
+                _log.Error("Unable to create document for '{@item}'", item);
+            }
         }
     }
 }

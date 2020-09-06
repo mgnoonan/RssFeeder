@@ -76,12 +76,13 @@ namespace RssFeeder.Console
 
             builder.RegisterInstance(Log.Logger).As<ILogger>();
             builder.RegisterInstance(store).As<IDocumentStore>();
-            //builder.Register(c => new CosmosDbRepository("rssfeeder", config.endpoint, config.authKey, Log.Logger)).As<IRepository>();
+            builder.Register(c => new CosmosDbRepository("rssfeeder", config.endpoint, config.authKey, Log.Logger)).As<IExportRepository>();
             builder.RegisterType<RavenDbRepository>().As<IRepository>();
             builder.RegisterType<RssBootstrap>().As<IRssBootstrap>();
             builder.RegisterType<DrudgeReportFeedBuilder>().Named<IRssFeedBuilder>("drudge-report");
             builder.RegisterType<EagleSlantFeedBuilder>().Named<IRssFeedBuilder>("eagle-slant");
             builder.RegisterType<LibertyDailyFeedBuilder>().Named<IRssFeedBuilder>("liberty-daily");
+            builder.RegisterType<BonginoReportFeedBuilder>().Named<IRssFeedBuilder>("bongino-report");
             builder.RegisterType<GenericParser>().Named<IArticleParser>("generic-parser");
             builder.RegisterType<AdaptiveParser>().Named<IArticleParser>("adaptive-parser");
             builder.RegisterType<WebUtils>().As<IWebUtils>().SingleInstance();
@@ -160,6 +161,7 @@ namespace RssFeeder.Console
                     using (LogContext.PushProperty("collectionName", feed.CollectionName))
                     {
                         bootstrap.Start(container, profiler, feed);
+                        bootstrap.Export(container, profiler, feed);
                     }
                 }
 

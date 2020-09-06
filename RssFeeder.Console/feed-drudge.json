@@ -1,7 +1,7 @@
 ﻿[
   {
     "Title": "The Drudge Report",
-    "Enabled": "false",
+    "Enabled": "true",
     "EnableThumbnail": "false",
     "Exportable": "false",
     "Description": "The Drudge Report",
@@ -41,15 +41,30 @@
   },
   {
     "Title": "Eagle Slant",
-    "Enabled": "false",
+    "Enabled": "true",
     "EnableThumbnail": "false",
-    "Exportable": "false",
+    "Exportable": "true",
     "Description": "Eagle Slant",
     "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\eagle.xml",
     "Language": "en-US",
     "Url": "https://eagleslant.com/",
     "CustomParser": "RssFeeder.Console.FeedBuilders.EagleSlantFeedBuilder",
     "CollectionName": "eagle-slant",
+    "FileRetentionDays": 7,
+    "DatabaseRetentionDays": 7,
+    "Filters": []
+  },
+  {
+    "Title": "Bongino Report",
+    "Enabled": "true",
+    "EnableThumbnail": "false",
+    "Exportable": "false",
+    "Description": "The Bongino Report",
+    "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\bongino.xml",
+    "Language": "en-US",
+    "Url": "https://bonginoreport.com/",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.BonginoReportFeedBuilder",
+    "CollectionName": "bongino-report",
     "FileRetentionDays": 7,
     "DatabaseRetentionDays": 7,
     "Filters": []

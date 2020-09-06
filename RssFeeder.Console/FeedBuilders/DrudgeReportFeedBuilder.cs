@@ -55,7 +55,7 @@ namespace RssFeeder.Console.FeedBuilders
                 var nodeList = link.Descendants("a").ToList();
                 foreach (var node in nodeList)
                 {
-                    var item = CreateNodeLinks(filters, node, "main headline", count++);
+                    var item = CreateNodeLinks(filters, node, "main headlines", count++);
                     if (item != null)
                     {
                         log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);

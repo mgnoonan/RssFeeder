@@ -18,6 +18,7 @@ namespace RssFeeder.Console
     public class RssBootstrap : IRssBootstrap
     {
         readonly IRepository repository;
+        readonly IExportRepository exportRepository;
         readonly IArticleDefinitionFactory definitions;
         readonly IWebUtils webUtils;
         readonly IUtils utils;
@@ -61,12 +62,15 @@ $item.ArticleText$
         private const string BasicTemplate = @"<h3>$item.Title$</h3>
 " + MetaDataTemplate;
 
-        public RssBootstrap(IRepository _repository, IArticleDefinitionFactory _definitions, IWebUtils _webUtils, IUtils _utils)
+        public RssBootstrap(IRepository _repository, IExportRepository _exportRepository, IArticleDefinitionFactory _definitions, IWebUtils _webUtils, IUtils _utils)
         {
             repository = _repository;
+            exportRepository = _exportRepository;
             webUtils = _webUtils;
             utils = _utils;
             definitions = _definitions;
+
+            repository.EnsureDatabaseExists(_collectionName, true);
         }
 
         public void Start(IContainer container, MiniProfiler profiler, RssFeed feed)
@@ -99,15 +103,15 @@ $item.ArticleText$
             Log.Information("Adding new articles to the {collectionName} collection", feed.CollectionName);
             using (profiler.Step("Adding new articles"))
             {
-                int count = 0;
+                int articleCount = 0;
                 foreach (var item in list)
                 {
                     // No need to continue if we already crawled the article
                     if (repository.DocumentExists<RssFeedItem>(_collectionName, feed.CollectionName, item.UrlHash))
                         continue;
 
-                    // Increment for new article crawl
-                    count++;
+                    // Increment new article count
+                    articleCount++;
 
                     Uri uri = new Uri(item.Url);
                     string path = uri.GetComponents(UriComponents.Path, UriFormat.Unescaped).ToLower();
@@ -131,7 +135,7 @@ $item.ArticleText$
                     repository.CreateDocument<RssFeedItem>(_collectionName, item);
                 }
 
-                Log.Information("Added {count} new articles to the {collectionName} collection", count, feed.CollectionName);
+                Log.Information("Added {count} new articles to the {collectionName} collection", articleCount, feed.CollectionName);
             }
 
             // Purge stale files from working folder
@@ -147,6 +151,27 @@ $item.ArticleText$
             }
 
             Log.Information("Removed {count} documents older than {maximumAgeInDays} days from {collectionName}", list.Count(), feed.DatabaseRetentionDays, feed.CollectionName);
+        }
+
+        public void Export(IContainer container, MiniProfiler profiler, RssFeed feed)
+        {
+            if (!feed.Exportable)
+            {
+                Log.Information("Feed {feedId} is not marked as exportable", feed.CollectionName);
+                return;
+            }
+
+            // Get the articles from the source repository starting at the top of the hour
+            var list = repository.GetExportDocuments<RssFeedItem>(_collectionName, feed.CollectionName, DateTime.Now.Minute + 1);
+
+            // Loop through the list and upsert to the target repository
+            foreach (var item in list)
+            {
+                Log.Information("EXPORT: UrlHash '{urlHash}' from {collectionName}", item.UrlHash, feed.CollectionName);
+                exportRepository.UpsertDocument<RssFeedItem>(_collectionName, item);
+            }
+
+            Log.Information("Exported {count} new articles to the {collectionName} collection", list.Count, feed.CollectionName);
         }
 
         private void ParseArticleMetaTags(RssFeedItem item, RssFeed feed, IArticleDefinitionFactory definitions)
