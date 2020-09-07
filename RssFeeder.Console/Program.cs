@@ -142,13 +142,16 @@ namespace RssFeeder.Console
                 }
                 else
                 {
-#if DEBUG
-                    string filename = @"C:\Projects\RssFeeder\RssFeeder.Mvc\feeds.json";
-                    string json = File.ReadAllText(filename);
-#else
-                    string url = "https://rssfeedermvc.azurewebsites.net/Feed/List";
-                    string json = webUtils.DownloadStringWithCompression(url);
-#endif
+                    // Get the directory of the current executable, all config 
+                    // files should be in this path
+                    string configFile = Path.Combine(utils.GetAssemblyDirectory(), "feed-drudge.json");
+                    Log.Logger.Information("Reading from config file: {configFile}", configFile);
+
+                    // Read the options in JSON format
+                    using StreamReader sr = new StreamReader(configFile);
+                    string json = sr.ReadToEnd();
+                    Log.Logger.Information("Options: {@options}", json);
+
                     // Deserialize into our options class
                     feedList = JsonConvert.DeserializeObject<List<RssFeed>>(json);
                 }
@@ -162,6 +165,7 @@ namespace RssFeeder.Console
                     {
                         bootstrap.Start(container, profiler, feed);
                         bootstrap.Export(container, profiler, feed);
+                        bootstrap.Purge(container, profiler, feed);
                     }
                 }
 

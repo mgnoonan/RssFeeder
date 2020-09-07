@@ -2,8 +2,8 @@
   {
     "Title": "The Drudge Report",
     "Enabled": "true",
-    "EnableThumbnail": "false",
-    "Exportable": "false",
+    "EnableThumbnail": "true",
+    "Exportable": "true",
     "Description": "The Drudge Report",
     "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\drudge.xml",
     "Language": "en-US",
@@ -21,13 +21,17 @@
       "0cdb9a4ef88173081464cbb9e8000e86",
       "504bcb85a28431aed16316d3a8d53216",
       "fb27ce207f3ca32d97999d182ec93576",
-      "0cc6fcfe73c643623766047524ab10e5"
+      "0cc6fcfe73c643623766047524ab10e5",
+      "6627bcec15fb00b21be89ac5f2452e59",
+      "da1eddfe8b735338e0d8b62dcdc29c72",
+      "60306a36caf8451098e8e9518f9189e2",
+      "05a84c37048fe22a1b897a2b11e31c84"
     ]
   },
   {
     "Title": "Liberty Daily",
     "Enabled": "true",
-    "EnableThumbnail": "false",
+    "EnableThumbnail": "true",
     "Exportable": "false",
     "Description": "Liberty Daily",
     "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\liberty.xml",
@@ -36,13 +40,13 @@
     "CustomParser": "RssFeeder.Console.FeedBuilders.EagleSlantFeedBuilder",
     "CollectionName": "liberty-daily",
     "FileRetentionDays": 7,
-    "DatabaseRetentionDays": 7,
+    "DatabaseRetentionDays": 3,
     "Filters": []
   },
   {
     "Title": "Eagle Slant",
     "Enabled": "true",
-    "EnableThumbnail": "false",
+    "EnableThumbnail": "true",
     "Exportable": "true",
     "Description": "Eagle Slant",
     "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\eagle.xml",
@@ -51,13 +55,13 @@
     "CustomParser": "RssFeeder.Console.FeedBuilders.EagleSlantFeedBuilder",
     "CollectionName": "eagle-slant",
     "FileRetentionDays": 7,
-    "DatabaseRetentionDays": 7,
+    "DatabaseRetentionDays": 3,
     "Filters": []
   },
   {
     "Title": "Bongino Report",
     "Enabled": "true",
-    "EnableThumbnail": "false",
+    "EnableThumbnail": "true",
     "Exportable": "false",
     "Description": "The Bongino Report",
     "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\bongino.xml",
@@ -66,7 +70,7 @@
     "CustomParser": "RssFeeder.Console.FeedBuilders.BonginoReportFeedBuilder",
     "CollectionName": "bongino-report",
     "FileRetentionDays": 7,
-    "DatabaseRetentionDays": 7,
+    "DatabaseRetentionDays": 3,
     "Filters": []
   }
 ]
