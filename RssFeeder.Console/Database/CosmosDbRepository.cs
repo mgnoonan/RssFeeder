@@ -29,7 +29,7 @@ namespace RssFeeder.Console.Database
             return result;
         }
 
-        public void CreateDocument<T>(string collectionName, T item)
+        public void CreateDocument<T>(string collectionName, T item, int expirationDays)
         {
             var container = _client.GetContainer(_databaseName, collectionName);
             var result = container.CreateItemAsync(item).Result;

@@ -132,25 +132,11 @@ $item.ArticleText$
 
                     // Parse the saved file as dictated by the site definitions
                     ParseArticleMetaTags(item, feed, definitions);
-                    repository.CreateDocument<RssFeedItem>(_collectionName, item);
+                    repository.CreateDocument<RssFeedItem>(_collectionName, item, feed.DatabaseRetentionDays);
                 }
 
                 Log.Information("Added {count} new articles to the {collectionName} collection", articleCount, feed.CollectionName);
             }
-
-            // Purge stale files from working folder
-            utils.PurgeStaleFiles(workingFolder, feed.FileRetentionDays);
-
-            // Purge stale documents from the database collection
-            list = repository.GetStaleDocuments<RssFeedItem>(_collectionName, feed.CollectionName, feed.DatabaseRetentionDays);
-
-            foreach (var item in list)
-            {
-                Log.Information("Removing UrlHash '{urlHash}' from {collectionName}", item.UrlHash, feed.CollectionName);
-                repository.DeleteDocument<RssFeedItem>(_collectionName, item.Id, item.HostName);
-            }
-
-            Log.Information("Removed {count} documents older than {maximumAgeInDays} days from {collectionName}", list.Count(), feed.DatabaseRetentionDays, feed.CollectionName);
         }
 
         public void Export(IContainer container, MiniProfiler profiler, RssFeed feed)
@@ -172,6 +158,24 @@ $item.ArticleText$
             }
 
             Log.Information("Exported {count} new articles to the {collectionName} collection", list.Count, feed.CollectionName);
+        }
+
+        public void Purge(IContainer container, MiniProfiler profiler, RssFeed feed)
+        {
+            // Purge stale files from working folder
+            string workingFolder = Path.Combine(utils.GetAssemblyDirectory(), feed.CollectionName);
+            utils.PurgeStaleFiles(workingFolder, feed.FileRetentionDays);
+
+            // Purge stale documents from the database collection
+            var list = exportRepository.GetStaleDocuments<RssFeedItem>(_collectionName, feed.CollectionName, feed.DatabaseRetentionDays);
+
+            foreach (var item in list)
+            {
+                Log.Information("Removing UrlHash '{urlHash}' from {collectionName}", item.UrlHash, feed.CollectionName);
+                exportRepository.DeleteDocument<RssFeedItem>(_collectionName, item.Id, item.HostName);
+            }
+
+            Log.Information("Removed {count} documents older than {maximumAgeInDays} days from {collectionName}", list.Count(), feed.DatabaseRetentionDays, feed.CollectionName);
         }
 
         private void ParseArticleMetaTags(RssFeedItem item, RssFeed feed, IArticleDefinitionFactory definitions)

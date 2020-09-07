@@ -50,11 +50,14 @@ namespace RssFeeder.Console.Database
             }
         }
 
-        public void CreateDocument<T>(string collectionName, T item)
+        public void CreateDocument<T>(string collectionName, T item, int expirationDays)
         {
             using (IDocumentSession session = _store.OpenSession(database: collectionName))
             {
+                DateTime expiry = DateTime.UtcNow.AddDays(expirationDays);
+
                 session.Store(item);
+                session.Advanced.GetMetadataFor(item)[Raven.Client.Constants.Documents.Metadata.Expires] = expiry;
                 session.SaveChanges();
             }
         }
