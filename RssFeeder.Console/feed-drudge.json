@@ -72,5 +72,20 @@
     "FileRetentionDays": 7,
     "DatabaseRetentionDays": 3,
     "Filters": []
+  },
+  {
+    "Title": "Citizen Free Press",
+    "Enabled": "true",
+    "EnableThumbnail": "false",
+    "Exportable": "false",
+    "Description": "Citizen Free Press",
+    "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\cfp.xml",
+    "Language": "en-US",
+    "Url": "https://www.citizenfreepress.com/",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.CitizenFreePressFeedBuilder",
+    "CollectionName": "citizen-freepress",
+    "FileRetentionDays": 7,
+    "DatabaseRetentionDays": 3,
+    "Filters": []
   }
 ]

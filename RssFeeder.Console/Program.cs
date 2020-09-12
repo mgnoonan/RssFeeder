@@ -40,6 +40,7 @@ namespace RssFeeder.Console
             AssemblyName assemblyName = Assembly.GetExecutingAssembly().GetName();
 
             // Init Serilog
+            // docker run --name seq -e ACCEPT_EULA=Y -p 5341:80 datalust/seq:latest
             var log = new LoggerConfiguration()
                 .Enrich.FromLogContext()
                 .MinimumLevel.Information()
@@ -67,7 +68,7 @@ namespace RssFeeder.Console
             var builder = new ContainerBuilder();
 
             // Setup RavenDb
-            // docker run --rm -d -p 8080:8080 -p 38888:38888 ravendb/ravendb
+            // docker run --rm -d -p 8080:8080 -p 38888:38888 ravendb/ravendb:latest
             IDocumentStore store = new DocumentStore
             {
                 Urls = new[] { "http://127.0.0.1:8080/" }
@@ -83,6 +84,7 @@ namespace RssFeeder.Console
             builder.RegisterType<EagleSlantFeedBuilder>().Named<IRssFeedBuilder>("eagle-slant");
             builder.RegisterType<LibertyDailyFeedBuilder>().Named<IRssFeedBuilder>("liberty-daily");
             builder.RegisterType<BonginoReportFeedBuilder>().Named<IRssFeedBuilder>("bongino-report");
+            builder.RegisterType<CitizenFreePressFeedBuilder>().Named<IRssFeedBuilder>("citizen-freepress");
             builder.RegisterType<GenericParser>().Named<IArticleParser>("generic-parser");
             builder.RegisterType<AdaptiveParser>().Named<IArticleParser>("adaptive-parser");
             builder.RegisterType<WebUtils>().As<IWebUtils>().SingleInstance();
