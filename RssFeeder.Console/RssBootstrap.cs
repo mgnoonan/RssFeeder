@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Antlr4.StringTemplate;
@@ -198,7 +199,7 @@ $item.ArticleText$
                     doc.Load(item.FileName);
 
                     // Meta tags provide extended data about the item, display as much as possible
-                    if (hostName == "www.youtube.com")
+                    if (hostName == "www.youtube.com" || hostName == "youtu.be")
                     {
                         SetYouTubeMetaData(item, doc, hostName);
                         item.Description = ApplyTemplateToDescription(item, feed, YouTubeTemplate);
@@ -326,6 +327,31 @@ $item.ArticleText$
             }
 
             return value;
+        }
+
+        private Dictionary<string, string> ParseOpenGraphAttributes(HtmlDocument doc)
+        {
+            // Retrieve the requested meta tag by property name
+            var nodes = doc.DocumentNode.SelectNodes("/html/head/meta");
+
+            if (nodes.Count == 0)
+            {
+                Log.Warning("No meta tags available");
+            }
+
+            var dict = new Dictionary<string, string>();
+            foreach (var node in nodes)
+            {
+                string property = node.Attributes["property"]?.Value.Trim() ?? string.Empty;
+                string content = node.Attributes["content"]?.Value.Trim() ?? string.Empty;
+
+                if (property.StartsWith("og:") && !string.IsNullOrEmpty(content))
+                {
+                    dict.Add(property, content);
+                }
+            }
+
+            return dict;
         }
     }
 }
