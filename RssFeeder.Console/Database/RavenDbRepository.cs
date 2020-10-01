@@ -83,7 +83,7 @@ namespace RssFeeder.Console.Database
                     .Count;
             }
 
-            return count == 1;
+            return count > 0;
         }
 
         public List<T> GetDocuments<T>(string collectionName, string sqlQueryText)

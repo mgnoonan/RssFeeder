@@ -23,7 +23,7 @@ namespace RssFeeder.Mvc.Controllers
     {
         private readonly IRepository<RssFeederRepository> _repo;
         private readonly IMemoryCache _cache;
-        private readonly IEnumerable<string> _collectionList = new string[] { "drudge-report", "eagle-slant" };
+        private readonly IEnumerable<string> _collectionList = new string[] { "drudge-report", "eagle-slant", "bongino-report" };
         private readonly string _sourceFile = "feeds.json";
         private readonly List<FeedModel> _feeds;
 
@@ -132,7 +132,7 @@ namespace RssFeeder.Mvc.Controllers
         {
             _repo.Init("drudge-report");
             Log.Information("Retrieving {days} days items for '{id}'", days, id);
-            
+
             var _items = await _repo.GetItemsAsync<RssFeedItem>(q => q.FeedId == id);
 
             return _items

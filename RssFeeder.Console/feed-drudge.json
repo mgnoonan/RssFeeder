@@ -40,7 +40,7 @@
     "CustomParser": "RssFeeder.Console.FeedBuilders.EagleSlantFeedBuilder",
     "CollectionName": "liberty-daily",
     "FileRetentionDays": 7,
-    "DatabaseRetentionDays": 3,
+    "DatabaseRetentionDays": 7,
     "Filters": []
   },
   {
@@ -56,13 +56,15 @@
     "CollectionName": "eagle-slant",
     "FileRetentionDays": 7,
     "DatabaseRetentionDays": 3,
-    "Filters": []
+    "Filters": [
+      "29d8b3c4d9f1a32b659ebc0986ff8b59"
+    ]
   },
   {
     "Title": "Bongino Report",
     "Enabled": "true",
     "EnableThumbnail": "true",
-    "Exportable": "false",
+    "Exportable": "true",
     "Description": "The Bongino Report",
     "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\bongino.xml",
     "Language": "en-US",
@@ -70,7 +72,7 @@
     "CustomParser": "RssFeeder.Console.FeedBuilders.BonginoReportFeedBuilder",
     "CollectionName": "bongino-report",
     "FileRetentionDays": 7,
-    "DatabaseRetentionDays": 3,
+    "DatabaseRetentionDays": 7,
     "Filters": []
   },
   {

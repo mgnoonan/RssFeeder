@@ -12,6 +12,7 @@ using RssFeeder.Console.Parsers;
 using RssFeeder.Console.Utility;
 using RssFeeder.Models;
 using Serilog;
+using Serilog.Context;
 using StackExchange.Profiling;
 
 namespace RssFeeder.Console
@@ -107,33 +108,39 @@ $item.ArticleText$
                 int articleCount = 0;
                 foreach (var item in list)
                 {
-                    // No need to continue if we already crawled the article
-                    if (repository.DocumentExists<RssFeedItem>(_collectionName, feed.CollectionName, item.UrlHash))
-                        continue;
-
-                    // Increment new article count
-                    articleCount++;
-
-                    Uri uri = new Uri(item.Url);
-                    string path = uri.GetComponents(UriComponents.Path, UriFormat.Unescaped).ToLower();
-                    string extension = path.EndsWith(".png") ? ".png" : path.EndsWith(".jpg") ? ".jpg" : ".html";
-
-                    // Construct unique file name
-                    string friendlyHostname = item.Url.Replace("://", "_").Replace(".", "_");
-                    friendlyHostname = friendlyHostname.Substring(0, friendlyHostname.IndexOf("/"));
-                    string filename = Path.Combine(workingFolder, $"{item.UrlHash}_{friendlyHostname}{extension}");
-
-                    // Download the Url contents, first using HttpClient but if that fails use Selenium
-                    item.FileName = webUtils.SaveUrlToDisk(item.Url, item.UrlHash, filename);
-                    if (string.IsNullOrEmpty(item.FileName))
+                    using (LogContext.PushProperty("urlHash", item.UrlHash))
                     {
-                        // Must have had an error on loading the url so attempt with Selenium
-                        item.FileName = webUtils.WebDriverUrlToDisk(item.Url, item.UrlHash, filename);
-                    }
+                        // No need to continue if we already crawled the article
+                        if (repository.DocumentExists<RssFeedItem>(_collectionName, feed.CollectionName, item.UrlHash))
+                        {
+                            continue;
+                        }
 
-                    // Parse the saved file as dictated by the site definitions
-                    ParseArticleMetaTags(item, feed, definitions);
-                    repository.CreateDocument<RssFeedItem>(_collectionName, item, feed.DatabaseRetentionDays);
+                        // Increment new article count
+                        Log.Information("UrlHash '{urlHash}' not found in collection '{collectionName}'", item.UrlHash, feed.CollectionName);
+                        articleCount++;
+
+                        Uri uri = new Uri(item.Url);
+                        string path = uri.GetComponents(UriComponents.Path, UriFormat.Unescaped).ToLower();
+                        string extension = path.EndsWith(".png") ? ".png" : path.EndsWith(".jpg") ? ".jpg" : ".html";
+
+                        // Construct unique file name
+                        string friendlyHostname = item.Url.Replace("://", "_").Replace(".", "_");
+                        friendlyHostname = friendlyHostname.Substring(0, friendlyHostname.IndexOf("/"));
+                        string filename = Path.Combine(workingFolder, $"{item.UrlHash}_{friendlyHostname}{extension}");
+
+                        // Download the Url contents, first using HttpClient but if that fails use Selenium
+                        item.FileName = webUtils.SaveUrlToDisk(item.Url, item.UrlHash, filename);
+                        if (string.IsNullOrEmpty(item.FileName))
+                        {
+                            // Must have had an error on loading the url so attempt with Selenium
+                            item.FileName = webUtils.WebDriverUrlToDisk(item.Url, item.UrlHash, filename);
+                        }
+
+                        // Parse the saved file as dictated by the site definitions
+                        ParseArticleMetaTags(item, feed, definitions);
+                        repository.CreateDocument<RssFeedItem>(_collectionName, item, feed.DatabaseRetentionDays);
+                    }
                 }
 
                 Log.Information("Added {count} new articles to the {collectionName} collection", articleCount, feed.CollectionName);
