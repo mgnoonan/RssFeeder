@@ -63,19 +63,22 @@ namespace RssFeeder.Console.FeedBuilders
 
             // Main Headlines section
             container = document.QuerySelector("#featured");
-            nodes = container.QuerySelectorAll("a");
-            if (nodes != null)
+            if (container != null)
             {
-                count = 1;
-                foreach (var node in nodes)
+                nodes = container.QuerySelectorAll("a");
+                if (nodes != null)
                 {
-                    string title = WebUtility.HtmlDecode(node.Text().Trim());
-
-                    var item = CreateNodeLinks(filters, node, "main headlines", count++);
-                    if (item != null && !item.Url.Contains("#the-comments") && !item.Url.Contains("#comment-"))
+                    count = 1;
+                    foreach (var node in nodes)
                     {
-                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
-                        list.Add(item);
+                        string title = WebUtility.HtmlDecode(node.Text().Trim());
+
+                        var item = CreateNodeLinks(filters, node, "main headlines", count++);
+                        if (item != null && !item.Url.Contains("#the-comments") && !item.Url.Contains("#comment-"))
+                        {
+                            log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
+                            list.Add(item);
+                        }
                     }
                 }
             }
