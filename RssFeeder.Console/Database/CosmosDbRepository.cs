@@ -36,7 +36,7 @@ namespace RssFeeder.Console.Database
 
             if (result.StatusCode != HttpStatusCode.Created)
             {
-                _log.Error("Unable to create document for '{@item}'", item);
+                _log.Error("Status code:{statusCode} for CreateDocument on '{@item}'", result.StatusCode, item);
             }
         }
 
@@ -59,7 +59,7 @@ namespace RssFeeder.Console.Database
 
                 if (result.StatusCode != HttpStatusCode.NoContent)
                 {
-                    _log.Warning("Unable to delete document '{documentID}' from collection '{collectionName}'", documentID, collectionName);
+                    _log.Warning("Status code:{statusCode} for DeleteDocument '{documentID}' from collection '{collectionName}'", result.StatusCode, documentID, collectionName);
                 }
             }
             catch (Exception ex)
