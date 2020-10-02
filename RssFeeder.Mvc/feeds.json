@@ -37,5 +37,31 @@
     "FeedlyUrl": "",
     "RssUrl": "https://rssfeedermvc.azurewebsites.net/api/rss/bongino-report",
     "Filters": []
+  },
+  {
+    "id": "031cb428-4785-42af-b33a-3a178502cc8b",
+    "Title": "The Liberty Daily Extra",
+    "Url": "https://thelibertydaily.com/",
+    "Description": "The Conservative Alternative to the Drudge Report",
+    "Language": "en-US",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.LibertyDailyFeedBuilder",
+    "CollectionName": "liberty-daily",
+    "authoremail": "email@thelibertydaily.com",
+    "FeedlyUrl": "",
+    "RssUrl": "https://rssfeedermvc.azurewebsites.net/api/rss/liberty-daily",
+    "Filters": []
+  },
+  {
+    "id": "cfbcc1f0-9be9-4c0b-8a1d-44f27ac7fa28",
+    "Title": "Citizen Free Press Extra",
+    "Url": "https://www.citizenfreepress.com/",
+    "Description": "America's Front Page For Political News",
+    "Language": "en-US",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.CitizenFreePressFeedBuilder",
+    "CollectionName": "citizen-freepress",
+    "authoremail": "email@citizenfreepress.com",
+    "FeedlyUrl": "",
+    "RssUrl": "https://rssfeedermvc.azurewebsites.net/api/rss/citizen-freepress",
+    "Filters": []
   }
 ]
