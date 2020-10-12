@@ -31,7 +31,7 @@
   {
     "Title": "Liberty Daily",
     "Enabled": "true",
-    "EnableThumbnail": "true",
+    "EnableThumbnail": "false",
     "Exportable": "true",
     "Description": "Liberty Daily",
     "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\liberty.xml",
@@ -88,6 +88,23 @@
     "CollectionName": "citizen-freepress",
     "FileRetentionDays": 7,
     "DatabaseRetentionDays": 3,
+    "Filters": [
+      "3fa6dfe31a8d75725aaa5620243838f2"
+    ]
+  },
+  {
+    "Title": "Rantingly",
+    "Enabled": "false",
+    "EnableThumbnail": "true",
+    "Exportable": "false",
+    "Description": "Rantingly",
+    "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\rantingly.xml",
+    "Language": "en-US",
+    "Url": "https://rantingly.com/",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.RantinglyFeedBuilder",
+    "CollectionName": "rantingly",
+    "FileRetentionDays": 7,
+    "DatabaseRetentionDays": 7,
     "Filters": []
   }
 ]
