@@ -120,23 +120,38 @@ $item.ArticleText$
                         Log.Information("UrlHash '{urlHash}' not found in collection '{collectionName}'", item.UrlHash, feed.CollectionName);
                         articleCount++;
 
-                        // Construct unique file name
-                        string friendlyHostname = item.Url.Replace("://", "_").Replace(".", "_");
-                        friendlyHostname = friendlyHostname.Substring(0, friendlyHostname.IndexOf("/"));
-                        string extension = GetFileExtension(new Uri(item.Url));
-                        string filename = Path.Combine(workingFolder, $"{item.UrlHash}_{friendlyHostname}{extension}");
-
-                        // Download the Url contents, first using HttpClient but if that fails use Selenium
-                        item.FileName = webUtils.SaveUrlToDisk(item.Url, item.UrlHash, filename);
-                        if (string.IsNullOrEmpty(item.FileName))
+                        try
                         {
-                            // Must have had an error on loading the url so attempt with Selenium
-                            item.FileName = webUtils.WebDriverUrlToDisk(item.Url, item.UrlHash, filename);
-                        }
+                            // Construct unique file name
+                            string friendlyHostname = item.Url.Replace("://", "_").Replace(".", "_");
+                            int index = friendlyHostname.IndexOf("/");
+                            if (index == -1)
+                            {
+                                friendlyHostname += "/";
+                                index = friendlyHostname.IndexOf("/");
+                            }
 
-                        // Parse the saved file as dictated by the site definitions
-                        ParseArticleMetaTags(item, feed, definitions);
-                        repository.CreateDocument<RssFeedItem>(_collectionName, item, feed.DatabaseRetentionDays);
+                            friendlyHostname = friendlyHostname.Substring(0, index);
+                            string extension = GetFileExtension(new Uri(item.Url));
+                            string filename = Path.Combine(workingFolder, $"{item.UrlHash}_{friendlyHostname}{extension}");
+
+                            // Download the Url contents, first using HttpClient but if that fails use Selenium
+                            item.FileName = webUtils.SaveUrlToDisk(item.Url, item.UrlHash, filename);
+                            if (string.IsNullOrEmpty(item.FileName))
+                            {
+                                // Must have had an error on loading the url so attempt with Selenium
+                                item.FileName = webUtils.WebDriverUrlToDisk(item.Url, item.UrlHash, filename);
+                            }
+
+                            // Parse the saved file as dictated by the site definitions
+                            ParseArticleMetaTags(item, feed, definitions);
+                            repository.CreateDocument<RssFeedItem>(_collectionName, item, feed.DatabaseRetentionDays);
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Error(ex, "ERROR: Unable to save UrlHash '{urlHash}':'{url}'", item.UrlHash, item.Url);
+                            articleCount--;
+                        }
                     }
                 }
 
@@ -149,7 +164,10 @@ $item.ArticleText$
             try
             {
                 string path = uri.GetComponents(UriComponents.Path, UriFormat.Unescaped).ToLower();
-                string extension = path.EndsWith(".png") ? ".png" : path.EndsWith(".jpg") ? ".jpg" : ".html";
+                string extension = path.EndsWith(".png") ? ".png" :
+                    path.EndsWith(".jpg") || path.EndsWith(".jpeg") ? ".jpg" :
+                    path.EndsWith(".gif") ? ".gif" :
+                    ".html";
 
                 return extension;
             }
@@ -223,7 +241,14 @@ $item.ArticleText$
                     if (hostName == "www.youtube.com" || hostName == "youtu.be")
                     {
                         SetYouTubeMetaData(item, doc, hostName);
-                        item.Description = ApplyTemplateToDescription(item, feed, YouTubeTemplate);
+                        if (item.VideoHeight > 0)
+                        {
+                            item.Description = ApplyTemplateToDescription(item, feed, YouTubeTemplate);
+                        }
+                        else
+                        {
+                            item.Description = ApplyTemplateToDescription(item, feed, ExtendedTemplate);
+                        }
                     }
                     else
                     {
@@ -310,8 +335,8 @@ $item.ArticleText$
             item.Subtitle = ParseMetaTagAttributes(doc, "og:title", "content");
             item.ImageUrl = ParseMetaTagAttributes(doc, "og:image", "content");
             item.VideoUrl = ParseMetaTagAttributes(doc, "og:video:url", "content");
-            item.VideoHeight = Convert.ToInt32(ParseMetaTagAttributes(doc, "og:video:height", "content"));
-            item.VideoWidth = Convert.ToInt32(ParseMetaTagAttributes(doc, "og:video:width", "content"));
+            item.VideoHeight = int.TryParse(ParseMetaTagAttributes(doc, "og:video:height", "content"), out int height) ? height : 0;
+            item.VideoWidth = int.TryParse(ParseMetaTagAttributes(doc, "og:video:width", "content"), out int width) ? width : 0;
             item.MetaDescription = ParseMetaTagAttributes(doc, "og:description", "content");
             item.HostName = hostName;
             item.SiteName = ParseMetaTagAttributes(doc, "og:site_name", "content").ToLower();
