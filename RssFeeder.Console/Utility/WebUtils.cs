@@ -80,9 +80,6 @@ namespace RssFeeder.Console.Utility
             {
                 Log.Logger.Information("Loading URL '{urlHash}':'{url}'", urlHash, url);
 
-                // List of html tags we really don't care to save
-                var excludeHtmlTags = new List<string> { "script", "style", "link", "svg" };
-
                 // Use custom load method to account for compression headers
                 HtmlDocument doc = new HtmlDocument();
                 doc.LoadHtml(DownloadStringWithCompression(url));
@@ -90,6 +87,9 @@ namespace RssFeeder.Console.Utility
 
                 if (removeScriptElements)
                 {
+                    // List of html tags we really don't care to save
+                    var excludeHtmlTags = new List<string> { "script", "style", "link", "svg" };
+
                     doc.DocumentNode
                         .Descendants()
                         .Where(n => excludeHtmlTags.Contains(n.Name))
