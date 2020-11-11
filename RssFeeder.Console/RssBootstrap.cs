@@ -227,7 +227,7 @@ $item.ArticleText$
 
             if (File.Exists(item.FileName))
             {
-                if (item.FileName.EndsWith(".png") || item.FileName.EndsWith(".jpg"))
+                if (item.FileName.EndsWith(".png") || item.FileName.EndsWith(".jpg") || item.FileName.EndsWith(".gif"))
                 {
                     SetGraphicMetaData(item, hostName);
                     item.Description = ApplyTemplateToDescription(item, feed, GraphicTemplate);
