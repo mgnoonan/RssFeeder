@@ -43,6 +43,7 @@ namespace RssFeeder.Mvc
 
             // Repositories
             services.AddScoped<IRepository<RssFeederRepository>, RssFeederRepository>();
+            services.AddSingleton<AppVersionInfo>();
             services.AddMemoryCache();
             services.AddApplicationInsightsTelemetry();
 
