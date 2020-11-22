@@ -43,8 +43,7 @@
         <div class="container">
             &copy; Copyright @DateTime.Now.Year, Powered by @System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription
             and deployed from commit <a href="https://github.com/mgnoonan/RssFeeder/commit/@appInfo.GitHash">@appInfo.ShortGitHash</a>
-            via build <a href="https://dev.azure.com/mgnoonan/RssFeeder/_build/results?buildId=@appInfo.BuildId&view=results">@appInfo.BuildNumber</a>
-
+            via build @appInfo.BuildNumber
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
