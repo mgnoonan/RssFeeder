@@ -164,8 +164,10 @@ $item.ArticleText$
             try
             {
                 string path = uri.GetComponents(UriComponents.Path, UriFormat.Unescaped).ToLower();
+                string query = uri.GetComponents(UriComponents.Query, UriFormat.Unescaped).ToLower();
+
                 string extension = path.EndsWith(".png") ? ".png" :
-                    path.EndsWith(".jpg") || path.EndsWith(".jpeg") ? ".jpg" :
+                    path.EndsWith(".jpg") || path.EndsWith(".jpeg") || query.Contains("format=jpg") ? ".jpg" :
                     path.EndsWith(".gif") ? ".gif" :
                     ".html";
 
