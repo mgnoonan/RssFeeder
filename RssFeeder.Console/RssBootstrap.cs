@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Antlr4.StringTemplate;
@@ -363,7 +362,7 @@ $item.ArticleText$
         private string ParseMetaTagAttributes(HtmlDocument doc, string property, string attribute)
         {
             // Retrieve the requested meta tag by property name
-            var node = doc.DocumentNode.SelectSingleNode($"/html/head/meta[@property='{property}']");
+            var node = doc.DocumentNode.SelectSingleNode($"//meta[@property='{property}']");
 
             // Node can come back null if the meta tag is not present in the DOM
             // Attribute can come back null as well if not present on the meta tag
@@ -375,31 +374,6 @@ $item.ArticleText$
             }
 
             return value;
-        }
-
-        private Dictionary<string, string> ParseOpenGraphAttributes(HtmlDocument doc)
-        {
-            // Retrieve the requested meta tag by property name
-            var nodes = doc.DocumentNode.SelectNodes("/html/head/meta");
-
-            if (nodes.Count == 0)
-            {
-                Log.Warning("No meta tags available");
-            }
-
-            var dict = new Dictionary<string, string>();
-            foreach (var node in nodes)
-            {
-                string property = node.Attributes["property"]?.Value.Trim() ?? string.Empty;
-                string content = node.Attributes["content"]?.Value.Trim() ?? string.Empty;
-
-                if (property.StartsWith("og:") && !string.IsNullOrEmpty(content))
-                {
-                    dict.Add(property, content);
-                }
-            }
-
-            return dict;
         }
     }
 }
