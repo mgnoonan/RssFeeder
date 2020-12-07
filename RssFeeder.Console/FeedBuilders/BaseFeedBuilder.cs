@@ -37,11 +37,21 @@ namespace RssFeeder.Console.FeedBuilders
         {
             string title = WebUtility.HtmlDecode(node.InnerText.Trim());
 
-            // Replace all errant spaces, which sometimes creep into Drudge's URLs
-            HtmlAttribute attr = node.Attributes["href"];
-            string linkUrl = attr.Value.Trim().Replace(" ", string.Empty);
+            try
+            {
+                HtmlAttribute attr = node.Attributes["href"];
 
-            return CreateNodeLinks(filters, location, count, title, ref linkUrl);
+                // Replace all errant spaces, which sometimes creep into Drudge's URLs
+                string linkUrl = attr.Value.Trim().Replace(" ", string.Empty);
+
+                return CreateNodeLinks(filters, location, count, title, ref linkUrl);
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex, "Error encountered reading location '{location}':{count}", location, count);
+            }
+
+            return null;
         }
 
         private RssFeedItem CreateNodeLinks(List<string> filters, string location, int count, string title, ref string linkUrl)

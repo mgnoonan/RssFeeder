@@ -76,7 +76,7 @@ namespace RssFeeder.Console.Utility
             for (int i = 0; i < cs.Length; i++)
                 buffer[i] = (byte)cs[i];
 
-            MD5 md5 = System.Security.Cryptography.MD5.Create();
+            MD5 md5 = MD5.Create();
             byte[] output = md5.ComputeHash(buffer);
 
             StringBuilder builder = new StringBuilder();
