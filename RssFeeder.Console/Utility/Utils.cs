@@ -88,8 +88,10 @@ namespace RssFeeder.Console.Utility
 
         public string GetAssemblyDirectory()
         {
-            string codeBase = Assembly.GetExecutingAssembly().CodeBase;
-            UriBuilder uri = new UriBuilder(codeBase);
+            var type = new Utils();
+            var assembly = Assembly.GetAssembly(type.GetType());
+            string location = assembly.Location;
+            var uri = new UriBuilder(location);
             string path = Uri.UnescapeDataString(uri.Path);
 
             // Add the trailing backslash if not present
