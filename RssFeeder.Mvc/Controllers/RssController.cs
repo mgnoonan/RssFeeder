@@ -116,7 +116,7 @@ namespace RssFeeder.Mvc.Controllers
                     };
 
                     si.AddLink(new SyndicationLink(new Uri(item.Url)));
-                    si.AddContributor(new SyndicationPerson(item.SiteName, feed.authoremail, AtomContributorTypes.Author));
+                    si.AddContributor(new SyndicationPerson(string.IsNullOrWhiteSpace(item.SiteName) ? item.HostName : item.SiteName, feed.authoremail, AtomContributorTypes.Author));
 
                     await rssWriter.Write(si);
                 }
