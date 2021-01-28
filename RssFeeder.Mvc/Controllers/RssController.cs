@@ -56,21 +56,29 @@ namespace RssFeeder.Mvc.Controllers
 
             Log.Information("Detected user info: {@UserAgent}", agent);
 
-            string s = await GetSyndicationItems(id);
+            try
+            {
+                string s = await GetSyndicationItems(id);
 
-            if (Request.Method.Equals("HEAD"))
-            {
-                Response.ContentLength = s.Length;
-                return Ok();
-            }
-            else
-            {
-                return new ContentResult
+                if (Request.Method.Equals("HEAD"))
                 {
-                    Content = s.ToString(),
-                    ContentType = "text/xml",
-                    StatusCode = 200
-                };
+                    Response.ContentLength = s.Length;
+                    return Ok();
+                }
+                else
+                {
+                    return new ContentResult
+                    {
+                        Content = s.ToString(),
+                        ContentType = "text/xml",
+                        StatusCode = 200
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error building syndication items");
+                return StatusCode(Microsoft.AspNetCore.Http.StatusCodes.Status500InternalServerError);
             }
         }
 
