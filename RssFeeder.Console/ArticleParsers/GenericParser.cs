@@ -18,7 +18,7 @@ namespace RssFeeder.Console.Parsers
             var container = document.QuerySelector(options.ArticleSelector);
             if (container == null)
             {
-                Log.Warning($"Error reading article: '{options.ArticleSelector}' article selector not found.");
+                Log.Warning("Error reading article: '{articleSelector}' article selector not found.", options.ArticleSelector);
                 return $"<p>Error reading article: '{options.ArticleSelector}' article selector not found.</p>";
             }
 

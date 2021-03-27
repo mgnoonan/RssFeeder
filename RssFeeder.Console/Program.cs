@@ -161,14 +161,21 @@ namespace RssFeeder.Console
 
                 foreach (var feed in feedList)
                 {
-                    if (!feed.Enabled)
-                        continue;
-
-                    using (LogContext.PushProperty("collectionName", feed.CollectionName))
+                    try
                     {
-                        bootstrap.Start(container, profiler, feed);
-                        bootstrap.Export(container, profiler, feed);
-                        bootstrap.Purge(container, profiler, feed);
+                        using (LogContext.PushProperty("collectionName", feed.CollectionName))
+                        {
+                            if (feed.Enabled)
+                            {
+                                bootstrap.Start(container, profiler, feed);
+                                bootstrap.Export(container, profiler, feed);
+                            }
+                            bootstrap.Purge(container, profiler, feed);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Logger.Error(ex, "ERROR: Unable to process feed '{feedTitle}' from '{feedUrl}'", feed.Title, feed.Url);
                     }
                 }
 

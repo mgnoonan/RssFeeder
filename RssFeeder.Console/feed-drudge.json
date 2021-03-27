@@ -45,7 +45,7 @@
   },
   {
     "Title": "Eagle Slant",
-    "Enabled": "true",
+    "Enabled": "false",
     "EnableThumbnail": "true",
     "Exportable": "true",
     "Description": "Eagle Slant",
