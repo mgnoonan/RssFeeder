@@ -23,7 +23,7 @@ namespace RssFeeder.Mvc.Controllers
     {
         private readonly IRepository<RssFeederRepository> _repo;
         private readonly IMemoryCache _cache;
-        private readonly IEnumerable<string> _collectionList = new string[] { "drudge-report", "eagle-slant", "bongino-report", "liberty-daily", "citizen-freepress" };
+        private readonly IEnumerable<string> _collectionList = new string[] { "drudge-report", "eagle-slant", "bongino-report", "liberty-daily", "citizen-freepress", "rantingly" };
         private readonly string _sourceFile = "feeds.json";
         private readonly List<FeedModel> _feeds;
 
