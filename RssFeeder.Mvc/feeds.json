@@ -63,5 +63,18 @@
     "FeedlyUrl": "",
     "RssUrl": "https://rssfeedermvc.azurewebsites.net/api/rss/citizen-freepress",
     "Filters": []
+  },
+  {
+    "id": "e4222691-c5f7-42aa-8a85-95a7afae6237",
+    "Title": "Rantingly Extra",
+    "Url": "https://rantingly.com/",
+    "Description": "no description for Rantingly",
+    "Language": "en-US",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.RantinglyFeedBuilder",
+    "CollectionName": "rantingly",
+    "authoremail": "email@rantingly.com",
+    "FeedlyUrl": "",
+    "RssUrl": "https://rssfeedermvc.azurewebsites.net/api/rss/rantingly",
+    "Filters": []
   }
 ]

@@ -94,9 +94,9 @@
   },
   {
     "Title": "Rantingly",
-    "Enabled": "false",
+    "Enabled": "true",
     "EnableThumbnail": "true",
-    "Exportable": "false",
+    "Exportable": "true",
     "Description": "Rantingly",
     "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\rantingly.xml",
     "Language": "en-US",
