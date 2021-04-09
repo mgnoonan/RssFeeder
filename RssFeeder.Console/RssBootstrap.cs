@@ -300,26 +300,29 @@ $item.ArticleText$
             // Check if we have a site parser defined for the site name
             var definition = definitions.Get(item.SiteName);
 
-            if (definition == null)
+            using (LogContext.PushProperty("siteName", item.SiteName))
             {
-                Log.Warning("No parsing definition found for '{siteName}' on hash '{urlHash}'", item.SiteName, item.UrlHash);
-
-                // If a specific article parser was not found in the database then
-                // use the fallback adaptive parser (experimental)
-                string articleText = fallbackParser.GetArticleBySelector(doc.Text, definition);
-                if (string.IsNullOrEmpty(articleText))
+                if (definition == null)
                 {
-                    item.ArticleText = $"<p>{item.MetaDescription}</p>";
+                    Log.Warning("No parsing definition found for '{siteName}' on hash '{urlHash}'", item.SiteName, item.UrlHash);
+
+                    // If a specific article parser was not found in the database then
+                    // use the fallback adaptive parser (experimental)
+                    string articleText = fallbackParser.GetArticleBySelector(doc.Text, definition);
+                    if (string.IsNullOrEmpty(articleText))
+                    {
+                        item.ArticleText = $"<p>{item.MetaDescription}</p>";
+                    }
+                    else
+                    {
+                        item.ArticleText = articleText;
+                    }
                 }
                 else
                 {
-                    item.ArticleText = articleText;
+                    // Parse the article from the default parser and definitions
+                    item.ArticleText = primaryParser.GetArticleBySelector(doc.Text, definition);
                 }
-            }
-            else
-            {
-                // Parse the article from the default parser and definitions
-                item.ArticleText = primaryParser.GetArticleBySelector(doc.Text, definition);
             }
         }
 
@@ -371,6 +374,10 @@ $item.ArticleText$
             if (string.IsNullOrWhiteSpace(value))
             {
                 Log.Warning("Error reading attribute '{attribute}' from meta tag '{property}'", attribute, property);
+            }
+            else
+            {
+                Log.Information("Meta attribute '{attribute}':'{property}' has a value of '{value}'", attribute, property, value);
             }
 
             return value;

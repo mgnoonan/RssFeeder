@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Net;
-using HtmlAgilityPack;
+using AngleSharp.Dom;
+using AngleSharp.Html.Parser;
 using RssFeeder.Console.Utility;
 using RssFeeder.Models;
 using Serilog;
@@ -36,18 +36,21 @@ namespace RssFeeder.Console.FeedBuilders
         public List<RssFeedItem> ParseRssFeedItems(string html, List<string> filters)
         {
             var list = new List<RssFeedItem>();
-            var doc = new HtmlDocument();
-            doc.Load(new StringReader(html));
-
-            // Above the fold headline(s)
-            var nodes = doc.DocumentNode.SelectNodes("#wrapper > ul > li > a");
             int count;
+
+            // Load and parse the html from the source file
+            var parser = new HtmlParser();
+            var document = parser.ParseDocument(html);
+
+            // Above the Fold section
+            var container = document.QuerySelector("ul.wpd-top-links");
+            var nodes = container.QuerySelectorAll("a");
             if (nodes != null)
             {
                 count = 1;
-                foreach (HtmlNode node in nodes)
+                foreach (var node in nodes)
                 {
-                    string title = WebUtility.HtmlDecode(node.InnerText.Trim());
+                    string title = WebUtility.HtmlDecode(node.Text().Trim());
 
                     var item = CreateNodeLinks(filters, node, "above the fold", count++);
                     if (item != null)
@@ -58,23 +61,27 @@ namespace RssFeeder.Console.FeedBuilders
                 }
             }
 
-            //// Featured headline(s)
-            //nodes = doc.DocumentNode.SelectNodes("#content-wrap > div.page-header > div > a");
-            //if (nodes != null)
-            //{
-            //    count = 1;
-            //    foreach (HtmlNode node in nodes)
-            //    {
-            //        string title = WebUtility.HtmlDecode(node.InnerText.Trim());
+            // Main Headlines section
+            container = document.QuerySelector("#content-wrap > div.page-header");
+            if (container != null)
+            {
+                nodes = container.QuerySelectorAll("a");
+                if (nodes != null)
+                {
+                    count = 1;
+                    foreach (var node in nodes)
+                    {
+                        string title = WebUtility.HtmlDecode(node.Text().Trim());
 
-            //        var item = CreateNodeLinks(filters, node, "main headlines", count++);
-            //        if (item != null)
-            //        {
-            //            log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
-            //            list.Add(item);
-            //        }
-            //    }
-            //}
+                        var item = CreateNodeLinks(filters, node, "main headlines", count++);
+                        if (item != null && !item.Url.Contains("#the-comments") && !item.Url.Contains("#comment-"))
+                        {
+                            log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
+                            list.Add(item);
+                        }
+                    }
+                }
+            }
 
             return list;
         }
