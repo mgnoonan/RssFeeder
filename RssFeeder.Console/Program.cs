@@ -86,6 +86,7 @@ namespace RssFeeder.Console
             builder.RegisterType<BonginoReportFeedBuilder>().Named<IRssFeedBuilder>("bongino-report");
             builder.RegisterType<CitizenFreePressFeedBuilder>().Named<IRssFeedBuilder>("citizen-freepress");
             builder.RegisterType<RantinglyFeedBuilder>().Named<IRssFeedBuilder>("rantingly");
+            builder.RegisterType<GutSmackFeedBuilder>().Named<IRssFeedBuilder>("gutsmack");
             builder.RegisterType<GenericParser>().Named<IArticleParser>("generic-parser");
             builder.RegisterType<AdaptiveParser>().Named<IArticleParser>("adaptive-parser");
             builder.RegisterType<WebUtils>().As<IWebUtils>().SingleInstance();
