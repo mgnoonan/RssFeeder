@@ -106,5 +106,20 @@
     "FileRetentionDays": 7,
     "DatabaseRetentionDays": 7,
     "Filters": []
+  },
+  {
+    "Title": "GutSmack",
+    "Enabled": "true",
+    "EnableThumbnail": "true",
+    "Exportable": "true",
+    "Description": "We watch ESPN so you don't have to...",
+    "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\gutsmack.xml",
+    "Language": "en-US",
+    "Url": "https://gutsmack.com/",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.GutSmackFeedBuilder",
+    "CollectionName": "gutsmack",
+    "FileRetentionDays": 7,
+    "DatabaseRetentionDays": 7,
+    "Filters": []
   }
 ]

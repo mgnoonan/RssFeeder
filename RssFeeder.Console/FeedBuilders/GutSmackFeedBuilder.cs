@@ -8,9 +8,9 @@ using Serilog;
 
 namespace RssFeeder.Console.FeedBuilders
 {
-    class RantinglyFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
+    class GutSmackFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
     {
-        public RantinglyFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities) : base(log, webUtilities, utilities)
+        public GutSmackFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities) : base(log, webUtilities, utilities)
         { }
 
         public List<RssFeedItem> ParseRssFeedItems(RssFeed feed, string html)
@@ -62,10 +62,10 @@ namespace RssFeeder.Console.FeedBuilders
             }
 
             // Main Headlines section
-            container = document.QuerySelector("#content-wrap > div.page-header > div.the-content");
+            container = document.QuerySelector("#featured");
             if (container != null)
             {
-                var nodes = container.QuerySelectorAll("a");
+                var nodes = container.QuerySelectorAll("a.headline-link");
                 if (nodes != null)
                 {
                     count = 1;
@@ -113,6 +113,25 @@ namespace RssFeeder.Console.FeedBuilders
                     string title = WebUtility.HtmlDecode(node.Text().Trim());
 
                     var item = CreateNodeLinks(filters, node, "column 2", count++);
+                    if (item != null && !item.Url.Contains("#the-comments") && !item.Url.Contains("#comment-"))
+                    {
+                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
+                        list.Add(item);
+                    }
+                }
+            }
+
+            // Column 2
+            container = document.QuerySelector("#column-3 > div > div.wpd-posted-links");
+            if (container != null)
+            {
+                var nodes = container.QuerySelectorAll("a");
+                count = 1;
+                foreach (var node in nodes)
+                {
+                    string title = WebUtility.HtmlDecode(node.Text().Trim());
+
+                    var item = CreateNodeLinks(filters, node, "column 3", count++);
                     if (item != null && !item.Url.Contains("#the-comments") && !item.Url.Contains("#comment-"))
                     {
                         log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
