@@ -45,6 +45,12 @@ namespace RssFeeder.Mvc.Controllers
                 return NotFound();
             }
 
+            // Hack for Eagle Slant, which appears to be gone forever
+            if (id.ToLowerInvariant() == "eagle-slant")
+            {
+                return StatusCode(410);
+            }
+
             // Create document with incoming parameter values
             var agent = new Agent
             {
