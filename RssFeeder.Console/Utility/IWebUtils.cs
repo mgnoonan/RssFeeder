@@ -10,5 +10,6 @@ namespace RssFeeder.Console.Utility
         string WebDriverUrlToDisk(string url, string urlHash, string filename);
         void SaveThumbnailToDisk(string url, string filename);
         string RepairUrl(string pathAndQuery);
+        string GetContentType(string url);
     }
 }

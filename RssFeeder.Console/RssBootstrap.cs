@@ -281,7 +281,7 @@ $item.ArticleText$
         {
             // Extract the meta data from the Open Graph tags helpfully provided with almost every article
             item.Subtitle = ParseMetaTagAttributes(doc, "og:title", "content");
-            item.ImageUrl = ParseMetaTagAttributes(doc, "og:image", "content");
+            item.ImageUrl = ValidateImageUrl(ParseMetaTagAttributes(doc, "og:image", "content"));
             item.MetaDescription = ParseMetaTagAttributes(doc, "og:description", "content");
             item.HostName = hostName;
             item.SiteName = ParseMetaTagAttributes(doc, "og:site_name", "content").ToLower();
@@ -323,6 +323,29 @@ $item.ArticleText$
                     // Parse the article from the default parser and definitions
                     item.ArticleText = primaryParser.GetArticleBySelector(doc.Text, definition);
                 }
+            }
+        }
+
+        private string ValidateImageUrl(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url))
+                return url;
+
+            string mimeType = webUtils.GetContentType(url);
+            Log.Information("Mimetype {mimeType} returned by '{url}'", mimeType, url);
+
+            switch(mimeType.ToLower())
+            {
+                case "image/bmp":
+                case "image/jpeg":
+                case "image/gif":
+                case "image/png":
+                case "image/svg+xml":
+                case "image/tiff":
+                case "image/webp":
+                    return url;
+                default:
+                    return string.Empty;
             }
         }
 

@@ -278,5 +278,14 @@ namespace RssFeeder.Console.Utility
 
             return sb.ToString();
         }
+
+        public string GetContentType(string url)
+        {
+            var httpRequest = (HttpWebRequest)WebRequest.Create(url);
+            httpRequest.Method = "HEAD";
+
+            var httpResponse = (HttpWebResponse)httpRequest.GetResponse();
+            return httpResponse.ContentType;
+        }
     }
 }
