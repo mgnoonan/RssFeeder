@@ -10,19 +10,26 @@ namespace RssFeeder.Console.Parsers
     {
         public string GetArticleBySelector(string html, SiteArticleDefinition options)
         {
+            return GetArticleBySelector(html, options.ArticleSelector, options.ParagraphSelector);
+        }
+
+        public string GetArticleBySelector(string html, string bodySelector, string paragraphSelector)
+        {
             // Load and parse the html from the source file
             var parser = new HtmlParser();
             var document = parser.ParseDocument(html);
 
+            Log.Information("Attempting generic parsing using body selector '{bodySelector}' and paragraph selector '{paragraphSelector}'", bodySelector, paragraphSelector);
+
             // Query the document by CSS selectors to get the article text
-            var container = document.QuerySelector(options.ArticleSelector);
+            var container = document.QuerySelector(bodySelector);
             if (container == null)
             {
-                Log.Warning("Error reading article: '{articleSelector}' article selector not found.", options.ArticleSelector);
-                return $"<p>Error reading article: '{options.ArticleSelector}' article selector not found.</p>";
+                Log.Warning("Error reading article: '{bodySelector}' article body selector not found.", bodySelector);
+                return $"<p>Error reading article: '{bodySelector}' article body selector not found.</p>";
             }
 
-            var paragraphs = container.QuerySelectorAll(options.ParagraphSelector);
+            var paragraphs = container.QuerySelectorAll(paragraphSelector);
 
             return BuildArticleText(paragraphs);
         }

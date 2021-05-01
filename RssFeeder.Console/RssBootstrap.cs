@@ -281,7 +281,7 @@ $item.ArticleText$
         {
             // Extract the meta data from the Open Graph tags helpfully provided with almost every article
             item.Subtitle = ParseMetaTagAttributes(doc, "og:title", "content");
-            item.ImageUrl = ValidateImageUrl(ParseMetaTagAttributes(doc, "og:image", "content"));
+            item.ImageUrl = ParseMetaTagAttributes(doc, "og:image", "content");
             item.MetaDescription = ParseMetaTagAttributes(doc, "og:description", "content");
             item.HostName = hostName;
             item.SiteName = ParseMetaTagAttributes(doc, "og:site_name", "content").ToLower();
@@ -304,11 +304,18 @@ $item.ArticleText$
             {
                 if (definition == null)
                 {
-                    Log.Warning("No parsing definition found for '{siteName}' on hash '{urlHash}'", item.SiteName, item.UrlHash);
+                    Log.Information("No parsing definition found for '{siteName}' on hash '{urlHash}'", item.SiteName, item.UrlHash);
 
                     // If a specific article parser was not found in the database then
                     // use the fallback adaptive parser (experimental)
                     string articleText = fallbackParser.GetArticleBySelector(doc.Text, definition);
+
+                    // HACK: trying something out for CNN
+                    if (item.SiteName == "cnn")
+                    {
+                        articleText = fallbackParser.GetArticleBySelector(doc.Text, "", "div.zn-body__paragraph");
+                    }
+
                     if (string.IsNullOrEmpty(articleText))
                     {
                         item.ArticleText = $"<p>{item.MetaDescription}</p>";
@@ -334,7 +341,7 @@ $item.ArticleText$
             string mimeType = webUtils.GetContentType(url);
             Log.Information("Mimetype {mimeType} returned by '{url}'", mimeType, url);
 
-            switch(mimeType.ToLower())
+            switch (mimeType.ToLower())
             {
                 case "image/bmp":
                 case "image/jpeg":
