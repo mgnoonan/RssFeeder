@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using AngleSharp.Dom;
 using AngleSharp.Html.Parser;
-using Raven.Client.Documents.Smuggler;
 using RssFeeder.Console.Parsers;
 using RssFeeder.Models;
 using Serilog;
@@ -15,15 +14,22 @@ namespace RssFeeder.Console.ArticleParsers
     {
         public string GetArticleBySelector(string html, SiteArticleDefinition options)
         {
+            return GetArticleBySelector(html, "article", "p");
+        }
+
+        public string GetArticleBySelector(string html, string bodySelector, string paragraphSelector)
+        {
             // Load and parse the html from the source file
             var parser = new HtmlParser();
             var document = parser.ParseDocument(html);
 
+            Log.Information("Attempting adaptive parsing using paragraph selector '{paragraphSelector}'", paragraphSelector);
+
             // Query the document by CSS selectors to get the article text
-            var paragraphs = document.QuerySelectorAll("p");
+            var paragraphs = document.QuerySelectorAll(paragraphSelector);
             if (!paragraphs.Any())
             {
-                Log.Warning("No paragraphs found, probably the content is blocked");
+                Log.Warning("Paragraph selector '{paragraphSelector}' not found", paragraphSelector);
                 return string.Empty;
             }
 
@@ -45,38 +51,37 @@ namespace RssFeeder.Console.ArticleParsers
 
             // Get the parent with the most paragraphs, it should be the article content
             int highCount = default;
-            string highKey = "";
-            foreach(var key in dict.Keys)
+            foreach (var key in dict.Keys)
             {
                 if (dict[key] > highCount)
                 {
-                    highKey = key;
+                    bodySelector = key;
                     highCount = dict[key];
                 }
             }
 
-            Log.Information("Found {totalCount} paragraphs in article", paragraphs.Count());
-            Log.Information("Parent with the most paragraphs is '{highClassName}':{highCount}", highKey, highCount);
+            Log.Information("Found {totalCount} paragraph selectors '{paragraphSelector}' in html body", paragraphs.Count(), paragraphSelector);
+            Log.Information("Parent with the most paragraph selectors is '{bodySelector}':{highCount}", bodySelector, highCount);
 
             if (highCount == 1)
             {
-                Log.Warning("Only 1 paragraph found, that doesn't count");
+                Log.Warning("Only 1 paragraph selector found, that doesn't count");
                 return string.Empty;
             }
 
             try
             {
                 // Query the document by CSS selectors to get the article text
-                var container = document.QuerySelector(highKey);
+                var container = document.QuerySelector(bodySelector);
 
                 // Get only the paragraphs under the parent
-                var paragraphs2 = container.QuerySelectorAll("p");
+                var paragraphs2 = container.QuerySelectorAll(paragraphSelector);
 
                 return BuildArticleText(paragraphs2);
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Error selecting paragraphs '{message}'", ex.Message);
+                Log.Error(ex, "Error parsing paragraph selectors '{paragraphSelector}', '{message}'", paragraphSelector, ex.Message);
             }
 
             return string.Empty;
