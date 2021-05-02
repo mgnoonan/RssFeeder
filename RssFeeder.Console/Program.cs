@@ -1,27 +1,24 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Reflection;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
-using CommandLine;
 using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
+using Oakton;
+using Oakton.Help;
 using Raven.Client.Documents;
 using RssFeeder.Console.ArticleDefinitions;
 using RssFeeder.Console.ArticleParsers;
+using RssFeeder.Console.Commands;
 using RssFeeder.Console.Database;
 using RssFeeder.Console.FeedBuilders;
 using RssFeeder.Console.Models;
 using RssFeeder.Console.Parsers;
 using RssFeeder.Console.Utility;
-using RssFeeder.Models;
 using Serilog;
-using Serilog.Context;
 using Serilog.Formatting.Compact;
 using Serilog.Sinks.SystemConsole.Themes;
-using StackExchange.Profiling;
 
 namespace RssFeeder.Console
 {
@@ -92,6 +89,11 @@ namespace RssFeeder.Console
             builder.RegisterType<WebUtils>().As<IWebUtils>().SingleInstance();
             builder.RegisterType<Utils>().As<IUtils>().SingleInstance();
             builder.RegisterType<ArticleDefinitionFactory>().As<IArticleDefinitionFactory>().SingleInstance();
+            builder.RegisterType<TestCommand>().SingleInstance();
+            builder.RegisterType<TestInput>().SingleInstance();
+            builder.RegisterType<BuildCommand>().SingleInstance();
+            builder.RegisterType<BuildInput>().SingleInstance();
+            builder.RegisterType<HelpInput>().SingleInstance();
 
             var container = builder.Build();
             var serviceProvider = new AutofacServiceProvider(container);
@@ -99,101 +101,13 @@ namespace RssFeeder.Console
             // set up TLS defaults
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
 
-            // Process the command line arguments
-            Parser.Default.ParseArguments<Options>(args)
-                .WithParsed<Options>(opts => ProcessWithExitCode(opts, container))
-                .WithNotParsed<Options>(errs => HandleParserError(errs, args))
-                ;
-        }
-
-        static void HandleParserError(IEnumerable<Error> errors, string[] args)
-        {
-            // Return an error code
-            Log.Logger.Error("Invalid arguments: '{@args}'. Errors: {@errors}", args, errors);
-            Environment.Exit(255);
-        }
-
-        static void ProcessWithExitCode(Options opts, IContainer container)
-        {
-            // Zero return value means everything processed normally
-            int returnCode = 0;
-
-            // Setup mini profiler
-            var profiler = MiniProfiler.StartNew("RssFeeder Profile");
-
-            try
+            var executor = CommandExecutor.For(_ =>
             {
-                List<RssFeed> feedList;
-                var repository = container.Resolve<IRepository>();
-                var bootstrap = container.Resolve<IRssBootstrap>();
-                var utils = container.Resolve<IUtils>();
-                var webUtils = container.Resolve<IWebUtils>();
-
-                if (!string.IsNullOrWhiteSpace(opts.Config))
-                {
-                    // Get the directory of the current executable, all config 
-                    // files should be in this path
-                    string configFile = Path.Combine(utils.GetAssemblyDirectory(), opts.Config);
-                    Log.Logger.Information("Reading from config file: {configFile}", configFile);
-
-                    // Read the options in JSON format
-                    using StreamReader sr = new StreamReader(configFile);
-                    string json = sr.ReadToEnd();
-                    Log.Logger.Information("Options: {@options}", json);
-
-                    // Deserialize into our options class
-                    feedList = JsonConvert.DeserializeObject<List<RssFeed>>(json);
-                }
-                else
-                {
-                    // Get the directory of the current executable, all config 
-                    // files should be in this path
-                    string configFile = Path.Combine(utils.GetAssemblyDirectory(), "feed-drudge.json");
-                    Log.Logger.Information("Reading from config file: {configFile}", configFile);
-
-                    // Read the options in JSON format
-                    using StreamReader sr = new StreamReader(configFile);
-                    string json = sr.ReadToEnd();
-                    Log.Logger.Information("Options: {@options}", json);
-
-                    // Deserialize into our options class
-                    feedList = JsonConvert.DeserializeObject<List<RssFeed>>(json);
-                }
-
-                foreach (var feed in feedList)
-                {
-                    try
-                    {
-                        using (LogContext.PushProperty("collectionName", feed.CollectionName))
-                        {
-                            if (feed.Enabled)
-                            {
-                                bootstrap.Start(container, profiler, feed);
-                                bootstrap.Export(container, profiler, feed);
-                            }
-                            bootstrap.Purge(container, profiler, feed);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Logger.Error(ex, "ERROR: Unable to process feed '{feedTitle}' from '{feedUrl}'", feed.Title, feed.Url);
-                    }
-                }
-
-                Log.Logger.Information("Profiler results: {results}", profiler.RenderPlainText());
-                Log.Logger.Information("END: Completed successfully");
-            }
-            catch (Exception ex)
-            {
-                Log.Logger.Error(ex, "Error during processing '{message}'", ex.Message);
-                returnCode = 250;
-            }
-            finally
-            {
-                Log.CloseAndFlush();
-            }
-
-            Environment.Exit(returnCode);
+                // Find and apply all command classes discovered
+                // in this assembly
+                _.RegisterCommands(typeof(Program).GetTypeInfo().Assembly);
+            }, new AutofacCommandCreator(container));
+            executor.Execute(args);
         }
     }
 }
