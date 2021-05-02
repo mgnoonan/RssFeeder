@@ -91,6 +91,8 @@ namespace RssFeeder.Console
             builder.RegisterType<ArticleDefinitionFactory>().As<IArticleDefinitionFactory>().SingleInstance();
             builder.RegisterType<TestCommand>().SingleInstance();
             builder.RegisterType<TestInput>().SingleInstance();
+            builder.RegisterType<BuildCommand>().SingleInstance();
+            builder.RegisterType<BuildInput>().SingleInstance();
             builder.RegisterType<HelpInput>().SingleInstance();
 
             var container = builder.Build();
