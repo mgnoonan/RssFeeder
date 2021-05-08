@@ -307,7 +307,7 @@ $item.ArticleText$
                     // If a specific article parser was not found in the database then
                     // use the fallback adaptive parser (experimental)
                     var parser = _container.ResolveNamed<IArticleParser>("adaptive-parser");
-                    string articleText = parser.GetArticleBySelector(doc.Text, definition);
+                    item.ArticleText = parser.GetArticleBySelector(doc.Text, definition);
                 }
                 else
                 {
