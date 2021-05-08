@@ -18,14 +18,12 @@ namespace RssFeeder.Console
 {
     public class RssBootstrap : IRssBootstrap
     {
-        readonly IRepository repository;
-        readonly IExportRepository exportRepository;
-        readonly IArticleDefinitionFactory definitions;
-        readonly IWebUtils webUtils;
-        readonly IUtils utils;
-
-        private IArticleParser primaryParser;
-        private IArticleParser fallbackParser;
+        private readonly IRepository repository;
+        private readonly IExportRepository exportRepository;
+        private readonly IArticleDefinitionFactory definitions;
+        private readonly IWebUtils webUtils;
+        private readonly IUtils utils;
+        private IContainer _container;
 
         private const string _collectionName = "drudge-report";
         private const string MetaDataTemplate = @"
@@ -76,6 +74,8 @@ $item.ArticleText$
 
         public void Start(IContainer container, MiniProfiler profiler, RssFeed feed)
         {
+            _container = container;
+
             string html = webUtils.DownloadStringWithCompression(feed.Url);
 
             // Create the working folder for the collection if it doesn't exist
@@ -96,8 +96,6 @@ $item.ArticleText$
 
             // Parse the target links from the source to build the article crawl list
             var builder = container.ResolveNamed<IRssFeedBuilder>(feed.CollectionName);
-            primaryParser = container.ResolveNamed<IArticleParser>("generic-parser");
-            fallbackParser = container.ResolveNamed<IArticleParser>("adaptive-parser");
             var list = builder.ParseRssFeedItems(feed, html);
 
             // Crawl any new articles and add them to the database
@@ -308,27 +306,15 @@ $item.ArticleText$
 
                     // If a specific article parser was not found in the database then
                     // use the fallback adaptive parser (experimental)
-                    string articleText = fallbackParser.GetArticleBySelector(doc.Text, definition);
-
-                    // HACK: trying something out for CNN
-                    if (item.SiteName == "cnn")
-                    {
-                        articleText = fallbackParser.GetArticleBySelector(doc.Text, "", "div.zn-body__paragraph");
-                    }
-
-                    if (string.IsNullOrEmpty(articleText))
-                    {
-                        item.ArticleText = $"<p>{item.MetaDescription}</p>";
-                    }
-                    else
-                    {
-                        item.ArticleText = articleText;
-                    }
+                    var parser = _container.ResolveNamed<IArticleParser>("adaptive-parser");
+                    string articleText = parser.GetArticleBySelector(doc.Text, definition);
                 }
                 else
                 {
-                    // Parse the article from the default parser and definitions
-                    item.ArticleText = primaryParser.GetArticleBySelector(doc.Text, definition);
+                    // Resolve the parser defined for the site
+                    var parser = _container.ResolveNamed<IArticleParser>(definition.Parser);
+                    // Parse the article
+                    item.ArticleText = parser.GetArticleBySelector(doc.Text, definition);
                 }
             }
         }
