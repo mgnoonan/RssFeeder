@@ -40,13 +40,16 @@ namespace RssFeeder.Console.Parsers
 
             foreach (var p in paragraphs)
             {
+                string value = p.TextContent.Trim();
+
                 if (p.TagName.ToLower().StartsWith("h"))
                 {
-                    description.AppendLine($"<h4>{p.TextContent.Trim()}</h4>");
+                    description.AppendLine($"<h4>{value}</h4>");
                 }
                 else
                 {
-                    description.AppendLine($"<p>{p.TextContent.Trim()}</p>");
+                    // Replace any <br> tags and empty paragraphs
+                    description.AppendLine($"<p>{value}</p>");
                 }
             }
 

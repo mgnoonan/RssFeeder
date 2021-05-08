@@ -20,14 +20,16 @@ namespace RssFeeder.Console.Commands
 
             // The usage pattern definition here is completely
             // optional
-            Usage("Test URL").Arguments(x => x.Url);
+            Usage("Test URL using default parser").Arguments(x => x.Url);
+            Usage("Test URL using specified parser").Arguments(x => x.Url, x => x.Parser);
+            Usage("Test URL using specified parser and selectors").Arguments(x => x.Url, x => x.Parser, x => x.BodySelector, x => x.ParagraphSelector);
         }
 
         public override bool Execute(TestInput input)
         {
             var utils = _container.Resolve<IUtils>();
             var webUtils = _container.Resolve<IWebUtils>();
-            var parser = _container.ResolveNamed<IArticleParser>("adaptive-parser");
+            var parser = _container.ResolveNamed<IArticleParser>(input.Parser);
 
             string urlHash = utils.CreateMD5Hash(input.Url);
             string html = webUtils.DownloadStringWithCompression(input.Url);
@@ -41,8 +43,9 @@ namespace RssFeeder.Console.Commands
             Log.Information("og:description = '{Description}'", ParseMetaTagAttributes(doc, "og:description", "content"));
             Log.Information("og:image = '{Image}'", ParseMetaTagAttributes(doc, "og:image", "content"));
 
-            string articleText = parser.GetArticleBySelector(doc.Text, "", "p");
-            Log.Information("Initial text = '{ArticleText}'", articleText.Left(80));
+            string articleText = parser.GetArticleBySelector(doc.Text, input.BodySelector, input.ParagraphSelector);
+            Log.Information("Article text = '{ArticleText}'", articleText);
+            Log.CloseAndFlush();
 
             // Just telling the OS that the command
             // finished up okay
