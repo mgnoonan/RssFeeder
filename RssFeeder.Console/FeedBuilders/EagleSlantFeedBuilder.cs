@@ -15,18 +15,21 @@ namespace RssFeeder.Console.FeedBuilders
 
         public List<RssFeedItem> ParseRssFeedItems(RssFeed feed, string html)
         {
-            var filters = feed.Filters ?? new List<string>();
+            return ParseRssFeedItems(feed.CollectionName, feed.Url, feed.Filters, html);
+        }
 
-            var items = ParseRssFeedItems(html, filters);
-            log.Information("FOUND {count} articles in {url}", items.Count, feed.Url);
+        public List<RssFeedItem> ParseRssFeedItems(string feedCollectionName, string feedUrl, List<string> feedFilters, string html)
+        {
+            var items = ParseRssFeedItems(html, feedFilters ?? new List<string>());
+            log.Information("FOUND {count} articles in {url}", items.Count, feedUrl);
 
             // Replace any relative paths and add the feed id
             foreach (var item in items)
             {
-                item.FeedId = feed.CollectionName;
+                item.FeedId = feedCollectionName;
                 if (item.Url.StartsWith("/"))
                 {
-                    item.Url = feed.Url + item.Url;
+                    item.Url = feedUrl + item.Url;
                 }
             }
 

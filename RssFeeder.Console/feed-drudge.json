@@ -121,5 +121,20 @@
     "FileRetentionDays": 7,
     "DatabaseRetentionDays": 7,
     "Filters": []
+  },
+  {
+    "Title": "Populist Press Extra",
+    "Enabled": "true",
+    "EnableThumbnail": "true",
+    "Exportable": "true",
+    "Description": "Populist Press Extra",
+    "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\populist.xml",
+    "Language": "en-US",
+    "Url": "https://populist.press/",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.PopulistPressFeedBuilder",
+    "CollectionName": "populist-press",
+    "FileRetentionDays": 7,
+    "DatabaseRetentionDays": 7,
+    "Filters": []
   }
 ]
