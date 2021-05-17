@@ -36,6 +36,11 @@ namespace RssFeeder.Console.ArticleParsers
             var dict = new Dictionary<string, int>();
             foreach (var p in paragraphs)
             {
+                if (string.IsNullOrWhiteSpace(System.Web.HttpUtility.HtmlDecode(p.TextContent)))
+                {
+                    continue;
+                }
+
                 var parent = p.ParentElement;
                 var key = parent.GetSelector();
 

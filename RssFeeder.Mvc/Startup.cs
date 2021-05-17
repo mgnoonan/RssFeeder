@@ -67,9 +67,11 @@ namespace RssFeeder.Mvc
             }
 
             var options = new RewriteOptions()
-                    .AddRedirect(@"(.*)\/(.*)\.env", "/")
-                    .AddRedirect(@"(.*)\/wp-admin(.*)", "/")
-                    .AddRedirect(@"(.*)\/wp-content(.*)", "/")
+                    .AddRedirect(@"(.*)\/.env", "/")
+                    .AddRedirect(@"(.*)\/wp-login\.php", "/")
+                    .AddRedirect(@"(.*)\/xmlrpc\.php", "/")
+                    .AddRedirect(@"(.*)\/wp-content\/", "/")
+                    .AddRedirect(@"(.*)\/wp-admin\/", "/")
                     .AddRedirect(@"(.*)\/wp-includes(.*)", "/")
                     .AddRedirect(@"(.*)\/wlwmanifest\.xml", "/")
                     .AddRewrite(@"^content/rss/drudge\.xml", "api/rss/drudge-report",
