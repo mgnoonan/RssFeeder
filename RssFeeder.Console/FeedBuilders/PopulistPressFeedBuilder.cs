@@ -86,43 +86,80 @@ namespace RssFeeder.Console.FeedBuilders
                 }
             }
 
-            //// Column 1
-            //container = document.QuerySelector("#column-1 > div > div.wpd-posted-links");
-            //if (container != null)
-            //{
-            //    var nodes = container.QuerySelectorAll("a");
-            //    count = 1;
-            //    foreach (var node in nodes)
-            //    {
-            //        string title = WebUtility.HtmlDecode(node.Text().Trim());
+            // Column 1
+            container = document.QuerySelector("#home_page_left_column");
+            if (container != null)
+            {
+                var nodes = container.QuerySelectorAll("a");
+                count = 1;
+                foreach (var node in nodes)
+                {
+                    string title = WebUtility.HtmlDecode(node.Text().Trim());
 
-            //        var item = CreateNodeLinks(filters, node, "column 1", count++);
-            //        if (item != null && !item.Url.Contains("#the-comments") && !item.Url.Contains("#comment-"))
-            //        {
-            //            log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
-            //            list.Add(item);
-            //        }
-            //    }
-            //}
+                    var item = CreateNodeLinks(filters, node, "column 1", count++);
 
-            //// Column 2
-            //container = document.QuerySelector("#column-2 > div > div.wpd-posted-links");
-            //if (container != null)
-            //{
-            //    var nodes = container.QuerySelectorAll("a");
-            //    count = 1;
-            //    foreach (var node in nodes)
-            //    {
-            //        string title = WebUtility.HtmlDecode(node.Text().Trim());
+                    // Unfortunately the reference site links are included in the column links, so the
+                    // email cgi link signals the end of the article list in column 1
+                    if (item.Url.Contains("cdn-cgi"))
+                        break;
 
-            //        var item = CreateNodeLinks(filters, node, "column 2", count++);
-            //        if (item != null && !item.Url.Contains("#the-comments") && !item.Url.Contains("#comment-"))
-            //        {
-            //            log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
-            //            list.Add(item);
-            //        }
-            //    }
-            //}
+                    if (item != null && !item.Url.Contains("#the-comments") && !item.Url.Contains("#comment-"))
+                    {
+                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
+                        list.Add(item);
+                    }
+                }
+            }
+
+            // Column 2
+            container = document.QuerySelector("#home_page_middle_column");
+            if (container != null)
+            {
+                var nodes = container.QuerySelectorAll("a");
+                count = 1;
+                foreach (var node in nodes)
+                {
+                    string title = WebUtility.HtmlDecode(node.Text().Trim());
+
+                    var item = CreateNodeLinks(filters, node, "column 2", count++);
+
+                    // Unfortunately the reference site links are included in the column links, so the
+                    // CINDY ADAMS link signals the end of the article list in column 2
+                    if (item.Url.Contains("cindy-adams"))
+                        break;
+
+                    if (item != null && !item.Url.Contains("#the-comments") && !item.Url.Contains("#comment-"))
+                    {
+                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
+                        list.Add(item);
+                    }
+                }
+            }
+
+            // Column 3
+            container = document.QuerySelector("#home_page_right_column");
+            if (container != null)
+            {
+                var nodes = container.QuerySelectorAll("a");
+                count = 1;
+                foreach (var node in nodes)
+                {
+                    string title = WebUtility.HtmlDecode(node.Text().Trim());
+
+                    var item = CreateNodeLinks(filters, node, "column 3", count++);
+
+                    // Unfortunately the reference site links are included in the column links, so the
+                    // PRIVACY POLICY link signals the end of the article list in column 2
+                    if (item.Url.Contains("privacy-policy-2"))
+                        break;
+
+                    if (item != null && !item.Url.Contains("#the-comments") && !item.Url.Contains("#comment-"))
+                    {
+                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
+                        list.Add(item);
+                    }
+                }
+            }
 
             return list;
         }
