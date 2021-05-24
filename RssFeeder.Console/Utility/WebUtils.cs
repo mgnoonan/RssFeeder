@@ -7,10 +7,12 @@ using System.Net.Http;
 using System.Net.Security;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Support.UI;
 using Polly;
 using Serilog;
 
@@ -220,6 +222,7 @@ namespace RssFeeder.Console.Utility
                 driver = new ChromeDriver(path, options);
                 driver.Manage().Window.Size = new System.Drawing.Size(2000, 4000);
                 driver.Navigate().GoToUrl(url);
+                Thread.Sleep(5000);
                 var screenshot = (driver as ITakesScreenshot).GetScreenshot();
 
                 Log.Logger.Information("Saving thumbnail file '{filename}'", filename);

@@ -97,6 +97,8 @@ namespace RssFeeder.Console
             builder.RegisterType<BuildInput>().SingleInstance();
             builder.RegisterType<ParseCommand>().SingleInstance();
             builder.RegisterType<ParseInput>().SingleInstance();
+            builder.RegisterType<DownloadCommand>().SingleInstance();
+            builder.RegisterType<DownloadInput>().SingleInstance();
             builder.RegisterType<HelpInput>().SingleInstance();
 
             var container = builder.Build();
