@@ -13,19 +13,6 @@
     "filters": []
   },
   {
-    "id": "52698c8e-4bbf-4c87-9e6a-e1993cb5077f",
-    "Title": "Eagle Slant",
-    "Url": "https://eagleslant.com/",
-    "Description": "Conservative News Aggregation",
-    "Language": "en-US",
-    "CustomParser": "RssFeeder.Console.FeedBuilders.EagleSlantFeedBuilder",
-    "CollectionName": "eagle-slant",
-    "authoremail": "email@eagleslant.com",
-    "FeedlyUrl": "https://feedly.com/i/subscription/feed%2Fhttps%3A%2F%2Frssfeedermvc.azurewebsites.net%2Fapi%2Frss%2Feagle-slant",
-    "RssUrl": "https://rssfeedermvc.azurewebsites.net/api/rss/eagle-slant",
-    "Filters": []
-  },
-  {
     "id": "dd514627-8f91-417c-9762-cc78af87e07f",
     "Title": "The Bongino Report Extra",
     "Url": "https://bonginoreport.com/",
