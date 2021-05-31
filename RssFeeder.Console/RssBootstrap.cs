@@ -134,7 +134,7 @@ $item.ArticleText$
 
                             // Download the Url contents, first using HttpClient but if that fails use Selenium
                             item.FileName = webUtils.SaveUrlToDisk(item.Url, item.UrlHash, filename);
-                            if (string.IsNullOrEmpty(item.FileName))
+                            if (string.IsNullOrEmpty(item.FileName) || item.FileName.Contains("ajc_com"))
                             {
                                 // Must have had an error on loading the url so attempt with Selenium
                                 item.FileName = webUtils.WebDriverUrlToDisk(item.Url, item.UrlHash, filename);
