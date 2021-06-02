@@ -17,6 +17,7 @@ steps:
   displayName: 'Use .NET Core sdk 6.0.x'
   inputs:
     version: 6.0.x
+    includePreviewVersions: true
 
 - task: NuGetToolInstaller@0
   displayName: 'Use NuGet 5.x'
