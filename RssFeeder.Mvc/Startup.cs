@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.AzureAD.UI;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -8,6 +6,7 @@ using Microsoft.AspNetCore.Rewrite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Identity.Web;
 using RssFeeder.Mvc.Models;
 using Serilog;
 
@@ -25,9 +24,7 @@ namespace RssFeeder.Mvc
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddAuthentication(AzureADDefaults.AuthenticationScheme)
-                .AddAzureAD(options => Configuration.Bind("AzureAd", options));
-
+            services.AddMicrosoftIdentityWebAppAuthentication(Configuration);
             services.AddHealthChecks()
                 .AddCosmosDb(string.Format("AccountEndpoint={0};AccountKey={1};", Configuration["endpoint"], Configuration["authKey"]));
 
