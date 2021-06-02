@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 using HtmlAgilityPack;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
-using OpenQA.Selenium.Support.UI;
 using Polly;
 using Serilog;
 
@@ -87,17 +86,18 @@ namespace RssFeeder.Console.Utility
                 doc.LoadHtml(DownloadStringWithCompression(url));
                 doc.OptionFixNestedTags = true;
 
+                // List of html tags we really don't care to save
+                var excludeHtmlTags = new List<string> { "style", "link", "svg" };
                 if (removeScriptElements)
                 {
-                    // List of html tags we really don't care to save
-                    var excludeHtmlTags = new List<string> { "script", "style", "link", "svg" };
-
-                    doc.DocumentNode
-                        .Descendants()
-                        .Where(n => excludeHtmlTags.Contains(n.Name))
-                        .ToList()
-                        .ForEach(n => n.Remove());
+                    excludeHtmlTags.Add("script");
                 }
+
+                doc.DocumentNode
+                    .Descendants()
+                    .Where(n => excludeHtmlTags.Contains(n.Name))
+                    .ToList()
+                    .ForEach(n => n.Remove());
 
                 // Delete the file if it already exists
                 if (File.Exists(filename))
