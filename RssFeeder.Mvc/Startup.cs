@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Identity.Web;
+using Microsoft.Identity.Web.UI;
 using RssFeeder.Mvc.Models;
 using Serilog;
 
@@ -35,7 +36,7 @@ namespace RssFeeder.Mvc
                     .Build();
                 options.Filters.Add(new AuthorizeFilter(policy));
                 options.Filters.Add<SerilogMvcLoggingAttribute>();
-            });
+            }).AddMicrosoftIdentityUI();
             services.AddRazorPages();
 
             // Repositories
