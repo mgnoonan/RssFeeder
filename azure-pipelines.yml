@@ -14,12 +14,6 @@ variables:
 steps:
 
 - task: UseDotNet@2
-  displayName: 'Use .NET Core sdk 5.0.x'
-  inputs:
-    version: 5.0.x
-    includePreviewVersions: true
-
-- task: UseDotNet@2
   displayName: 'Use .NET Core sdk 6.0.x'
   inputs:
     version: 6.0.x
@@ -31,17 +25,20 @@ steps:
     versionSpec: 5.x
     checkLatest: true
 
-- task: NuGetCommand@2
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet restore'
   inputs:
-    restoreSolution: '$(solution)'
-
-- task: VSBuild@1
+    command: restore
+    projects: '**/*.csproj'
+    
+- task: DotNetCoreCLI@2
+  displayName: 'Build MVC'
   inputs:
-    solution: '$(solution)'
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
-
-- task: VSTest@2
+    command: build
+    projects: 'RssFeeder.Mvc/*.csproj'
+    
+- task: DotNetCoreCLI@2
+  displayName: 'Build Crawler'
   inputs:
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+    command: build
+    projects: 'RssFeeder.Console/*.csproj'
