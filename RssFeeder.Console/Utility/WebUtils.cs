@@ -22,7 +22,7 @@ namespace RssFeeder.Console.Utility
     /// </summary>
     public class WebUtils : IWebUtils
     {
-        private const string USERAGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4170.0 Safari/537.36 Edg/85.0.552.1";
+        private const string USERAGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.40 Safari/537.36 Edg/92.0.902.8";
         private static HttpClient _client;
 
         public WebUtils()
@@ -124,18 +124,19 @@ namespace RssFeeder.Console.Utility
             {
                 Log.Logger.Information("Loading image URL '{urlHash}':'{url}'", urlHash, url);
 
-                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                var client = new HttpClient();
+                HttpResponseMessage response = client.GetAsync(url).Result;
+                response.EnsureSuccessStatusCode();
 
                 // Check that the remote file was found. The ContentType
                 // check is performed since a request for a non-existent
                 // image file might be redirected to a 404-page, which would
                 // yield the StatusCode "OK", even though the image was not
                 // found.
-                if ((response.StatusCode == HttpStatusCode.OK ||
-                    response.StatusCode == HttpStatusCode.Moved ||
-                    response.StatusCode == HttpStatusCode.Redirect) &&
-                    response.ContentType.StartsWith("image", StringComparison.OrdinalIgnoreCase))
+                if (response.Headers
+                    .GetValues("Content-Type")
+                    .FirstOrDefault()?
+                    .StartsWith("image", StringComparison.OrdinalIgnoreCase) ?? false)
                 {
                     // Delete the file if it already exists
                     if (File.Exists(filename))
@@ -146,7 +147,7 @@ namespace RssFeeder.Console.Utility
                     Log.Logger.Information("Saving image file '{fileName}'", filename);
 
                     // if the remote file was found, download it
-                    using Stream inputStream = response.GetResponseStream();
+                    using Stream inputStream = response.Content.ReadAsStreamAsync().Result;
                     using Stream outputStream = File.OpenWrite(filename);
                     byte[] buffer = new byte[4096];
                     int bytesRead;
@@ -284,11 +285,13 @@ namespace RssFeeder.Console.Utility
 
         public string GetContentType(string url)
         {
-            var httpRequest = (HttpWebRequest)WebRequest.Create(url);
-            httpRequest.Method = "HEAD";
+            var client = new HttpClient();
+            HttpResponseMessage response = client.Send(new HttpRequestMessage(HttpMethod.Head, url));
+            response.EnsureSuccessStatusCode();
 
-            var httpResponse = (HttpWebResponse)httpRequest.GetResponse();
-            return httpResponse.ContentType;
+            return response.Headers
+                    .GetValues("Content-Type")
+                    .FirstOrDefault() ?? string.Empty;
         }
     }
 }

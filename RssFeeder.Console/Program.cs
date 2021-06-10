@@ -88,6 +88,7 @@ namespace RssFeeder.Console
             builder.RegisterType<GenericParser>().Named<IArticleParser>("generic-parser");
             builder.RegisterType<AdaptiveParser>().Named<IArticleParser>("adaptive-parser");
             builder.RegisterType<AllTagsParser>().Named<IArticleParser>("alltags-parser");
+            builder.RegisterType<ScriptParser>().Named<IArticleParser>("script-parser");
             builder.RegisterType<WebUtils>().As<IWebUtils>().SingleInstance();
             builder.RegisterType<Utils>().As<IUtils>().SingleInstance();
             builder.RegisterType<ArticleDefinitionFactory>().As<IArticleDefinitionFactory>().SingleInstance();
