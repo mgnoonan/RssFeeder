@@ -1,6 +1,8 @@
 ﻿using Autofac;
+using HtmlAgilityPack;
 using Oakton;
 using RssFeeder.Console.Models;
+using RssFeeder.Console.Parsers;
 using RssFeeder.Console.Utility;
 using Serilog;
 
@@ -19,15 +21,19 @@ namespace RssFeeder.Console.Commands
         public override bool Execute(TestInput input)
         {
             var webUtils = _container.Resolve<IWebUtils>();
-            var url = "https://i1.wp.com/gutsmack.com/wp-content/uploads/2021/06/Screen-Shot-2021-06-13-at-2.51.40-PM.png";
+            var parser = _container.ResolveNamed<IArticleParser>("htmltag-parser");
+            var url = "https://rumble.com/vifqub-state-trooper-flips-pregnant-womans-car-over-traffic-stop-this-is-where-you.html";
+            var fileName = "test.html";
 
-            webUtils.SaveUrlToDisk(
+            webUtils.WebDriverUrlToDisk(
                 url,
                 "",
-                "test.png");
+                fileName);
 
-            var contentType = webUtils.GetContentType(url);
-            Log.Information("Test content type: {contentType}", contentType);
+            var doc = new HtmlDocument();
+            doc.Load(fileName);
+            var result = parser.GetArticleBySelector(doc.Text, "#videoPlayer", "video");
+            Log.Information("Article parsed: '{result}'", result);
 
             Log.CloseAndFlush();
 
