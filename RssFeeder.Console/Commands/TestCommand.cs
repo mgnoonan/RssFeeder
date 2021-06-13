@@ -1,8 +1,5 @@
-﻿using System.IO;
-using Autofac;
-using HtmlAgilityPack;
+﻿using Autofac;
 using Oakton;
-using RssFeeder.Console.FeedBuilders;
 using RssFeeder.Console.Models;
 using RssFeeder.Console.Utility;
 using Serilog;
@@ -17,23 +14,21 @@ namespace RssFeeder.Console.Commands
         public TestCommand(IContainer container)
         {
             _container = container;
-
-            // The usage pattern definition here is completely
-            // optional
-            Usage("Test build using feed URL and feed builder class").Arguments(x => x.FeedUrl, x => x.FeedBuilder);
         }
 
         public override bool Execute(TestInput input)
         {
             var webUtils = _container.Resolve<IWebUtils>();
-            var builder = _container.ResolveNamed<IRssFeedBuilder>(input.FeedBuilder);
+            var url = "https://i1.wp.com/gutsmack.com/wp-content/uploads/2021/06/Screen-Shot-2021-06-13-at-2.51.40-PM.png";
 
-            string html = webUtils.DownloadStringWithCompression(input.FeedUrl);
+            webUtils.SaveUrlToDisk(
+                url,
+                "",
+                "test.png");
 
-            var doc = new HtmlDocument();
-            doc.Load(new StringReader(html));
+            var contentType = webUtils.GetContentType(url);
+            Log.Information("Test content type: {contentType}", contentType);
 
-            builder.ParseRssFeedItems("test-command", input.FeedUrl, null, html);
             Log.CloseAndFlush();
 
             // Just telling the OS that the command

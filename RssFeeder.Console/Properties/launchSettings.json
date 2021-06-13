@@ -2,7 +2,7 @@
   "profiles": {
     "RssFeeder.Console": {
       "commandName": "Project",
-      "commandLineArgs": "--config feed-drudge.json"
+      "commandLineArgs": "test"
     }
   }
 }
