@@ -133,10 +133,7 @@ namespace RssFeeder.Console.Utility
                 // image file might be redirected to a 404-page, which would
                 // yield the StatusCode "OK", even though the image was not
                 // found.
-                if (response.Headers
-                    .GetValues("Content-Type")
-                    .FirstOrDefault()?
-                    .StartsWith("image", StringComparison.OrdinalIgnoreCase) ?? false)
+                if (response.Content.Headers.ContentType.ToString().StartsWith("image", StringComparison.OrdinalIgnoreCase))
                 {
                     // Delete the file if it already exists
                     if (File.Exists(filename))
@@ -289,9 +286,7 @@ namespace RssFeeder.Console.Utility
             HttpResponseMessage response = client.Send(new HttpRequestMessage(HttpMethod.Head, url));
             response.EnsureSuccessStatusCode();
 
-            return response.Headers
-                    .GetValues("Content-Type")
-                    .FirstOrDefault() ?? string.Empty;
+            return response.Content.Headers.ContentType.ToString();
         }
     }
 }
