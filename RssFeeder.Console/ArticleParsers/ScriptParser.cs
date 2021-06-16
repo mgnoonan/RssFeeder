@@ -45,8 +45,14 @@ namespace RssFeeder.Console.ArticleParsers
 
             try
             {
-                var groups = Regex.Match(content, "\"urn:publicid:ap\\.org:[a-f0-9]*\":\\s?({.*\"canonicalUrl\":\\s?\"[-a-z0-9]*\"\\s?})\\s?},").Groups;
+                var groups = Regex.Match(content, "\"urn:publicid:ap\\.org:[a-f0-9]*\":\\s?({.*\"canonicalUrl\":\\s?\"[-a-zA-Z0-9]*\"\\s?})\\s?},").Groups;
                 var jsonRaw = groups[1].Value;
+                if (string.IsNullOrEmpty(jsonRaw))
+                {
+                    Log.Warning("Unable to parse article data from script '{content}'", content);
+                    return string.Empty;
+                }
+
                 var jsonObject = JsonConvert.DeserializeObject<dynamic>(jsonRaw);
 
                 return jsonObject.storyHTML;
