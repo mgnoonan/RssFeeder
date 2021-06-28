@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using AngleSharp.Html.Parser;
 using Antlr4.StringTemplate;
 using Autofac;
 using HtmlAgilityPack;
+using Newtonsoft.Json;
 using RssFeeder.Console.ArticleDefinitions;
 using RssFeeder.Console.Database;
 using RssFeeder.Console.FeedBuilders;
@@ -50,7 +53,7 @@ namespace RssFeeder.Console
 $item.ArticleText$
 " + MetaDataTemplate;
 
-        private const string YouTubeTemplate = @"<iframe width=""$item.VideoWidth$"" height=""$item.VideoHeight$"" src=""$item.VideoUrl$"" frameborder=""0"" allow=""accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"" allowfullscreen></iframe>
+        private const string VideoTemplate = @"<iframe class=""{class}"" width=""$item.VideoWidth$"" height=""$item.VideoHeight$"" src=""$item.VideoUrl$"" frameborder=""0"" allow=""{allow}"" allowfullscreen></iframe>
 <h3>$item.Subtitle$</h3>
 $item.ArticleText$
 " + MetaDataTemplate;
@@ -133,7 +136,7 @@ $item.ArticleText$
                             string filename = Path.Combine(workingFolder, $"{item.UrlHash}_{friendlyHostname}{extension}");
 
                             // Download the Url contents, first using HttpClient but if that fails use Selenium
-                            item.FileName = webUtils.SaveUrlToDisk(item.Url, item.UrlHash, filename, !filename.Contains("_apnews_com"));
+                            item.FileName = webUtils.SaveUrlToDisk(item.Url, item.UrlHash, filename, !filename.Contains("_apnews_com") && !filename.Contains("_rumble_com"));
                             if (string.IsNullOrEmpty(item.FileName) || filename.Contains("ajc_com") || filename.Contains("rumble_com"))
                             {
                                 // Must have had an error on loading the url so attempt with Selenium
@@ -237,12 +240,12 @@ $item.ArticleText$
                     doc.Load(item.FileName);
 
                     // Meta tags provide extended data about the item, display as much as possible
-                    if (hostName == "www.youtube.com" || hostName == "youtu.be")
+                    if (hostName == "www.youtube.com" || hostName == "youtu.be" || hostName == "rumble.com")
                     {
-                        SetYouTubeMetaData(item, doc, hostName);
+                        SetVideoMetaData(item, doc, hostName);
                         if (item.VideoHeight > 0)
                         {
-                            item.Description = ApplyTemplateToDescription(item, feed, YouTubeTemplate);
+                            item.Description = ApplyTemplateToDescription(item, feed, VideoTemplate);
                         }
                         else
                         {
@@ -268,6 +271,18 @@ $item.ArticleText$
 
         private string ApplyTemplateToDescription(RssFeedItem item, RssFeed feed, string template)
         {
+            switch (item.SiteName)
+            {
+                case "youtube":
+                    template = template.Replace("{class}", "");
+                    template = template.Replace("{allow}", "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture");
+                    break;
+                case "rumble":
+                    template = template.Replace("{class}", "rumble");
+                    template = template.Replace("{allow}", "");
+                    break;
+            }
+
             var t = new Template(template, '$', '$');
             t.Add("item", item);
             t.Add("feed", feed);
@@ -349,14 +364,11 @@ $item.ArticleText$
             item.ArticleText = $"<p>Unable to crawl article content. Click the link below to view in your browser.</p>";
         }
 
-        private void SetYouTubeMetaData(RssFeedItem item, HtmlDocument doc, string hostName)
+        private void SetVideoMetaData(RssFeedItem item, HtmlDocument doc, string hostName)
         {
             // Extract the meta data from the Open Graph tags customized for YouTube
             item.Subtitle = ParseMetaTagAttributes(doc, "og:title", "content");
             item.ImageUrl = ParseMetaTagAttributes(doc, "og:image", "content");
-            item.VideoUrl = ParseMetaTagAttributes(doc, "og:video:url", "content");
-            item.VideoHeight = int.TryParse(ParseMetaTagAttributes(doc, "og:video:height", "content"), out int height) ? height : 0;
-            item.VideoWidth = int.TryParse(ParseMetaTagAttributes(doc, "og:video:width", "content"), out int width) ? width : 0;
             item.MetaDescription = ParseMetaTagAttributes(doc, "og:description", "content");
             item.HostName = hostName;
             item.SiteName = ParseMetaTagAttributes(doc, "og:site_name", "content").ToLower();
@@ -366,8 +378,49 @@ $item.ArticleText$
                 item.SiteName = item.HostName;
             }
 
-            // There's no article text for YT, so just use the meta description
+            if (item.HostName.Contains("rumble.com"))
+            {
+                var value = GetJsonDynamic<IEnumerable<dynamic>>(doc.Text, "script", "embedUrl");
+                item.VideoUrl = value.First().embedUrl.Value;
+                item.VideoHeight = int.TryParse(Convert.ToString(value.First().height.Value), out int height) ? height : 0;
+                item.VideoWidth = int.TryParse(Convert.ToString(value.First().width.Value), out int width) ? width: 0;
+            }
+            else
+            {
+                // These may be YouTube-only Open Graph tags
+                item.VideoUrl = ParseMetaTagAttributes(doc, "og:video:url", "content");
+                item.VideoHeight = int.TryParse(ParseMetaTagAttributes(doc, "og:video:height", "content"), out int height) ? height : 0;
+                item.VideoWidth = int.TryParse(ParseMetaTagAttributes(doc, "og:video:width", "content"), out int width) ? width : 0;
+            }
+            Log.Information("Video URL: '{url}' ({height}x{width})", item.VideoUrl, item.VideoHeight, item.VideoWidth);
+
+            // There's no article text for most video sites, so just use the meta description
             item.ArticleText = $"<p>{item.MetaDescription}</p>";
+        }
+
+        private T GetJsonDynamic<T>(string html, string tagName, string keyName)
+        {
+            // Load and parse the html from the source file
+            var parser = new HtmlParser();
+            var document = parser.ParseDocument(html);
+
+            // Query the document by CSS selectors to get the article text
+            var blocks = document.QuerySelectorAll(tagName);
+            if (blocks.Length == 0)
+            {
+            }
+
+            string jsonRaw = string.Empty;
+            foreach (var block in blocks)
+            {
+                if (block.TextContent.Contains(keyName))
+                {
+                    jsonRaw = block.TextContent;
+                    break;
+                }
+            }
+
+            return JsonConvert.DeserializeObject<T>(jsonRaw);
         }
 
         private void SetGraphicMetaData(RssFeedItem item, string hostName)
