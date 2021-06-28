@@ -378,21 +378,21 @@ $item.ArticleText$
                 item.SiteName = item.HostName;
             }
 
-            // This may be a YouTube-only Open Graph tag, so if missing assume we are looking at a different site
-            item.VideoUrl = ParseMetaTagAttributes(doc, "og:video:url", "content");
-
-            if (string.IsNullOrEmpty(item.VideoUrl))
+            if (item.HostName.Contains("rumble.com"))
             {
                 var value = GetJsonDynamic<IEnumerable<dynamic>>(doc.Text, "script", "embedUrl");
                 item.VideoUrl = value.First().embedUrl.Value;
-                item.VideoHeight = int.TryParse(value.First().height.Value, out int height) ? height : 0;
-                item.VideoWidth = int.TryParse(value.First().width.Value, out int width) ? width: 0;
+                item.VideoHeight = int.TryParse(Convert.ToString(value.First().height.Value), out int height) ? height : 0;
+                item.VideoWidth = int.TryParse(Convert.ToString(value.First().width.Value), out int width) ? width: 0;
             }
             else
             {
+                // These may be YouTube-only Open Graph tags
+                item.VideoUrl = ParseMetaTagAttributes(doc, "og:video:url", "content");
                 item.VideoHeight = int.TryParse(ParseMetaTagAttributes(doc, "og:video:height", "content"), out int height) ? height : 0;
                 item.VideoWidth = int.TryParse(ParseMetaTagAttributes(doc, "og:video:width", "content"), out int width) ? width : 0;
             }
+            Log.Information("Video URL: '{url}' ({height}x{width})", item.VideoUrl, item.VideoHeight, item.VideoWidth);
 
             // There's no article text for most video sites, so just use the meta description
             item.ArticleText = $"<p>{item.MetaDescription}</p>";
