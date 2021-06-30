@@ -79,7 +79,7 @@ namespace RssFeeder.Console
             builder.RegisterInstance(store).As<IDocumentStore>();
             builder.Register(c => new CosmosDbRepository("rssfeeder", config.endpoint, config.authKey, Log.Logger)).As<IExportRepository>();
             builder.RegisterType<RavenDbRepository>().As<IRepository>();
-            builder.RegisterType<RssBootstrap>().As<IRssBootstrap>();
+            builder.RegisterType<RssBootstrap>().As<IRssBootstrap>().WithProperty("Config", crawlerConfig);
             builder.RegisterType<DrudgeReportFeedBuilder>().Named<IRssFeedBuilder>("drudge-report");
             builder.RegisterType<EagleSlantFeedBuilder>().Named<IRssFeedBuilder>("eagle-slant");
             builder.RegisterType<LibertyDailyFeedBuilder>().Named<IRssFeedBuilder>("liberty-daily");

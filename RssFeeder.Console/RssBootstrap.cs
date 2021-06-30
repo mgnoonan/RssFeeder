@@ -66,6 +66,8 @@ $item.ArticleText$
         private const string BasicTemplate = @"<h3>$item.Title$</h3>
 " + MetaDataTemplate;
 
+        public CrawlerConfig Config { get; set; }
+
         public RssBootstrap(IRepository _repository, IExportRepository _exportRepository, IArticleDefinitionFactory _definitions, IWebUtils _webUtils, IUtils _utils)
         {
             repository = _repository;
@@ -123,7 +125,7 @@ $item.ArticleText$
                         articleCount++;
 
                         // Check for crawler exclusions, we are unable to download content from these sites
-                        if (crawlerConfig.Exclusions.Contains(item.HostName))
+                        if (Config.Exclusions.Contains(item.HostName))
                         {
                             Log.Information("Bypassing content crawl for host '{hostName}'", item.HostName);
                             continue;
