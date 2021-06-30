@@ -55,11 +55,14 @@ namespace RssFeeder.Console
                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                .AddUserSecrets<Program>()
                .AddEnvironmentVariables();
-
             IConfigurationRoot configuration = configBuilder.Build();
+
             var config = new CosmosDbConfig();
             configuration.GetSection("CosmosDB").Bind(config);
             log.Information("Loaded CosmosDB from config. Endpoint='{endpointUri}', authKey='{authKeyPartial}*****'", config.endpoint, config.authKey.Substring(0, 5));
+
+            var crawlerConfig = new CrawlerConfig();
+            ConfigurationBinder.Bind(configuration.GetSection("CrawlerConfig"), crawlerConfig);
 
             // Setup dependency injection
             var builder = new ContainerBuilder();

@@ -88,9 +88,10 @@
     "CustomParser": "RssFeeder.Console.FeedBuilders.CitizenFreePressFeedBuilder",
     "CollectionName": "citizen-freepress",
     "FileRetentionDays": 7,
-    "DatabaseRetentionDays": 3,
+    "DatabaseRetentionDays": 7,
     "Filters": [
-      "3fa6dfe31a8d75725aaa5620243838f2"
+      "3fa6dfe31a8d75725aaa5620243838f2",
+      "b73f81a2fa4475d68ba7ba39faf9dfb6"
     ]
   },
   {
