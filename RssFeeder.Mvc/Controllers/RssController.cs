@@ -10,7 +10,6 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Net.Http.Headers;
 using Microsoft.SyndicationFeed;
 using Microsoft.SyndicationFeed.Atom;
-using RssFeeder.Models;
 using RssFeeder.Mvc.Models;
 using Serilog;
 
