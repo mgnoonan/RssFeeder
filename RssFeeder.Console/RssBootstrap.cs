@@ -6,10 +6,12 @@ using AngleSharp.Html.Parser;
 using Antlr4.StringTemplate;
 using Autofac;
 using HtmlAgilityPack;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using RssFeeder.Console.ArticleDefinitions;
 using RssFeeder.Console.Database;
 using RssFeeder.Console.FeedBuilders;
+using RssFeeder.Console.Models;
 using RssFeeder.Console.Parsers;
 using RssFeeder.Console.Utility;
 using RssFeeder.Models;
@@ -64,6 +66,8 @@ $item.ArticleText$
         private const string BasicTemplate = @"<h3>$item.Title$</h3>
 " + MetaDataTemplate;
 
+        public CrawlerConfig Config { get; set; }
+
         public RssBootstrap(IRepository _repository, IExportRepository _exportRepository, IArticleDefinitionFactory _definitions, IWebUtils _webUtils, IUtils _utils)
         {
             repository = _repository;
@@ -71,8 +75,15 @@ $item.ArticleText$
             webUtils = _webUtils;
             utils = _utils;
             definitions = _definitions;
+        }
 
-            repository.EnsureDatabaseExists(_collectionName, true);
+        public void Initialize()
+        {
+            Log.Information("Bootstrap initializing");
+            Log.Information("Crawler exclusion list: {@exclusions}", Config.Exclusions);
+
+            if (repository != null)
+                repository.EnsureDatabaseExists(_collectionName, true);
         }
 
         public void Start(IContainer container, MiniProfiler profiler, RssFeed feed)
@@ -119,6 +130,13 @@ $item.ArticleText$
                         // Increment new article count
                         Log.Information("UrlHash '{urlHash}' not found in collection '{collectionName}'", item.UrlHash, feed.CollectionName);
                         articleCount++;
+
+                        // Check for crawler exclusions, we are unable to download content from these sites
+                        if (Config.Exclusions.Contains(item.HostName))
+                        {
+                            Log.Information("Bypassing content crawl for host '{hostName}'", item.HostName);
+                            continue;
+                        }
 
                         try
                         {

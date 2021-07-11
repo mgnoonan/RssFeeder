@@ -52,14 +52,18 @@ namespace RssFeeder.Console
             // Load configuration
             var configBuilder = new ConfigurationBuilder()
                .SetBasePath(Directory.GetCurrentDirectory())
-               .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+               .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                .AddUserSecrets<Program>()
                .AddEnvironmentVariables();
-
             IConfigurationRoot configuration = configBuilder.Build();
+
             var config = new CosmosDbConfig();
             configuration.GetSection("CosmosDB").Bind(config);
             log.Information("Loaded CosmosDB from config. Endpoint='{endpointUri}', authKey='{authKeyPartial}*****'", config.endpoint, config.authKey.Substring(0, 5));
+
+            var crawlerConfig = new CrawlerConfig();
+            configuration.GetSection("CrawlerConfig").Bind(crawlerConfig);
+            Log.Information("Crawler config: {@config}", crawlerConfig);
 
             // Setup dependency injection
             var builder = new ContainerBuilder();
@@ -76,7 +80,7 @@ namespace RssFeeder.Console
             builder.RegisterInstance(store).As<IDocumentStore>();
             builder.Register(c => new CosmosDbRepository("rssfeeder", config.endpoint, config.authKey, Log.Logger)).As<IExportRepository>();
             builder.RegisterType<RavenDbRepository>().As<IRepository>();
-            builder.RegisterType<RssBootstrap>().As<IRssBootstrap>();
+            builder.RegisterType<RssBootstrap>().As<IRssBootstrap>().WithProperty("Config", crawlerConfig);
             builder.RegisterType<DrudgeReportFeedBuilder>().Named<IRssFeedBuilder>("drudge-report");
             builder.RegisterType<EagleSlantFeedBuilder>().Named<IRssFeedBuilder>("eagle-slant");
             builder.RegisterType<LibertyDailyFeedBuilder>().Named<IRssFeedBuilder>("liberty-daily");

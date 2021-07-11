@@ -53,8 +53,6 @@ namespace RssFeeder.Console.FeedBuilders
                 count = 1;
                 foreach (var node in nodes)
                 {
-                    string title = WebUtility.HtmlDecode(node.Text().Trim());
-
                     var item = CreateNodeLinks(filters, node, "above the fold", count++);
                     if (item != null)
                     {
@@ -74,8 +72,6 @@ namespace RssFeeder.Console.FeedBuilders
                     count = 1;
                     foreach (var node in nodes)
                     {
-                        string title = WebUtility.HtmlDecode(node.Text().Trim());
-
                         var item = CreateNodeLinks(filters, node, "main headlines", count++);
                         if (item != null && !item.Url.Contains("#the-comments") && !item.Url.Contains("#comment-"))
                         {
@@ -94,8 +90,6 @@ namespace RssFeeder.Console.FeedBuilders
                 count = 1;
                 foreach (var node in nodes)
                 {
-                    string title = WebUtility.HtmlDecode(node.Text().Trim());
-
                     var item = CreateNodeLinks(filters, node, "column 1", count++);
 
                     // Unfortunately the reference site links are included in the column links, so the
@@ -120,6 +114,10 @@ namespace RssFeeder.Console.FeedBuilders
                 foreach (var node in nodes)
                 {
                     string title = WebUtility.HtmlDecode(node.Text().Trim());
+                    if (string.IsNullOrWhiteSpace(title))
+                        continue;
+
+                    Log.Information("Checking column 2 title '{title}'", title);
 
                     var item = CreateNodeLinks(filters, node, "column 2", count++);
 
@@ -144,8 +142,6 @@ namespace RssFeeder.Console.FeedBuilders
                 count = 1;
                 foreach (var node in nodes)
                 {
-                    string title = WebUtility.HtmlDecode(node.Text().Trim());
-
                     var item = CreateNodeLinks(filters, node, "column 3", count++);
 
                     // Unfortunately the reference site links are included in the column links, so the
