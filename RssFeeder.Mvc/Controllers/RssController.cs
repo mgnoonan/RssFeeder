@@ -11,6 +11,7 @@ using Microsoft.Net.Http.Headers;
 using Microsoft.SyndicationFeed;
 using Microsoft.SyndicationFeed.Atom;
 using RssFeeder.Mvc.Models;
+using RssFeeder.Mvc.Services;
 using Serilog;
 
 namespace RssFeeder.Mvc.Controllers
@@ -20,13 +21,13 @@ namespace RssFeeder.Mvc.Controllers
     [ApiController]
     public class RssController : ControllerBase
     {
-        private readonly IRepository<RssFeederRepository> _repo;
+        private readonly ICosmosDbService _repo;
         private readonly IMemoryCache _cache;
         private readonly IEnumerable<string> _collectionList = new string[] { "drudge-report", "eagle-slant", "bongino-report", "liberty-daily", "citizen-freepress", "rantingly", "gutsmack", "populist-press" };
         private readonly string _sourceFile = "feeds.json";
         private readonly List<FeedModel> _feeds;
 
-        public RssController(IRepository<RssFeederRepository> repository, IMemoryCache cache)
+        public RssController(ICosmosDbService repository, IMemoryCache cache)
         {
             _repo = repository;
             _cache = cache;
@@ -38,6 +39,8 @@ namespace RssFeeder.Mvc.Controllers
         [HttpGet, HttpHead, Route("{id}"), ResponseCache(Duration = 60 * 60), Produces("text/xml")]
         public async Task<IActionResult> Get(string id)
         {
+            Log.Information("Start request for feed id '{id}'", id);
+
             // FIXME: Hack until I can find a better way to handle this
             if (!_collectionList.Contains(id.ToLowerInvariant()))
             {
@@ -143,10 +146,9 @@ namespace RssFeeder.Mvc.Controllers
 
         private async Task<IEnumerable<RssFeedItem>> GetFeedItems(string id, int days)
         {
-            _repo.Init("drudge-report");
             Log.Information("Retrieving {days} days items for '{id}'", days, id);
 
-            var _items = await _repo.GetItemsAsync<RssFeedItem>(q => q.FeedId == id);
+            var _items = await _repo.GetItemsAsync(new Microsoft.Azure.Cosmos.QueryDefinition("SELECT * FROM c WHERE c.FeedId = @id").WithParameter("@id", id));
 
             return _items
                 .Where(q => q.DateAdded >= DateTime.Now.Date.AddDays(-days))

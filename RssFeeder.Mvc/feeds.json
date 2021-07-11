@@ -9,7 +9,7 @@
     "collectionname": "drudge-report",
     "authoremail": "drudge@drudgereport.com",
     "FeedlyUrl": "https://feedly.com/i/subscription/feed%2Fhttps%3A%2F%2Frssfeedermvc.azurewebsites.net%2Fapi%2Frss%2Fdrudge-report",
-    "RssUrl": "https://rssfeedermvc.azurewebsites.net/api/rss/drudge-report",
+    "RssUrl": "/api/rss/drudge-report",
     "filters": []
   },
   {
@@ -22,7 +22,7 @@
     "CollectionName": "bongino-report",
     "authoremail": "email@bonginoreport.com",
     "FeedlyUrl": "",
-    "RssUrl": "https://rssfeedermvc.azurewebsites.net/api/rss/bongino-report",
+    "RssUrl": "/api/rss/bongino-report",
     "Filters": []
   },
   {
@@ -35,7 +35,7 @@
     "CollectionName": "liberty-daily",
     "authoremail": "email@thelibertydaily.com",
     "FeedlyUrl": "",
-    "RssUrl": "https://rssfeedermvc.azurewebsites.net/api/rss/liberty-daily",
+    "RssUrl": "/api/rss/liberty-daily",
     "Filters": []
   },
   {
@@ -48,7 +48,7 @@
     "CollectionName": "citizen-freepress",
     "authoremail": "email@citizenfreepress.com",
     "FeedlyUrl": "",
-    "RssUrl": "https://rssfeedermvc.azurewebsites.net/api/rss/citizen-freepress",
+    "RssUrl": "/api/rss/citizen-freepress",
     "Filters": []
   },
   {
@@ -61,7 +61,7 @@
     "CollectionName": "rantingly",
     "authoremail": "email@rantingly.com",
     "FeedlyUrl": "",
-    "RssUrl": "https://rssfeedermvc.azurewebsites.net/api/rss/rantingly",
+    "RssUrl": "/api/rss/rantingly",
     "Filters": []
   },
   {
@@ -74,7 +74,7 @@
     "CollectionName": "gutsmack",
     "authoremail": "email@gutsmack.com",
     "FeedlyUrl": "",
-    "RssUrl": "https://rssfeedermvc.azurewebsites.net/api/rss/gutsmack",
+    "RssUrl": "/api/rss/gutsmack",
     "Filters": []
   },
   {
@@ -87,7 +87,7 @@
     "CollectionName": "populist-press",
     "authoremail": "email@populist.press",
     "FeedlyUrl": "",
-    "RssUrl": "https://rssfeedermvc.azurewebsites.net/api/rss/populist-press",
+    "RssUrl": "/api/rss/populist-press",
     "Filters": []
   }
 ]

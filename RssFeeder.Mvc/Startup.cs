@@ -10,6 +10,9 @@ using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
 using RssFeeder.Mvc.Models;
 using Serilog;
+using Microsoft.Azure.Cosmos;
+using RssFeeder.Mvc.Services;
+using System.Threading.Tasks;
 
 namespace RssFeeder.Mvc
 {
@@ -26,9 +29,6 @@ namespace RssFeeder.Mvc
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMicrosoftIdentityWebAppAuthentication(Configuration);
-            services.AddHealthChecks()
-                .AddCosmosDb(string.Format("AccountEndpoint={0};AccountKey={1};", Configuration["endpoint"], Configuration["authKey"]));
-
             services.AddControllersWithViews(options =>
             {
                 var policy = new AuthorizationPolicyBuilder()
@@ -40,14 +40,12 @@ namespace RssFeeder.Mvc
             services.AddRazorPages();
 
             // Repositories
-            services.AddScoped<IRepository<RssFeederRepository>, RssFeederRepository>();
+            services.AddSingleton<ICosmosDbService>(InitializeCosmosClientInstanceAsync(Configuration.GetSection("CosmosDb")).GetAwaiter().GetResult());
             services.AddSingleton<AppVersionInfo>();
             services.AddMemoryCache();
             services.AddApplicationInsightsTelemetry();
 
             services.AddMvc().AddXmlDataContractSerializerFormatters();
-
-            RepositoryInitializer.Initialize(Configuration);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -65,13 +63,13 @@ namespace RssFeeder.Mvc
             }
 
             var options = new RewriteOptions()
-                    .AddRedirect(@"(.*)/.env", "/")
-                    .AddRedirect(@"(.*)/wp-login\.php", "/")
-                    .AddRedirect(@"(.*)/xmlrpc\.php", "/")
-                    .AddRedirect(@"(.*)/wp-content(.*)", "/")
-                    .AddRedirect(@"(.*)/wp-admin(.*)", "/")
-                    .AddRedirect(@"(.*)/wp-includes(.*)", "/")
-                    .AddRedirect(@"(.*)/wlwmanifest\.xml", "/")
+                    .AddRedirect(@"^.env", "/")
+                    .AddRedirect(@"^wp-login\.php", "/")
+                    .AddRedirect(@"^xmlrpc\.php", "/")
+                    .AddRedirect(@"^wp-content(.*)", "/")
+                    .AddRedirect(@"^wp-admin(.*)", "/")
+                    .AddRedirect(@"^wp-includes(.*)", "/")
+                    .AddRedirect(@"^wlwmanifest\.xml", "/")
                     .AddRewrite(@"^content/rss/drudge\.xml", "api/rss/drudge-report",
                         skipRemainingRules: true);
             app.UseRewriter(options);
@@ -87,12 +85,29 @@ namespace RssFeeder.Mvc
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapHealthChecks("/health");
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
                 endpoints.MapRazorPages();
             });
+        }
+
+        /// <summary>
+        /// Creates a Cosmos DB database and a container with the specified partition key. 
+        /// </summary>
+        /// <returns></returns>
+        private static async Task<CosmosDbService> InitializeCosmosClientInstanceAsync(IConfigurationSection configurationSection)
+        {
+            string databaseName = configurationSection.GetSection("DatabaseName").Value;
+            string containerName = configurationSection.GetSection("ContainerName").Value;
+            string account = configurationSection.GetSection("Account").Value;
+            string key = configurationSection.GetSection("Key").Value;
+            CosmosClient client = new CosmosClient(account, key);
+            CosmosDbService cosmosDbService = new CosmosDbService(client, databaseName, containerName);
+            DatabaseResponse database = await client.CreateDatabaseIfNotExistsAsync(databaseName);
+            await database.Database.CreateContainerIfNotExistsAsync(containerName, "/HostName");
+
+            return cosmosDbService;
         }
     }
 }
