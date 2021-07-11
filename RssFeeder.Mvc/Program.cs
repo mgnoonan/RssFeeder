@@ -27,17 +27,13 @@ namespace RssFeeder.Mvc
                             telemetryConfiguration.InstrumentationKey = hostingContext.Configuration["ApplicationInsights:InstrumentationKey"];
 
                             loggerConfiguration
-                                .MinimumLevel.Information()
-                                .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-                                .MinimumLevel.Override("System", LogEventLevel.Warning)
+                                .ReadFrom.Configuration(hostingContext.Configuration)
 #if DEBUG
-                                .MinimumLevel.Verbose()
+                                .MinimumLevel.Debug()
                                 .WriteTo.Console()
                                 .WriteTo.Debug()
-                                .WriteTo.Seq("http://localhost:5341")       // docker run --rm -it -e ACCEPT_EULA=Y -p 5341:80 datalust/seq
+                                .WriteTo.Seq("http://localhost:5341")       // docker run --rm -it -e ACCEPT_EULA=Y -p 5341:80 datalust/seq:latest
 #endif
-                        .Enrich.FromLogContext()
-                                .Enrich.WithMachineName()
                                 .WriteTo.ApplicationInsights(telemetryConfiguration, TelemetryConverter.Traces);
                         })
                     .UseStartup<Startup>();
