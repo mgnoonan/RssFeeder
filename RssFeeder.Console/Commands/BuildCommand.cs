@@ -44,36 +44,26 @@ namespace RssFeeder.Console.Commands
                 var utils = _container.Resolve<IUtils>();
                 var webUtils = _container.Resolve<IWebUtils>();
 
-                if (!string.IsNullOrWhiteSpace(input.ConfigFile))
+                if (string.IsNullOrWhiteSpace(input.ConfigFile))
                 {
-                    // Get the directory of the current executable, all config 
-                    // files should be in this path
-                    string configFile = Path.Combine(utils.GetAssemblyDirectory(), input.ConfigFile);
-                    Log.Logger.Information("Reading from config file: {configFile}", configFile);
-
-                    // Read the options in JSON format
-                    using StreamReader sr = new StreamReader(configFile);
-                    string json = sr.ReadToEnd();
-                    Log.Logger.Information("Options: {@options}", json);
-
-                    // Deserialize into our options class
-                    feedList = JsonConvert.DeserializeObject<List<RssFeed>>(json);
+                    input.ConfigFile = "feed-drudge.json";
                 }
-                else
-                {
-                    // Get the directory of the current executable, all config 
-                    // files should be in this path
-                    string configFile = Path.Combine(utils.GetAssemblyDirectory(), "feed-drudge.json");
-                    Log.Logger.Information("Reading from config file: {configFile}", configFile);
 
-                    // Read the options in JSON format
-                    using StreamReader sr = new StreamReader(configFile);
-                    string json = sr.ReadToEnd();
-                    Log.Logger.Information("Options: {@options}", json);
+                // Initialze the bootstrap driver
+                bootstrap.Initialize();
 
-                    // Deserialize into our options class
-                    feedList = JsonConvert.DeserializeObject<List<RssFeed>>(json);
-                }
+                // Get the directory of the current executable, all config 
+                // files should be in this path
+                string configFile = Path.Combine(utils.GetAssemblyDirectory(), input.ConfigFile);
+                Log.Logger.Information("Reading from config file: {configFile}", configFile);
+
+                // Read the options in JSON format
+                using StreamReader sr = new StreamReader(configFile);
+                string json = sr.ReadToEnd();
+                Log.Logger.Information("Options: {@options}", json);
+
+                // Deserialize into our options class
+                feedList = JsonConvert.DeserializeObject<List<RssFeed>>(json);
 
                 foreach (var feed in feedList)
                 {

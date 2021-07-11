@@ -75,8 +75,15 @@ $item.ArticleText$
             webUtils = _webUtils;
             utils = _utils;
             definitions = _definitions;
+        }
 
-            repository.EnsureDatabaseExists(_collectionName, true);
+        public void Initialize()
+        {
+            Log.Information("Bootstrap initializing");
+            Log.Information("Crawler exclusion list: {@exclusions}", Config.Exclusions);
+
+            if (repository != null)
+                repository.EnsureDatabaseExists(_collectionName, true);
         }
 
         public void Start(IContainer container, MiniProfiler profiler, RssFeed feed)
