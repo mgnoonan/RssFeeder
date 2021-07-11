@@ -52,7 +52,7 @@ namespace RssFeeder.Console
             // Load configuration
             var configBuilder = new ConfigurationBuilder()
                .SetBasePath(Directory.GetCurrentDirectory())
-               .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+               .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                .AddUserSecrets<Program>()
                .AddEnvironmentVariables();
             IConfigurationRoot configuration = configBuilder.Build();
@@ -62,7 +62,8 @@ namespace RssFeeder.Console
             log.Information("Loaded CosmosDB from config. Endpoint='{endpointUri}', authKey='{authKeyPartial}*****'", config.endpoint, config.authKey.Substring(0, 5));
 
             var crawlerConfig = new CrawlerConfig();
-            ConfigurationBinder.Bind(configuration.GetSection("CrawlerConfig"), crawlerConfig);
+            configuration.GetSection("CrawlerConfig").Bind(crawlerConfig);
+            Log.Information("Crawler config: {@config}", crawlerConfig);
 
             // Setup dependency injection
             var builder = new ContainerBuilder();
