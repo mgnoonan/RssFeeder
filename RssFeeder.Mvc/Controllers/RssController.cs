@@ -39,19 +39,7 @@ namespace RssFeeder.Mvc.Controllers
         [HttpGet, HttpHead, Route("{id}"), ResponseCache(Duration = 60 * 60), Produces("text/xml")]
         public async Task<IActionResult> Get(string id)
         {
-            Log.Information("Start request for feed id '{id}'", id);
-
-            // FIXME: Hack until I can find a better way to handle this
-            if (!_collectionList.Contains(id.ToLowerInvariant()))
-            {
-                return NotFound();
-            }
-
-            // Hack for Eagle Slant, which appears to be gone forever
-            if (id.ToLowerInvariant() == "eagle-slant")
-            {
-                return StatusCode(410);
-            }
+            Log.Information("Start request for feed id {id}", id);
 
             // Create document with incoming parameter values
             var agent = new Agent
@@ -64,12 +52,27 @@ namespace RssFeeder.Mvc.Controllers
 
             Log.Information("Detected user info: {@UserAgent}", agent);
 
+            // FIXME: Hack until I can find a better way to handle this
+            if (!_collectionList.Contains(id.ToLowerInvariant()))
+            {
+                Log.Warning("Invalid feed id {id}", id);
+                return NotFound();
+            }
+
+            // Hack for Eagle Slant, which appears to be gone forever
+            if (id.ToLowerInvariant() == "eagle-slant")
+            {
+                Log.Information("Feed id {id} no longer available", id);
+                return StatusCode(410);
+            }
+
             try
             {
                 string s = await GetSyndicationItems(id);
 
                 if (Request.Method.Equals("HEAD"))
                 {
+                    Log.Information("HEAD request found {bytes} bytes", s.Length);
                     Response.ContentLength = s.Length;
                     return Ok();
                 }
@@ -95,9 +98,11 @@ namespace RssFeeder.Mvc.Controllers
             // See if we already have the items in the cache
             if (_cache.TryGetValue($"{id}_items", out string s))
             {
+                Log.Information("CACHE HIT: Returning {bytes} bytes", s.Length);
                 return s;
             }
 
+            Log.Information("CACHE MISS: Loading feed items for {id}", id);
             var sb = new StringBuilder();
             var stringWriter = new StringWriterWithEncoding(sb, Encoding.UTF8);
             int days = (id.ToLowerInvariant() == "drudge-report" ? 3 : 1);
@@ -135,6 +140,7 @@ namespace RssFeeder.Mvc.Controllers
             // Add the items to the cache before returning
             s = stringWriter.ToString();
             _cache.Set<string>($"{id}_items", s, TimeSpan.FromMinutes(60));
+            Log.Information("CACHE SET: Storing feed items for {id} for {minutes} minutes", id, 60);
 
             return s;
         }
