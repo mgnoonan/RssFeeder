@@ -13,6 +13,7 @@ using Serilog;
 using Microsoft.Azure.Cosmos;
 using RssFeeder.Mvc.Services;
 using System.Threading.Tasks;
+using MediatR;
 
 namespace RssFeeder.Mvc
 {
@@ -42,6 +43,7 @@ namespace RssFeeder.Mvc
             // Repositories
             services.AddSingleton<ICosmosDbService>(InitializeCosmosClientInstanceAsync(Configuration.GetSection("CosmosDb")).GetAwaiter().GetResult());
             services.AddSingleton<AppVersionInfo>();
+            services.AddMediatR(typeof(Startup));
             services.AddMemoryCache();
             services.AddApplicationInsightsTelemetry();
 
