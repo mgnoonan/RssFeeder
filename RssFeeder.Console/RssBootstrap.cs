@@ -131,13 +131,6 @@ $item.ArticleText$
                         Log.Information("UrlHash '{urlHash}' not found in collection '{collectionName}'", item.UrlHash, feed.CollectionName);
                         articleCount++;
 
-                        // Check for crawler exclusions, we are unable to download content from these sites
-                        if (Config.Exclusions.Contains(item.HostName))
-                        {
-                            Log.Information("Bypassing content crawl for host '{hostName}'", item.HostName);
-                            continue;
-                        }
-
                         try
                         {
                             // Construct unique file name
@@ -153,12 +146,18 @@ $item.ArticleText$
                             string extension = GetFileExtension(new Uri(item.Url));
                             string filename = Path.Combine(workingFolder, $"{item.UrlHash}_{friendlyHostname}{extension}");
 
-                            // Download the Url contents, first using HttpClient but if that fails use Selenium
-                            item.FileName = webUtils.SaveUrlToDisk(item.Url, item.UrlHash, filename, !filename.Contains("_apnews_com") && !filename.Contains("_rumble_com"));
-                            if (string.IsNullOrEmpty(item.FileName) || filename.Contains("ajc_com") || filename.Contains("rumble_com"))
+                            // Check for crawler exclusions, downloading content is blocked from these sites
+                            Uri uri = new Uri(item.Url);
+                            string hostName = uri.GetComponents(UriComponents.Host, UriFormat.Unescaped).ToLower();
+                            if (!Config.Exclusions.Contains(hostName))
                             {
-                                // Must have had an error on loading the url so attempt with Selenium
-                                item.FileName = webUtils.WebDriverUrlToDisk(item.Url, item.UrlHash, filename);
+                                // Download the Url contents, first using HttpClient but if that fails use Selenium
+                                item.FileName = webUtils.SaveUrlToDisk(item.Url, item.UrlHash, filename, !filename.Contains("_apnews_com") && !filename.Contains("_rumble_com"));
+                                if (string.IsNullOrEmpty(item.FileName) || filename.Contains("ajc_com") || filename.Contains("rumble_com"))
+                                {
+                                    // Must have had an error on loading the url so attempt with Selenium
+                                    item.FileName = webUtils.WebDriverUrlToDisk(item.Url, item.UrlHash, filename);
+                                }
                             }
 
                             // Parse the saved file as dictated by the site definitions
@@ -240,13 +239,13 @@ $item.ArticleText$
 
         private void ParseArticleMetaTags(RssFeedItem item, RssFeed feed, IArticleDefinitionFactory definitions)
         {
-            Log.Information("Parsing meta tags from file '{fileName}'", item.FileName);
-
             Uri uri = new Uri(item.Url);
             string hostName = uri.GetComponents(UriComponents.Host, UriFormat.Unescaped).ToLower();
 
             if (File.Exists(item.FileName))
             {
+                Log.Information("Parsing meta tags from file '{fileName}'", item.FileName);
+
                 if (item.FileName.EndsWith(".png") || item.FileName.EndsWith(".jpg") || item.FileName.EndsWith(".gif"))
                 {
                     SetGraphicMetaData(item, hostName);
@@ -279,6 +278,8 @@ $item.ArticleText$
             }
             else
             {
+                Log.Information("No file to parse, applying basic metadata values for '{hostname}'", hostName);
+
                 // Article failed to download, display minimal basic meta data
                 SetBasicArticleMetaData(item, hostName);
                 item.Description = ApplyTemplateToDescription(item, feed, BasicTemplate);
