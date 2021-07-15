@@ -93,8 +93,8 @@ namespace RssFeeder.Console.FeedBuilders
                     var item = CreateNodeLinks(filters, node, "column 1", count++);
 
                     // Unfortunately the reference site links are included in the column links, so the
-                    // email cgi link signals the end of the article list in column 1
-                    if (item.Url.Contains("cdn-cgi"))
+                    // AMERICAN THINKER link signals the end of the article list in column 1
+                    if (item.Url.Contains("americanthinker.com"))
                         break;
 
                     if (item != null && !item.Url.Contains("#the-comments") && !item.Url.Contains("#comment-"))
