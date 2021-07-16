@@ -72,7 +72,7 @@ namespace RssFeeder.Mvc
                     .AddRedirect(@"^wp-admin(.*)", "/")
                     .AddRedirect(@"(.*)/wp-admin(.*)", "/")
                     .AddRedirect(@"^wp-includes(.*)", "/")
-                    .AddRedirect(@"^wlwmanifest\.xml", "/")
+                    .AddRedirect(@"(.*)/wlwmanifest\.xml", "/")
                     .AddRewrite(@"^content/rss/drudge\.xml", "api/rss/drudge-report",
                         skipRemainingRules: true);
             app.UseRewriter(options);
