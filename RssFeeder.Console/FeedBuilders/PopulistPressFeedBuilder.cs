@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using AngleSharp.Dom;
 using AngleSharp.Html.Parser;
+using HtmlAgilityPack;
 using RssFeeder.Console.Utility;
 using RssFeeder.Models;
 using Serilog;
@@ -10,8 +12,21 @@ namespace RssFeeder.Console.FeedBuilders
 {
     class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
     {
+        private readonly IWebUtils _webUtilities;
+        private readonly IUtils _utilities;
+        private readonly List<string> _selectors;
+
         public PopulistPressFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities) : base(log, webUtilities, utilities)
-        { }
+        {
+            _webUtilities = webUtilities;
+            _utilities = utilities;
+
+            _selectors = new List<string>
+            {
+                "#outbound_links > a",
+                "div.entry-content > p > a"
+            };
+        }
 
         public List<RssFeedItem> ParseRssFeedItems(RssFeed feed, string html)
         {
@@ -56,6 +71,7 @@ namespace RssFeeder.Console.FeedBuilders
                     var item = CreateNodeLinks(filters, node, "above the fold", count++);
                     if (item != null)
                     {
+                        TryParseEmbeddedUrl(item, _selectors);
                         log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
                         list.Add(item);
                     }
@@ -75,6 +91,7 @@ namespace RssFeeder.Console.FeedBuilders
                         var item = CreateNodeLinks(filters, node, "main headlines", count++);
                         if (item != null && !item.Url.Contains("#the-comments") && !item.Url.Contains("#comment-"))
                         {
+                            TryParseEmbeddedUrl(item, _selectors);
                             log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
                             list.Add(item);
                         }
@@ -99,6 +116,7 @@ namespace RssFeeder.Console.FeedBuilders
 
                     if (item != null && !item.Url.Contains("#the-comments") && !item.Url.Contains("#comment-"))
                     {
+                        TryParseEmbeddedUrl(item, _selectors);
                         log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
                         list.Add(item);
                     }
@@ -128,6 +146,7 @@ namespace RssFeeder.Console.FeedBuilders
 
                     if (item != null && !item.Url.Contains("#the-comments") && !item.Url.Contains("#comment-"))
                     {
+                        TryParseEmbeddedUrl(item, _selectors);
                         log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
                         list.Add(item);
                     }
@@ -151,6 +170,7 @@ namespace RssFeeder.Console.FeedBuilders
 
                     if (item != null && !item.Url.Contains("#the-comments") && !item.Url.Contains("#comment-"))
                     {
+                        TryParseEmbeddedUrl(item, _selectors);
                         log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
                         list.Add(item);
                     }
@@ -158,6 +178,45 @@ namespace RssFeeder.Console.FeedBuilders
             }
 
             return list;
+        }
+
+        private void TryParseEmbeddedUrl(RssFeedItem item, List<string> selectors)
+        {
+            foreach (string selector in selectors)
+            {
+                IElement link = TryParseEmbeddedUrl(item.Url, selector);
+
+                if (link == null)
+                    continue;
+                if (!link.Text().Contains("Click here"))
+                    continue;
+
+                var attr = link.Attributes["href"];
+                string url = attr.Value;
+
+                Log.Information("Embedded Url found '{url}'", url);
+                item.UrlHash = _utilities.CreateMD5Hash(url);
+                item.Url = url;
+                break;
+            }
+        }
+
+        private IElement TryParseEmbeddedUrl(string url, string selector)
+        {
+            Log.Information("TryParseEmbeddedUrl '{selector}' from '{url}'", selector, url);
+            var content = _webUtilities.DownloadStringWithCompression(url);
+
+            try
+            {
+                var parser = new HtmlParser();
+                var document = parser.ParseDocument(content);
+                return document.QuerySelector(selector);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error parsing embedded Url");
+                return null;
+            }
         }
     }
 }
