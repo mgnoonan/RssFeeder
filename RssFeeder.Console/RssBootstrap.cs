@@ -64,6 +64,7 @@ $item.ArticleText$
 " + MetaDataTemplate;
 
         private const string BasicTemplate = @"<h3>$item.Title$</h3>
+<p><a href=""$item.Url$"">Click here to read the full article</a></p>
 " + MetaDataTemplate;
 
         public CrawlerConfig Config { get; set; }
@@ -257,7 +258,7 @@ $item.ArticleText$
                     doc.Load(item.FileName);
 
                     // Meta tags provide extended data about the item, display as much as possible
-                    if (hostName == "www.youtube.com" || hostName == "youtu.be" || hostName == "rumble.com")
+                    if (Config.VideoHosts.Contains(hostName))
                     {
                         SetVideoMetaData(item, doc, hostName);
                         if (item.VideoHeight > 0)
