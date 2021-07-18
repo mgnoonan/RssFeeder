@@ -13,6 +13,8 @@ namespace RssFeeder.Console.Commands
     {
         private readonly IContainer _container;
 
+        public CrawlerConfig CrawlerConfig { get; set; }
+
         public TestCommand(IContainer container)
         {
             _container = container;
@@ -22,19 +24,8 @@ namespace RssFeeder.Console.Commands
         {
             var webUtils = _container.Resolve<IWebUtils>();
             var parser = _container.ResolveNamed<IArticleParser>("htmltag-parser");
-            var url = "https://rumble.com/vifqub-state-trooper-flips-pregnant-womans-car-over-traffic-stop-this-is-where-you.html";
-            var fileName = "test.html";
 
-            webUtils.WebDriverUrlToDisk(
-                url,
-                "",
-                fileName);
-
-            var doc = new HtmlDocument();
-            doc.Load(fileName);
-            var result = parser.GetArticleBySelector(doc.Text, "#videoPlayer", "video");
-            Log.Information("Article parsed: '{result}'", result);
-
+            Log.Information("Crawler config: @CrawlerConfig", CrawlerConfig);
             Log.CloseAndFlush();
 
             // Just telling the OS that the command

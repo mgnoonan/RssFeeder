@@ -97,7 +97,7 @@ namespace RssFeeder.Console
             builder.RegisterType<WebUtils>().As<IWebUtils>().SingleInstance();
             builder.RegisterType<Utils>().As<IUtils>().SingleInstance();
             builder.RegisterType<ArticleDefinitionFactory>().As<IArticleDefinitionFactory>().SingleInstance();
-            builder.RegisterType<TestCommand>().SingleInstance();
+            builder.RegisterType<TestCommand>().SingleInstance().WithProperty("Config", crawlerConfig);
             builder.RegisterType<TestInput>().SingleInstance();
             builder.RegisterType<BuildCommand>().SingleInstance();
             builder.RegisterType<BuildInput>().SingleInstance();
