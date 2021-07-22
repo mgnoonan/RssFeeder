@@ -66,13 +66,8 @@ namespace RssFeeder.Mvc
 
             var options = new RewriteOptions()
                     .AddRedirect(@"^.env", "/")
-                    .AddRedirect(@"^wp-login\.php", "/")
-                    .AddRedirect(@"^xmlrpc\.php", "/")
-                    .AddRedirect(@"^wp-content(.*)", "/")
-                    .AddRedirect(@"^wp-admin(.*)", "/")
-                    .AddRedirect(@"(.*)/wp-admin(.*)", "/")
-                    .AddRedirect(@"^wp-includes(.*)", "/")
-                    .AddRedirect(@"(.*)/wlwmanifest\.xml", "/")
+                    .Add(RewriteRules.RedirectWordpressRequests)
+                    .Add(RewriteRules.RedirectPhpFileRequests)
                     .AddRewrite(@"^content/rss/drudge\.xml", "api/rss/drudge-report",
                         skipRemainingRules: true);
             app.UseRewriter(options);
