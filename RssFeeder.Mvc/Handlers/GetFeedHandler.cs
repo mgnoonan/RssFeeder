@@ -59,7 +59,7 @@ namespace RssFeeder.Mvc.Handlers
             Log.Information("CACHE MISS: Loading feed items for {id}", id);
             var sb = new StringBuilder();
             var stringWriter = new StringWriterWithEncoding(sb, Encoding.UTF8);
-            int days = (id.ToLowerInvariant() == "drudge-report" ? 3 : 1);
+            int days = 5; // (id.ToLowerInvariant() == "drudge-report" ? 3 : 1);
 
             using (XmlWriter xmlWriter = XmlWriter.Create(stringWriter, new XmlWriterSettings() { Async = true, Indent = true, Encoding = Encoding.UTF8 }))
             {
