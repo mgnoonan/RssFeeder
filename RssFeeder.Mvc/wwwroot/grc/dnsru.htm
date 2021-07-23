@@ -1,0 +1,92 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>DNSRU Test Results</title>
+</head>
+
+<body>
+
+<p><b><font face="Tahoma"><a name="Top">DNSRU </a></font></b><a name="Top"><b>
+<font face="Tahoma">Issue Report</font></b></a>
+<hr>
+<font size="1" face="Tahoma">Development Phase: Alpha<br>
+Build Tested: 4.05a<br>
+</font><a href="http://grc.com/miscfiles/dnsru.exe">
+      <font size="1" face="Tahoma">http://grc.com/miscfiles/dnsru.exe</font></a><p>&nbsp;</p>
+<p><u><b><font face="Tahoma" color="#000080">Comments</font></b></u></p>
+<p><font face="Tahoma" size="2">Sorry to change configs on you mid-stream, but I 
+was actually trying to pin down a problem with BIND-PE on my laptop. I think I 
+have the steps required to repeat the issue, and it looks like a redraw problem. 
+Hopefully this one is much easier to track down. :-)</font></p>
+<p>&nbsp;</p>
+<p><u><b><font face="Tahoma" color="#000080">Issue</font></b></u></p>
+<p><font face="Tahoma" size="2">Configuration: <b>Laptop</b> (see
+<a href="#Configuration">Configuration</a> section)</font></p>
+<p><font face="Tahoma" size="2">After completing a Benchmark test, I dragged the 
+Task Manager window over top of DNSRU. The tabs did not appear to redraw 
+themselves, as seen in the examples below.</font></p>
+<p><img border="0" src="images/dnsru405a.JPG" width="600" height="472"></p>
+<p><font face="Tahoma" size="2">and</font></p>
+<p><img border="0" src="images/dnsru405a2.JPG" width="600" height="472"></p>
+<p><font face="Tahoma" size="2"><b>To repeat the  issue:</b></font></p>
+<ol>
+  <li><font face="Tahoma" size="2">On the Benchmark tab, click on Test 
+  Performance button.</font></li>
+  <li><font face="Tahoma" size="2">Allow the test to complete on its own. <br>
+  <b><font color="#800000">Additional info: </font><br>
+  </b>&nbsp;&nbsp;&nbsp; Currently, my BIND-PE install is not answering DNS 
+  queries (hence the zero time for execution). This could perhaps be replicated by stopping the service, but I am 
+  unable to verify at this time. Note that it is the only server being tested 
+  above (127.0.0.1).</font></li>
+  <li><font face="Tahoma" size="2">Drag Windows Task Manager across window.</font></li>
+</ol>
+<p>&nbsp;</p>
+<p><b><font face="Tahoma" size="2"><a name="Configuration">Workstation Configuration info:</a></font></b></p>
+<ul>
+  <li><font face="Tahoma" size="2">Dell Dimension XPST500 (Pentium III 500 MHz)</font></li>
+  <li><font face="Tahoma" size="2">PhoenixBIOS 4.0 Release 6.0</font></li>
+  <li><font face="Tahoma" size="2">640MB RAM</font></li>
+  <li><font face="Tahoma" size="2">Windows 2000 Server (5.0.2195 Service Pack 3 
+  Build 2195)</font></li>
+  <li><font face="Tahoma" size="2">BIND-PE (primary DNS)</font></li>
+  <li><font face="Tahoma" size="2">RIVA TNT AGP 1.0 adapter, 1280x1024, 16bpp</font></li>
+  <li><font face="Tahoma" size="2">riched20.dll, version 5.30.23.1205, timestamp 
+  05/04/2001 1:05pm</font></li>
+  <li><font face="Tahoma" size="2">riched32.dll, version 5.0.2134.1, timestamp 
+  12/07/1999 8:00am</font></li>
+</ul>
+<p><font face="Tahoma" size="2"><b>Laptop Configuration info:</b></font></p>
+<ul>
+  <li><font face="Tahoma" size="2">Dell Inspiron 8200 (Pentium 4 1.7 GHz)</font></li>
+  <li><font face="Tahoma" size="2">BIOS Dell Computer Corporation A02, 4/4/2002</font></li>
+  <li><font face="Tahoma" size="2">512 MB RAM</font></li>
+  <li><font face="Tahoma" size="2">Windows XP Professional (5.1.2600 Service 
+  Pack 1, v.1097 Build 2600)</font></li>
+  <li><font face="Tahoma" size="2">BIND-PE (primary DNS)</font></li>
+  <li><font face="Tahoma" size="2">NVIDIA GeForce4 440, 1600x1200, 32bpp</font></li>
+</ul>
+<p><b><font face="Tahoma" size="2">Additional configuration info:</font></b></p>
+<ul>
+  <li><font face="Tahoma" size="2">Active Directory (Win2k, secondary DNS)</font></li>
+  <li><font face="Tahoma" size="2">LinkSys Cable/DSL router</font></li>
+  <li><font face="Tahoma" size="2">SBC Ameritech DSL (768 up, 384 down)</font></li>
+  <li><font face="Tahoma" size="2">206.141.195. 13 (third DNS server)</font></li>
+  <li><font face="Tahoma" size="2">206.141.192. 60 (fourth DNS server)</font></li>
+</ul>
+<p><b><font face="Tahoma" size="4" color="#000080">Triax<br><hr>
+</font></b>
+<font face="Tahoma" size="1"><b>Note:</b> This page is for illustration purposes 
+only. I have no affiliation with Gibson Research Corp., and any displayed&nbsp; 
+screenshots are copyrighted by GRC. <br>
+This page will disappear forever once testing is 
+complete and the DNSRU utility is released.</font></p>
+<p><font face="Tahoma" size="1">Last updated:
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %b %Y %I:%M:%S %p" startspan -->13 May 2003 05:23:08 PM<!--webbot bot="Timestamp" i-checksum="36754" endspan --></font></p>
+
+</body>
+
+</html>
