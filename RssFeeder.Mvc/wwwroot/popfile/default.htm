@@ -1,0 +1,237 @@
+<html>
+
+<head>
+    <meta http-equiv="Content-Language" content="en-us">
+    <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+    <meta name="ProgId" content="FrontPage.Editor.Document">
+    <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+    <title>POPFile Test Results</title>
+</head>
+
+<body>
+
+    <p>
+        <font face="sans-serif">
+            <a href="https://getpopfile.org/">
+                <img src="popfile150.gif" width="150" height="93" border="0">
+            </a><br>
+            <br>
+        </font><a name="Top"><b><font face="Tahoma">POPFile Email Classifier</font></b></a>
+        <hr>
+        <font size="1" face="Tahoma">
+            Development Phase: Beta<br>
+            Build Tested: 0.18.1<br>
+            <a href="http://popfile.sourceforge.net/">http://popfile.sourceforge.net</a>
+        </font>
+    <p>&nbsp;</p>
+    <p><u><b><font face="Tahoma" color="#000080">Comments</font></b></u></p>
+    <p>
+        <font face="Tahoma" size="2">
+            [<a href="http://sourceforge.net/forum/forum.php?thread_id=846154&forum_id=230652">
+                Posted
+                to SourceForge newsgroups on 4/9/2003
+            </a>]
+        </font>
+    </p>
+    <p>
+        <font face="Tahoma" size="2">
+            OK, this has happened often enough that I'm
+            going to report it. I will have to document the issue completely when I have the
+            time, but meanwhile, I wanted to see if anyone else has a similar problem.<br>
+            <br>
+            I should say that my setup is probably in the minority of POPFile users, so let
+            me start with some background. I have two main PCs that run POPFile
+            (independently of each other), but which check the same accounts. One is my
+            laptop, which I travel with, and the other is my workstation at home, where I
+            permanently retain all my emails (configurations of each can be seen
+            <a href="#Configuration">below</a>). The laptop is set to retrieve emails, but
+            not delete them from the server. The workstation is set to retrieve the emails
+            and delete them. Also note that my primary email account is an MSN account,
+            using Secure Password Authentication (<b>NOT</b> the web email version, I still
+            use POP3).<br>
+        </font><font face="Tahoma" size="2">
+            <br>
+            Now for the problem: I travel all week with my laptop, checking my MSN email
+            account normally using Outlook Express, and downloading the messages (but does
+            not delete them from the server). POPFile classifies them all, so no problems
+            there.<br>
+            <br>
+            At the end of the week, I come home and start up Outlook 2002 to download my
+            messages for permanent storage and deletion from the MSN server. Since I've had
+            this account for about 10 years now, it is easily my most spammed account
+            (though PF has helped to reduce the number
+        </font>
+        <font size="2" face="Wingdings">J</font><font face="Tahoma" size="2">
+            ). So
+            having roughly 200-300 emails to download, I let Outlook run while I go off to
+            do other stuff.<br>
+            <br>
+            The problem is this: Outlook locks up during download. At first I thought it was
+            related to Outlook's multi-threaded approach to downloading emails, but now I am
+            not sure. If OL sits there long enough, it will try to download from the same
+            account *again*, but with no joy. My only recourse is to shutdown PF, which it
+            does so reluctantly, and change my POP3 server from 127.0.0.1 back to
+            pop3.email.msn.com. Only then am I able to download all my messages (but they
+            are unclassified, so I get the full spam treatment). <br>
+            <br>
+            Steps taken: My first step was to turn on logging in PF to &quot;Screen and File&quot;. I
+            noticed the following behavior. On a &quot;normal&quot; email check (which I still get,
+            once my account is cleared of the backlog of emails), I can watch the protocol
+            in action in the command window, and everything looks fine. During a &quot;backlog&quot;
+            email check, I can see where the protocol (or PF) seems to breakdown. The
+            behavior I notice is this, PF will display the contents of an email message in
+            the command window right before the lockup. During the normal check, no email
+            text is ever displayed, only the POP3 communications. But the backlog check
+            displays at least one email source in the command window, which makes me believe
+            there may be a bug.
+        </font>
+    </p>
+    <p>&nbsp;</p>
+    <p><u><b><font face="Tahoma" color="#000080">Issues</font></b></u></p>
+    <p>
+        <font face="Tahoma" size="2">
+            Configuration: <b>Workstation</b> (see
+            <a href="#Configuration">Configuration</a> section)
+        </font>
+    </p>
+    <p>
+        <font face="Tahoma" size="2">
+            POPFile locks Outlook and my MSN mailbox while retrieving a
+            large number of emails. Here is an excerpt from the log at what I believe is the
+            point of failure. Of note is the double entry of the RETR command for email #39
+            (highlighted below). This is the only discrepancy I can see in the log, and the
+            it occurs in this manner before most (but not all) failures. The next result is
+            the contents of email #39 are written to the log (unlike the previous 38
+            retrieves). A full copy of the log is available by request to any developers who
+            need more info.
+        </font>
+    </p>
+    <blockquote>
+        <p>
+            <font face="Lucida Console" size="1">
+                Wed Apr 9 09:56:36 2003 (-1928):
+                Command: --RETR 35--<br>
+                Wed Apr 9 09:56:36 2003 (-1928): RETR 35<br>
+                Wed Apr 9 09:56:36 2003 (-1928): +OK 3842 bytes<br>
+                Wed Apr 9 09:56:36 2003 (632): Incrementing spam for -1928<br>
+                Wed Apr 9 09:56:36 2003 (-1928): Command: --RETR 36--<br>
+                Wed Apr 9 09:56:36 2003 (-1928): RETR 36<br>
+                Wed Apr 9 09:56:36 2003 (-1928): +OK 1340 bytes<br>
+                Wed Apr 9 09:56:36 2003 (632): Incrementing spam for -1928<br>
+                Wed Apr 9 09:56:37 2003 (-1928): Command: --RETR 37--<br>
+                Wed Apr 9 09:56:37 2003 (-1928): RETR 37<br>
+                Wed Apr 9 09:56:37 2003 (-1928): +OK 23960 bytes<br>
+                Wed Apr 9 09:56:38 2003 (632): Incrementing nospam for -1928<br>
+                Wed Apr 9 09:56:42 2003 (-1928): Command: --RETR 38--<br>
+                Wed Apr 9 09:56:42 2003 (-1928): RETR 38<br>
+                Wed Apr 9 09:56:42 2003 (-1928): +OK 5491 bytes<br>
+                Wed Apr 9 09:56:42 2003 (632): Incrementing spam for -1928<br>
+                Wed Apr 9 09:56:42 2003 (-1928): Command: --RETR 39--<br>
+                Wed Apr 9 09:56:42 2003 (-1928): <span style="background-color: #FFFF00">RETR 39</span><br>
+                Wed Apr 9 09:56:43 2003 (-1928): <br>
+                Wed Apr 9 09:56:43 2003 (-1928): <span style="background-color: #FFFF00">RETR 39</span><br>
+                Wed Apr 9 09:56:43 2003 (-1928): .<br>
+                Wed Apr 9 09:56:43 2003 (-1928): +OK 2896 bytes<br>
+                X-Message-Info: UZmYcfFpTCewzfqvyl1d15R59mlxBfYY<br>
+                Received: from 65.54.252.99 ([211.138.91.21]) by mc5-f12.law1.hotmail.com with
+                Microsoft SMTPSVC(5.0.2195.5600);<br>
+                Tue, 8 Apr 2003 05:43:47 -0700<br>
+                Received: from ([185.21.43.191]) by 65.54.252.99 id &lt;3002935-31384&gt; for &lt;munged&gt;;
+                Tue, 08 Apr 2003 19:40:34 +0600<br>
+                Message-ID: &lt;yiu24617h$w5x-n5@3ccoi&gt;<br>
+                From: &quot;Julianne Chu&quot; &lt;s1o76q2l0@wcb.ab.ca&gt;<br>
+                To: &lt;munged&gt;<br>
+                Subject: re: &lt;munged&gt;<br>
+                Date: Tue, 08 Apr 03 19:40:34 GMT<br>
+                X-Priority: 3<br>
+                X-MSMail-Priority: Normal<br>
+                X-Mailer: Microsoft Outlook Express 5.00.2615.200<br>
+                MIME-Version: 1.0<br>
+                Content-Type: multipart/alternative;<br>
+                boundary=&quot;----=_NextPart_6_58C_FC0B.B8.D&quot;<br>
+                Return-Path: s1o76q2l0@wcb.ab.ca<br>
+                X-OriginalArrivalTime: 08 Apr 2003 12:43:49.0538 (UTC) FILETIME=[80C58820:01C2FDCC]<br>
+                <br>
+                This is a multi-part message in MIME format.<br>
+                <br>
+                ------=_NextPart_6_58C_FC0B.B8.D<br>
+                Content-Type: text/html<br>
+                Content-Transfer-Encoding: quoted-printable<br>
+                <br>
+                &lt;html&gt;&lt;!-- X --&gt;<br>
+                &lt;!-- H --&gt;<br>
+                &lt;!-- T --&gt;<br>
+                &lt;!-- W --&gt;<br>
+                &lt;head&gt;<br>
+                &lt;title&gt;M&lt;!-- collision --&gt;e&lt;!-- D --&gt;ds O&lt;!-- qigv qdoq z z av o dajo=<br>
+                --&gt;nli&lt;!-- U --&gt;ne&lt;/title&gt;<br>
+                &lt;meta name=3D&quot;description&quot; content=3D&quot;&quot;&gt;<br>
+                &lt;meta name=3D&quot;keywords&quot; content=3D&quot;&quot;&gt;<br>
+                &lt;/head&gt;<br>
+                &nbsp;
+            </font>
+        </p>
+    </blockquote>
+    <p><b><font face="Tahoma" size="2"><a name="Configuration">Workstation Configuration info:</a></font></b></p>
+    <ul>
+        <li><font face="Tahoma" size="2">Dell Dimension XPST500 (Pentium III 500 MHz)</font></li>
+        <li><font face="Tahoma" size="2">PhoenixBIOS 4.0 Release 6.0</font></li>
+        <li><font face="Tahoma" size="2">640MB RAM</font></li>
+        <li>
+            <font face="Tahoma" size="2">
+                Windows 2000 Server (5.0.2195 Service Pack 3
+                Build 2195)
+            </font>
+        </li>
+        <li><font face="Tahoma" size="2">RIVA TNT AGP 1.0 adapter, 1280x1024, 16bpp</font></li>
+        <li><font face="Tahoma" size="2">Internet Explorer 6.0.2600.0000</font></li>
+        <li><font face="Tahoma" size="2">Outlook 2002/XP to check email</font></li>
+    </ul>
+    <p><font face="Tahoma" size="2"><b>Laptop Configuration info:</b></font></p>
+    <ul>
+        <li><font face="Tahoma" size="2">Dell Inspiron 8200 (Pentium 4 1.7 GHz)</font></li>
+        <li><font face="Tahoma" size="2">BIOS Dell Computer Corporation A02, 4/4/2002</font></li>
+        <li><font face="Tahoma" size="2">512 MB RAM</font></li>
+        <li>
+            <font face="Tahoma" size="2">
+                Windows XP Professional (5.1.2600 Service
+                Pack 1, v.1097 Build 2600)
+            </font>
+        </li>
+        <li><font face="Tahoma" size="2">NVIDIA GeForce4 440, 1600x1200, 32bpp</font></li>
+        <li><font face="Tahoma" size="2">Internet Explorer 6.0.2800.1106.xpsp2.030422-1633</font></li>
+        <li><font face="Tahoma" size="2">Outlook Express to check email</font></li>
+    </ul>
+    <p><b><font face="Tahoma" size="2">Additional configuration info:</font></b></p>
+    <ul>
+        <li><font face="Tahoma" size="2">MSN POP3 email account w/ SPA</font></li>
+        <li><font face="Tahoma" size="2">Active Directory (Win2k, primary DNS)</font></li>
+        <li><font face="Tahoma" size="2">Cisco Series 90 SOHO router</font></li>
+        <li>
+            <font face="Tahoma" size="2">
+                Time Warner RoadRunner Business Cable (2048
+                down, 512 up)
+            </font>
+        </li>
+    </ul>
+    <p>
+        <b>
+            <font face="Tahoma" size="4" color="#000080">
+                Triax<br><hr>
+            </font>
+        </b>
+        <font face="Tahoma" size="1">
+            <b>Note:</b> This page is for illustration purposes
+            only.
+        </font>
+    </p>
+    <p>
+        <font face="Tahoma" size="1">
+            Last updated:
+            22 Jul 2021 08:00:00 PM
+        </font>
+    </p>
+
+</body>
+
+</html>

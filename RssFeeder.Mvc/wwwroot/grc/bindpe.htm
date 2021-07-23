@@ -1,0 +1,178 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>BIND-PE Testing Report</title>
+<style>
+<!--
+code snippet { font-family: Courier New; font-size: 10pt }
+-->
+</style>
+</head>
+
+<body>
+
+<p><a name="Top"><b><font face="Tahoma">BIND-PE</font></b></a><b><font face="Tahoma"><a name="Top"> </a></font></b><a name="Top"><b>
+<font face="Tahoma">Testing Report</font></b></a>
+<hr>
+<font size="1" face="Tahoma">Development Phase: Beta<br>
+Build Tested: 1.x<br>
+</font><a href="http://ntcanuck.com">
+      <font size="1" face="Tahoma">http://ntcanuck.com</font></a><p>&nbsp;</p>
+<p><u><b><font face="Tahoma" color="#000080">Comments</font></b></u></p>
+<p><font face="Tahoma" size="2">Two test runs from DNSRU and a check of the 
+Control Panel, as you requested. :-)</font></p>
+<p><font face="Tahoma" size="2">I'm not sure my system is really seeing much 
+speed benefit from BIND-PE, though I know you prefer accuracy and extended 
+functionality NT.</font></p>
+<p>&nbsp;</p>
+<p><u><b><font face="Tahoma" color="#000080">DNSRU Results for 1.0</font></b></u></p>
+<p><font face="Tahoma" size="2">Configuration: <b>Workstation</b> (see
+<a href="#Configuration">Configuration</a> section)</font></p>
+<p><font face="Tahoma" size="2">Here are the benchmarking results for BIND-PE v. 
+1.0 from DNSRU (Build 4.05a). Cached results look great, but Uncached and DotComs are barely 
+beating the Win2k DNS (hosted on my local LAN by another server).</font></p>
+<pre><span style="background-color: #C0C0C0">  127.  0.  0.  1 |  Min  |  </span><span style="background-color: #C0C0C0">Avg</span><span style="background-color: #C0C0C0">  |  Max  |</span><span style="background-color: #C0C0C0">Std.Dev|Reliab</span><span style="background-color: #C0C0C0">%|
+  ----------------+-------+-------+-------+-------+-------+
+  Cached Name     | 0.000 | 0.002 | 0.003 | 0.000 | 100.0 |
+  </span><span style="background-color: #C0C0C0">Uncached</span><span style="background-color: #C0C0C0"> Name   | 0.028 | 0.097 | 0.222 | 0.047 | 100.0 |
+  </span><span style="background-color: #C0C0C0">DotCom</span><span style="background-color: #C0C0C0"> Lookup   | 0.053 | 0.058 | 0.086 | 0.006 | 100.0 |
+  ----------------+-------+-------+-------+-------+-------+
+
+  192.168.  0.  2 |  Min  |  </span><span style="background-color: #C0C0C0">Avg</span><span style="background-color: #C0C0C0">  |  Max  |</span><span style="background-color: #C0C0C0">Std.Dev|Reliab</span><span style="background-color: #C0C0C0">%|
+  ----------------+-------+-------+-------+-------+-------+
+  Cached Name     | 0.001 | 0.001 | 0.001 | 0.000 | 100.0 |
+  </span><span style="background-color: #C0C0C0">Uncached</span><span style="background-color: #C0C0C0"> Name   | 0.069 | 0.116 | 0.255 | 0.041 | 100.0 |
+  </span><span style="background-color: #C0C0C0">DotCom</span><span style="background-color: #C0C0C0"> Lookup   | 0.068 | 0.122 | 0.248 | 0.053 | 100.0 |
+  ----------------+-------+-------+-------+-------+-------+
+
+  206.141.195. 13 |  Min  |  </span><span style="background-color: #C0C0C0">Avg</span><span style="background-color: #C0C0C0">  |  Max  |</span><span style="background-color: #C0C0C0">Std.Dev|Reliab</span><span style="background-color: #C0C0C0">%|
+  ----------------+-------+-------+-------+-------+-------+
+  Cached Name     | 0.032 | 0.037 | 0.043 | 0.002 | 100.0 |
+  </span><span style="background-color: #C0C0C0">Uncached</span><span style="background-color: #C0C0C0"> Name   | 0.040 | 0.080 | 0.165 | 0.022 |  99.5 |
+  </span><span style="background-color: #C0C0C0">DotCom</span><span style="background-color: #C0C0C0"> Lookup   | 0.052 | 0.080 | 0.201 | 0.029 |  99.5 |
+  ----------------+-------+-------+-------+-------+-------+
+
+  206.141.192. 60 |  Min  |  </span><span style="background-color: #C0C0C0">Avg</span><span style="background-color: #C0C0C0">  |  Max  |</span><span style="background-color: #C0C0C0">Std.Dev|Reliab</span><span style="background-color: #C0C0C0">%|
+  ----------------+-------+-------+-------+-------+-------+
+  Cached Name     | 0.021 | 0.026 | 0.037 | 0.003 | 100.0 |
+  </span><span style="background-color: #C0C0C0">Uncached</span><span style="background-color: #C0C0C0"> Name   | 0.027 | 0.079 | 0.190 | 0.041 | 100.0 |
+  </span><span style="background-color: #C0C0C0">DotCom</span><span style="background-color: #C0C0C0"> Lookup   | 0.038 | 0.083 | 0.246 | 0.052 | 100.0 |
+  ----------------+-------+-------+-------+-------+-------+
+
+  </span><span style="background-color: #C0C0C0">UTC</span><span style="background-color: #C0C0C0">: 2002-08-22, from 04:35:24 to 04:37:26, for 02:01.264
+</span></pre>
+<p><font face="Tahoma" size="2">and from the Characterization tab...</font></p>
+<pre><span style="background-color: #C0C0C0">  Std. Properties |Online Answer </span><span style="background-color: #C0C0C0">Recurse</span><span style="background-color: #C0C0C0"> </span><span style="background-color: #C0C0C0">AuthAns</span><span style="background-color: #C0C0C0"> </span><span style="background-color: #C0C0C0">NegCache</span><span style="background-color: #C0C0C0">|
+  ----------------+------+------+-------+-------+--------+
+  127.  0.  0.  1 |  Yes |  Yes |  Yes  |  No   |   -    |
+  192.168.  0.  2 |  Yes |  Yes |  Yes  |  Yes  |  Yes   |
+  206.141.195. 13 |  Yes |  Yes |  Yes  |  Yes  |  No    |
+  206.141.192. 60 |  Yes |  Yes |  Yes  |  Yes  |  No    |
+  ----------------+------+------+-------+-------+--------+
+</span></pre>
+<pre>&nbsp;</pre>
+<p><u><b><font face="Tahoma" color="#000080">DNSRU Results for 1.x</font></b></u></p>
+<p><font face="Tahoma" size="2">Configuration: <b>Workstation</b> (see
+<a href="#Configuration">Configuration</a> section)</font></p>
+<p><font face="Tahoma" size="2">Yikes! DotComs jumped quite a bit! Server 
+problems, perhaps? Note: this was after a fresh reboot. Hopefully, the times 
+will get better after the cache settles down.</font></p>
+<pre><span style="background-color: #C0C0C0">  127.  0.  0.  1 |  Min  |  </span><span style="background-color: #C0C0C0">Avg</span><span style="background-color: #C0C0C0">  |  Max  |</span><span style="background-color: #C0C0C0">Std.Dev|Reliab</span><span style="background-color: #C0C0C0">%|
+  ----------------+-------+-------+-------+-------+-------+
+  Cached Name     | 0.000 | 0.003 | 0.037 | 0.006 | 100.0 |
+  </span><span style="background-color: #C0C0C0">Uncached</span><span style="background-color: #C0C0C0"> Name   | 0.044 | 0.122 | 0.318 | 0.061 | 100.0 |
+  </span><span style="background-color: #C0C0C0">DotCom</span><span style="background-color: #C0C0C0"> Lookup   | 0.040 | 0.607 | 2.151 | 0.852 | 100.0 |
+  ----------------+-------+-------+-------+-------+-------+
+
+  192.168.  0.  2 |  Min  |  </span><span style="background-color: #C0C0C0">Avg</span><span style="background-color: #C0C0C0">  |  Max  |</span><span style="background-color: #C0C0C0">Std.Dev|Reliab</span><span style="background-color: #C0C0C0">%|
+  ----------------+-------+-------+-------+-------+-------+
+  Cached Name     | 0.001 | 0.001 | 0.001 | 0.000 | 100.0 |
+  </span><span style="background-color: #C0C0C0">Uncached</span><span style="background-color: #C0C0C0"> Name   | 0.069 | 0.132 | 0.286 | 0.053 | 100.0 |
+  </span><span style="background-color: #C0C0C0">DotCom</span><span style="background-color: #C0C0C0"> Lookup   | 0.068 | 0.125 | 0.285 | 0.060 | 100.0 |
+  ----------------+-------+-------+-------+-------+-------+
+
+  206.141.195. 13 |  Min  |  </span><span style="background-color: #C0C0C0">Avg</span><span style="background-color: #C0C0C0">  |  Max  |</span><span style="background-color: #C0C0C0">Std.Dev|Reliab</span><span style="background-color: #C0C0C0">%|
+  ----------------+-------+-------+-------+-------+-------+
+  Cached Name     | 0.032 | 0.044 | 0.209 | 0.024 | 100.0 |
+  </span><span style="background-color: #C0C0C0">Uncached</span><span style="background-color: #C0C0C0"> Name   | 0.045 | 0.095 | 0.246 | 0.040 | 100.0 |
+  </span><span style="background-color: #C0C0C0">DotCom</span><span style="background-color: #C0C0C0"> Lookup   | 0.053 | 0.094 | 0.256 | 0.048 |  99.5 |
+  ----------------+-------+-------+-------+-------+-------+
+
+  206.141.192. 60 |  Min  |  </span><span style="background-color: #C0C0C0">Avg</span><span style="background-color: #C0C0C0">  |  Max  |</span><span style="background-color: #C0C0C0">Std.Dev|Reliab</span><span style="background-color: #C0C0C0">%|
+  ----------------+-------+-------+-------+-------+-------+
+  Cached Name     | 0.021 | 0.037 | 0.213 | 0.033 | 100.0 |
+  </span><span style="background-color: #C0C0C0">Uncached</span><span style="background-color: #C0C0C0"> Name   | 0.027 | 0.079 | 0.246 | 0.042 | 100.0 |
+  </span><span style="background-color: #C0C0C0">DotCom</span><span style="background-color: #C0C0C0"> Lookup   | 0.037 | 0.090 | 0.262 | 0.059 | 100.0 |
+  ----------------+-------+-------+-------+-------+-------+
+
+  </span><span style="background-color: #C0C0C0">UTC</span><span style="background-color: #C0C0C0">: 2002-08-22, from 05:29:48 to 05:31:17, for 01:28.046
+</span></pre>
+<pre>&nbsp;</pre>
+<p><u><b><font face="Tahoma" color="#000080">Control Panel</font></b></u></p>
+<ul>
+  <li><font face="Tahoma" size="2">Stop -- Generates error &quot;Overlapped I/O 
+  operation in progress&quot;, but appears to complete in an otherwise normal manner.
+  <font color="#008000"><b>Passed.</b></font></font></li>
+  <li><font face="Tahoma" size="2">Start -- Service starts.
+  <font color="#008000"><b>Passed.</b></font></font></li>
+  <li><font face="Tahoma" size="2">Reload -- No apparent activity and no 
+  messages displayed. <b><font color="#FF0000">???</font></b></font></li>
+  <li><font face="Tahoma" size="2">Dump DB -- Loads Notepad with current DB 
+  Dump.<font color="#008000"><b> Passed.</b></font></font></li>
+  <li><font face="Tahoma" size="2">Stats -- Loads Notepad with statistical dump.
+  <font color="#008000"><b>Passed.</b></font></font></li>
+  <li><font face="Tahoma" size="2">Trace++ -- Turns on extended tracing.
+  <font color="#FF0000"><b>???</b></font></font></li>
+  <li><font face="Tahoma" size="2">No Trace -- Turns off tracing and loads 
+  Notepad with trace dump. <b><font color="#008000">Passed.</font></b></font></li>
+</ul>
+<p><font face="Tahoma" size="2"><a name="Configuration"><br>
+&nbsp;</a></font></p>
+<p><b><font face="Tahoma" size="2"><a name="Configuration">Workstation Configuration info:</a></font></b></p>
+<ul>
+  <li><font face="Tahoma" size="2">Dell Dimension XPST500 (Pentium III 500 MHz)</font></li>
+  <li><font face="Tahoma" size="2">PhoenixBIOS 4.0 Release 6.0</font></li>
+  <li><font face="Tahoma" size="2">640MB RAM</font></li>
+  <li><font face="Tahoma" size="2">Windows 2000 Server (5.0.2195 Service Pack 3 
+  Build 2195)</font></li>
+  <li><font face="Tahoma" size="2">BIND-PE (primary DNS)</font></li>
+  <li><font face="Tahoma" size="2">RIVA TNT AGP 1.0 adapter, 1280x1024, 16bpp</font></li>
+  <li><font face="Tahoma" size="2">riched20.dll, version 5.30.23.1205, timestamp 
+  05/04/2001 1:05pm</font></li>
+  <li><font face="Tahoma" size="2">riched32.dll, version 5.0.2134.1, timestamp 
+  12/07/1999 8:00am</font></li>
+</ul>
+<p><font face="Tahoma" size="2"><b>Laptop Configuration info:</b></font></p>
+<ul>
+  <li><font face="Tahoma" size="2">Dell Inspiron 8200 (Pentium 4 1.7 GHz)</font></li>
+  <li><font face="Tahoma" size="2">BIOS Dell Computer Corporation A02, 4/4/2002</font></li>
+  <li><font face="Tahoma" size="2">512 MB RAM</font></li>
+  <li><font face="Tahoma" size="2">Windows XP Professional (5.1.2600 Service 
+  Pack 1, v.1097 Build 2600)</font></li>
+  <li><font face="Tahoma" size="2">BIND-PE (primary DNS) <font color="#800000">
+  <b>currently not working</b></font></font></li>
+  <li><font face="Tahoma" size="2">NVIDIA GeForce4 440, 1600x1200, 32bpp</font></li>
+</ul>
+<p><b><font face="Tahoma" size="2">Additional configuration info:</font></b></p>
+<ul>
+  <li><font face="Tahoma" size="2">Active Directory (Win2k, secondary DNS)</font></li>
+  <li><font face="Tahoma" size="2">LinkSys Cable/DSL router</font></li>
+  <li><font face="Tahoma" size="2">SBC Ameritech DSL (768 up, 384 down)</font></li>
+  <li><font face="Tahoma" size="2">206.141.195. 13 (third DNS server)</font></li>
+  <li><font face="Tahoma" size="2">206.141.192. 60 (fourth DNS server)</font></li>
+</ul>
+<p><b><font face="Tahoma" size="4" color="#000080">Triax<br><hr>
+</font></b>
+<font face="Tahoma" size="1"><b>Note:</b> This page is for illustration purposes 
+only. </font></p>
+<p><font face="Tahoma" size="1">
+Last updated:
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %b %Y %I:%M:%S %p" startspan -->13 May 2003 05:23:05 PM<!--webbot bot="Timestamp" i-checksum="36730" endspan --></font></p>
+
+</body>
+
+</html>
