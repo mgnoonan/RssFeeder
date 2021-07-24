@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq;
-using System.Text.RegularExpressions;
 using AngleSharp.Html.Parser;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using RssFeeder.Console.Parsers;
 using RssFeeder.Models;
 using Serilog;
@@ -39,23 +39,27 @@ namespace RssFeeder.Console.ArticleParsers
                 {
                     var lines = block.TextContent.Replace("\\u003c", "<").Split("\n", StringSplitOptions.RemoveEmptyEntries);
                     content = lines.Where(q => q.Contains(bodySelector)).FirstOrDefault();
+                    int pos = content.IndexOf('{');
+                    content = content.Substring(pos).Trim();
+                    pos = content.LastIndexOf('}') + 1;
+                    content = content.Substring(0, pos).Trim();
                     break;
                 }
             }
 
             try
             {
-                var groups = Regex.Match(content, "\"urn:publicid:ap\\.org:[a-f0-9]*\":\\s?({.*\"canonicalUrl\":\\s?\"[-a-zA-Z0-9]*\"\\s?})\\s?},").Groups;
-                var jsonRaw = groups[1].Value;
-                if (string.IsNullOrEmpty(jsonRaw))
+                if (string.IsNullOrEmpty(content))
                 {
                     Log.Warning("Unable to parse article data from script '{content}'", content);
                     return string.Empty;
                 }
 
-                var jsonObject = JsonConvert.DeserializeObject<dynamic>(jsonRaw);
+                var jsonObject = JsonConvert.DeserializeObject<dynamic>(content);
+                var data = (JObject)jsonObject["content"]["data"];
+                var output = data.First.First["storyHTML"];
 
-                return jsonObject.storyHTML;
+                return output.ToString();
             }
             catch (Exception ex)
             {
