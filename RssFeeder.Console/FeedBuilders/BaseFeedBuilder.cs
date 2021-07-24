@@ -46,6 +46,10 @@ namespace RssFeeder.Console.FeedBuilders
 
                 return CreateNodeLinks(filters, location, count, title, ref linkUrl);
             }
+            catch (NullReferenceException)
+            {
+                log.Warning("Unable to resolve reference for location '{location}':'{title}'", location, title);
+            }
             catch (Exception ex)
             {
                 log.Error(ex, "Error encountered reading location '{location}':{count}", location, count);
