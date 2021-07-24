@@ -184,8 +184,8 @@ namespace RssFeeder.Console.FeedBuilders
         {
             foreach (string selector in selectors)
             {
-                IElement link = TryParseEmbeddedUrl(item.Url, selector);
-
+                if (!TryParseEmbeddedUrl(item.Url, selector, out IElement link))
+                    break;
                 if (link == null)
                     continue;
                 if (!link.Text().Contains("Click here"))
@@ -201,21 +201,23 @@ namespace RssFeeder.Console.FeedBuilders
             }
         }
 
-        private IElement TryParseEmbeddedUrl(string url, string selector)
+        private bool TryParseEmbeddedUrl(string url, string selector, out IElement link)
         {
-            Log.Information("TryParseEmbeddedUrl '{selector}' from '{url}'", selector, url);
-            var content = _webUtilities.DownloadStringWithCompression(url);
-
             try
             {
+                Log.Information("TryParseEmbeddedUrl '{selector}' from '{url}'", selector, url);
+                var content = _webUtilities.DownloadStringWithCompression(url);
+
                 var parser = new HtmlParser();
                 var document = parser.ParseDocument(content);
-                return document.QuerySelector(selector);
+                link = document.QuerySelector(selector);
+                return true;
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Error parsing embedded Url");
-                return null;
+                Log.Error(ex, "Error parsing embedded url '{url}'", url);
+                link = null;
+                return false;
             }
         }
     }
