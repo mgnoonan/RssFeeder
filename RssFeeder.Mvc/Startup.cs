@@ -39,6 +39,7 @@ namespace RssFeeder.Mvc
                 options.Filters.Add<SerilogMvcLoggingAttribute>();
             }).AddMicrosoftIdentityUI();
             services.AddRazorPages();
+            services.AddHealthChecks();
 
             // Repositories
             services.AddSingleton<ICosmosDbService>(InitializeCosmosClientInstanceAsync(Configuration.GetSection("CosmosDb")).GetAwaiter().GetResult());
@@ -83,6 +84,7 @@ namespace RssFeeder.Mvc
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapHealthChecks("/health");
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
