@@ -13,6 +13,7 @@ using HtmlAgilityPack;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using Polly;
+using RestSharp;
 using Serilog;
 
 namespace RssFeeder.Console.Utility
@@ -48,7 +49,11 @@ namespace RssFeeder.Console.Utility
 
         public string DownloadStringWithCompression(string url)
         {
-            return DownloadStringWithCompressionAsync(url).GetAwaiter().GetResult();
+            var client = new RestClient();
+            var request = new RestRequest(url, DataFormat.None);
+            var response = client.Get(request);
+
+            return response.Content;
         }
 
         public async Task<string> DownloadStringWithCompressionAsync(string url)

@@ -76,6 +76,10 @@ namespace RssFeeder.Console.Commands
                                 bootstrap.Start(_container, profiler, feed);
                                 bootstrap.Export(_container, profiler, feed);
                             }
+                            else
+                            {
+                                Log.Logger.Information("Feed {feedTitle} is not enabled", feed.Title);
+                            }
                             bootstrap.Purge(_container, profiler, feed);
                         }
                     }

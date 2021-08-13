@@ -224,6 +224,12 @@ $item.ArticleText$
         {
             // Purge stale files from working folder
             string workingFolder = Path.Combine(utils.GetAssemblyDirectory(), feed.CollectionName);
+            if (!Directory.Exists(workingFolder))
+            {
+                Log.Logger.Information("Folder '{workingFolder}' does not exist", workingFolder);
+                return;
+            }
+
             utils.PurgeStaleFiles(workingFolder, feed.FileRetentionDays);
 
             // Purge stale documents from the database collection
@@ -313,6 +319,13 @@ $item.ArticleText$
         private void SetExtendedArticleMetaData(RssFeedItem item, HtmlDocument doc, IArticleDefinitionFactory definitions, string hostName)
         {
             // Extract the meta data from the Open Graph tags helpfully provided with almost every article
+            string url = item.Url;
+            item.Url = ParseMetaTagAttributes(doc, "og:url", "content");
+            if (string.IsNullOrWhiteSpace(item.Url))
+            {
+                item.Url = url;
+            }
+
             item.Subtitle = ParseMetaTagAttributes(doc, "og:title", "content");
             item.ImageUrl = ParseMetaTagAttributes(doc, "og:image", "content");
             item.MetaDescription = ParseMetaTagAttributes(doc, "og:description", "content");
