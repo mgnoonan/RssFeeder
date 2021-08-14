@@ -91,7 +91,7 @@ $item.ArticleText$
         {
             _container = container;
 
-            string html = webUtils.DownloadStringWithCompression(feed.Url);
+            string html = webUtils.DownloadString(feed.Url);
 
             // Create the working folder for the collection if it doesn't exist
             string workingFolder = Path.Combine(utils.GetAssemblyDirectory(), feed.CollectionName);
@@ -224,6 +224,12 @@ $item.ArticleText$
         {
             // Purge stale files from working folder
             string workingFolder = Path.Combine(utils.GetAssemblyDirectory(), feed.CollectionName);
+            if (!Directory.Exists(workingFolder))
+            {
+                Log.Logger.Information("Folder '{workingFolder}' does not exist", workingFolder);
+                return;
+            }
+            
             utils.PurgeStaleFiles(workingFolder, feed.FileRetentionDays);
 
             // Purge stale documents from the database collection

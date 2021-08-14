@@ -206,7 +206,7 @@ namespace RssFeeder.Console.FeedBuilders
             try
             {
                 Log.Information("TryParseEmbeddedUrl '{selector}' from '{url}'", selector, url);
-                var content = _webUtilities.DownloadStringWithCompression(url);
+                var content = _webUtilities.DownloadString(url);
 
                 var parser = new HtmlParser();
                 var document = parser.ParseDocument(content);
