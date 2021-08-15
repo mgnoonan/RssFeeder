@@ -32,7 +32,7 @@ namespace RssFeeder.Console.Commands
             var parser = _container.ResolveNamed<IArticleParser>(input.Parser);
 
             string urlHash = utils.CreateMD5Hash(input.Url);
-            string html = webUtils.DownloadStringWithCompression(input.Url);
+            string html = webUtils.DownloadString(input.Url);
 
             var doc = new HtmlDocument();
             doc.Load(new StringReader(html));
