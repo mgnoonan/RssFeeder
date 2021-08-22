@@ -84,7 +84,7 @@ namespace RssFeeder.Console.FeedBuilders
             {
                 return new RssFeedItem()
                 {
-                    //Id = Guid.NewGuid().ToString(),
+                    Id = Guid.NewGuid().ToString(),
                     Title = WebUtility.HtmlDecode(title),
                     Url = linkUrl,
                     UrlHash = hash,
