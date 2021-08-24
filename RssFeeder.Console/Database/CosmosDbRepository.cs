@@ -92,6 +92,7 @@ namespace RssFeeder.Console.Database
         public List<T> GetStaleDocuments<T>(string collectionName, string feedId, short maximumAgeInDays)
         {
             string sqlQueryText = $"SELECT c.id, c.UrlHash, c.HostName FROM c WHERE c.DateAdded <= '{DateTime.UtcNow.AddDays(-maximumAgeInDays):o}' AND (c.FeedId = '{feedId}' OR c.FeedId = 0)";
+            Log.Information("GetStaleDocuments: query = '{sqlQueryText}'", sqlQueryText);
 
             return GetDocuments<T>(collectionName, sqlQueryText);
         }
@@ -111,6 +112,7 @@ namespace RssFeeder.Console.Database
         public List<T> GetExportDocuments<T>(string collectionName, string feedId, int minutes)
         {
             string sqlQueryText = $"SELECT * FROM c WHERE c.DateAdded >= '{DateTime.UtcNow.AddMinutes(-minutes):o}' AND c.FeedId = '{feedId}'";
+            Log.Information("GetExportDocuments: query = '{sqlQueryText}'", sqlQueryText);
 
             return GetDocuments<T>(collectionName, sqlQueryText);
         }
