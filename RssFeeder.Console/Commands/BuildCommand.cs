@@ -10,7 +10,6 @@ using RssFeeder.Console.Utility;
 using RssFeeder.Models;
 using Serilog;
 using Serilog.Context;
-using StackExchange.Profiling;
 
 namespace RssFeeder.Console.Commands
 {
@@ -32,9 +31,6 @@ namespace RssFeeder.Console.Commands
         {
             // Zero return value means everything processed normally
             int returnCode = 0;
-
-            // Setup mini profiler
-            var profiler = MiniProfiler.StartNew("RssFeeder Profile");
 
             try
             {
@@ -73,10 +69,10 @@ namespace RssFeeder.Console.Commands
                         {
                             if (feed.Enabled)
                             {
-                                bootstrap.Start(_container, profiler, feed);
-                                bootstrap.Export(_container, profiler, feed);
+                                bootstrap.Start(_container, feed);
+                                bootstrap.Export(_container, feed);
                             }
-                            bootstrap.Purge(_container, profiler, feed);
+                            bootstrap.Purge(_container, feed);
                         }
                     }
                     catch (Exception ex)
@@ -85,7 +81,6 @@ namespace RssFeeder.Console.Commands
                     }
                 }
 
-                Log.Information("Profiler results: {results}", profiler.RenderPlainText());
                 Log.Information("END: Completed successfully");
             }
             catch (Exception ex)
