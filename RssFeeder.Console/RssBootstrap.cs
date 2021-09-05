@@ -325,8 +325,9 @@ $item.ArticleText$
             item.HostName = hostName;
             item.SiteName = ParseMetaTagAttributes(doc, "og:site_name", "content").ToLower();
 
-            if (string.IsNullOrWhiteSpace(item.SiteName))
+            if (string.IsNullOrWhiteSpace(item.SiteName) || (item.SiteName == "ap news" && item.Url.Contains("populist.press")))
             {
+                // Fixup apnews on populist press links which sometimes report incorrectly
                 item.SiteName = item.HostName;
             }
 
@@ -334,7 +335,7 @@ $item.ArticleText$
             if (item.SiteName.IndexOf('/') > 0)
             {
                 item.SiteName = item.SiteName.Substring(item.SiteName.LastIndexOf('/') + 1);
-            }
+            }            
 
             // Check if we have a site parser defined for the site name
             var definition = definitions.Get(item.SiteName);
