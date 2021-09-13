@@ -60,7 +60,6 @@ namespace RssFeeder.Console.FeedBuilders
 
         private RssFeedItem CreateNodeLinks(List<string> filters, string location, int count, string title, ref string linkUrl)
         {
-
             // Sometimes Drudge has completely empty links, ignore them
             if (string.IsNullOrEmpty(linkUrl))
             {
@@ -70,9 +69,7 @@ namespace RssFeeder.Console.FeedBuilders
             // Repair any protocol typos if possible
             if (!linkUrl.ToLower().StartsWith("http"))
             {
-                log.Information("Attempting to repair link '{url}'", linkUrl);
                 linkUrl = webUtils.RepairUrl(linkUrl);
-                log.Information("Repaired link '{url}'", linkUrl);
             }
 
             // Calculate the MD5 hash for the link so we can be sure of uniqueness

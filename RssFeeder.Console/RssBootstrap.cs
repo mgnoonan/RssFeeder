@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using AngleSharp.Html.Parser;
+﻿using AngleSharp.Html.Parser;
 using Antlr4.StringTemplate;
 using Autofac;
 using HtmlAgilityPack;
-using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using RssFeeder.Console.ArticleDefinitions;
 using RssFeeder.Console.Database;
@@ -17,7 +12,6 @@ using RssFeeder.Console.Utility;
 using RssFeeder.Models;
 using Serilog;
 using Serilog.Context;
-using StackExchange.Profiling;
 
 namespace RssFeeder.Console
 {
@@ -87,11 +81,11 @@ $item.ArticleText$
                 repository.EnsureDatabaseExists(_collectionName, true);
         }
 
-        public void Start(IContainer container, MiniProfiler profiler, RssFeed feed)
+        public void Start(IContainer container, RssFeed feed)
         {
             _container = container;
 
-            string html = webUtils.DownloadStringWithCompression(feed.Url);
+            string html = webUtils.DownloadString(feed.Url);
 
             // Create the working folder for the collection if it doesn't exist
             string workingFolder = Path.Combine(utils.GetAssemblyDirectory(), feed.CollectionName);
@@ -115,61 +109,58 @@ $item.ArticleText$
 
             // Crawl any new articles and add them to the database
             Log.Information("Adding new articles to the {collectionName} collection", feed.CollectionName);
-            using (profiler.Step("Adding new articles"))
+            int articleCount = 0;
+            foreach (var item in list)
             {
-                int articleCount = 0;
-                foreach (var item in list)
+                using (LogContext.PushProperty("urlHash", item.UrlHash))
                 {
-                    using (LogContext.PushProperty("urlHash", item.UrlHash))
+                    // No need to continue if we already crawled the article
+                    if (repository.DocumentExists<RssFeedItem>(_collectionName, feed.CollectionName, item.UrlHash))
                     {
-                        // No need to continue if we already crawled the article
-                        if (repository.DocumentExists<RssFeedItem>(_collectionName, feed.CollectionName, item.UrlHash))
+                        continue;
+                    }
+
+                    // Increment new article count
+                    Log.Information("UrlHash '{urlHash}' not found in collection '{collectionName}'", item.UrlHash, feed.CollectionName);
+                    articleCount++;
+
+                    try
+                    {
+                        // Construct unique file name
+                        string friendlyHostname = item.Url.Replace("://", "_").Replace(".", "_");
+                        int index = friendlyHostname.IndexOf("/");
+                        if (index == -1)
                         {
-                            continue;
+                            friendlyHostname += "/";
+                            index = friendlyHostname.IndexOf("/");
                         }
 
-                        // Increment new article count
-                        Log.Information("UrlHash '{urlHash}' not found in collection '{collectionName}'", item.UrlHash, feed.CollectionName);
-                        articleCount++;
+                        friendlyHostname = friendlyHostname.Substring(0, index);
+                        string extension = GetFileExtension(new Uri(item.Url));
+                        string filename = Path.Combine(workingFolder, $"{item.UrlHash}_{friendlyHostname}{extension}");
 
-                        try
+                        // Check for crawler exclusions, downloading content is blocked from these sites
+                        Uri uri = new Uri(item.Url);
+                        string hostName = uri.GetComponents(UriComponents.Host, UriFormat.Unescaped).ToLower();
+                        if (!Config.Exclusions.Contains(hostName))
                         {
-                            // Construct unique file name
-                            string friendlyHostname = item.Url.Replace("://", "_").Replace(".", "_");
-                            int index = friendlyHostname.IndexOf("/");
-                            if (index == -1)
+                            // Download the Url contents, first using HttpClient but if that fails use Selenium
+                            item.FileName = webUtils.SaveUrlToDisk(item.Url, item.UrlHash, filename, !filename.Contains("_apnews_com") && !filename.Contains("_rumble_com"));
+                            if (string.IsNullOrEmpty(item.FileName) || filename.Contains("ajc_com") || filename.Contains("rumble_com"))
                             {
-                                friendlyHostname += "/";
-                                index = friendlyHostname.IndexOf("/");
+                                // Must have had an error on loading the url so attempt with Selenium
+                                item.FileName = webUtils.WebDriverUrlToDisk(item.Url, item.UrlHash, filename);
                             }
-
-                            friendlyHostname = friendlyHostname.Substring(0, index);
-                            string extension = GetFileExtension(new Uri(item.Url));
-                            string filename = Path.Combine(workingFolder, $"{item.UrlHash}_{friendlyHostname}{extension}");
-
-                            // Check for crawler exclusions, downloading content is blocked from these sites
-                            Uri uri = new Uri(item.Url);
-                            string hostName = uri.GetComponents(UriComponents.Host, UriFormat.Unescaped).ToLower();
-                            if (!Config.Exclusions.Contains(hostName))
-                            {
-                                // Download the Url contents, first using HttpClient but if that fails use Selenium
-                                item.FileName = webUtils.SaveUrlToDisk(item.Url, item.UrlHash, filename, !filename.Contains("_apnews_com") && !filename.Contains("_rumble_com"));
-                                if (string.IsNullOrEmpty(item.FileName) || filename.Contains("ajc_com") || filename.Contains("rumble_com"))
-                                {
-                                    // Must have had an error on loading the url so attempt with Selenium
-                                    item.FileName = webUtils.WebDriverUrlToDisk(item.Url, item.UrlHash, filename);
-                                }
-                            }
-
-                            // Parse the saved file as dictated by the site definitions
-                            ParseArticleMetaTags(item, feed, definitions);
-                            repository.CreateDocument<RssFeedItem>(_collectionName, item, feed.DatabaseRetentionDays);
                         }
-                        catch (Exception ex)
-                        {
-                            Log.Error(ex, "ERROR: Unable to save UrlHash '{urlHash}':'{url}'", item.UrlHash, item.Url);
-                            articleCount--;
-                        }
+
+                        // Parse the saved file as dictated by the site definitions
+                        ParseArticleMetaTags(item, feed, definitions);
+                        repository.CreateDocument<RssFeedItem>(_collectionName, item, feed.DatabaseRetentionDays);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex, "ERROR: Unable to save UrlHash '{urlHash}':'{url}'", item.UrlHash, item.Url);
+                        articleCount--;
                     }
                 }
 
@@ -199,7 +190,7 @@ $item.ArticleText$
             return ".html";
         }
 
-        public void Export(IContainer container, MiniProfiler profiler, RssFeed feed)
+        public void Export(IContainer container, RssFeed feed)
         {
             if (!feed.Exportable)
             {
@@ -220,7 +211,7 @@ $item.ArticleText$
             Log.Information("Exported {count} new articles to the {collectionName} collection", list.Count, feed.CollectionName);
         }
 
-        public void Purge(IContainer container, MiniProfiler profiler, RssFeed feed)
+        public void Purge(IContainer container, RssFeed feed)
         {
             // Purge stale files from working folder
             string workingFolder = Path.Combine(utils.GetAssemblyDirectory(), feed.CollectionName);
@@ -332,8 +323,9 @@ $item.ArticleText$
             item.HostName = hostName;
             item.SiteName = ParseMetaTagAttributes(doc, "og:site_name", "content").ToLower();
 
-            if (string.IsNullOrWhiteSpace(item.SiteName))
+            if (string.IsNullOrWhiteSpace(item.SiteName) || (item.SiteName == "ap news" && item.Url.Contains("populist.press")))
             {
+                // Fixup apnews on populist press links which sometimes report incorrectly
                 item.SiteName = item.HostName;
             }
 
@@ -341,7 +333,7 @@ $item.ArticleText$
             if (item.SiteName.IndexOf('/') > 0)
             {
                 item.SiteName = item.SiteName.Substring(item.SiteName.LastIndexOf('/') + 1);
-            }
+            }            
 
             // Check if we have a site parser defined for the site name
             var definition = definitions.Get(item.SiteName);
@@ -416,7 +408,7 @@ $item.ArticleText$
                 var value = GetJsonDynamic<IEnumerable<dynamic>>(doc.Text, "script", "embedUrl");
                 item.VideoUrl = value.First().embedUrl.Value;
                 item.VideoHeight = int.TryParse(Convert.ToString(value.First().height.Value), out int height) ? height : 0;
-                item.VideoWidth = int.TryParse(Convert.ToString(value.First().width.Value), out int width) ? width: 0;
+                item.VideoWidth = int.TryParse(Convert.ToString(value.First().width.Value), out int width) ? width : 0;
             }
             else
             {
