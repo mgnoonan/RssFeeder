@@ -89,5 +89,18 @@
     "FeedlyUrl": "",
     "RssUrl": "/api/rss/populist-press",
     "Filters": []
+  },
+  {
+    "id": "",
+    "Title": "Bad Blue",
+    "Url": "https://populist.press/",
+    "Description": "Bad Blue",
+    "Language": "en-US",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.BadBlueFeedBuilder",
+    "CollectionName": "bad-blue",
+    "authoremail": "news@badblue.com",
+    "FeedlyUrl": "",
+    "RssUrl": "/api/rss/bad-blue",
+    "Filters": []
   }
 ]
