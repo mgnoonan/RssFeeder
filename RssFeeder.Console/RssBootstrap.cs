@@ -310,6 +310,13 @@ $item.ArticleText$
         private void SetExtendedArticleMetaData(RssFeedItem item, HtmlDocument doc, IArticleDefinitionFactory definitions, string hostName)
         {
             // Extract the meta data from the Open Graph tags helpfully provided with almost every article
+            string url = item.Url;
+            item.Url = ParseMetaTagAttributes(doc, "og:url", "content");
+            if (string.IsNullOrWhiteSpace(item.Url))
+            {
+                item.Url = url;
+            }
+
             item.Subtitle = ParseMetaTagAttributes(doc, "og:title", "content");
             item.ImageUrl = ParseMetaTagAttributes(doc, "og:image", "content");
             item.MetaDescription = ParseMetaTagAttributes(doc, "og:description", "content");

@@ -90,6 +90,7 @@ namespace RssFeeder.Console
             builder.RegisterType<RantinglyFeedBuilder>().Named<IRssFeedBuilder>("rantingly");
             builder.RegisterType<GutSmackFeedBuilder>().Named<IRssFeedBuilder>("gutsmack");
             builder.RegisterType<PopulistPressFeedBuilder>().Named<IRssFeedBuilder>("populist-press");
+            builder.RegisterType<BadBlueFeedBuilder>().Named<IRssFeedBuilder>("bad-blue");
             builder.RegisterType<GenericParser>().Named<IArticleParser>("generic-parser");
             builder.RegisterType<AdaptiveParser>().Named<IArticleParser>("adaptive-parser");
             builder.RegisterType<AllTagsParser>().Named<IArticleParser>("alltags-parser");
