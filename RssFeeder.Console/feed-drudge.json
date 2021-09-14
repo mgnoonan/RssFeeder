@@ -141,7 +141,7 @@
   },
   {
     "Title": "Bad Blue",
-    "Enabled": "true",
+    "Enabled": "false",
     "EnableThumbnail": "true",
     "Exportable": "true",
     "Description": "Bad Blue",
