@@ -59,36 +59,44 @@ namespace RssFeeder.Mvc.Handlers
             Log.Information("CACHE MISS: Loading feed items for {id}", id);
             var sb = new StringBuilder();
             var stringWriter = new StringWriterWithEncoding(sb, Encoding.UTF8);
-            int days = 5; // (id.ToLowerInvariant() == "drudge-report" ? 3 : 1);
+            int days = 5;
+            var feed = GetFeed(id);
 
-            using (XmlWriter xmlWriter = XmlWriter.Create(stringWriter, new XmlWriterSettings() { Async = true, Indent = true, Encoding = Encoding.UTF8 }))
+            try
             {
-                var rssWriter = new AtomFeedWriter(xmlWriter);
-
-                var feed = GetFeed(id);
-                await rssWriter.WriteTitle(feed.title);
-                await rssWriter.Write(new SyndicationLink(new Uri(feed.url)));
-                await rssWriter.WriteUpdated(DateTimeOffset.UtcNow);
-
-                // Add Items
-                foreach (var item in await GetFeedItems(id.ToLowerInvariant(), days))
+                using (XmlWriter xmlWriter = XmlWriter.Create(stringWriter, new XmlWriterSettings() { Async = true, Indent = true, Encoding = Encoding.UTF8 }))
                 {
-                    var si = new SyndicationItem()
+                    var rssWriter = new AtomFeedWriter(xmlWriter);
+
+                    await rssWriter.WriteTitle(feed.title);
+                    await rssWriter.Write(new SyndicationLink(new Uri(feed.url)));
+                    await rssWriter.WriteUpdated(DateTimeOffset.UtcNow);
+
+                    // Add Items
+                    foreach (var item in await GetFeedItems(id.ToLowerInvariant(), days))
                     {
-                        Id = item.Id,
-                        Title = item.Title.Replace("\u0008", "").Replace("\u0003", "").Replace("\u0010", "").Replace("\u0012", "").Replace("\u0002", ""),
-                        Description = item.Description.Replace("\u0008", "").Replace("\u0003", "").Replace("\u0010", "").Replace("\u0012", "").Replace("\u0002", ""),
-                        Published = item.DateAdded,
-                        LastUpdated = item.DateAdded
-                    };
+                        var si = new SyndicationItem()
+                        {
+                            Id = item.Id,
+                            Title = item.Title.Replace("\u0008", "").Replace("\u0003", "").Replace("\u0010", "").Replace("\u0012", "").Replace("\u0002", ""),
+                            Description = item.Description.Replace("\u0008", "").Replace("\u0003", "").Replace("\u0010", "").Replace("\u0012", "").Replace("\u0002", ""),
+                            Published = item.DateAdded,
+                            LastUpdated = item.DateAdded
+                        };
 
-                    si.AddLink(new SyndicationLink(new Uri(item.Url)));
-                    si.AddContributor(new SyndicationPerson(string.IsNullOrWhiteSpace(item.SiteName) ? item.HostName : item.SiteName, feed.authoremail, AtomContributorTypes.Author));
+                        si.AddLink(new SyndicationLink(new Uri(item.Url)));
+                        si.AddContributor(new SyndicationPerson(string.IsNullOrWhiteSpace(item.SiteName) ? item.HostName : item.SiteName, feed.authoremail, AtomContributorTypes.Author));
 
-                    await rssWriter.Write(si);
+                        await rssWriter.Write(si);
+                    }
+
+                    xmlWriter.Flush();
                 }
-
-                xmlWriter.Flush();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error building feed @{feed}", feed);
+                throw;
             }
 
             // Add the items to the cache before returning
