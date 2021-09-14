@@ -62,18 +62,18 @@ namespace RssFeeder.Mvc.Handlers
             int days = 5;
             var feed = GetFeed(id);
 
-            try
+            using (XmlWriter xmlWriter = XmlWriter.Create(stringWriter, new XmlWriterSettings() { Async = true, Indent = true, Encoding = Encoding.UTF8 }))
             {
-                using (XmlWriter xmlWriter = XmlWriter.Create(stringWriter, new XmlWriterSettings() { Async = true, Indent = true, Encoding = Encoding.UTF8 }))
+                var rssWriter = new AtomFeedWriter(xmlWriter);
+
+                await rssWriter.WriteTitle(feed.title);
+                await rssWriter.Write(new SyndicationLink(new Uri(feed.url)));
+                await rssWriter.WriteUpdated(DateTimeOffset.UtcNow);
+
+                // Add Items
+                foreach (var item in await GetFeedItems(id.ToLowerInvariant(), days))
                 {
-                    var rssWriter = new AtomFeedWriter(xmlWriter);
-
-                    await rssWriter.WriteTitle(feed.title);
-                    await rssWriter.Write(new SyndicationLink(new Uri(feed.url)));
-                    await rssWriter.WriteUpdated(DateTimeOffset.UtcNow);
-
-                    // Add Items
-                    foreach (var item in await GetFeedItems(id.ToLowerInvariant(), days))
+                    try
                     {
                         var si = new SyndicationItem()
                         {
@@ -89,14 +89,13 @@ namespace RssFeeder.Mvc.Handlers
 
                         await rssWriter.Write(si);
                     }
-
-                    xmlWriter.Flush();
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex, "Error building item {@item}", item);
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Error building feed {@feed}", feed);
-                throw;
+
+                xmlWriter.Flush();
             }
 
             // Add the items to the cache before returning
