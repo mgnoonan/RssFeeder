@@ -61,7 +61,7 @@ namespace RssFeeder.Console.FeedBuilders
             var document = parser.ParseDocument(html);
 
             // Above the Fold section
-            var container = document.QuerySelector("#category-posts-9-internal");
+            var container = document.QuerySelector("#home_page_breaking");
             if (container != null)
             {
                 var nodes = container.QuerySelectorAll("a");
@@ -79,7 +79,7 @@ namespace RssFeeder.Console.FeedBuilders
             }
 
             // Main Headlines section
-            container = document.QuerySelector("#category-posts-10-internal");
+            container = document.QuerySelector("#home_page_featured");
             if (container != null)
             {
                 var nodes = container.QuerySelectorAll("a");
@@ -100,7 +100,7 @@ namespace RssFeeder.Console.FeedBuilders
             }
 
             // Column 1
-            container = document.QuerySelector("#home_page_left_column");
+            container = document.QuerySelector("#home_page_main_feed_left");
             if (container != null)
             {
                 var nodes = container.QuerySelectorAll("a");
@@ -124,7 +124,7 @@ namespace RssFeeder.Console.FeedBuilders
             }
 
             // Column 2
-            container = document.QuerySelector("#home_page_middle_column");
+            container = document.QuerySelector("#home_page_main_feed_center");
             if (container != null)
             {
                 var nodes = container.QuerySelectorAll("a");
@@ -154,7 +154,7 @@ namespace RssFeeder.Console.FeedBuilders
             }
 
             // Column 3
-            container = document.QuerySelector("#home_page_right_column");
+            container = document.QuerySelector("#home_page_main_feed_right");
             if (container != null)
             {
                 var nodes = container.QuerySelectorAll("a");
