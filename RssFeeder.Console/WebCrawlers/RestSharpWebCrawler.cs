@@ -1,4 +1,5 @@
-﻿using RestSharp;
+﻿using System.Linq;
+using RestSharp;
 using Serilog;
 
 namespace RssFeeder.Console.WebCrawlers
