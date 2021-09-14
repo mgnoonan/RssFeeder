@@ -95,7 +95,7 @@ namespace RssFeeder.Mvc.Handlers
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Error building feed @{feed}", feed);
+                Log.Error(ex, "Error building feed {@feed}", feed);
                 throw;
             }
 
