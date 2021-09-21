@@ -91,7 +91,7 @@ namespace RssFeeder.Mvc.Handlers
                     }
                     catch (Exception ex)
                     {
-                        Log.Error(ex, "Error building item {@item}", item);
+                        Log.Error(ex, "Error building item {urlHash}:{url}", item.UrlHash, item.Url);
                     }
                 }
 
