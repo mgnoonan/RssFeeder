@@ -93,7 +93,7 @@
   {
     "id": "42d93c37-a6a2-4bac-b47e-902f0aa1dd9d",
     "Title": "Bad Blue",
-    "Url": "https://populist.press/",
+    "Url": "http://badblue.bitnamiapp.com/",
     "Description": "Bad Blue",
     "Language": "en-US",
     "CustomParser": "RssFeeder.Console.FeedBuilders.BadBlueFeedBuilder",
