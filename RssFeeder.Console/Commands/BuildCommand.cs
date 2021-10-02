@@ -60,6 +60,7 @@ namespace RssFeeder.Console.Commands
 
                 // Deserialize into our options class
                 feedList = JsonConvert.DeserializeObject<List<RssFeed>>(json);
+                var startDate = DateTime.Now;
 
                 foreach (var feed in feedList)
                 {
@@ -70,7 +71,7 @@ namespace RssFeeder.Console.Commands
                             if (feed.Enabled)
                             {
                                 bootstrap.Start(_container, feed);
-                                bootstrap.Export(_container, feed);
+                                bootstrap.Export(_container, feed, startDate);
                             }
                             bootstrap.Purge(_container, feed);
                         }

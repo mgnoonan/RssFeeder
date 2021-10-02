@@ -22,6 +22,7 @@ namespace RssFeeder.Console.WebCrawlers
             Log.Information("Crawler GetContentType to {url}", url);
             var request = new RestRequest(url, DataFormat.None);
             var response = _client.Head(request);
+            Log.Information("Response status code = {statusCode}", response.StatusCode);
 
             return response.Headers
                     .Where(x => x.Name == "Content-Type")
@@ -34,6 +35,7 @@ namespace RssFeeder.Console.WebCrawlers
             Log.Information("Crawler GetString to {url}", url);
             var request = new RestRequest(url, DataFormat.None);
             var response = _client.Get(request);
+            Log.Information("Response status code = {statusCode}", response.StatusCode);
 
             return response.Content;
         }

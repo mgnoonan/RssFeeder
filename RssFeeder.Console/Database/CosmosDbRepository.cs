@@ -23,6 +23,7 @@ namespace RssFeeder.Console.Database
 
         public List<T> GetDocuments<T>(string collectionName, string sqlQueryText)
         {
+            Log.Information("GetDocuments: query = '{sqlQueryText}'", sqlQueryText);
             var result = QueryItems<T>(collectionName, sqlQueryText);
 
             _log.Information("GetDocuments returned {count} documents from collection '{collectionName}'", result.Count, collectionName);
@@ -92,7 +93,6 @@ namespace RssFeeder.Console.Database
         public List<T> GetStaleDocuments<T>(string collectionName, string feedId, short maximumAgeInDays)
         {
             string sqlQueryText = $"SELECT c.id, c.UrlHash, c.HostName FROM c WHERE c.DateAdded <= '{DateTime.UtcNow.AddDays(-maximumAgeInDays):o}' AND (c.FeedId = '{feedId}' OR c.FeedId = 0)";
-            Log.Information("GetStaleDocuments: query = '{sqlQueryText}'", sqlQueryText);
 
             return GetDocuments<T>(collectionName, sqlQueryText);
         }
@@ -109,10 +109,9 @@ namespace RssFeeder.Console.Database
             throw new NotImplementedException();
         }
 
-        public List<T> GetExportDocuments<T>(string collectionName, string feedId, int minutes)
+        public List<T> GetExportDocuments<T>(string collectionName, string feedId, DateTime startDate)
         {
-            string sqlQueryText = $"SELECT * FROM c WHERE c.DateAdded >= '{DateTime.UtcNow.AddMinutes(-minutes):o}' AND c.FeedId = '{feedId}'";
-            Log.Information("GetExportDocuments: query = '{sqlQueryText}'", sqlQueryText);
+            string sqlQueryText = $"SELECT * FROM c WHERE c.DateAdded >= '{TimeZoneInfo.ConvertTimeToUtc(startDate):o}' AND c.FeedId = '{feedId}'";
 
             return GetDocuments<T>(collectionName, sqlQueryText);
         }

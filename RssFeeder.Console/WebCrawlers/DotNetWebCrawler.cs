@@ -49,6 +49,7 @@ namespace RssFeeder.Console.WebCrawlers
         public byte[] DownloadData(string url)
         {
             var response = GetAsync(url).GetAwaiter().GetResult();
+            Log.Information("Response status code = {statusCode}", response.StatusCode);
             response.EnsureSuccessStatusCode();
 
             // Check that the remote file was found. The ContentType
@@ -75,6 +76,7 @@ namespace RssFeeder.Console.WebCrawlers
         {
             Log.Information("Crawler GetContentType to {url}", url);
             HttpResponseMessage response = _client.Send(new HttpRequestMessage(HttpMethod.Head, url));
+            Log.Information("Response status code = {statusCode}", response.StatusCode);
             response.EnsureSuccessStatusCode();
 
             return response.Content.Headers.ContentType.ToString();

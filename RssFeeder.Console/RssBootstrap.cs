@@ -116,6 +116,7 @@ $item.ArticleText$
             int articleCount = 0;
             foreach (var item in list)
             {
+                using (LogContext.PushProperty("url", item.Url))
                 using (LogContext.PushProperty("urlHash", item.UrlHash))
                 {
                     // No need to continue if we already crawled the article
@@ -194,7 +195,7 @@ $item.ArticleText$
             return ".html";
         }
 
-        public void Export(IContainer container, RssFeed feed)
+        public void Export(IContainer container, RssFeed feed, DateTime startDate)
         {
             if (!feed.Exportable)
             {
@@ -203,7 +204,7 @@ $item.ArticleText$
             }
 
             // Get the articles from the source repository starting at the top of the hour
-            var list = repository.GetExportDocuments<RssFeedItem>(_collectionName, feed.CollectionName, DateTime.Now.Minute + 1);
+            var list = repository.GetExportDocuments<RssFeedItem>(_collectionName, feed.CollectionName, startDate);
 
             // Loop through the list and upsert to the target repository
             foreach (var item in list)
@@ -327,10 +328,16 @@ $item.ArticleText$
             item.HostName = hostName;
             item.SiteName = ParseMetaTagAttributes(doc, "og:site_name", "content").ToLower();
 
+            // Fixup apnews on populist press links which sometimes report incorrectly
             if (string.IsNullOrWhiteSpace(item.SiteName) || (item.SiteName == "ap news" && item.Url.Contains("populist.press")))
             {
-                // Fixup apnews on populist press links which sometimes report incorrectly
                 item.SiteName = item.HostName;
+            }
+
+            // Fixup news.trust.org imageUrl links which have an embedded redirect
+            if (string.IsNullOrWhiteSpace(item.ImageUrl) || (item.SiteName == "news.trust.org" && item.Url.Contains("news.trust.org")))
+            {
+                item.ImageUrl = String.Empty;
             }
 
             // Remove the protocol portion if there is one, i.e. 'https://'

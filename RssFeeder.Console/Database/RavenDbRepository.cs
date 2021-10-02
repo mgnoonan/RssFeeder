@@ -114,10 +114,10 @@ namespace RssFeeder.Console.Database
             return GetDocuments<T>(collectionName, sqlQueryText);
         }
 
-        public List<T> GetExportDocuments<T>(string collectionName, string feedId, int minutes)
+        public List<T> GetExportDocuments<T>(string collectionName, string feedId, DateTime startDate)
         {
             string sqlQueryText = $@"from @all_docs 
-                   where DateAdded >= '{DateTime.UtcNow.AddMinutes(-minutes):o}'
+                   where DateAdded >= '{TimeZoneInfo.ConvertTimeToUtc(startDate):o}'
                    and FeedId = '{feedId}'";
 
             return GetDocuments<T>(collectionName, sqlQueryText);
