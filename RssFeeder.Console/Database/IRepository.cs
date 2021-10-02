@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace RssFeeder.Console.Database
 {
@@ -6,7 +7,7 @@ namespace RssFeeder.Console.Database
     {
         List<T> GetDocuments<T>(string collectionName, string sqlQueryText);
         List<T> GetStaleDocuments<T>(string collectionName, string feedId, short maximumAgeInDays);
-        List<T> GetExportDocuments<T>(string collectionName, string feedId, int minutes);
+        List<T> GetExportDocuments<T>(string collectionName, string feedId, DateTime startDate);
         List<T> GetAllDocuments<T>(string collectionName);
         void CreateDocument<T>(string collectionName, T item, int expirationDays);
         bool DocumentExists<T>(string collectionName, string feedID, string urlHash);
