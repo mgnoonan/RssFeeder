@@ -1,4 +1,8 @@
-﻿namespace RssFeeder.Console.Utility
+﻿using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
+
+namespace RssFeeder.Console.Utility
 {
     public interface IUtils
     {
