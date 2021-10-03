@@ -9,6 +9,11 @@ namespace RssFeeder.Mvc.Models
 {
     public class RssFeedItem
     {
+        public RssFeedItem()
+        {
+            FeedAttributes = new FeedAttributes();
+        }
+
         [JsonProperty(PropertyName = "id")]
         public string Id { get; set; }
         public string FeedId { get; set; }
