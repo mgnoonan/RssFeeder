@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using AngleSharp.Dom;
 using AngleSharp.Html.Parser;
 using Antlr4.StringTemplate;
 using Autofac;
@@ -151,10 +152,12 @@ $item.ArticleText$
                         {
                             // Download the Url contents, first using HttpClient but if that fails use Selenium
                             item.FileName = webUtils.SaveUrlToDisk(item.Url, item.UrlHash, filename, !filename.Contains("_apnews_com") && !filename.Contains("_rumble_com"));
+                            item.FeedAttributes.FileName = item.FileName;
                             if (string.IsNullOrEmpty(item.FileName) || filename.Contains("ajc_com") || filename.Contains("rumble_com"))
                             {
                                 // Must have had an error on loading the url so attempt with Selenium
                                 item.FileName = webUtils.WebDriverUrlToDisk(item.Url, item.UrlHash, filename);
+                                item.FeedAttributes.FileName = item.FileName;
                             }
                         }
 
@@ -259,6 +262,9 @@ $item.ArticleText$
                     var doc = new HtmlDocument();
                     doc.Load(item.FileName);
 
+                    item.OpenGraphAttributes = ParseOpenGraphAttributes(doc);
+                    item.HtmlAttributes = ParseHtmlAttributes(doc);
+
                     // Meta tags provide extended data about the item, display as much as possible
                     if (Config.VideoHosts.Contains(hostName))
                     {
@@ -317,9 +323,11 @@ $item.ArticleText$
             // Extract the meta data from the Open Graph tags helpfully provided with almost every article
             string url = item.Url;
             item.Url = ParseMetaTagAttributes(doc, "og:url", "content");
+            item.FeedAttributes.Url = item.Url;
             if (string.IsNullOrWhiteSpace(item.Url))
             {
                 item.Url = url;
+                item.FeedAttributes.Url = url;
             }
 
             item.Subtitle = ParseMetaTagAttributes(doc, "og:title", "content");
@@ -344,7 +352,7 @@ $item.ArticleText$
             if (item.SiteName.IndexOf('/') > 0)
             {
                 item.SiteName = item.SiteName.Substring(item.SiteName.LastIndexOf('/') + 1);
-            }            
+            }
 
             // Check if we have a site parser defined for the site name
             var definition = definitions.Get(item.SiteName);
@@ -465,6 +473,45 @@ $item.ArticleText$
             item.ImageUrl = item.Url;
             item.HostName = hostName;
             item.SiteName = item.HostName;
+        }
+
+        private Dictionary<string, string> ParseOpenGraphAttributes(HtmlDocument doc)
+        {
+            var attributes = new Dictionary<string, string>();
+            var nodes = doc.DocumentNode.SelectNodes($"//meta");
+
+            foreach (var node in nodes)
+            {
+                string propertyValue = node.Attributes["property"]?.Value ?? "";
+                if (propertyValue.StartsWith("og:"))
+                {
+                    string contentValue = node.Attributes["content"]?.Value ?? "unspecified";
+                    Log.Information("Found open graph attribute '{propertyValue}':'{contentValue}'", propertyValue, contentValue);
+
+                    if (!attributes.ContainsKey(propertyValue))
+                    {
+                        attributes.Add(propertyValue, contentValue);
+                    }
+                    else
+                    {
+                        Log.Warning("Duplicate open graph tag '{propertyValue}'", propertyValue);
+                    }
+                }
+            }
+
+            return attributes;
+        }
+
+        private Dictionary<string, string> ParseHtmlAttributes(HtmlDocument doc)
+        {
+            var attributes = new Dictionary<string, string>();
+            var node = doc.DocumentNode.SelectSingleNode($"//title");
+
+            // Node can come back null if the tag is not present in the DOM
+            string contentValue = node?.InnerText.Trim() ?? string.Empty;
+            attributes.Add("title", contentValue);
+
+            return attributes;
         }
 
         private string ParseMetaTagAttributes(HtmlDocument doc, string property, string attribute)

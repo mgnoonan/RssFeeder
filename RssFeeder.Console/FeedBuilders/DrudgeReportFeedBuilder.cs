@@ -28,9 +28,12 @@ namespace RssFeeder.Console.FeedBuilders
             foreach (var item in items)
             {
                 item.FeedId = feedCollectionName;
+                item.FeedAttributes.FeedId = feedCollectionName;
+
                 if (item.Url.StartsWith("/"))
                 {
                     item.Url = feedUrl + item.Url;
+                    item.FeedAttributes.Url = feedUrl + item.Url;
                 }
             }
 

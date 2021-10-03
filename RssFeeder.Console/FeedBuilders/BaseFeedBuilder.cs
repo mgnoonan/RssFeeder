@@ -89,7 +89,15 @@ namespace RssFeeder.Console.FeedBuilders
                     Url = linkUrl,
                     UrlHash = hash,
                     DateAdded = DateTime.Now.ToUniversalTime(),
-                    LinkLocation = $"{location}, article {count}"
+                    LinkLocation = $"{location}, article {count}",
+                    FeedAttributes = new FeedAttributes()
+                    {
+                        Title = WebUtility.HtmlDecode(title),
+                        Url = linkUrl,
+                        UrlHash = hash,
+                        DateAdded = DateTime.Now.ToUniversalTime(),
+                        LinkLocation = $"{location}, article {count}"
+                    }
                 };
             }
 

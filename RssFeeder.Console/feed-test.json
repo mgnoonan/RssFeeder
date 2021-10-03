@@ -1,13 +1,17 @@
 ﻿[
   {
     "Title": "Bad Blue",
+    "Enabled": "true",
+    "EnableThumbnail": "false",
+    "Exportable": "false",
     "Description": "Bad Blue",
     "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\badblue.xml",
     "Language": "en-US",
-    "Url": "http://badblue.bitnamiapp.com/trendr8.htm",
+    "Url": "http://badblue.bitnamiapp.com/",
     "CustomParser": "RssFeeder.Console.FeedBuilders.BadBlueFeedBuilder",
     "CollectionName": "bad-blue",
-    "Filters": [],
-    "Enabled": "true"
+    "FileRetentionDays": 7,
+    "DatabaseRetentionDays": 7,
+    "Filters": []
   }
 ]
