@@ -21,20 +21,7 @@ namespace RssFeeder.Console.FeedBuilders
         public List<RssFeedItem> ParseRssFeedItems(string feedCollectionName, string feedUrl, List<string> feedFilters, string html)
         {
             var items = ParseRssFeedItems(html, feedFilters ?? new List<string>());
-            log.Information("FOUND {count} articles in {url}", items.Count, feedUrl);
-
-            // Replace any relative paths and add the feed id
-            foreach (var item in items)
-            {
-                item.FeedId = feedCollectionName;
-                item.FeedAttributes.FeedId = feedCollectionName;
-
-                if (item.Url.StartsWith("/"))
-                {
-                    item.Url = feedUrl + item.Url;
-                    item.FeedAttributes.Url = feedUrl + item.Url;
-                }
-            }
+            PostProcessing(feedCollectionName, feedUrl, items);
 
             return items;
         }

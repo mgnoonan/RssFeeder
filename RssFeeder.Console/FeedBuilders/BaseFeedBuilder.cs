@@ -22,6 +22,24 @@ namespace RssFeeder.Console.FeedBuilders
             utils = utilities;
         }
 
+        protected void PostProcessing(string feedCollectionName, string feedUrl, List<RssFeedItem> items)
+        {
+            log.Information("FOUND {count} articles in {url}", items.Count, feedUrl);
+
+            // Replace any relative paths and add the feed id
+            foreach (var item in items)
+            {
+                item.FeedId = feedCollectionName;
+                item.FeedAttributes.FeedId = feedCollectionName;
+
+                if (item.Url.StartsWith("/"))
+                {
+                    item.Url = feedUrl + item.Url;
+                    //item.FeedAttributes.Url = feedUrl + item.Url;
+                }
+            }
+        }
+
         protected RssFeedItem CreateNodeLinks(List<string> filters, IElement node, string location, int count)
         {
             string title = WebUtility.HtmlDecode(node.Text().Trim());

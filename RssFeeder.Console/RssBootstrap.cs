@@ -323,11 +323,11 @@ $item.ArticleText$
             // Extract the meta data from the Open Graph tags helpfully provided with almost every article
             string url = item.Url;
             item.Url = ParseMetaTagAttributes(doc, "og:url", "content");
-            item.FeedAttributes.Url = item.Url;
-            if (string.IsNullOrWhiteSpace(item.Url))
+            //item.FeedAttributes.Url = item.Url;
+            if (string.IsNullOrWhiteSpace(item.Url) || hostName.Contains("frontpagemag.com"))
             {
                 item.Url = url;
-                item.FeedAttributes.Url = url;
+                //item.FeedAttributes.Url = url;
             }
 
             item.Subtitle = ParseMetaTagAttributes(doc, "og:title", "content");
@@ -479,6 +479,10 @@ $item.ArticleText$
         {
             var attributes = new Dictionary<string, string>();
             var nodes = doc.DocumentNode.SelectNodes($"//meta");
+            if (nodes is null)
+            {
+                return attributes;
+            }
 
             foreach (var node in nodes)
             {

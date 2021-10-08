@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Net;
 using AngleSharp.Dom;
 using AngleSharp.Html.Parser;
-using HtmlAgilityPack;
 using RssFeeder.Console.Utility;
 using RssFeeder.Models;
 using Serilog;
@@ -36,20 +35,7 @@ namespace RssFeeder.Console.FeedBuilders
         public List<RssFeedItem> ParseRssFeedItems(string feedCollectionName, string feedUrl, List<string> feedFilters, string html)
         {
             var items = ParseRssFeedItems(html, feedFilters ?? new List<string>());
-            log.Information("FOUND {count} articles in {url}", items.Count, feedUrl);
-
-            // Replace any relative paths and add the feed id
-            foreach (var item in items)
-            {
-                item.FeedId = feedCollectionName;
-                item.FeedAttributes.FeedId = feedCollectionName;
-
-                if (item.Url.StartsWith("/"))
-                {
-                    item.Url = feedUrl + item.Url;
-                    item.FeedAttributes.Url = feedUrl + item.Url;
-                }
-            }
+            PostProcessing(feedCollectionName, feedUrl, items);
 
             return items;
         }
@@ -200,8 +186,8 @@ namespace RssFeeder.Console.FeedBuilders
                 Log.Information("Embedded Url found '{url}'", url);
                 item.UrlHash = _utilities.CreateMD5Hash(url);
                 item.Url = url;
-                item.FeedAttributes.UrlHash=_utilities.CreateMD5Hash(url);
-                item.FeedAttributes.Url = url;
+                //item.FeedAttributes.UrlHash = _utilities.CreateMD5Hash(url);
+                //item.FeedAttributes.Url = url;
                 break;
             }
         }
