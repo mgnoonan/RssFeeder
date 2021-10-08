@@ -60,7 +60,7 @@ namespace RssFeeder.Console.Commands
 
                 // Deserialize into our options class
                 feedList = JsonConvert.DeserializeObject<List<RssFeed>>(json);
-                var startDate = DateTime.Now;
+                var startDate = DateTime.UtcNow;
 
                 foreach (var feed in feedList)
                 {
