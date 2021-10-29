@@ -140,7 +140,11 @@ $ArticleText$
                         // Check for crawler exclusions, downloading content is blocked from these sites
                         Uri uri = new Uri(item.FeedAttributes.Url);
                         string hostName = uri.GetComponents(UriComponents.Host, UriFormat.Unescaped).ToLower();
-                        if (!Config.Exclusions.Contains(hostName))
+                        if (Config.Exclusions.Contains(hostName))
+                        {
+                            Log.Information("Host '{hostName}' found on the exclusion list, skipping download", hostName);
+                        }
+                        else
                         {
                             // Download the Url contents, first using HttpClient but if that fails use Selenium
                             string newFilename = webUtils.SaveUrlToDisk(item.Url, item.UrlHash, filename, !filename.Contains("_apnews_com") && !filename.Contains("_rumble_com"));
@@ -327,7 +331,7 @@ $ArticleText$
             var t = new Template(template, '$', '$');
             t.Add("item", item);
             t.Add("feed", feed);
-            t.Add("ArticleText", item.HtmlAttributes["ArticleText"]);
+            t.Add("ArticleText", item.HtmlAttributes?.ContainsKey("ArticleText") ?? false ? item.HtmlAttributes["ArticleText"] : string.Empty);
 
             return t.Render();
         }
@@ -336,17 +340,17 @@ $ArticleText$
         {
             // Extract the meta data from the Open Graph tags helpfully provided with almost every article
             string url = item.Url;
-            item.Url = ParseMetaTagAttributes(doc, "og:url", "content");
+            item.Url = ParseOpenGraphMetaTagAttributes(doc,  "og:url", "content");
 
             if (string.IsNullOrWhiteSpace(item.Url) || hostName.Contains("frontpagemag.com"))
             {
                 item.Url = url;
             }
 
-            item.Subtitle = ParseMetaTagAttributes(doc, "og:title", "content");
-            item.ImageUrl = ParseMetaTagAttributes(doc, "og:image", "content");
+            item.Subtitle = ParseOpenGraphMetaTagAttributes(doc,  "og:title", "content");
+            item.ImageUrl = ParseOpenGraphMetaTagAttributes(doc,  "og:image", "content");
             item.HostName = hostName;
-            item.SiteName = ParseMetaTagAttributes(doc, "og:site_name", "content").ToLower();
+            item.SiteName = ParseOpenGraphMetaTagAttributes(doc,  "og:site_name", "content").ToLower();
 
             // Fixup apnews on populist press links which sometimes report incorrectly
             if (string.IsNullOrWhiteSpace(item.SiteName) || (item.SiteName == "ap news" && item.Url.Contains("populist.press")))
@@ -400,10 +404,10 @@ $ArticleText$
         private void SetVideoMetaData(RssFeedItem item, HtmlDocument doc, string hostName)
         {
             // Extract the meta data from the Open Graph tags customized for YouTube
-            item.Subtitle = ParseMetaTagAttributes(doc, "og:title", "content");
-            item.ImageUrl = ParseMetaTagAttributes(doc, "og:image", "content");
+            item.Subtitle = ParseOpenGraphMetaTagAttributes(doc,  "og:title", "content");
+            item.ImageUrl = ParseOpenGraphMetaTagAttributes(doc,  "og:image", "content");
             item.HostName = hostName;
-            item.SiteName = ParseMetaTagAttributes(doc, "og:site_name", "content").ToLower();
+            item.SiteName = ParseOpenGraphMetaTagAttributes(doc,  "og:site_name", "content").ToLower();
 
             if (string.IsNullOrWhiteSpace(item.SiteName))
             {
@@ -420,14 +424,14 @@ $ArticleText$
             else
             {
                 // These may be YouTube-only Open Graph tags
-                item.VideoUrl = ParseMetaTagAttributes(doc, "og:video:url", "content");
-                item.VideoHeight = int.TryParse(ParseMetaTagAttributes(doc, "og:video:height", "content"), out int height) ? height : 0;
-                item.VideoWidth = int.TryParse(ParseMetaTagAttributes(doc, "og:video:width", "content"), out int width) ? width : 0;
+                item.VideoUrl = ParseOpenGraphMetaTagAttributes(doc,  "og:video:url", "content");
+                item.VideoHeight = int.TryParse(ParseOpenGraphMetaTagAttributes(doc,  "og:video:height", "content"), out int height) ? height : 0;
+                item.VideoWidth = int.TryParse(ParseOpenGraphMetaTagAttributes(doc,  "og:video:width", "content"), out int width) ? width : 0;
             }
             Log.Information("Video URL: '{url}' ({height}x{width})", item.VideoUrl, item.VideoHeight, item.VideoWidth);
 
             // There's no article text for most video sites, so just use the meta description
-            var description = ParseMetaTagAttributes(doc, "og:description", "content");
+            var description = ParseOpenGraphMetaTagAttributes(doc,  "og:description", "content");
             item.ArticleText = $"<p>{description}</p>";
         }
 
@@ -499,38 +503,46 @@ $ArticleText$
         {
             var attributes = new Dictionary<string, string>();
 
-            // Node can come back null if the tag is not present in the DOM
+            // Title tag
             var node = doc.DocumentNode.SelectSingleNode($"//title");
             string contentValue = node?.InnerText.Trim() ?? string.Empty;
             attributes.Add("title", contentValue);
 
-            // Node can come back null if the tag is not present in the DOM
+            // H1 values for possible headline - may not exist
             node = doc.DocumentNode.SelectSingleNode($"//h1");
             contentValue = node?.InnerText.Trim() ?? string.Empty;
             attributes.Add("h1", contentValue);
 
+            // Description meta tag - may not exist
+            attributes.Add("description", ParseMetaTagAttributes(doc, "name", "description", "content"));
+
             return attributes;
         }
 
-        private string ParseMetaTagAttributes(HtmlDocument doc, string property, string attribute)
+        private string ParseOpenGraphMetaTagAttributes(HtmlDocument doc, string targetAttributeValue, string sourceAttributeName)
+        {
+            return ParseMetaTagAttributes(doc, "property", targetAttributeValue, sourceAttributeName);
+        }
+
+        private string ParseMetaTagAttributes(HtmlDocument doc, string targetAttributeName, string targetAttributeValue, string sourceAttributeName)
         {
             // Retrieve the requested meta tag by property name
-            var node = doc.DocumentNode.SelectSingleNode($"//meta[@property='{property}']");
+            var node = doc.DocumentNode.SelectSingleNode($"//meta[@{targetAttributeName}='{targetAttributeValue}']");
 
             // Node can come back null if the meta tag is not present in the DOM
             // Attribute can come back null as well if not present on the meta tag
-            string value = node?.Attributes[attribute]?.Value.Trim() ?? string.Empty;
+            string sourceAttributeValue = node?.Attributes[sourceAttributeName]?.Value.Trim() ?? string.Empty;
 
-            if (string.IsNullOrWhiteSpace(value))
+            if (string.IsNullOrWhiteSpace(sourceAttributeValue))
             {
-                Log.Warning("Error reading attribute '{attribute}' from meta tag '{property}'", attribute, property);
+                Log.Warning("Error reading attribute '{attribute}' from meta tag '{property}'", targetAttributeName, targetAttributeValue);
             }
             else
             {
-                Log.Information("Meta attribute '{attribute}':'{property}' has a value of '{value}'", attribute, property, value);
+                Log.Information("Meta attribute '{attribute}':'{property}' has a value of '{value}'", targetAttributeName, targetAttributeValue, sourceAttributeValue);
             }
 
-            return value;
+            return sourceAttributeValue;
         }
     }
 }
