@@ -13,20 +13,20 @@ namespace RssFeeder.Console.FeedBuilders
         public LibertyDailyFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities) : base(log, webUtilities, utilities)
         { }
 
-        public List<RssFeedItem> ParseRssFeedItems(RssFeed feed, string html)
+        public List<RssFeedItem> GenerateRssFeedItemList(RssFeed feed, string html)
         {
-            return ParseRssFeedItems(feed.CollectionName, feed.Url, feed.Filters, html);
+            return GenerateRssFeedItemList(feed.CollectionName, feed.Url, feed.Filters, html);
         }
 
-        public List<RssFeedItem> ParseRssFeedItems(string feedCollectionName, string feedUrl, List<string> feedFilters, string html)
+        public List<RssFeedItem> GenerateRssFeedItemList(string feedCollectionName, string feedUrl, List<string> feedFilters, string html)
         {
-            var items = ParseRssFeedItems(html, feedFilters ?? new List<string>());
+            var items = GenerateRssFeedItemList(html, feedFilters ?? new List<string>());
             PostProcessing(feedCollectionName, feedUrl, items);
 
             return items;
         }
 
-        public List<RssFeedItem> ParseRssFeedItems(string html, List<string> filters)
+        public List<RssFeedItem> GenerateRssFeedItemList(string html, List<string> filters)
         {
             var list = new List<RssFeedItem>();
             var doc = new HtmlDocument();
