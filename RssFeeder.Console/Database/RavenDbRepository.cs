@@ -1,6 +1,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Operations;
 using Raven.Client.Documents.Session;
@@ -50,7 +51,7 @@ namespace RssFeeder.Console.Database
             }
         }
 
-        public void CreateDocument<T>(string collectionName, T item, int expirationDays)
+        public void CreateDocument<T>(string collectionName, T item, int expirationDays, string filename, Stream stream, string contentType)
         {
             using (IDocumentSession session = _store.OpenSession(database: collectionName))
             {
@@ -58,6 +59,13 @@ namespace RssFeeder.Console.Database
 
                 session.Store(item);
                 session.Advanced.GetMetadataFor(item)[Raven.Client.Constants.Documents.Metadata.Expires] = expiry;
+                
+                // Store the attachement
+                if (!string.IsNullOrEmpty(filename))
+                {
+                    session.Advanced.Attachments.Store(item, filename, stream, contentType);
+                }
+
                 session.SaveChanges();
             }
         }

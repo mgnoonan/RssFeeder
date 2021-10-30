@@ -16,7 +16,7 @@ using RssFeeder.Console.FeedBuilders;
 using RssFeeder.Console.Models;
 using RssFeeder.Console.Parsers;
 using RssFeeder.Console.Utility;
-using RssFeeder.Console.WebCrawlers;
+using RssFeeder.Console.WebDownloaders;
 using Serilog;
 using Serilog.Formatting.Compact;
 using Serilog.Sinks.SystemConsole.Themes;
@@ -81,7 +81,7 @@ namespace RssFeeder.Console
             builder.RegisterInstance(store).As<IDocumentStore>();
             builder.Register(c => new CosmosDbRepository("rssfeeder", config.endpoint, config.authKey, Log.Logger)).As<IExportRepository>();
             builder.RegisterType<RavenDbRepository>().As<IRepository>();
-            builder.RegisterType<RssBootstrap>().As<IRssBootstrap>().WithProperty("Config", crawlerConfig);
+            builder.RegisterType<WebCrawler>().As<IWebCrawler>().WithProperty("Config", crawlerConfig);
             builder.RegisterType<DrudgeReportFeedBuilder>().Named<IRssFeedBuilder>("drudge-report");
             builder.RegisterType<EagleSlantFeedBuilder>().Named<IRssFeedBuilder>("eagle-slant");
             builder.RegisterType<LibertyDailyFeedBuilder>().Named<IRssFeedBuilder>("liberty-daily");
@@ -96,7 +96,7 @@ namespace RssFeeder.Console
             builder.RegisterType<AllTagsParser>().Named<IArticleParser>("alltags-parser");
             builder.RegisterType<ScriptParser>().Named<IArticleParser>("script-parser");
             builder.RegisterType<HtmlTagParser>().Named<IArticleParser>("htmltag-parser");
-            builder.RegisterType<RestSharpWebCrawler>().As<IWebCrawler>().SingleInstance();
+            builder.RegisterType<RestSharpWebDownloader>().As<WebDownloaders.IWebDownloader>().SingleInstance();
             builder.RegisterType<WebUtils>().As<IWebUtils>().SingleInstance();
             builder.RegisterType<Utils>().As<IUtils>().SingleInstance();
             builder.RegisterType<ArticleDefinitionFactory>().As<IArticleDefinitionFactory>().SingleInstance();

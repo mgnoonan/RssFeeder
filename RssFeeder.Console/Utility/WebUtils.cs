@@ -8,7 +8,7 @@ using System.Threading;
 using HtmlAgilityPack;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
-using RssFeeder.Console.WebCrawlers;
+using RssFeeder.Console.WebDownloaders;
 using Serilog;
 
 namespace RssFeeder.Console.Utility
@@ -18,9 +18,9 @@ namespace RssFeeder.Console.Utility
     /// </summary>
     public class WebUtils : IWebUtils
     {
-        private readonly IWebCrawler _crawler;
+        private readonly WebDownloaders.IWebDownloader _crawler;
 
-        public WebUtils(IWebCrawler crawler)
+        public WebUtils(WebDownloaders.IWebDownloader crawler)
         {
             _crawler = crawler;
         }

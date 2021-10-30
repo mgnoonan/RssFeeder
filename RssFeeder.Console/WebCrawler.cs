@@ -20,13 +20,13 @@ using Serilog.Context;
 
 namespace RssFeeder.Console
 {
-    public class RssBootstrap : IRssBootstrap
+    public class WebCrawler : IWebCrawler
     {
-        private readonly IRepository repository;
-        private readonly IExportRepository exportRepository;
-        private readonly IArticleDefinitionFactory definitions;
-        private readonly IWebUtils webUtils;
-        private readonly IUtils utils;
+        private readonly IRepository _crawlerRepository;
+        private readonly IExportRepository _feedRepository;
+        private readonly IArticleDefinitionFactory _definitions;
+        private readonly IWebUtils _webUtils;
+        private readonly IUtils _utils;
         private IContainer _container;
 
         private const string _collectionName = "drudge-report";
@@ -68,37 +68,37 @@ $ArticleText$
 
         public CrawlerConfig Config { get; set; }
 
-        public RssBootstrap(IRepository _repository, IExportRepository _exportRepository, IArticleDefinitionFactory _definitions, IWebUtils _webUtils, IUtils _utils)
+        public WebCrawler(IRepository repository, IExportRepository exportRepository, IArticleDefinitionFactory definitions, IWebUtils webUtils, IUtils utils)
         {
-            repository = _repository;
-            exportRepository = _exportRepository;
-            webUtils = _webUtils;
-            utils = _utils;
-            definitions = _definitions;
+            _crawlerRepository = repository;
+            _feedRepository = exportRepository;
+            _webUtils = webUtils;
+            _utils = utils;
+            _definitions = definitions;
         }
 
-        public void Initialize()
+        public void Initialize(IContainer container)
         {
             Log.Information("Bootstrap initializing");
             Log.Information("Crawler exclusion list: {@exclusions}", Config.Exclusions);
 
-            if (repository != null)
-                repository.EnsureDatabaseExists(_collectionName, true);
-        }
-
-        public void Start(IContainer container, RssFeed feed)
-        {
             _container = container;
 
+            if (_crawlerRepository != null)
+                _crawlerRepository.EnsureDatabaseExists(_collectionName, true);
+        }
+
+        public void Crawl(RssFeed feed)
+        {
             // Create the working folder for the collection if it doesn't exist
-            string workingFolder = Path.Combine(utils.GetAssemblyDirectory(), feed.CollectionName);
+            string workingFolder = Path.Combine(_utils.GetAssemblyDirectory(), feed.CollectionName);
             if (!Directory.Exists(workingFolder))
             {
                 Log.Information("Creating folder '{workingFolder}'", workingFolder);
                 Directory.CreateDirectory(workingFolder);
             }
 
-            var list = GenerateList(container, feed, workingFolder);
+            var list = GenerateList(feed, workingFolder);
             DownloadList(feed, workingFolder, list);
         }
 
@@ -113,7 +113,7 @@ $ArticleText$
                 using (LogContext.PushProperty("urlHash", item.FeedAttributes.UrlHash))
                 {
                     // No need to continue if we already crawled the article
-                    if (repository.DocumentExists<RssFeedItem>(_collectionName, feed.CollectionName, item.FeedAttributes.UrlHash))
+                    if (_crawlerRepository.DocumentExists<RssFeedItem>(_collectionName, feed.CollectionName, item.FeedAttributes.UrlHash))
                     {
                         continue;
                     }
@@ -147,19 +147,22 @@ $ArticleText$
                         else
                         {
                             // Download the Url contents, first using HttpClient but if that fails use Selenium
-                            string newFilename = webUtils.SaveUrlToDisk(item.Url, item.UrlHash, filename, !filename.Contains("_apnews_com") && !filename.Contains("_rumble_com"));
+                            string newFilename = _webUtils.SaveUrlToDisk(item.Url, item.UrlHash, filename, !filename.Contains("_apnews_com") && !filename.Contains("_rumble_com"));
                             item.FeedAttributes.FileName = newFilename;
                             if (string.IsNullOrEmpty(newFilename) || newFilename.Contains("ajc_com") || newFilename.Contains("rumble_com"))
                             {
                                 // Must have had an error on loading the url so attempt with Selenium
-                                newFilename = webUtils.WebDriverUrlToDisk(item.Url, item.UrlHash, newFilename);
+                                newFilename = _webUtils.WebDriverUrlToDisk(item.Url, item.UrlHash, newFilename);
                                 item.FeedAttributes.FileName = newFilename;
                             }
                         }
 
                         // Parse the saved file as dictated by the site definitions
-                        ParseArticleMetaTags(item, feed, definitions);
-                        repository.CreateDocument<RssFeedItem>(_collectionName, item, feed.DatabaseRetentionDays);
+                        ParseArticleMetaTags(item, feed, _definitions);
+                        using (var stream = new MemoryStream(System.IO.File.ReadAllBytes(item.FeedAttributes.FileName)))
+                        {
+                            _crawlerRepository.CreateDocument<RssFeedItem>(_collectionName, item, feed.DatabaseRetentionDays, Path.GetFileName(item.FeedAttributes.FileName), stream, "text/html");
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -172,20 +175,20 @@ $ArticleText$
             }
         }
 
-        private List<RssFeedItem> GenerateList(IContainer container, RssFeed feed, string workingFolder)
+        private List<RssFeedItem> GenerateList(RssFeed feed, string workingFolder)
         {
-            string html = webUtils.DownloadString(feed.Url);
+            string html = _webUtils.DownloadString(feed.Url);
 
             // Save the feed html source for posterity
             string fileStem = Path.Combine(workingFolder, $"{DateTime.Now.ToUniversalTime():yyyyMMddhhmmss}_{feed.Url.Replace("://", "_").Replace(".", "_").Replace("/", "")}");
-            utils.SaveTextToDisk(html, fileStem + ".html", false);
+            _utils.SaveTextToDisk(html, fileStem + ".html", false);
 
             // Save thumbnail snapshot of the page
             if (feed.EnableThumbnail)
-                webUtils.SaveThumbnailToDisk(feed.Url, fileStem + ".png");
+                _webUtils.SaveThumbnailToDisk(feed.Url, fileStem + ".png");
 
             // Parse the target links from the source to build the article crawl list
-            var builder = container.ResolveNamed<IRssFeedBuilder>(feed.CollectionName);
+            var builder = _container.ResolveNamed<IRssFeedBuilder>(feed.CollectionName);
             var list = builder.GenerateRssFeedItemList(feed, html);
 
             return list;
@@ -213,7 +216,7 @@ $ArticleText$
             return ".html";
         }
 
-        public void Export(IContainer container, RssFeed feed, DateTime startDate)
+        public void Export(RssFeed feed, DateTime startDate)
         {
             if (!feed.Exportable)
             {
@@ -222,37 +225,40 @@ $ArticleText$
             }
 
             // Get the articles from the source repository starting at the top of the hour
-            var list = repository.GetExportDocuments<RssFeedItem>(_collectionName, feed.CollectionName, startDate);
+            var list = _crawlerRepository.GetExportDocuments<RssFeedItem>(_collectionName, feed.CollectionName, startDate);
 
             // Loop through the list and upsert to the target repository
             foreach (var item in list)
             {
+                // Replace the RavenDB primary key with a Guid for CosmosDB
+                item.Id = Guid.NewGuid().ToString();
+
                 Log.Information("EXPORT: UrlHash '{urlHash}' from {collectionName}", item.UrlHash, feed.CollectionName);
-                exportRepository.UpsertDocument<RssFeedItem>(_collectionName, item);
+                _feedRepository.UpsertDocument<RssFeedItem>(_collectionName, item);
             }
 
             Log.Information("Exported {count} new articles to the {collectionName} collection", list.Count, feed.CollectionName);
         }
 
-        public void Purge(IContainer container, RssFeed feed)
+        public void Purge(RssFeed feed)
         {
             // Purge stale files from working folder
-            string workingFolder = Path.Combine(utils.GetAssemblyDirectory(), feed.CollectionName);
+            string workingFolder = Path.Combine(_utils.GetAssemblyDirectory(), feed.CollectionName);
             if (!Directory.Exists(workingFolder))
             {
                 Log.Logger.Information("Folder '{workingFolder}' does not exist", workingFolder);
                 return;
             }
 
-            utils.PurgeStaleFiles(workingFolder, feed.FileRetentionDays);
+            _utils.PurgeStaleFiles(workingFolder, feed.FileRetentionDays);
 
             // Purge stale documents from the database collection
-            var list = exportRepository.GetStaleDocuments<RssFeedItem>(_collectionName, feed.CollectionName, feed.DatabaseRetentionDays);
+            var list = _feedRepository.GetStaleDocuments<RssFeedItem>(_collectionName, feed.CollectionName, feed.DatabaseRetentionDays);
 
             foreach (var item in list)
             {
                 Log.Information("Removing UrlHash '{urlHash}' from {collectionName}", item.UrlHash, feed.CollectionName);
-                exportRepository.DeleteDocument<RssFeedItem>(_collectionName, item.Id, item.HostName);
+                _feedRepository.DeleteDocument<RssFeedItem>(_collectionName, item.Id, item.HostName);
             }
 
             Log.Information("Removed {count} documents older than {maximumAgeInDays} days from {collectionName}", list.Count(), feed.DatabaseRetentionDays, feed.CollectionName);
