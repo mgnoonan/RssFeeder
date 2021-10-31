@@ -91,6 +91,7 @@ namespace RssFeeder.Console
             builder.RegisterType<GutSmackFeedBuilder>().Named<IRssFeedBuilder>("gutsmack");
             builder.RegisterType<PopulistPressFeedBuilder>().Named<IRssFeedBuilder>("populist-press");
             builder.RegisterType<BadBlueFeedBuilder>().Named<IRssFeedBuilder>("bad-blue");
+            builder.RegisterType<RevolverNewsFeedBuilder>().Named<IRssFeedBuilder>("revolver-news");
             builder.RegisterType<GenericParser>().Named<IArticleParser>("generic-parser");
             builder.RegisterType<AdaptiveParser>().Named<IArticleParser>("adaptive-parser");
             builder.RegisterType<AllTagsParser>().Named<IArticleParser>("alltags-parser");

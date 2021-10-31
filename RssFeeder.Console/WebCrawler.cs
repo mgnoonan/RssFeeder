@@ -159,9 +159,16 @@ $ArticleText$
 
                         // Parse the saved file as dictated by the site definitions
                         ParseArticleMetaTags(item, feed, _definitions);
-                        using (var stream = new MemoryStream(System.IO.File.ReadAllBytes(item.FeedAttributes.FileName)))
+                        if (string.IsNullOrEmpty(item.FeedAttributes.FileName))
+{
+                            _crawlerRepository.CreateDocument<RssFeedItem>(_collectionName, item, feed.DatabaseRetentionDays, "", null, "");
+                        }
+                        else
                         {
-                            _crawlerRepository.CreateDocument<RssFeedItem>(_collectionName, item, feed.DatabaseRetentionDays, Path.GetFileName(item.FeedAttributes.FileName), stream, "text/html");
+                            using (var stream = new MemoryStream(File.ReadAllBytes(item.FeedAttributes.FileName)))
+                            {
+                                _crawlerRepository.CreateDocument<RssFeedItem>(_collectionName, item, feed.DatabaseRetentionDays, Path.GetFileName(item.FeedAttributes.FileName), stream, "text/html");
+                            }
                         }
                     }
                     catch (Exception ex)
@@ -346,17 +353,17 @@ $ArticleText$
         {
             // Extract the meta data from the Open Graph tags helpfully provided with almost every article
             string url = item.Url;
-            item.Url = ParseOpenGraphMetaTagAttributes(doc,  "og:url", "content");
+            item.Url = ParseOpenGraphMetaTagAttributes(doc,  "og:url");
 
             if (string.IsNullOrWhiteSpace(item.Url) || hostName.Contains("frontpagemag.com"))
             {
                 item.Url = url;
             }
 
-            item.Subtitle = ParseOpenGraphMetaTagAttributes(doc,  "og:title", "content");
-            item.ImageUrl = ParseOpenGraphMetaTagAttributes(doc,  "og:image", "content");
+            item.Subtitle = ParseOpenGraphMetaTagAttributes(doc,  "og:title");
+            item.ImageUrl = ParseOpenGraphMetaTagAttributes(doc,  "og:image");
             item.HostName = hostName;
-            item.SiteName = ParseOpenGraphMetaTagAttributes(doc,  "og:site_name", "content").ToLower();
+            item.SiteName = ParseOpenGraphMetaTagAttributes(doc,  "og:site_name").ToLower();
 
             // Fixup apnews on populist press links which sometimes report incorrectly
             if (string.IsNullOrWhiteSpace(item.SiteName) || (item.SiteName == "ap news" && item.Url.Contains("populist.press")))
@@ -410,10 +417,10 @@ $ArticleText$
         private void SetVideoMetaData(RssFeedItem item, HtmlDocument doc, string hostName)
         {
             // Extract the meta data from the Open Graph tags customized for YouTube
-            item.Subtitle = ParseOpenGraphMetaTagAttributes(doc,  "og:title", "content");
-            item.ImageUrl = ParseOpenGraphMetaTagAttributes(doc,  "og:image", "content");
+            item.Subtitle = ParseOpenGraphMetaTagAttributes(doc,  "og:title");
+            item.ImageUrl = ParseOpenGraphMetaTagAttributes(doc,  "og:image");
             item.HostName = hostName;
-            item.SiteName = ParseOpenGraphMetaTagAttributes(doc,  "og:site_name", "content").ToLower();
+            item.SiteName = ParseOpenGraphMetaTagAttributes(doc,  "og:site_name").ToLower();
 
             if (string.IsNullOrWhiteSpace(item.SiteName))
             {
@@ -430,14 +437,14 @@ $ArticleText$
             else
             {
                 // These may be YouTube-only Open Graph tags
-                item.VideoUrl = ParseOpenGraphMetaTagAttributes(doc,  "og:video:url", "content");
-                item.VideoHeight = int.TryParse(ParseOpenGraphMetaTagAttributes(doc,  "og:video:height", "content"), out int height) ? height : 0;
-                item.VideoWidth = int.TryParse(ParseOpenGraphMetaTagAttributes(doc,  "og:video:width", "content"), out int width) ? width : 0;
+                item.VideoUrl = ParseOpenGraphMetaTagAttributes(doc,  "og:video:url");
+                item.VideoHeight = int.TryParse(ParseOpenGraphMetaTagAttributes(doc,  "og:video:height"), out int height) ? height : 0;
+                item.VideoWidth = int.TryParse(ParseOpenGraphMetaTagAttributes(doc,  "og:video:width"), out int width) ? width : 0;
             }
             Log.Information("Video URL: '{url}' ({height}x{width})", item.VideoUrl, item.VideoHeight, item.VideoWidth);
 
             // There's no article text for most video sites, so just use the meta description
-            var description = ParseOpenGraphMetaTagAttributes(doc,  "og:description", "content");
+            var description = ParseOpenGraphMetaTagAttributes(doc,  "og:description");
             item.ArticleText = $"<p>{description}</p>";
         }
 
@@ -485,7 +492,9 @@ $ArticleText$
 
             foreach (var node in nodes)
             {
-                string propertyValue = node.Attributes["property"]?.Value ?? "";
+                string propertyValue = node.Attributes["property"]?.Value ??
+                    node.Attributes["name"]?.Value ?? "";
+
                 if (propertyValue.StartsWith("og:"))
                 {
                     string contentValue = node.Attributes["content"]?.Value ?? "unspecified";
@@ -525,9 +534,16 @@ $ArticleText$
             return attributes;
         }
 
-        private string ParseOpenGraphMetaTagAttributes(HtmlDocument doc, string targetAttributeValue, string sourceAttributeName)
+        private string ParseOpenGraphMetaTagAttributes(HtmlDocument doc, string targetAttributeValue)
         {
-            return ParseMetaTagAttributes(doc, "property", targetAttributeValue, sourceAttributeName);
+            string value = ParseMetaTagAttributes(doc, "property", targetAttributeValue, "content");
+
+            if (string.IsNullOrEmpty(value))
+            {
+                value = ParseMetaTagAttributes(doc, "name", targetAttributeValue, "content");
+            }
+
+            return value;
         }
 
         private string ParseMetaTagAttributes(HtmlDocument doc, string targetAttributeName, string targetAttributeValue, string sourceAttributeName)

@@ -51,6 +51,11 @@ namespace RssFeeder.Console.Database
             }
         }
 
+        public void CreateDocument<T>(string collectionName, T item, int expirationDays)
+        {
+            CreateDocument<T>(collectionName, item, expirationDays, null, null, null);
+        }
+
         public void CreateDocument<T>(string collectionName, T item, int expirationDays, string filename, Stream stream, string contentType)
         {
             using (IDocumentSession session = _store.OpenSession(database: collectionName))

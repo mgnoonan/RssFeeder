@@ -31,6 +31,11 @@ namespace RssFeeder.Console.Database
             return result;
         }
 
+        public void CreateDocument<T>(string collectionName, T item, int expirationDays)
+        {
+            CreateDocument<T>(collectionName, item, expirationDays, null, null, null);
+        }
+
         public void CreateDocument<T>(string collectionName, T item, int expirationDays, string filename, Stream stream, string contentType)
         {
             var container = _client.GetContainer(_databaseName, collectionName);
