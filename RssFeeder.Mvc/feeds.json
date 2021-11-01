@@ -104,9 +104,9 @@
     "Filters": []
   },
   {
-    "id": "",
+    "id": "1c389521-4236-464e-a2c4-e95b679c312b",
     "Title": "Revolver News",
-    "Url": "",
+    "Url": "https://www.revolver.news/",
     "Description": "Revolver News",
     "Language": "en-US",
     "CustomParser": "RssFeeder.Console.FeedBuilders.RevolverNewsFeedBuilder",
