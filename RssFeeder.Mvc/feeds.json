@@ -102,5 +102,18 @@
     "FeedlyUrl": "",
     "RssUrl": "/api/rss/bad-blue",
     "Filters": []
+  },
+  {
+    "id": "",
+    "Title": "Revolver News",
+    "Url": "",
+    "Description": "Revolver News",
+    "Language": "en-US",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.RevolverNewsFeedBuilder",
+    "CollectionName": "revolver-news",
+    "authoremail": "editor@revolver.news",
+    "FeedlyUrl": "",
+    "RssUrl": "/api/rss/revolver-news",
+    "Filters": []
   }
 ]
