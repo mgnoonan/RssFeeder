@@ -111,7 +111,7 @@
     "Language": "en-US",
     "CustomParser": "RssFeeder.Console.FeedBuilders.RevolverNewsFeedBuilder",
     "CollectionName": "revolver-news",
-    "authoremail": "news@revolver.news",
+    "authoremail": "editor@revolver.news",
     "FeedlyUrl": "",
     "RssUrl": "/api/rss/revolver-news",
     "Filters": []
