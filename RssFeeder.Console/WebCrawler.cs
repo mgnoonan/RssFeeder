@@ -23,13 +23,14 @@ namespace RssFeeder.Console
     public class WebCrawler : IWebCrawler
     {
         private readonly IRepository _crawlerRepository;
-        private readonly IExportRepository _feedRepository;
+        private readonly IExportRepository _exportRepository;
         private readonly IArticleDefinitionFactory _definitions;
         private readonly IWebUtils _webUtils;
         private readonly IUtils _utils;
         private IContainer _container;
 
-        private const string _collectionName = "drudge-report";
+        private const string _exportCollectionName = "drudge-report";
+        private const string _crawlerCollectionName = "feed-items";
         private const string MetaDataTemplate = @"
 <p>
     The post <a href=""$item.Url$"">$item.Title$</a> captured from <a href=""$feed.Url$"">$feed.Title$</a> $item.LinkLocation$ on $item.DateAdded$ UTC.
@@ -68,10 +69,10 @@ $ArticleText$
 
         public CrawlerConfig Config { get; set; }
 
-        public WebCrawler(IRepository repository, IExportRepository exportRepository, IArticleDefinitionFactory definitions, IWebUtils webUtils, IUtils utils)
+        public WebCrawler(IRepository crawlerRepository, IExportRepository exportRepository, IArticleDefinitionFactory definitions, IWebUtils webUtils, IUtils utils)
         {
-            _crawlerRepository = repository;
-            _feedRepository = exportRepository;
+            _crawlerRepository = crawlerRepository;
+            _exportRepository = exportRepository;
             _webUtils = webUtils;
             _utils = utils;
             _definitions = definitions;
@@ -85,7 +86,9 @@ $ArticleText$
             _container = container;
 
             if (_crawlerRepository != null)
-                _crawlerRepository.EnsureDatabaseExists(_collectionName, true);
+                _crawlerRepository.EnsureDatabaseExists(_crawlerCollectionName, true);
+            //if (_exportRepository != null)
+            //    _exportRepository.EnsureDatabaseExists(_exportCollectionName, true);
         }
 
         public void Crawl(RssFeed feed)
@@ -113,7 +116,7 @@ $ArticleText$
                 using (LogContext.PushProperty("urlHash", item.FeedAttributes.UrlHash))
                 {
                     // No need to continue if we already crawled the article
-                    if (_crawlerRepository.DocumentExists<RssFeedItem>(_collectionName, feed.CollectionName, item.FeedAttributes.UrlHash))
+                    if (_crawlerRepository.DocumentExists<RssFeedItem>(_crawlerCollectionName, feed.CollectionName, item.FeedAttributes.UrlHash))
                     {
                         continue;
                     }
@@ -161,13 +164,13 @@ $ArticleText$
                         ParseArticleMetaTags(item, feed, _definitions);
                         if (string.IsNullOrEmpty(item.FeedAttributes.FileName))
 {
-                            _crawlerRepository.CreateDocument<RssFeedItem>(_collectionName, item, feed.DatabaseRetentionDays, "", null, "");
+                            _crawlerRepository.CreateDocument<RssFeedItem>(_crawlerCollectionName, item, feed.DatabaseRetentionDays, "", null, "");
                         }
                         else
                         {
                             using (var stream = new MemoryStream(File.ReadAllBytes(item.FeedAttributes.FileName)))
                             {
-                                _crawlerRepository.CreateDocument<RssFeedItem>(_collectionName, item, feed.DatabaseRetentionDays, Path.GetFileName(item.FeedAttributes.FileName), stream, "text/html");
+                                _crawlerRepository.CreateDocument<RssFeedItem>(_crawlerCollectionName, item, feed.DatabaseRetentionDays, Path.GetFileName(item.FeedAttributes.FileName), stream, "text/html");
                             }
                         }
                     }
@@ -232,7 +235,7 @@ $ArticleText$
             }
 
             // Get the articles from the source repository starting at the top of the hour
-            var list = _crawlerRepository.GetExportDocuments<RssFeedItem>(_collectionName, feed.CollectionName, startDate);
+            var list = _crawlerRepository.GetExportDocuments<RssFeedItem>(_exportCollectionName, feed.CollectionName, startDate);
 
             // Loop through the list and upsert to the target repository
             foreach (var item in list)
@@ -241,7 +244,7 @@ $ArticleText$
                 item.Id = Guid.NewGuid().ToString();
 
                 Log.Information("EXPORT: UrlHash '{urlHash}' from {collectionName}", item.UrlHash, feed.CollectionName);
-                _feedRepository.UpsertDocument<RssFeedItem>(_collectionName, item);
+                _exportRepository.UpsertDocument<RssFeedItem>(_exportCollectionName, item);
             }
 
             Log.Information("Exported {count} new articles to the {collectionName} collection", list.Count, feed.CollectionName);
@@ -260,12 +263,12 @@ $ArticleText$
             _utils.PurgeStaleFiles(workingFolder, feed.FileRetentionDays);
 
             // Purge stale documents from the database collection
-            var list = _feedRepository.GetStaleDocuments<RssFeedItem>(_collectionName, feed.CollectionName, feed.DatabaseRetentionDays);
+            var list = _exportRepository.GetStaleDocuments<RssFeedItem>(_exportCollectionName, feed.CollectionName, feed.DatabaseRetentionDays);
 
             foreach (var item in list)
             {
                 Log.Information("Removing UrlHash '{urlHash}' from {collectionName}", item.UrlHash, feed.CollectionName);
-                _feedRepository.DeleteDocument<RssFeedItem>(_collectionName, item.Id, item.HostName);
+                _exportRepository.DeleteDocument<RssFeedItem>(_exportCollectionName, item.Id, item.HostName);
             }
 
             Log.Information("Removed {count} documents older than {maximumAgeInDays} days from {collectionName}", list.Count(), feed.DatabaseRetentionDays, feed.CollectionName);

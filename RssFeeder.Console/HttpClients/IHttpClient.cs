@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RssFeeder.Console.WebDownloaders
+namespace RssFeeder.Console.HttpClients
 {
-    public interface IWebDownloader
+    public interface IHttpClient
     {
         string GetString(string url);
         byte[] DownloadData(string url);

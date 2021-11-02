@@ -16,7 +16,7 @@ using RssFeeder.Console.FeedBuilders;
 using RssFeeder.Console.Models;
 using RssFeeder.Console.Parsers;
 using RssFeeder.Console.Utility;
-using RssFeeder.Console.WebDownloaders;
+using RssFeeder.Console.HttpClients;
 using Serilog;
 using Serilog.Formatting.Compact;
 using Serilog.Sinks.SystemConsole.Themes;
@@ -97,7 +97,7 @@ namespace RssFeeder.Console
             builder.RegisterType<AllTagsParser>().Named<IArticleParser>("alltags-parser");
             builder.RegisterType<ScriptParser>().Named<IArticleParser>("script-parser");
             builder.RegisterType<HtmlTagParser>().Named<IArticleParser>("htmltag-parser");
-            builder.RegisterType<RestSharpWebDownloader>().As<WebDownloaders.IWebDownloader>().SingleInstance();
+            builder.RegisterType<RestSharpHttpClient>().As<HttpClients.IHttpClient>().SingleInstance();
             builder.RegisterType<WebUtils>().As<IWebUtils>().SingleInstance();
             builder.RegisterType<Utils>().As<IUtils>().SingleInstance();
             builder.RegisterType<ArticleDefinitionFactory>().As<IArticleDefinitionFactory>().SingleInstance();

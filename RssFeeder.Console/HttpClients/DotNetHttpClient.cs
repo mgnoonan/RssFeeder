@@ -7,14 +7,14 @@ using System.Threading.Tasks;
 using Polly;
 using Serilog;
 
-namespace RssFeeder.Console.WebDownloaders
+namespace RssFeeder.Console.HttpClients
 {
-    public class DotNetWebDownloader : IWebDownloader
+    public class DotNetHttpClient : IHttpClient
     {
         private const string USERAGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.40 Safari/537.36 Edg/92.0.902.8";
         private static HttpClient _client;
 
-        public DotNetWebDownloader()
+        public DotNetHttpClient()
         {
             if (_client == null)
             {

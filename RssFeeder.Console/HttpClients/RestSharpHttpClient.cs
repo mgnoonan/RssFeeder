@@ -2,9 +2,9 @@
 using RestSharp;
 using Serilog;
 
-namespace RssFeeder.Console.WebDownloaders
+namespace RssFeeder.Console.HttpClients
 {
-    public class RestSharpWebDownloader : IWebDownloader
+    public class RestSharpHttpClient : IHttpClient
     {
         private readonly RestClient _client = new RestClient();
 
