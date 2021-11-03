@@ -10,8 +10,8 @@
     "Url": "http://www.drudgereport.com",
     "CustomParser": "RssFeeder.Console.FeedBuilders.DrudgeReportFeedBuilder",
     "CollectionName": "drudge-report",
-    "FileRetentionDays": 7,
-    "DatabaseRetentionDays": 7,
+    "FileRetentionDays": 3,
+    "DatabaseRetentionDays": 30,
     "Filters": [
       "cd0802700cef27a775ab057a2ef54aea",
       "cf69b6dd74d44010fdd0eff6d778e70f",
@@ -40,7 +40,7 @@
     "Url": "https://thelibertydaily.com/",
     "CustomParser": "RssFeeder.Console.FeedBuilders.EagleSlantFeedBuilder",
     "CollectionName": "liberty-daily",
-    "FileRetentionDays": 7,
+    "FileRetentionDays": 3,
     "DatabaseRetentionDays": 7,
     "Filters": []
   },
@@ -55,7 +55,7 @@
     "Url": "https://eagleslant.com/",
     "CustomParser": "RssFeeder.Console.FeedBuilders.EagleSlantFeedBuilder",
     "CollectionName": "eagle-slant",
-    "FileRetentionDays": 7,
+    "FileRetentionDays": 3,
     "DatabaseRetentionDays": 3,
     "Filters": [
       "29d8b3c4d9f1a32b659ebc0986ff8b59"
@@ -72,7 +72,7 @@
     "Url": "https://bonginoreport.com/",
     "CustomParser": "RssFeeder.Console.FeedBuilders.BonginoReportFeedBuilder",
     "CollectionName": "bongino-report",
-    "FileRetentionDays": 7,
+    "FileRetentionDays": 3,
     "DatabaseRetentionDays": 7,
     "Filters": []
   },
@@ -87,7 +87,7 @@
     "Url": "https://www.citizenfreepress.com/",
     "CustomParser": "RssFeeder.Console.FeedBuilders.CitizenFreePressFeedBuilder",
     "CollectionName": "citizen-freepress",
-    "FileRetentionDays": 7,
+    "FileRetentionDays": 3,
     "DatabaseRetentionDays": 7,
     "Filters": [
       "3fa6dfe31a8d75725aaa5620243838f2",
@@ -106,7 +106,7 @@
     "Url": "https://rantingly.com/",
     "CustomParser": "RssFeeder.Console.FeedBuilders.RantinglyFeedBuilder",
     "CollectionName": "rantingly",
-    "FileRetentionDays": 7,
+    "FileRetentionDays": 3,
     "DatabaseRetentionDays": 7,
     "Filters": []
   },
@@ -121,7 +121,7 @@
     "Url": "https://gutsmack.com/",
     "CustomParser": "RssFeeder.Console.FeedBuilders.GutSmackFeedBuilder",
     "CollectionName": "gutsmack",
-    "FileRetentionDays": 7,
+    "FileRetentionDays": 3,
     "DatabaseRetentionDays": 7,
     "Filters": []
   },
@@ -136,7 +136,7 @@
     "Url": "https://populist.press/",
     "CustomParser": "RssFeeder.Console.FeedBuilders.PopulistPressFeedBuilder",
     "CollectionName": "populist-press",
-    "FileRetentionDays": 7,
+    "FileRetentionDays": 3,
     "DatabaseRetentionDays": 7,
     "Filters": []
   },
@@ -151,6 +151,21 @@
     "Url": "http://badblue.bitnamiapp.com/trendr8.htm",
     "CustomParser": "RssFeeder.Console.FeedBuilders.BadBlueFeedBuilder",
     "CollectionName": "bad-blue",
+    "FileRetentionDays": 7,
+    "DatabaseRetentionDays": 7,
+    "Filters": []
+  },
+  {
+    "Title": "Revolver News",
+    "Enabled": "true",
+    "EnableThumbnail": "true",
+    "Exportable": "true",
+    "Description": "Revolver News",
+    "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\revolvernews.xml",
+    "Language": "en-US",
+    "Url": "https://www.revolver.news/",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.RevolverNewsFeedBuilder",
+    "CollectionName": "revolver-news",
     "FileRetentionDays": 7,
     "DatabaseRetentionDays": 7,
     "Filters": []

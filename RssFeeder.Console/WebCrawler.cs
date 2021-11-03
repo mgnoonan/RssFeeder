@@ -226,7 +226,7 @@ namespace RssFeeder.Console
             }
 
             // Get the articles from the source repository starting at the top of the hour
-            var list = _crawlerRepository.GetExportDocuments<RssFeedItem>(_exportCollectionName, feed.CollectionName, startDate);
+            var list = _crawlerRepository.GetExportDocuments<RssFeedItem>(_crawlerCollectionName, feed.CollectionName, startDate);
 
             // Loop through the list and upsert to the target repository
             foreach (var item in list)
