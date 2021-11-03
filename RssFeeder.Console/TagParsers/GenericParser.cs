@@ -6,7 +6,7 @@ using Serilog;
 
 namespace RssFeeder.Console.Parsers
 {
-    public class GenericParser : IArticleParser
+    public class GenericParser : ITagParser
     {
         public string GetArticleBySelector(string html, SiteArticleDefinition options)
         {

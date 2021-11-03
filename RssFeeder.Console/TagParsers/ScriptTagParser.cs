@@ -3,13 +3,12 @@ using System.Linq;
 using AngleSharp.Html.Parser;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using RssFeeder.Console.Parsers;
 using RssFeeder.Models;
 using Serilog;
 
-namespace RssFeeder.Console.ArticleParsers
+namespace RssFeeder.Console.Parsers
 {
-    public class ScriptParser : IArticleParser
+    public class ScriptTagParser : ITagParser
     {
         public string GetArticleBySelector(string html, SiteArticleDefinition options)
         {

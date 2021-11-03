@@ -1,11 +1,10 @@
 ﻿using AngleSharp.Html.Parser;
-using RssFeeder.Console.Parsers;
 using RssFeeder.Models;
 using Serilog;
 
-namespace RssFeeder.Console.ArticleParsers
+namespace RssFeeder.Console.Parsers
 {
-    public class HtmlTagParser : IArticleParser
+    public class HtmlTagParser : ITagParser
     {
         public string GetArticleBySelector(string html, SiteArticleDefinition options)
         {

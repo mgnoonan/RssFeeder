@@ -2,7 +2,7 @@
 
 namespace RssFeeder.Console.Parsers
 {
-    public interface IArticleParser
+    public interface ITagParser
     {
         string GetArticleBySelector(string html, SiteArticleDefinition options);
         string GetArticleBySelector(string html, string bodySelector, string pargraphSelector);

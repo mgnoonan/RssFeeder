@@ -29,7 +29,7 @@ namespace RssFeeder.Console.Commands
         {
             var utils = _container.Resolve<IUtils>();
             var webUtils = _container.Resolve<IWebUtils>();
-            var parser = _container.ResolveNamed<IArticleParser>(input.Parser);
+            var parser = _container.ResolveNamed<ITagParser>(input.Parser);
 
             string urlHash = utils.CreateMD5Hash(input.Url);
             string html = webUtils.DownloadString(input.Url);

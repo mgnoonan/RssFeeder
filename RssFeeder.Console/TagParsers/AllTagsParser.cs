@@ -4,17 +4,16 @@ using System.Linq;
 using System.Text;
 using AngleSharp.Dom;
 using AngleSharp.Html.Parser;
-using RssFeeder.Console.Parsers;
 using RssFeeder.Models;
 using Serilog;
 
-namespace RssFeeder.Console.ArticleParsers
+namespace RssFeeder.Console.Parsers
 {
-    public class AdaptiveParser : IArticleParser
+    public class AllTagsParser : ITagParser
     {
         public string GetArticleBySelector(string html, SiteArticleDefinition options)
         {
-            return GetArticleBySelector(html, "", "p");
+            return GetArticleBySelector(html, options.ArticleSelector, options.ParagraphSelector);
         }
 
         public string GetArticleBySelector(string html, string bodySelector, string paragraphSelector)
@@ -23,7 +22,7 @@ namespace RssFeeder.Console.ArticleParsers
             var parser = new HtmlParser();
             var document = parser.ParseDocument(html);
 
-            Log.Information("Attempting adaptive parsing using paragraph selector '{paragraphSelector}'", paragraphSelector);
+            Log.Information("Attempting alltags parsing using paragraph selector '{paragraphSelector}'", paragraphSelector);
 
             // Query the document by CSS selectors to get the article text
             var paragraphs = document.QuerySelectorAll(paragraphSelector);
@@ -36,11 +35,6 @@ namespace RssFeeder.Console.ArticleParsers
             var dict = new Dictionary<string, int>();
             foreach (var p in paragraphs)
             {
-                if (string.IsNullOrWhiteSpace(System.Web.HttpUtility.HtmlDecode(p.TextContent)))
-                {
-                    continue;
-                }
-
                 var parent = p.ParentElement;
                 var key = parent.GetSelector();
 
@@ -54,35 +48,11 @@ namespace RssFeeder.Console.ArticleParsers
                 }
             }
 
-            // Get the parent with the most paragraphs, it should be the article content
-            int highCount = default;
-            foreach (var key in dict.Keys)
-            {
-                if (dict[key] > highCount)
-                {
-                    bodySelector = key;
-                    highCount = dict[key];
-                }
-            }
-
             Log.Information("Found {totalCount} paragraph selectors '{paragraphSelector}' in html body", paragraphs.Count(), paragraphSelector);
-            Log.Information("Parent with the most paragraph selectors is '{bodySelector}':{highCount}", bodySelector, highCount);
-
-            if (highCount == 1)
-            {
-                Log.Warning("Only 1 paragraph selector found, that doesn't count");
-                return string.Empty;
-            }
 
             try
             {
-                // Query the document by CSS selectors to get the article text
-                var container = document.QuerySelector(bodySelector);
-
-                // Get only the paragraphs under the parent
-                var paragraphs2 = container.QuerySelectorAll(paragraphSelector);
-
-                return BuildArticleText(paragraphs2);
+                return BuildArticleText(paragraphs);
             }
             catch (Exception ex)
             {
