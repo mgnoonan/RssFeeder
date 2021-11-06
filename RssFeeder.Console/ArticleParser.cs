@@ -319,7 +319,14 @@ namespace RssFeeder.Console
             }
             else
             {
-                Log.Information("Meta attribute '{attribute}':'{property}' has a value of '{value}'", targetAttributeName, targetAttributeValue, sourceAttributeValue);
+                // Decode the value if it contains a coded reference
+                if (sourceAttributeValue.Contains("&#x"))
+                {
+                    sourceAttributeValue = System.Web.HttpUtility.HtmlDecode(sourceAttributeValue);
+                }
+
+                Log.Information("Meta attribute '{attribute}':'{property}' has a decoded value of '{value}'", targetAttributeName, targetAttributeValue, sourceAttributeValue);
+
             }
 
             return sourceAttributeValue;
