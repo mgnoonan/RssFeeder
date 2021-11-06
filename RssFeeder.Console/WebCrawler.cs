@@ -60,7 +60,7 @@ namespace RssFeeder.Console
             string workingFolder = PrepareWorkspace(feed);
             var list = GenerateFeedLinks(feed, workingFolder);
             DownloadList(feed, workingFolder, list);
-            ParseAndSave(feed, list);
+            //ParseAndSave(feed, list);
         }
 
         private string PrepareWorkspace(RssFeed feed)
@@ -110,8 +110,35 @@ namespace RssFeeder.Console
             }
         }
 
+        private void ParseAndSave(RssFeed feed, RssFeedItem item)
+        {
+            try
+            {
+                // Parse the downloaded file as dictated by the site parsing definitions
+                _articleParser.Parse(item, feed);
+
+                if (string.IsNullOrEmpty(item.FeedAttributes.FileName))
+                {
+                    _crawlerRepository.CreateDocument<RssFeedItem>(_crawlerCollectionName, item, feed.DatabaseRetentionDays, "", null, "");
+                }
+                else
+                {
+                    using (var stream = new MemoryStream(File.ReadAllBytes(item.FeedAttributes.FileName)))
+                    {
+                        _crawlerRepository.CreateDocument<RssFeedItem>(_crawlerCollectionName, item, feed.DatabaseRetentionDays, Path.GetFileName(item.FeedAttributes.FileName), stream, "text/html");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "PARSE_ERROR: UrlHash '{urlHash}':'{url}'", item.FeedAttributes.UrlHash, item.FeedAttributes.Url);
+            }
+        }
+
         private void DownloadList(RssFeed feed, string workingFolder, List<RssFeedItem> list)
         {
+            _articleParser.Initialize(_container, _definitions);
+
             // Crawl any new articles and add them to the database
             Log.Information("Downloading new articles to the {collectionName} collection", feed.CollectionName);
             int articleCount = 0;
@@ -164,6 +191,9 @@ namespace RssFeeder.Console
                                 item.FeedAttributes.FileName = newFilename;
                             }
                         }
+
+                        // Parse the saved file as dictated by the site definitions
+                        ParseAndSave(feed, item);
                     }
                     catch (Exception ex)
                     {
