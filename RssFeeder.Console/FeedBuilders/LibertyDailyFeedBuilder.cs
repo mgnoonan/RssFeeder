@@ -20,13 +20,13 @@ namespace RssFeeder.Console.FeedBuilders
 
         public List<RssFeedItem> GenerateRssFeedItemList(string feedCollectionName, string feedUrl, List<string> feedFilters, string html)
         {
-            var items = GenerateRssFeedItemList(html, feedFilters ?? new List<string>());
+            var items = GenerateRssFeedItemList(html, feedFilters ?? new List<string>(), feedUrl);
             PostProcessing(feedCollectionName, feedUrl, items);
 
             return items;
         }
 
-        public List<RssFeedItem> GenerateRssFeedItemList(string html, List<string> filters)
+        public List<RssFeedItem> GenerateRssFeedItemList(string html, List<string> filters, string feedUrl)
         {
             var list = new List<RssFeedItem>();
             var doc = new HtmlDocument();
@@ -43,10 +43,10 @@ namespace RssFeeder.Console.FeedBuilders
                 {
                     string title = WebUtility.HtmlDecode(node.InnerText.Trim());
 
-                    var item = CreateNodeLinks(filters, node, "above the fold", count++);
+                    var item = CreateNodeLinks(filters, node, "above the fold", count++, feedUrl);
                     if (item != null)
                     {
-                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
+                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                         list.Add(item);
                     }
                 }
@@ -62,10 +62,10 @@ namespace RssFeeder.Console.FeedBuilders
                 {
                     string title = WebUtility.HtmlDecode(node.InnerText.Trim());
 
-                    var item = CreateNodeLinks(filters, node, "main headlines", count++);
+                    var item = CreateNodeLinks(filters, node, "main headlines", count++, feedUrl);
                     if (item != null)
                     {
-                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
+                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                         list.Add(item);
                     }
                 }
@@ -82,10 +82,10 @@ namespace RssFeeder.Console.FeedBuilders
                 {
                     string title = WebUtility.HtmlDecode(node.InnerText.Trim());
 
-                    var item = CreateNodeLinks(filters, node, "left column", count++);
+                    var item = CreateNodeLinks(filters, node, "left column", count++, feedUrl);
                     if (item != null)
                     {
-                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
+                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                         list.Add(item);
                     }
                 }
@@ -102,10 +102,10 @@ namespace RssFeeder.Console.FeedBuilders
                 {
                     string title = WebUtility.HtmlDecode(node.InnerText.Trim());
 
-                    var item = CreateNodeLinks(filters, node, "middle column", count++);
+                    var item = CreateNodeLinks(filters, node, "middle column", count++, feedUrl);
                     if (item != null)
                     {
-                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
+                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                         list.Add(item);
                     }
                 }
@@ -122,10 +122,10 @@ namespace RssFeeder.Console.FeedBuilders
                 {
                     string title = WebUtility.HtmlDecode(node.InnerText.Trim());
 
-                    var item = CreateNodeLinks(filters, node, "right column", count++);
+                    var item = CreateNodeLinks(filters, node, "right column", count++, feedUrl);
                     if (item != null)
                     {
-                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
+                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                         list.Add(item);
                     }
                 }

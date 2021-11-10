@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using RssFeeder.Console.ArticleDefinitions;
 using RssFeeder.Console.Models;
 using RssFeeder.Console.Parsers;
+using RssFeeder.Console.Utility;
 using RssFeeder.Models;
 using Serilog;
 using Serilog.Context;
@@ -20,224 +21,83 @@ namespace RssFeeder.Console
     {
         private IContainer _container;
         private IArticleDefinitionFactory _definitionFactory;
+        private IWebUtils _webUtils;
 
         public CrawlerConfig Config { get; set; }
 
-        public void Initialize(IContainer container, IArticleDefinitionFactory definitionFactory)
+        public void Initialize(IContainer container, IArticleDefinitionFactory definitionFactory, IWebUtils webUtils)
         {
             _container = container;
             _definitionFactory = definitionFactory;
+            _webUtils = webUtils;
         }
 
-        public void Parse(RssFeedItem item, RssFeed feed)
+        public void Parse(RssFeedItem item)
         {
-            Uri uri = new Uri(item.Url);
-            string hostName = uri.GetComponents(UriComponents.Host, UriFormat.Unescaped).ToLower();
-
-            if (File.Exists(item.FeedAttributes.FileName))
+            // Article failed to download for some reason, skip over meta data processing
+            if (!File.Exists(item.FeedAttributes.FileName))
             {
-                Log.Information("Parsing meta tags from file '{fileName}'", item.FeedAttributes.FileName);
-
-                if (item.FeedAttributes.FileName.EndsWith(".png") ||
-                    item.FeedAttributes.FileName.EndsWith(".jpg") ||
-                    item.FeedAttributes.FileName.EndsWith(".gif"))
-                {
-                    SetGraphicMetaData(item, hostName);
-                    item.Description = ApplyTemplateToDescription(item, feed, ExportTemplates.GraphicTemplate);
-                }
-                else
-                {
-                    var doc = new HtmlDocument();
-                    doc.Load(item.FeedAttributes.FileName);
-
-                    item.OpenGraphAttributes = ParseOpenGraphAttributes(doc);
-                    item.HtmlAttributes = ParseHtmlAttributes(doc);
-
-                    // Meta tags provide extended data about the item, display as much as possible
-                    if (Config.VideoHosts.Contains(hostName))
-                    {
-                        SetVideoMetaData(item, doc, hostName);
-                        if (item.VideoHeight > 0)
-                        {
-                            item.Description = ApplyTemplateToDescription(item, feed, ExportTemplates.VideoTemplate);
-                        }
-                        else
-                        {
-                            item.Description = ApplyTemplateToDescription(item, feed, ExportTemplates.ExtendedTemplate);
-                        }
-                    }
-                    else
-                    {
-                        SetExtendedArticleMetaData(item, doc, hostName);
-                        item.Description = ApplyTemplateToDescription(item, feed, ExportTemplates.ExtendedTemplate);
-                    }
-                }
-            }
-            else
-            {
-                Log.Information("No file to parse, applying basic metadata values for '{hostname}'", hostName);
-
-                // Article failed to download, display minimal basic meta data
-                SetBasicArticleMetaData(item, hostName);
-                item.Description = ApplyTemplateToDescription(item, feed, ExportTemplates.BasicTemplate);
+                Log.Information("No file to parse, skipping metadata values for '{url}'", item.FeedAttributes.Url);
+                return;
             }
 
-            Log.Debug("{@item}", item);
-        }
-
-        private string ApplyTemplateToDescription(RssFeedItem item, RssFeed feed, string template)
-        {
-            switch (item.SiteName)
+            // Graphics file or PDF won't have og tags
+            if (item.FeedAttributes.FileName.EndsWith(".png") ||
+                item.FeedAttributes.FileName.EndsWith(".jpg") ||
+                item.FeedAttributes.FileName.EndsWith(".gif") ||
+                item.FeedAttributes.FileName.EndsWith(".pdf"))
             {
-                case "youtube":
-                    template = template.Replace("{class}", "");
-                    template = template.Replace("{allow}", "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture");
-                    break;
-                case "rumble":
-                    template = template.Replace("{class}", "rumble");
-                    template = template.Replace("{allow}", "");
-                    break;
+                Log.Information("Graphics file detected, skipping metadata values for '{url}'", item.FeedAttributes.Url);
+                return;
             }
 
-            var t = new Template(template, '$', '$');
-            t.Add("item", item);
-            t.Add("feed", feed);
-            t.Add("ArticleText", item.HtmlAttributes?.ContainsKey("ArticleText") ?? false ? item.HtmlAttributes["ArticleText"] : string.Empty);
+            Log.Information("Parsing meta tags from file '{fileName}'", item.FeedAttributes.FileName);
 
-            return t.Render();
-        }
+            var doc = new HtmlDocument();
+            doc.Load(item.FeedAttributes.FileName);
 
-        private void SetExtendedArticleMetaData(RssFeedItem item, HtmlDocument doc, string hostName)
-        {
-            // Extract the meta data from the Open Graph tags helpfully provided with almost every article
-            string url = item.Url;
-            item.Url = ParseOpenGraphMetaTagAttributes(doc, "og:url");
-
-            if (string.IsNullOrWhiteSpace(item.Url) || hostName.Contains("frontpagemag.com"))
-            {
-                item.Url = url;
-            }
-
-            item.Subtitle = ParseOpenGraphMetaTagAttributes(doc, "og:title");
-            item.ImageUrl = ParseOpenGraphMetaTagAttributes(doc, "og:image");
-            item.HostName = hostName;
-            item.SiteName = ParseOpenGraphMetaTagAttributes(doc, "og:site_name").ToLower();
-
-            // Fixup apnews on populist press links which sometimes report incorrectly
-            if (string.IsNullOrWhiteSpace(item.SiteName) || (item.SiteName == "ap news" && item.Url.Contains("populist.press")))
-            {
-                item.SiteName = item.HostName;
-            }
-
-            // Fixup news.trust.org imageUrl links which have an embedded redirect
-            if (string.IsNullOrWhiteSpace(item.ImageUrl) || (item.SiteName == "news.trust.org" && item.Url.Contains("news.trust.org")))
-            {
-                item.ImageUrl = String.Empty;
-            }
-
-            // Remove the protocol portion if there is one, i.e. 'https://'
-            if (item.SiteName.IndexOf('/') > 0)
-            {
-                item.SiteName = item.SiteName.Substring(item.SiteName.LastIndexOf('/') + 1);
-            }
+            // Parse the meta data from the raw HTML document
+            item.OpenGraphAttributes.Add(ParseOpenGraphAttributes(doc));
+            item.HtmlAttributes.Add(ParseHtmlAttributes(doc));
+            item.HostName = GetHostName(item);
+            item.SiteName = GetSiteName(item);
 
             // Check if we have a site parser defined for the site name
             var definition = _definitionFactory.Get(item.SiteName);
 
             using (LogContext.PushProperty("siteName", item.SiteName))
             {
-                if (definition == null)
-                {
-                    Log.Information("No parsing definition found for '{siteName}' on hash '{urlHash}'", item.SiteName, item.UrlHash);
-
-                    // If a specific article parser was not found in the database then
-                    // use the fallback adaptive parser (experimental)
-                    var parser = _container.ResolveNamed<ITagParser>("adaptive-parser");
-                    item.HtmlAttributes.Add("ArticleText", parser.GetArticleBySelector(doc.Text, definition));
-                }
-                else
-                {
-                    // Resolve the parser defined for the site
-                    var parser = _container.ResolveNamed<ITagParser>(definition.Parser);
-                    // Parse the article
-                    item.HtmlAttributes.Add("ArticleText", parser.GetArticleBySelector(doc.Text, definition));
-                }
+                // If a specific article parser was not found in the database then
+                // use the fallback adaptive parser
+                var parser = _container.ResolveNamed<ITagParser>(definition?.Parser ?? "adaptive-parser");
+                item.HtmlAttributes.Add("ArticleText", parser.GetArticleBySelector(doc.Text, definition));
             }
         }
 
-        private void SetBasicArticleMetaData(RssFeedItem item, string hostName)
+        private string GetHostName(RssFeedItem item)
         {
-            item.HostName = hostName;
-            item.SiteName = item.HostName;
-            item.ArticleText = $"<p>Unable to crawl article content. Click the link below to view in your browser.</p>";
+            string url = item.OpenGraphAttributes.ContainsKey("og:url") ?
+                            item.OpenGraphAttributes["og:url"].ToLower() :
+                            item.FeedAttributes.Url.ToLower();
+
+            if (!url.StartsWith("http"))
+            {
+                url = _webUtils.RepairUrl(url, item.FeedAttributes.Url.ToLower());
+            }
+
+            Uri uri = new Uri(url);
+            return uri.GetComponents(UriComponents.Host, UriFormat.Unescaped).ToLower();
         }
 
-        private void SetVideoMetaData(RssFeedItem item, HtmlDocument doc, string hostName)
+        private string GetSiteName(RssFeedItem item)
         {
-            // Extract the meta data from the Open Graph tags customized for YouTube
-            item.Subtitle = ParseOpenGraphMetaTagAttributes(doc, "og:title");
-            item.ImageUrl = ParseOpenGraphMetaTagAttributes(doc, "og:image");
-            item.HostName = hostName;
-            item.SiteName = ParseOpenGraphMetaTagAttributes(doc, "og:site_name").ToLower();
+            string siteName = item.OpenGraphAttributes.ContainsKey("og:site_name") ?
+                                item.OpenGraphAttributes["og:site_name"].ToLower() :
+                                item.HostName;
 
-            if (string.IsNullOrWhiteSpace(item.SiteName))
-            {
-                item.SiteName = item.HostName;
-            }
-
-            if (item.HostName.Contains("rumble.com"))
-            {
-                var value = GetJsonDynamic<IEnumerable<dynamic>>(doc.Text, "script", "embedUrl");
-                item.VideoUrl = value.First().embedUrl.Value;
-                item.VideoHeight = int.TryParse(Convert.ToString(value.First().height.Value), out int height) ? height : 0;
-                item.VideoWidth = int.TryParse(Convert.ToString(value.First().width.Value), out int width) ? width : 0;
-            }
-            else
-            {
-                // These may be YouTube-only Open Graph tags
-                item.VideoUrl = ParseOpenGraphMetaTagAttributes(doc, "og:video:url");
-                item.VideoHeight = int.TryParse(ParseOpenGraphMetaTagAttributes(doc, "og:video:height"), out int height) ? height : 0;
-                item.VideoWidth = int.TryParse(ParseOpenGraphMetaTagAttributes(doc, "og:video:width"), out int width) ? width : 0;
-            }
-            Log.Information("Video URL: '{url}' ({height}x{width})", item.VideoUrl, item.VideoHeight, item.VideoWidth);
-
-            // There's no article text for most video sites, so just use the meta description
-            var description = ParseOpenGraphMetaTagAttributes(doc, "og:description");
-            item.ArticleText = $"<p>{description}</p>";
+            return siteName;
         }
 
-        private T GetJsonDynamic<T>(string html, string tagName, string keyName)
-        {
-            // Load and parse the html from the source file
-            var parser = new HtmlParser();
-            var document = parser.ParseDocument(html);
-
-            // Query the document by CSS selectors to get the article text
-            var blocks = document.QuerySelectorAll(tagName);
-            if (blocks.Length == 0)
-            {
-            }
-
-            string jsonRaw = string.Empty;
-            foreach (var block in blocks)
-            {
-                if (block.TextContent.Contains(keyName))
-                {
-                    jsonRaw = block.TextContent;
-                    break;
-                }
-            }
-
-            return JsonConvert.DeserializeObject<T>(jsonRaw);
-        }
-
-        private void SetGraphicMetaData(RssFeedItem item, string hostName)
-        {
-            // Extract the meta data from the Open Graph tags customized for YouTube
-            item.ImageUrl = item.Url;
-            item.HostName = hostName;
-            item.SiteName = item.HostName;
-        }
 
         private Dictionary<string, string> ParseOpenGraphAttributes(HtmlDocument doc)
         {
@@ -290,18 +150,6 @@ namespace RssFeeder.Console
             attributes.Add("description", ParseMetaTagAttributes(doc, "name", "description", "content"));
 
             return attributes;
-        }
-
-        private string ParseOpenGraphMetaTagAttributes(HtmlDocument doc, string targetAttributeValue)
-        {
-            string value = ParseMetaTagAttributes(doc, "property", targetAttributeValue, "content");
-
-            if (string.IsNullOrEmpty(value))
-            {
-                value = ParseMetaTagAttributes(doc, "name", targetAttributeValue, "content");
-            }
-
-            return value;
         }
 
         private string ParseMetaTagAttributes(HtmlDocument doc, string targetAttributeName, string targetAttributeValue, string sourceAttributeName)

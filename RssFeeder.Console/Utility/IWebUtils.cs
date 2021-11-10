@@ -1,14 +1,15 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace RssFeeder.Console.Utility
 {
     public interface IWebUtils
     {
-        string DownloadString(string url);
-        string SaveUrlToDisk(string url, string urlHash, string filename, bool removeScriptElements = true);
-        string WebDriverUrlToDisk(string url, string urlHash, string filename);
+        (string, Uri) DownloadString(string url);
+        (string, Uri) SaveUrlToDisk(string url, string urlHash, string filename, bool removeScriptElements = true);
+        (string, Uri) WebDriverUrlToDisk(string url, string urlHash, string filename);
         void SaveThumbnailToDisk(string url, string filename);
-        string RepairUrl(string pathAndQuery);
+        string RepairUrl(string pathAndQuery, string defaultBaseUrl);
         string GetContentType(string url);
     }
 }

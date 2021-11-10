@@ -35,9 +35,9 @@ namespace RssFeeder.Console.HttpClients
             }
         }
 
-        public string GetString(string url)
+        public (string, Uri) GetString(string url)
         {
-            return GetStringAsync(url).GetAwaiter().GetResult();
+            return (GetStringAsync(url).GetAwaiter().GetResult(), default);
         }
 
         private Task<string> GetStringAsync(string url)

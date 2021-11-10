@@ -20,13 +20,13 @@ namespace RssFeeder.Console.FeedBuilders
 
         public List<RssFeedItem> GenerateRssFeedItemList(string feedCollectionName, string feedUrl, List<string> feedFilters, string html)
         {
-            var items = GenerateRssFeedItemList(html, feedFilters ?? new List<string>());
+            var items = GenerateRssFeedItemList(html, feedFilters ?? new List<string>(), feedUrl);
             PostProcessing(feedCollectionName, feedUrl, items);
 
             return items;
         }
 
-        public List<RssFeedItem> GenerateRssFeedItemList(string html, List<string> filters)
+        public List<RssFeedItem> GenerateRssFeedItemList(string html, List<string> filters, string feedUrl)
         {
             var list = new List<RssFeedItem>();
             int count;
@@ -45,10 +45,10 @@ namespace RssFeeder.Console.FeedBuilders
                 {
                     string title = WebUtility.HtmlDecode(node.Text().Trim());
 
-                    var item = CreateNodeLinks(filters, node, "above the fold", count++);
+                    var item = CreateNodeLinks(filters, node, "above the fold", count++, feedUrl);
                     if (item != null)
                     {
-                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
+                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                         list.Add(item);
                     }
                 }
@@ -66,10 +66,10 @@ namespace RssFeeder.Console.FeedBuilders
                     {
                         string title = WebUtility.HtmlDecode(node.Text().Trim());
 
-                        var item = CreateNodeLinks(filters, node, "main headlines", count++);
-                        if (item != null && !item.Url.Contains("#the-comments") && !item.Url.Contains("#comment-"))
+                        var item = CreateNodeLinks(filters, node, "main headlines", count++, feedUrl);
+                        if (item != null && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
                         {
-                            log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
+                            log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                             list.Add(item);
                         }
                     }
@@ -86,10 +86,10 @@ namespace RssFeeder.Console.FeedBuilders
                 {
                     string title = WebUtility.HtmlDecode(node.Text().Trim());
 
-                    var item = CreateNodeLinks(filters, node, "column 1", count++);
-                    if (item != null && !item.Url.Contains("#the-comments") && !item.Url.Contains("#comment-"))
+                    var item = CreateNodeLinks(filters, node, "column 1", count++, feedUrl);
+                    if (item != null && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
                     {
-                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
+                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                         list.Add(item);
                     }
                 }
@@ -105,10 +105,10 @@ namespace RssFeeder.Console.FeedBuilders
                 {
                     string title = WebUtility.HtmlDecode(node.Text().Trim());
 
-                    var item = CreateNodeLinks(filters, node, "column 2", count++);
-                    if (item != null && !item.Url.Contains("#the-comments") && !item.Url.Contains("#comment-"))
+                    var item = CreateNodeLinks(filters, node, "column 2", count++, feedUrl);
+                    if (item != null && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
                     {
-                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
+                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                         list.Add(item);
                     }
                 }
@@ -124,10 +124,10 @@ namespace RssFeeder.Console.FeedBuilders
                 {
                     string title = WebUtility.HtmlDecode(node.Text().Trim());
 
-                    var item = CreateNodeLinks(filters, node, "column 3", count++);
-                    if (item != null && !item.Url.Contains("#the-comments") && !item.Url.Contains("#comment-"))
+                    var item = CreateNodeLinks(filters, node, "column 3", count++, feedUrl);
+                    if (item != null && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
                     {
-                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
+                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                         list.Add(item);
                     }
                 }

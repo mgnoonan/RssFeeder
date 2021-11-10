@@ -25,13 +25,13 @@ namespace RssFeeder.Console.FeedBuilders
 
         public List<RssFeedItem> GenerateRssFeedItemList(string feedCollectionName, string feedUrl, List<string> feedFilters, string html)
         {
-            var items = GenerateRssFeedItemList(html, feedFilters ?? new List<string>());
+            var items = GenerateRssFeedItemList(html, feedFilters ?? new List<string>(), feedUrl);
             PostProcessing(feedCollectionName, feedUrl, items);
 
             return items;
         }
 
-        public List<RssFeedItem> GenerateRssFeedItemList(string html, List<string> filters)
+        public List<RssFeedItem> GenerateRssFeedItemList(string html, List<string> filters, string feedUrl)
         {
             var list = new List<RssFeedItem>();
             int count;
@@ -50,10 +50,10 @@ namespace RssFeeder.Console.FeedBuilders
                 {
                     string title = WebUtility.HtmlDecode(node.Text().Trim());
 
-                    var item = CreateNodeLinks(filters, node, "feature links", count++);
+                    var item = CreateNodeLinks(filters, node, "feature links", count++, feedUrl);
                     if (item != null)
                     {
-                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
+                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                         list.Add(item);
                     }
                 }
@@ -69,10 +69,10 @@ namespace RssFeeder.Console.FeedBuilders
                 {
                     string title = WebUtility.HtmlDecode(node.Text().Trim());
 
-                    var item = CreateNodeLinks(filters, node, "news feed", count++);
+                    var item = CreateNodeLinks(filters, node, "news feed", count++, feedUrl);
                     if (item != null)
                     {
-                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
+                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                         list.Add(item);
                     }
                 }

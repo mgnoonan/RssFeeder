@@ -7,6 +7,6 @@ namespace RssFeeder.Console.FeedBuilders
     {
         List<RssFeedItem> GenerateRssFeedItemList(RssFeed feed, string html);
         List<RssFeedItem> GenerateRssFeedItemList(string feedCollectionName, string feedUrl, List<string> feedFilters, string html);
-        List<RssFeedItem> GenerateRssFeedItemList(string html, List<string> filters);
+        List<RssFeedItem> GenerateRssFeedItemList(string html, List<string> filters, string feedUrl);
     }
 }

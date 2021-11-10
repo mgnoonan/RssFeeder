@@ -34,13 +34,13 @@ namespace RssFeeder.Console.FeedBuilders
 
         public List<RssFeedItem> GenerateRssFeedItemList(string feedCollectionName, string feedUrl, List<string> feedFilters, string html)
         {
-            var items = GenerateRssFeedItemList(html, feedFilters ?? new List<string>());
+            var items = GenerateRssFeedItemList(html, feedFilters ?? new List<string>(), feedUrl);
             PostProcessing(feedCollectionName, feedUrl, items);
 
             return items;
         }
 
-        public List<RssFeedItem> GenerateRssFeedItemList(string html, List<string> filters)
+        public List<RssFeedItem> GenerateRssFeedItemList(string html, List<string> filters, string feedUrl)
         {
             var list = new List<RssFeedItem>();
             int count;
@@ -57,11 +57,11 @@ namespace RssFeeder.Console.FeedBuilders
                 count = 1;
                 foreach (var node in nodes)
                 {
-                    var item = CreateNodeLinks(filters, node, "above the fold", count++);
+                    var item = CreateNodeLinks(filters, node, "above the fold", count++, feedUrl);
                     if (item != null)
                     {
                         TryParseEmbeddedUrl(item, _selectors);
-                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
+                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                         list.Add(item);
                     }
                 }
@@ -77,11 +77,11 @@ namespace RssFeeder.Console.FeedBuilders
                     count = 1;
                     foreach (var node in nodes)
                     {
-                        var item = CreateNodeLinks(filters, node, "main headlines", count++);
-                        if (item != null && !item.Url.Contains("#the-comments") && !item.Url.Contains("#comment-"))
+                        var item = CreateNodeLinks(filters, node, "main headlines", count++, feedUrl);
+                        if (item != null && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
                         {
                             TryParseEmbeddedUrl(item, _selectors);
-                            log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
+                            log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                             list.Add(item);
                         }
                     }
@@ -96,17 +96,17 @@ namespace RssFeeder.Console.FeedBuilders
                 count = 1;
                 foreach (var node in nodes)
                 {
-                    var item = CreateNodeLinks(filters, node, "column 1", count++);
+                    var item = CreateNodeLinks(filters, node, "column 1", count++, feedUrl);
 
                     // Unfortunately the reference site links are included in the column links, so the
                     // AMERICAN THINKER link signals the end of the article list in column 1
-                    if (item.Url.Contains("americanthinker.com"))
+                    if (item.FeedAttributes.Url.Contains("americanthinker.com"))
                         break;
 
-                    if (item != null && !item.Url.Contains("#the-comments") && !item.Url.Contains("#comment-"))
+                    if (item != null && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
                     {
                         TryParseEmbeddedUrl(item, _selectors);
-                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
+                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                         list.Add(item);
                     }
                 }
@@ -126,17 +126,17 @@ namespace RssFeeder.Console.FeedBuilders
 
                     Log.Information("Checking column 2 title '{title}'", title);
 
-                    var item = CreateNodeLinks(filters, node, "column 2", count++);
+                    var item = CreateNodeLinks(filters, node, "column 2", count++, feedUrl);
 
                     // Unfortunately the reference site links are included in the column links, so the
                     // CINDY ADAMS link signals the end of the article list in column 2
-                    if (item.Url.Contains("cindy-adams"))
+                    if (item.FeedAttributes.Url.Contains("cindy-adams"))
                         break;
 
-                    if (item != null && !item.Url.Contains("#the-comments") && !item.Url.Contains("#comment-"))
+                    if (item != null && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
                     {
                         TryParseEmbeddedUrl(item, _selectors);
-                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
+                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                         list.Add(item);
                     }
                 }
@@ -150,17 +150,17 @@ namespace RssFeeder.Console.FeedBuilders
                 count = 1;
                 foreach (var node in nodes)
                 {
-                    var item = CreateNodeLinks(filters, node, "column 3", count++);
+                    var item = CreateNodeLinks(filters, node, "column 3", count++, feedUrl);
 
                     // Unfortunately the reference site links are included in the column links, so the
                     // PRIVACY POLICY link signals the end of the article list in column 2
-                    if (item.Url.Contains("privacy-policy-2"))
+                    if (item.FeedAttributes.Url.Contains("privacy-policy-2"))
                         break;
 
-                    if (item != null && !item.Url.Contains("#the-comments") && !item.Url.Contains("#comment-"))
+                    if (item != null && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
                     {
                         TryParseEmbeddedUrl(item, _selectors);
-                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
+                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                         list.Add(item);
                     }
                 }
@@ -173,7 +173,7 @@ namespace RssFeeder.Console.FeedBuilders
         {
             foreach (string selector in selectors)
             {
-                if (!TryParseEmbeddedUrl(item.Url, selector, out IElement link))
+                if (!TryParseEmbeddedUrl(item.FeedAttributes.Url, selector, out IElement link))
                     break;
                 if (link == null)
                     continue;
@@ -184,8 +184,8 @@ namespace RssFeeder.Console.FeedBuilders
                 string url = attr.Value;
 
                 Log.Information("Embedded Url found '{url}'", url);
-                item.UrlHash = _utilities.CreateMD5Hash(url);
-                item.Url = url;
+                item.FeedAttributes.UrlHash = _utilities.CreateMD5Hash(url);
+                item.FeedAttributes.Url = url;
                 //item.FeedAttributes.UrlHash = _utilities.CreateMD5Hash(url);
                 //item.FeedAttributes.Url = url;
                 break;
@@ -197,7 +197,7 @@ namespace RssFeeder.Console.FeedBuilders
             try
             {
                 Log.Information("TryParseEmbeddedUrl '{selector}' from '{url}'", selector, url);
-                var content = _webUtilities.DownloadString(url);
+                (string content, Uri trueUri) = _webUtilities.DownloadString(url);
 
                 var parser = new HtmlParser();
                 var document = parser.ParseDocument(content);

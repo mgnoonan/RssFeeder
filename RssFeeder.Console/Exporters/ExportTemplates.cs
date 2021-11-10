@@ -1,4 +1,4 @@
-﻿namespace RssFeeder.Console
+﻿namespace RssFeeder.Console.Exporters
 {
     public class ExportTemplates
     {

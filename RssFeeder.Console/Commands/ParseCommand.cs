@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using Autofac;
 using HtmlAgilityPack;
 using Oakton;
@@ -32,7 +33,7 @@ namespace RssFeeder.Console.Commands
             var parser = _container.ResolveNamed<ITagParser>(input.Parser);
 
             string urlHash = utils.CreateMD5Hash(input.Url);
-            string html = webUtils.DownloadString(input.Url);
+            (string html, Uri trueUri) = webUtils.DownloadString(input.Url);
 
             var doc = new HtmlDocument();
             doc.Load(new StringReader(html));

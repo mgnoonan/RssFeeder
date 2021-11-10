@@ -51,8 +51,8 @@ namespace RssFeeder.Console
 
             if (_crawlerRepository != null)
                 _crawlerRepository.EnsureDatabaseExists(_crawlerCollectionName, true);
-            //if (_exportRepository != null)
-            //    _exportRepository.EnsureDatabaseExists(_exportCollectionName, true);
+            if (_exportRepository != null)
+               _exportRepository.EnsureDatabaseExists(_exportCollectionName, true);
         }
 
         public void Crawl(RssFeed feed)
@@ -78,7 +78,7 @@ namespace RssFeeder.Console
 
         private void ParseAndSave(RssFeed feed, List<RssFeedItem> list)
         {
-            _articleParser.Initialize(_container, _definitions);
+            _articleParser.Initialize(_container, _definitions, _webUtils);
 
             foreach (var item in list)
             {
@@ -88,7 +88,7 @@ namespace RssFeeder.Console
                     try
                     {
                         // Parse the downloaded file as dictated by the site parsing definitions
-                        _articleParser.Parse(item, feed);
+                        _articleParser.Parse(item);
 
                         if (string.IsNullOrEmpty(item.FeedAttributes.FileName))
                         {
@@ -115,8 +115,16 @@ namespace RssFeeder.Console
             try
             {
                 // Parse the downloaded file as dictated by the site parsing definitions
-                _articleParser.Parse(item, feed);
+                _articleParser.Parse(item);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "PARSE_ERROR: UrlHash '{urlHash}':'{url}'", item.FeedAttributes.UrlHash, item.FeedAttributes.Url);
+            }
 
+            try
+            {
+                
                 if (string.IsNullOrEmpty(item.FeedAttributes.FileName))
                 {
                     _crawlerRepository.CreateDocument<RssFeedItem>(_crawlerCollectionName, item, feed.DatabaseRetentionDays, "", null, "");
@@ -131,13 +139,13 @@ namespace RssFeeder.Console
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "PARSE_ERROR: UrlHash '{urlHash}':'{url}'", item.FeedAttributes.UrlHash, item.FeedAttributes.Url);
+                Log.Error(ex, "SAVE_ERROR: UrlHash '{urlHash}':'{url}'", item.FeedAttributes.UrlHash, item.FeedAttributes.Url);
             }
         }
 
         private void DownloadList(RssFeed feed, string workingFolder, List<RssFeedItem> list)
         {
-            _articleParser.Initialize(_container, _definitions);
+            _articleParser.Initialize(_container, _definitions, _webUtils);
 
             // Crawl any new articles and add them to the database
             Log.Information("Downloading new articles to the {collectionName} collection", feed.CollectionName);
@@ -150,6 +158,7 @@ namespace RssFeeder.Console
                     // No need to continue if we already crawled the article
                     if (_crawlerRepository.DocumentExists<RssFeedItem>(_crawlerCollectionName, feed.CollectionName, item.FeedAttributes.UrlHash))
                     {
+                        Log.Information("UrlHash '{urlHash}' already exists in collection '{collectionName}'", item.FeedAttributes.UrlHash, feed.CollectionName);
                         continue;
                     }
 
@@ -182,13 +191,16 @@ namespace RssFeeder.Console
                         else
                         {
                             // Download the Url contents, first using HttpClient but if that fails use Selenium
-                            string newFilename = _webUtils.SaveUrlToDisk(item.Url, item.UrlHash, filename, !filename.Contains("_apnews_com") && !filename.Contains("_rumble_com"));
+                            (string newFilename, Uri trueUri) = _webUtils.SaveUrlToDisk(item.FeedAttributes.Url, item.FeedAttributes.UrlHash, filename, !filename.Contains("_apnews_com") && !filename.Contains("_rumble_com"));
                             item.FeedAttributes.FileName = newFilename;
+                            item.HtmlAttributes.Add("Url", trueUri.AbsoluteUri);
+
+                            // Must have had an error on loading the url so attempt with Selenium
                             if (string.IsNullOrEmpty(newFilename) || newFilename.Contains("ajc_com") || newFilename.Contains("rumble_com"))
                             {
-                                // Must have had an error on loading the url so attempt with Selenium
-                                newFilename = _webUtils.WebDriverUrlToDisk(item.Url, item.UrlHash, newFilename);
+                                (newFilename, trueUri) = _webUtils.WebDriverUrlToDisk(item.FeedAttributes.Url, item.FeedAttributes.UrlHash, newFilename);
                                 item.FeedAttributes.FileName = newFilename;
+                                item.HtmlAttributes["Url"] = trueUri.AbsoluteUri;
                             }
                         }
 
@@ -208,7 +220,7 @@ namespace RssFeeder.Console
 
         private List<RssFeedItem> GenerateFeedLinks(RssFeed feed, string workingFolder)
         {
-            string html = _webUtils.DownloadString(feed.Url);
+            (string html, Uri trueUri) = _webUtils.DownloadString(feed.Url);
 
             // Save the feed html source for posterity
             string fileStem = Path.Combine(workingFolder, $"{DateTime.Now.ToUniversalTime():yyyyMMddhhmmss}_{feed.Url.Replace("://", "_").Replace(".", "_").Replace("/", "")}");
@@ -261,11 +273,16 @@ namespace RssFeeder.Console
             // Loop through the list and upsert to the target repository
             foreach (var item in list)
             {
-                // Replace the RavenDB primary key with a Guid for CosmosDB
-                item.Id = Guid.NewGuid().ToString();
+                var exportFeedItem = new ExportFeedItem
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    FeedId = item.FeedAttributes.FeedId,
+                    Url = item.FeedAttributes.Url,
+                    UrlHash = item.FeedAttributes.UrlHash
+                };
 
-                Log.Information("EXPORT: UrlHash '{urlHash}' from {collectionName}", item.UrlHash, feed.CollectionName);
-                _exportRepository.UpsertDocument<RssFeedItem>(_exportCollectionName, item);
+                Log.Information("EXPORT: UrlHash '{urlHash}' from {collectionName}", item.FeedAttributes.UrlHash, feed.CollectionName);
+                _exportRepository.UpsertDocument<ExportFeedItem>(_exportCollectionName, exportFeedItem);
             }
 
             Log.Information("Exported {count} new articles to the {collectionName} collection", list.Count, feed.CollectionName);
@@ -288,7 +305,7 @@ namespace RssFeeder.Console
 
             foreach (var item in list)
             {
-                Log.Information("Removing UrlHash '{urlHash}' from {collectionName}", item.UrlHash, feed.CollectionName);
+                Log.Information("Removing UrlHash '{urlHash}' from {collectionName}", item.FeedAttributes.UrlHash, feed.CollectionName);
                 _exportRepository.DeleteDocument<RssFeedItem>(_exportCollectionName, item.Id, item.HostName);
             }
 

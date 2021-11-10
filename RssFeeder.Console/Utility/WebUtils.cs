@@ -25,18 +25,19 @@ namespace RssFeeder.Console.Utility
             _crawler = crawler;
         }
 
-        public string SaveUrlToDisk(string url, string urlHash, string filename, bool removeScriptElements = true)
+        public (string, Uri) SaveUrlToDisk(string url, string urlHash, string filename, bool removeScriptElements = true)
         {
             if (!filename.EndsWith(".html"))
-                return SaveImageToDisk(url, urlHash, filename);
+                return (SaveImageToDisk(url, urlHash, filename), new Uri(url));
 
             try
             {
                 Log.Information("Loading URL '{urlHash}':'{url}'", urlHash, url);
+                (string content, Uri trueUri) = _crawler.GetString(url);
 
                 // Use custom load method to account for compression headers
                 HtmlDocument doc = new HtmlDocument();
-                doc.LoadHtml(_crawler.GetString(url));
+                doc.LoadHtml(content);
                 doc.OptionFixNestedTags = true;
 
                 // List of html tags we really don't care to save
@@ -61,14 +62,14 @@ namespace RssFeeder.Console.Utility
                 Log.Information("Saving text file '{fileName}'", filename);
                 doc.Save(filename);
 
-                return filename;
+                return (filename, trueUri);
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "SaveUrlToDisk: '{urlHash}':'{url}' - Unexpected error '{message}'", urlHash, url, ex.Message);
             }
 
-            return string.Empty;
+            return (string.Empty, new Uri(url));
         }
 
         private string SaveImageToDisk(string url, string urlHash, string filename)
@@ -99,7 +100,7 @@ namespace RssFeeder.Console.Utility
             return string.Empty;
         }
 
-        public string WebDriverUrlToDisk(string url, string urlHash, string filename)
+        public (string, Uri) WebDriverUrlToDisk(string url, string urlHash, string filename)
         {
             Log.Information("Loading Selenium URL '{urlHash}':'{url}'", urlHash, url);
 
@@ -123,7 +124,7 @@ namespace RssFeeder.Console.Utility
                 Log.Information("Saving text file '{fileName}'", filename);
                 File.WriteAllText(filename, driver.PageSource);
 
-                return filename;
+                return (filename, new Uri(driver.Url));
             }
             catch (Exception ex)
             {
@@ -138,7 +139,7 @@ namespace RssFeeder.Console.Utility
                 }
             }
 
-            return string.Empty;
+            return (string.Empty, new Uri(url));
         }
 
         public void SaveThumbnailToDisk(string url, string filename)
@@ -177,46 +178,54 @@ namespace RssFeeder.Console.Utility
         /// <summary>
         /// Attempt to repair typos in the URL, usually in the protocol section
         /// </summary>
-        /// <param name="defaultBaseUrl">The default base URL to use if a relative URL is detected</param>
         /// <param name="pathAndQuery">The path and query of the URL which may be a relative URL or a botched URL with some kind of typo in it</param>
+        /// <param name="defaultBaseUrl">The default base URL to use if a relative URL is detected</param>
         /// <returns>
         /// The sanitized and repaired URL, although not all repairs will be successful
         /// </returns>
-        public string RepairUrl(string pathAndQuery)
+        public string RepairUrl(string pathAndQuery, string defaultBaseUrl)
         {
             Log.Information("Attempting to repair link '{url}'", pathAndQuery);
             StringBuilder sb = new StringBuilder();
 
-            if (pathAndQuery.Contains("//"))
+            if (pathAndQuery.StartsWith("//"))
             {
-                // They did try to specify a base url, but clearly messed it up because it doesn't start with 'http'
-                // Get the starting position of the double-slash, we'll use everything after that
-                int pos = pathAndQuery.IndexOf("//") + 2;
-
-                // At this point in web history, we should be able to just use SSL/TLS for the protocol
-                // However, this may fail if the destination site doesn't support SSL/TLS so we are taking a risk
-                sb.AppendFormat("https://{0}", pathAndQuery.Substring(pos));
+                // They specified a protocol-independent URL, force it to https
+                sb.AppendFormat("https:{0}", pathAndQuery);
             }
             else
             {
-                // Relative path specified, or they goofed the url beyond repair so this is the best we can do
-                // Start with the defaultBaseUrl and add a trailing forward slash
-                //sb.AppendFormat("{0}{1}", defaultBaseUrl.Trim(), defaultBaseUrl.EndsWith("/") ? "" : "/");
-
-                // Add the starting forward slash if there isn't one
-                if (!pathAndQuery.StartsWith("/"))
+                if (pathAndQuery.Contains("//"))
                 {
-                    sb.Append("/");
-                }
+                    // They did try to specify a base url, but clearly messed it up because it doesn't start with 'http'
+                    // Get the starting position of the double-slash, we'll use everything after that
+                    int pos = pathAndQuery.IndexOf("//") + 2;
 
-                sb.Append(pathAndQuery);
+                    // At this point in web history, we should be able to just use SSL/TLS for the protocol
+                    // However, this may fail if the destination site doesn't support SSL/TLS so we are taking a risk
+                    sb.AppendFormat("https://{0}", pathAndQuery.Substring(pos));
+                }
+                else
+                {
+                    // Relative path specified, or they goofed the url beyond repair so this is the best we can do
+                    // Start with the defaultBaseUrl and add a trailing forward slash
+                    sb.AppendFormat("{0}{1}", defaultBaseUrl.Trim(), defaultBaseUrl.EndsWith("/") ? "" : "/");
+
+                    // Add the starting forward slash if there isn't one
+                    if (!pathAndQuery.StartsWith("/"))
+                    {
+                        sb.Append("/");
+                    }
+
+                    sb.Append(pathAndQuery);
+                }
             }
 
             Log.Information("Repaired link '{url}'", sb.ToString());
             return sb.ToString();
         }
 
-        public string DownloadString(string url)
+        public (string, Uri) DownloadString(string url)
         {
             return _crawler.GetString(url);
         }
