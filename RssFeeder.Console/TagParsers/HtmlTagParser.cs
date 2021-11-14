@@ -6,12 +6,12 @@ namespace RssFeeder.Console.Parsers
 {
     public class HtmlTagParser : ITagParser
     {
-        public string GetArticleBySelector(string html, SiteArticleDefinition options)
+        public string ParseTagsBySelector(string html, SiteArticleDefinition options)
         {
-            return GetArticleBySelector(html, options.ArticleSelector, options.ParagraphSelector);
+            return ParseTagsBySelector(html, options.ArticleSelector, options.ParagraphSelector);
         }
 
-        public string GetArticleBySelector(string html, string bodySelector, string paragraphSelector)
+        public string ParseTagsBySelector(string html, string bodySelector, string paragraphSelector)
         {
             // Load and parse the html from the source file
             var parser = new HtmlParser();

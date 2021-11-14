@@ -79,7 +79,7 @@ namespace RssFeeder.Mvc.Handlers
                         {
                             Id = item.Id,
                             Title = item.Title.Replace("\u0008", "").Replace("\u0003", "").Replace("\u0010", "").Replace("\u0012", "").Replace("\u0002", "").Replace("\u001f", ""),
-                            Description = item.Description.Replace("\u0008", "").Replace("\u0003", "").Replace("\u0010", "").Replace("\u0012", "").Replace("\u0002", "").Replace("\u001f", ""),
+                            Description = item.ArticleText.Replace("\u0008", "").Replace("\u0003", "").Replace("\u0010", "").Replace("\u0012", "").Replace("\u0002", "").Replace("\u001f", ""),
                             Published = item.DateAdded,
                             LastUpdated = item.DateAdded
                         };

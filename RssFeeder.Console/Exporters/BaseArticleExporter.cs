@@ -1,27 +1,26 @@
-﻿using AngleSharp.Html.Parser;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using AngleSharp.Html.Parser;
 using Antlr4.StringTemplate;
 using HtmlAgilityPack;
 using Newtonsoft.Json;
 using RssFeeder.Console.Models;
 using RssFeeder.Models;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RssFeeder.Console.Exporters
 {
-    internal class BaseArticleExporter
+    public class BaseArticleExporter
     {
         public CrawlerConfig Config { get; set; }
 
-        protected virtual string ApplyTemplateToDescription(RssFeedItem item, RssFeed feed, string template)
+        protected virtual string ApplyTemplateToDescription(ExportFeedItem item, RssFeed feed, string template)
         {
-            switch (item.SiteName)
+            switch (item.SiteName.ToLower())
             {
                 case "youtube":
+                case "youtu.be":
                     template = template.Replace("{class}", "");
                     template = template.Replace("{allow}", "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture");
                     break;
@@ -34,85 +33,88 @@ namespace RssFeeder.Console.Exporters
             var t = new Template(template, '$', '$');
             t.Add("item", item);
             t.Add("feed", feed);
-            t.Add("ArticleText", item.HtmlAttributes?.ContainsKey("ArticleText") ?? false ? item.HtmlAttributes["ArticleText"] : string.Empty);
+            t.Add("ArticleText", item.ArticleText);
 
             return t.Render();
         }
 
-        protected virtual void SetExtendedArticleMetaData(ExportFeedItem item, HtmlDocument doc, string hostName)
+        protected virtual void SetExtendedArticleMetaData(ExportFeedItem exportFeedItem, RssFeedItem item, string hostName)
         {
             // Extract the meta data from the Open Graph tags helpfully provided with almost every article
-            string url = item.Url;
-            item.Url = ParseOpenGraphMetaTagAttributes(doc, "og:url");
+            string url = exportFeedItem.Url;
+            exportFeedItem.Url = item.OpenGraphAttributes.GetValueOrDefault("og:url") ?? "";
 
-            if (string.IsNullOrWhiteSpace(item.Url) || hostName.Contains("frontpagemag.com"))
+            if (string.IsNullOrWhiteSpace(exportFeedItem.Url) || hostName.Contains("frontpagemag.com"))
             {
-                item.Url = url;
+                exportFeedItem.Url = url;
             }
 
-            item.Subtitle = ParseOpenGraphMetaTagAttributes(doc, "og:title");
-            item.ImageUrl = ParseOpenGraphMetaTagAttributes(doc, "og:image");
-            item.HostName = hostName;
-            item.SiteName = ParseOpenGraphMetaTagAttributes(doc, "og:site_name").ToLower();
+            // Extract the meta data from the Open Graph tags
+            exportFeedItem.Subtitle = item.OpenGraphAttributes.GetValueOrDefault("og:title") ?? "";
+            exportFeedItem.ImageUrl = item.OpenGraphAttributes.GetValueOrDefault("og:image") ?? "";
+            exportFeedItem.SiteName = item.OpenGraphAttributes.GetValueOrDefault("og:site_name")?.ToLower() ?? "";
+            exportFeedItem.HostName = hostName;
 
             // Fixup apnews on populist press links which sometimes report incorrectly
-            if (string.IsNullOrWhiteSpace(item.SiteName) || (item.SiteName == "ap news" && item.Url.Contains("populist.press")))
+            if (string.IsNullOrWhiteSpace(exportFeedItem.SiteName) || (exportFeedItem.SiteName == "ap news" && exportFeedItem.Url.Contains("populist.press")))
             {
-                item.SiteName = item.HostName;
+                exportFeedItem.SiteName = exportFeedItem.HostName;
             }
 
             // Fixup news.trust.org imageUrl links which have an embedded redirect
-            if (string.IsNullOrWhiteSpace(item.ImageUrl) || (item.SiteName == "news.trust.org" && item.Url.Contains("news.trust.org")))
+            if (string.IsNullOrWhiteSpace(exportFeedItem.ImageUrl) || (exportFeedItem.SiteName == "news.trust.org" && exportFeedItem.Url.Contains("news.trust.org")))
             {
-                item.ImageUrl = String.Empty;
+                exportFeedItem.ImageUrl = string.Empty;
             }
 
             // Remove the protocol portion if there is one, i.e. 'https://'
-            if (item.SiteName.IndexOf('/') > 0)
+            if (exportFeedItem.SiteName.IndexOf('/') > 0)
             {
-                item.SiteName = item.SiteName.Substring(item.SiteName.LastIndexOf('/') + 1);
+                exportFeedItem.SiteName = exportFeedItem.SiteName.Substring(exportFeedItem.SiteName.LastIndexOf('/') + 1);
             }
         }
 
-        protected virtual void SetBasicArticleMetaData(ExportFeedItem item, string hostName)
+        protected virtual void SetBasicArticleMetaData(ExportFeedItem exportFeedItem, RssFeedItem item, string hostName)
         {
-            item.HostName = hostName;
-            item.SiteName = item.HostName;
-            item.ArticleText = $"<p>Unable to crawl article content. Click the link below to view in your browser.</p>";
+            exportFeedItem.HostName = hostName;
+            exportFeedItem.SiteName = hostName;
+            exportFeedItem.ArticleText = $"<p>Unable to crawl article content. Click the link below to view in your browser.</p>";
         }
 
-        //protected virtual void SetVideoMetaData(ExportFeedItem exportFeedItem, RssFeedItem item)
-        //{
-        //    // Extract the meta data from the Open Graph tags customized for YouTube
-        //    exportFeedItem.Subtitle = item.OpenGraphAttributes.ContainsKey("og:title") ? item.OpenGraphAttributes["og:title"] : "";
-        //    exportFeedItem.ImageUrl = item.OpenGraphAttributes.ContainsKey("og:image") ? item.OpenGraphAttributes["og:image"] : "";
-        //    exportFeedItem.SiteName = item.OpenGraphAttributes.ContainsKey("og:site_name") ? item.OpenGraphAttributes["og:site_name"] : "";
+        protected virtual void SetVideoMetaData(ExportFeedItem exportFeedItem, RssFeedItem item, string hostName)
+        {
+            // Extract the meta data from the Open Graph tags
+            exportFeedItem.Subtitle = item.OpenGraphAttributes.GetValueOrDefault("og:title") ?? "";
+            exportFeedItem.ImageUrl = item.OpenGraphAttributes.GetValueOrDefault("og:image") ?? "";
+            exportFeedItem.SiteName = item.OpenGraphAttributes.GetValueOrDefault("og:site_name")?.ToLower() ?? "";
+            exportFeedItem.HostName = hostName;
 
-        //    if (string.IsNullOrWhiteSpace(item.SiteName))
-        //    {
-        //        exportFeedItem.SiteName = item.HostName;
-        //    }
+            if (string.IsNullOrWhiteSpace(exportFeedItem.SiteName))
+            {
+                exportFeedItem.SiteName = hostName;
+            }
 
-        //    if (item.HostName.Contains("rumble.com"))
-        //    {
-        //        var value = GetJsonDynamic<IEnumerable<dynamic>>(doc.Text, "script", "embedUrl");
-        //        exportFeedItem.VideoUrl = value.First().embedUrl.Value;
-        //        exportFeedItem.VideoHeight = int.TryParse(Convert.ToString(value.First().height.Value), out int height) ? height : 0;
-        //        exportFeedItem.VideoWidth = int.TryParse(Convert.ToString(value.First().width.Value), out int width) ? width : 0;
-        //    }
-        //    else
-        //    {
-        //        // These may be YouTube-only Open Graph tags
-        //        item.VideoUrl = ParseOpenGraphMetaTagAttributes(doc, "og:video:url");
-        //        item.VideoHeight = int.TryParse(ParseOpenGraphMetaTagAttributes(doc, "og:video:height"), out int height) ? height : 0;
-        //        item.VideoWidth = int.TryParse(ParseOpenGraphMetaTagAttributes(doc, "og:video:width"), out int width) ? width : 0;
-        //    }
-        //    Log.Information("Video URL: '{url}' ({height}x{width})", item.VideoUrl, item.VideoHeight, item.VideoWidth);
+            if (item.HostName.Contains("rumble.com"))
+            {
+                var text = item.HtmlAttributes.GetValueOrDefault("ParserResult") ?? "";
+                var value = GetJsonDynamic<IEnumerable<dynamic>>(text, "script", "embedUrl");
+                exportFeedItem.VideoUrl = value.First().embedUrl.Value;
+                exportFeedItem.VideoHeight = int.TryParse(Convert.ToString(value.First().height.Value), out int height) ? height : 0;
+                exportFeedItem.VideoWidth = int.TryParse(Convert.ToString(value.First().width.Value), out int width) ? width : 0;
+            }
+            else
+            {
+                // These may be YouTube-only Open Graph tags
+                exportFeedItem.VideoUrl = item.OpenGraphAttributes.GetValueOrDefault("og:video:url") ?? "";
+                exportFeedItem.VideoHeight = int.TryParse(item.OpenGraphAttributes.GetValueOrDefault("og:video:height"), out int height) ? height : 0;
+                exportFeedItem.VideoWidth = int.TryParse(item.OpenGraphAttributes.GetValueOrDefault("og:video:width"), out int width) ? width : 0;
+            }
+            Log.Information("Video URL: '{url}' ({height}x{width})", exportFeedItem.VideoUrl, exportFeedItem.VideoHeight, exportFeedItem.VideoWidth);
 
-        //    // There's no article text for most video sites, so just use the meta description
-        //    var description = ParseOpenGraphMetaTagAttributes(doc, "og:description");
-        //    item.ArticleText = $"<p>{description}</p>";
-        //}
+            // There's no article text for most video sites, so just use the meta description
+            var description = item.OpenGraphAttributes.GetValueOrDefault("og:description") ?? "";
+            exportFeedItem.ArticleText = $"<p>{description}</p>";
+        }
 
         protected virtual T GetJsonDynamic<T>(string html, string tagName, string keyName)
         {
@@ -141,7 +143,6 @@ namespace RssFeeder.Console.Exporters
 
         protected virtual void SetGraphicMetaData(RssFeedItem item, ExportFeedItem exportFeedItem)
         {
-            // Extract the meta data from the Open Graph tags customized for YouTube
             exportFeedItem.ImageUrl = item.FeedAttributes.Url;
             exportFeedItem.HostName = item.HostName;
             exportFeedItem.SiteName = item.HostName;

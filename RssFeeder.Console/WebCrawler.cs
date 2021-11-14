@@ -6,6 +6,7 @@ using AngleSharp.Dom;
 using Autofac;
 using RssFeeder.Console.ArticleDefinitions;
 using RssFeeder.Console.Database;
+using RssFeeder.Console.Exporters;
 using RssFeeder.Console.FeedBuilders;
 using RssFeeder.Console.Models;
 using RssFeeder.Console.Utility;
@@ -21,6 +22,7 @@ namespace RssFeeder.Console
         private readonly IExportRepository _exportRepository;
         private readonly IArticleParser _articleParser;
         private readonly IArticleDefinitionFactory _definitions;
+        private readonly IArticleExporter _exporter;
         private readonly IWebUtils _webUtils;
         private readonly IUtils _utils;
         private IContainer _container;
@@ -30,7 +32,8 @@ namespace RssFeeder.Console
 
         public CrawlerConfig Config { get; set; }
 
-        public WebCrawler(IRepository crawlerRepository, IExportRepository exportRepository, IArticleDefinitionFactory definitions, IWebUtils webUtils, IUtils utils, IArticleParser articleParser)
+        public WebCrawler(IRepository crawlerRepository, IExportRepository exportRepository, IArticleDefinitionFactory definitions,
+            IWebUtils webUtils, IUtils utils, IArticleParser articleParser, IArticleExporter exporter)
         {
             _crawlerRepository = crawlerRepository;
             _exportRepository = exportRepository;
@@ -38,6 +41,7 @@ namespace RssFeeder.Console
             _utils = utils;
             _definitions = definitions;
             _articleParser = articleParser;
+            _exporter = exporter;
         }
 
         public void Initialize(IContainer container, string crawlerCollectionName, string exportCollectionName)
@@ -273,16 +277,15 @@ namespace RssFeeder.Console
             // Loop through the list and upsert to the target repository
             foreach (var item in list)
             {
-                var exportFeedItem = new ExportFeedItem
+                using (LogContext.PushProperty("url", item.FeedAttributes.Url))
+                using (LogContext.PushProperty("urlHash", item.FeedAttributes.UrlHash))
                 {
-                    Id = Guid.NewGuid().ToString(),
-                    FeedId = item.FeedAttributes.FeedId,
-                    Url = item.FeedAttributes.Url,
-                    UrlHash = item.FeedAttributes.UrlHash
-                };
 
-                Log.Information("EXPORT: UrlHash '{urlHash}' from {collectionName}", item.FeedAttributes.UrlHash, feed.CollectionName);
-                _exportRepository.UpsertDocument<ExportFeedItem>(_exportCollectionName, exportFeedItem);
+                    var exportFeedItem = _exporter.FormatItem(item, feed);
+
+                    Log.Information("EXPORT: UrlHash '{urlHash}' from {collectionName}", item.FeedAttributes.UrlHash, feed.CollectionName);
+                    _exportRepository.UpsertDocument<ExportFeedItem>(_exportCollectionName, exportFeedItem);
+                }
             }
 
             Log.Information("Exported {count} new articles to the {collectionName} collection", list.Count, feed.CollectionName);

@@ -44,7 +44,7 @@ namespace RssFeeder.Console.Commands
             Log.Information("og:description = '{Description}'", ParseMetaTagAttributes(doc, "og:description", "content"));
             Log.Information("og:image = '{Image}'", ParseMetaTagAttributes(doc, "og:image", "content"));
 
-            string articleText = parser.GetArticleBySelector(doc.Text, input.BodySelector, input.ParagraphSelector);
+            string articleText = parser.ParseTagsBySelector(doc.Text, input.BodySelector, input.ParagraphSelector);
             Log.Information("Article text = '{ArticleText}'", articleText);
             Log.CloseAndFlush();
 

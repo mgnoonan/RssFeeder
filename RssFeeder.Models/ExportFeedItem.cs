@@ -21,10 +21,7 @@ namespace RssFeeder.Models
         public string Title { get; set; }
         public string Subtitle { get; set; }
         public string ArticleText { get; set; }
-        public string Description { get; set; }
-        public string MetaDescription { get; set; }
         public DateTime DateAdded { get; set; }
-        public string FileName { get; set; }
         public string SiteName { get; set; }
         public string HostName { get; set; }
         public string LinkLocation { get; set; }

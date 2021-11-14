@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace RssFeeder.Console.Exporters
 {
-    internal interface IArticleExporter
+    public interface IArticleExporter
     {
         ExportFeedItem FormatItem(RssFeedItem item, RssFeed feed);
     }

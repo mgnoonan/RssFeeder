@@ -70,7 +70,7 @@ namespace RssFeeder.Console
                 // If a specific article parser was not found in the database then
                 // use the fallback adaptive parser
                 var parser = _container.ResolveNamed<ITagParser>(definition?.Parser ?? "adaptive-parser");
-                item.HtmlAttributes.Add("ArticleText", parser.GetArticleBySelector(doc.Text, definition));
+                item.HtmlAttributes.Add("ParserResult", parser.ParseTagsBySelector(doc.Text, definition));
             }
         }
 

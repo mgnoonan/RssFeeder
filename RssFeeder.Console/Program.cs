@@ -58,9 +58,9 @@ namespace RssFeeder.Console
                .AddEnvironmentVariables();
             IConfigurationRoot configuration = configBuilder.Build();
 
-            // var config = new CosmosDbConfig();
-            // configuration.GetSection("CosmosDB").Bind(config);
-            // log.Information("Loaded CosmosDB from config. Endpoint='{endpointUri}', authKey='{authKeyPartial}*****'", config.endpoint, config.authKey.Substring(0, 5));
+            var config = new CosmosDbConfig();
+            configuration.GetSection("CosmosDB").Bind(config);
+            log.Information("Loaded CosmosDB from config. Endpoint='{endpointUri}', authKey='{authKeyPartial}*****'", config.endpoint, config.authKey.Substring(0, 5));
 
             var crawlerConfig = new CrawlerConfig();
             configuration.GetSection("CrawlerConfig").Bind(crawlerConfig);
@@ -79,10 +79,10 @@ namespace RssFeeder.Console
 
             builder.RegisterInstance(Log.Logger).As<ILogger>();
             builder.RegisterInstance(store).As<IDocumentStore>();
-            //builder.Register(c => new CosmosDbRepository("rssfeeder", config.endpoint, config.authKey, Log.Logger)).As<IExportRepository>();
-            builder.RegisterType<RavenDbRepository>().As<IExportRepository>();
+            builder.Register(c => new CosmosDbRepository("rssfeeder", config.endpoint, config.authKey, Log.Logger)).As<IExportRepository>();
+            //builder.RegisterType<RavenDbRepository>().As<IExportRepository>();
             builder.RegisterType<RavenDbRepository>().As<IRepository>();
-            builder.RegisterType<RavenDbArticleExporter>().As<IArticleExporter>().WithProperty("Config", crawlerConfig);
+            builder.RegisterType<ArticleExporter>().As<IArticleExporter>().WithProperty("Config", crawlerConfig);
             builder.RegisterType<ArticleParser>().As<IArticleParser>().WithProperty("Config", crawlerConfig);
             builder.RegisterType<WebCrawler>().As<IWebCrawler>().WithProperty("Config", crawlerConfig);
             builder.RegisterType<DrudgeReportFeedBuilder>().Named<IRssFeedBuilder>("drudge-report");
@@ -95,7 +95,7 @@ namespace RssFeeder.Console
             builder.RegisterType<PopulistPressFeedBuilder>().Named<IRssFeedBuilder>("populist-press");
             builder.RegisterType<BadBlueFeedBuilder>().Named<IRssFeedBuilder>("bad-blue");
             builder.RegisterType<RevolverNewsFeedBuilder>().Named<IRssFeedBuilder>("revolver-news");
-            builder.RegisterType<GenericParser>().Named<ITagParser>("generic-parser");
+            builder.RegisterType<GenericTagParser>().Named<ITagParser>("generic-parser");
             builder.RegisterType<AdaptiveTagParser>().Named<ITagParser>("adaptive-parser");
             builder.RegisterType<AllTagsParser>().Named<ITagParser>("alltags-parser");
             builder.RegisterType<ScriptTagParser>().Named<ITagParser>("script-parser");

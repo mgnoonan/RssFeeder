@@ -11,12 +11,12 @@ namespace RssFeeder.Console.Parsers
 {
     public class AdaptiveTagParser : ITagParser
     {
-        public string GetArticleBySelector(string html, SiteArticleDefinition options)
+        public string ParseTagsBySelector(string html, SiteArticleDefinition options)
         {
-            return GetArticleBySelector(html, "", "p");
+            return ParseTagsBySelector(html, "", "p");
         }
 
-        public string GetArticleBySelector(string html, string bodySelector, string paragraphSelector)
+        public string ParseTagsBySelector(string html, string bodySelector, string paragraphSelector)
         {
             // Load and parse the html from the source file
             var parser = new HtmlParser();

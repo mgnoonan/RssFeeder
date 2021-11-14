@@ -4,7 +4,7 @@ namespace RssFeeder.Console.Parsers
 {
     public interface ITagParser
     {
-        string GetArticleBySelector(string html, SiteArticleDefinition options);
-        string GetArticleBySelector(string html, string bodySelector, string pargraphSelector);
+        string ParseTagsBySelector(string html, SiteArticleDefinition options);
+        string ParseTagsBySelector(string html, string bodySelector, string pargraphSelector);
     }
 }
