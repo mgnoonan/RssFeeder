@@ -41,7 +41,7 @@
     "CustomParser": "RssFeeder.Console.FeedBuilders.EagleSlantFeedBuilder",
     "CollectionName": "liberty-daily",
     "FileRetentionDays": 3,
-    "DatabaseRetentionDays": 7,
+    "DatabaseRetentionDays": 30,
     "Filters": []
   },
   {
@@ -56,7 +56,7 @@
     "CustomParser": "RssFeeder.Console.FeedBuilders.BonginoReportFeedBuilder",
     "CollectionName": "bongino-report",
     "FileRetentionDays": 3,
-    "DatabaseRetentionDays": 7,
+    "DatabaseRetentionDays": 30,
     "Filters": []
   },
   {
@@ -71,7 +71,7 @@
     "CustomParser": "RssFeeder.Console.FeedBuilders.CitizenFreePressFeedBuilder",
     "CollectionName": "citizen-freepress",
     "FileRetentionDays": 3,
-    "DatabaseRetentionDays": 7,
+    "DatabaseRetentionDays": 30,
     "Filters": [
       "3fa6dfe31a8d75725aaa5620243838f2",
       "b73f81a2fa4475d68ba7ba39faf9dfb6",
@@ -90,7 +90,7 @@
     "CustomParser": "RssFeeder.Console.FeedBuilders.RantinglyFeedBuilder",
     "CollectionName": "rantingly",
     "FileRetentionDays": 3,
-    "DatabaseRetentionDays": 7,
+    "DatabaseRetentionDays": 30,
     "Filters": []
   },
   {
@@ -105,7 +105,7 @@
     "CustomParser": "RssFeeder.Console.FeedBuilders.GutSmackFeedBuilder",
     "CollectionName": "gutsmack",
     "FileRetentionDays": 3,
-    "DatabaseRetentionDays": 7,
+    "DatabaseRetentionDays": 30,
     "Filters": []
   },
   {
@@ -120,7 +120,7 @@
     "CustomParser": "RssFeeder.Console.FeedBuilders.PopulistPressFeedBuilder",
     "CollectionName": "populist-press",
     "FileRetentionDays": 3,
-    "DatabaseRetentionDays": 7,
+    "DatabaseRetentionDays": 30,
     "Filters": []
   },
   {
@@ -135,7 +135,7 @@
     "CustomParser": "RssFeeder.Console.FeedBuilders.BadBlueFeedBuilder",
     "CollectionName": "bad-blue",
     "FileRetentionDays": 7,
-    "DatabaseRetentionDays": 7,
+    "DatabaseRetentionDays": 30,
     "Filters": []
   },
   {
@@ -150,7 +150,7 @@
     "CustomParser": "RssFeeder.Console.FeedBuilders.RevolverNewsFeedBuilder",
     "CollectionName": "revolver-news",
     "FileRetentionDays": 7,
-    "DatabaseRetentionDays": 7,
+    "DatabaseRetentionDays": 30,
     "Filters": []
   }
 ]
