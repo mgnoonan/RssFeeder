@@ -1,7 +1,7 @@
 [
   {
     "id": "55fd57f0-1a67-4951-910e-3e10492a83d4",
-    "title": "The Drudge Report",
+    "title": "Drudge Report",
     "url": "https://www.drudgereport.com",
     "description": "The Drudge Report",
     "language": "en-US",
@@ -14,7 +14,7 @@
   },
   {
     "id": "dd514627-8f91-417c-9762-cc78af87e07f",
-    "Title": "The Bongino Report Extra",
+    "Title": "Bongino Report",
     "Url": "https://bonginoreport.com/",
     "Description": "The top conservative and libertarian news stories of the day",
     "Language": "en-US",
@@ -27,7 +27,7 @@
   },
   {
     "id": "031cb428-4785-42af-b33a-3a178502cc8b",
-    "Title": "The Liberty Daily Extra",
+    "Title": "Liberty Daily",
     "Url": "https://thelibertydaily.com/",
     "Description": "The Conservative Alternative to the Drudge Report",
     "Language": "en-US",
@@ -40,7 +40,7 @@
   },
   {
     "id": "cfbcc1f0-9be9-4c0b-8a1d-44f27ac7fa28",
-    "Title": "Citizen Free Press Extra",
+    "Title": "Citizen Free Press",
     "Url": "https://www.citizenfreepress.com/",
     "Description": "America's Front Page For Political News",
     "Language": "en-US",
@@ -53,7 +53,7 @@
   },
   {
     "id": "e4222691-c5f7-42aa-8a85-95a7afae6237",
-    "Title": "Rantingly Extra",
+    "Title": "Rantingly",
     "Url": "https://rantingly.com/",
     "Description": "no description for Rantingly",
     "Language": "en-US",
@@ -66,7 +66,7 @@
   },
   {
     "id": "fd4e150a-4953-4551-ad04-fa1b463a9159",
-    "Title": "GutSmack Extra",
+    "Title": "GutSmack",
     "Url": "https://gutsmack.com/",
     "Description": "We watch ESPN so you don't have to...",
     "Language": "en-US",
@@ -79,7 +79,7 @@
   },
   {
     "id": "fcdb9d55-feef-482f-9e6f-21f6ea41e977",
-    "Title": "Populist Press Extra",
+    "Title": "Populist Press",
     "Url": "https://populist.press/",
     "Description": "Populist Press Extra",
     "Language": "en-US",

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using Microsoft.Azure.Cosmos;
@@ -31,6 +32,11 @@ namespace RssFeeder.Console.Database
         }
 
         public void CreateDocument<T>(string collectionName, T item, int expirationDays)
+        {
+            CreateDocument<T>(collectionName, item, expirationDays, null, null, null);
+        }
+
+        public void CreateDocument<T>(string collectionName, T item, int expirationDays, string filename, Stream stream, string contentType)
         {
             var container = _client.GetContainer(_databaseName, collectionName);
             var result = container.CreateItemAsync(item).Result;

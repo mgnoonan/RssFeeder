@@ -1,0 +1,17 @@
+[
+  {
+    "Title": "Bongino Report",
+    "Enabled": "true",
+    "EnableThumbnail": "false",
+    "Exportable": "true",
+    "Description": "The Bongino Report",
+    "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\bongino.xml",
+    "Language": "en-US",
+    "Url": "https://bonginoreport.com/",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.BonginoReportFeedBuilder",
+    "CollectionName": "bongino-report",
+    "FileRetentionDays": 3,
+    "DatabaseRetentionDays": 7,
+    "Filters": []
+  }
+]

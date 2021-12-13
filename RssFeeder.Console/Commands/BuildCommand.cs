@@ -36,17 +36,17 @@ namespace RssFeeder.Console.Commands
             {
                 List<RssFeed> feedList;
                 var repository = _container.Resolve<IRepository>();
-                var bootstrap = _container.Resolve<IRssBootstrap>();
+                var crawler = _container.Resolve<IWebCrawler>();
                 var utils = _container.Resolve<IUtils>();
                 var webUtils = _container.Resolve<IWebUtils>();
 
                 if (string.IsNullOrWhiteSpace(input.ConfigFile))
                 {
-                    input.ConfigFile = "feed-drudge.json";
+                    input.ConfigFile = "feed-test.json";
                 }
 
                 // Initialze the bootstrap driver
-                bootstrap.Initialize();
+                crawler.Initialize(_container, "feed-items", "drudge-report");
 
                 // Get the directory of the current executable, all config 
                 // files should be in this path
@@ -70,10 +70,10 @@ namespace RssFeeder.Console.Commands
                         {
                             if (feed.Enabled)
                             {
-                                bootstrap.Start(_container, feed);
-                                bootstrap.Export(_container, feed, startDate);
+                                crawler.Crawl(feed);
+                                crawler.Export(feed, startDate);
                             }
-                            bootstrap.Purge(_container, feed);
+                            crawler.Purge(feed);
                         }
                     }
                     catch (Exception ex)

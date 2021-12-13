@@ -9,14 +9,14 @@ using Oakton;
 using Oakton.Help;
 using Raven.Client.Documents;
 using RssFeeder.Console.ArticleDefinitions;
-using RssFeeder.Console.ArticleParsers;
 using RssFeeder.Console.Commands;
 using RssFeeder.Console.Database;
+using RssFeeder.Console.Exporters;
 using RssFeeder.Console.FeedBuilders;
+using RssFeeder.Console.HttpClients;
 using RssFeeder.Console.Models;
-using RssFeeder.Console.Parsers;
+using RssFeeder.Console.TagParsers;
 using RssFeeder.Console.Utility;
-using RssFeeder.Console.WebCrawlers;
 using Serilog;
 using Serilog.Formatting.Compact;
 using Serilog.Sinks.SystemConsole.Themes;
@@ -54,13 +54,15 @@ namespace RssFeeder.Console
             var configBuilder = new ConfigurationBuilder()
                .SetBasePath(Directory.GetCurrentDirectory())
                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-               .AddUserSecrets<Program>()
+               //.AddUserSecrets<Program>()
                .AddEnvironmentVariables();
             IConfigurationRoot configuration = configBuilder.Build();
 
+#if !DEBUG
             var config = new CosmosDbConfig();
             configuration.GetSection("CosmosDB").Bind(config);
             log.Information("Loaded CosmosDB from config. Endpoint='{endpointUri}', authKey='{authKeyPartial}*****'", config.endpoint, config.authKey.Substring(0, 5));
+#endif
 
             var crawlerConfig = new CrawlerConfig();
             configuration.GetSection("CrawlerConfig").Bind(crawlerConfig);
@@ -79,9 +81,15 @@ namespace RssFeeder.Console
 
             builder.RegisterInstance(Log.Logger).As<ILogger>();
             builder.RegisterInstance(store).As<IDocumentStore>();
+#if DEBUG
+            builder.RegisterType<RavenDbRepository>().As<IExportRepository>();
+#else
             builder.Register(c => new CosmosDbRepository("rssfeeder", config.endpoint, config.authKey, Log.Logger)).As<IExportRepository>();
+#endif
             builder.RegisterType<RavenDbRepository>().As<IRepository>();
-            builder.RegisterType<RssBootstrap>().As<IRssBootstrap>().WithProperty("Config", crawlerConfig);
+            builder.RegisterType<ArticleExporter>().As<IArticleExporter>().WithProperty("Config", crawlerConfig);
+            builder.RegisterType<ArticleParser>().As<IArticleParser>().WithProperty("Config", crawlerConfig);
+            builder.RegisterType<WebCrawler>().As<IWebCrawler>().WithProperty("Config", crawlerConfig);
             builder.RegisterType<DrudgeReportFeedBuilder>().Named<IRssFeedBuilder>("drudge-report");
             builder.RegisterType<EagleSlantFeedBuilder>().Named<IRssFeedBuilder>("eagle-slant");
             builder.RegisterType<LibertyDailyFeedBuilder>().Named<IRssFeedBuilder>("liberty-daily");
@@ -91,12 +99,14 @@ namespace RssFeeder.Console
             builder.RegisterType<GutSmackFeedBuilder>().Named<IRssFeedBuilder>("gutsmack");
             builder.RegisterType<PopulistPressFeedBuilder>().Named<IRssFeedBuilder>("populist-press");
             builder.RegisterType<BadBlueFeedBuilder>().Named<IRssFeedBuilder>("bad-blue");
-            builder.RegisterType<GenericParser>().Named<IArticleParser>("generic-parser");
-            builder.RegisterType<AdaptiveParser>().Named<IArticleParser>("adaptive-parser");
-            builder.RegisterType<AllTagsParser>().Named<IArticleParser>("alltags-parser");
-            builder.RegisterType<ScriptParser>().Named<IArticleParser>("script-parser");
-            builder.RegisterType<HtmlTagParser>().Named<IArticleParser>("htmltag-parser");
-            builder.RegisterType<RestSharpWebCrawler>().As<IWebCrawler>().SingleInstance();
+            builder.RegisterType<RevolverNewsFeedBuilder>().Named<IRssFeedBuilder>("revolver-news");
+            builder.RegisterType<GenericTagParser>().Named<ITagParser>("generic-parser");
+            builder.RegisterType<AdaptiveTagParser>().Named<ITagParser>("adaptive-parser");
+            builder.RegisterType<AllTagsParser>().Named<ITagParser>("alltags-parser");
+            builder.RegisterType<ScriptTagParser>().Named<ITagParser>("script-parser");
+            builder.RegisterType<HtmlTagParser>().Named<ITagParser>("htmltag-parser");
+            builder.RegisterType<JsonLdTagParser>().Named<ITagParser>("jsonldtag-parser");
+            builder.RegisterType<RestSharpHttpClient>().As<IHttpClient>().SingleInstance();
             builder.RegisterType<WebUtils>().As<IWebUtils>().SingleInstance();
             builder.RegisterType<Utils>().As<IUtils>().SingleInstance();
             builder.RegisterType<ArticleDefinitionFactory>().As<IArticleDefinitionFactory>().SingleInstance();

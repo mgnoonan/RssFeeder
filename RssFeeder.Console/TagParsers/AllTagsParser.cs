@@ -4,20 +4,19 @@ using System.Linq;
 using System.Text;
 using AngleSharp.Dom;
 using AngleSharp.Html.Parser;
-using RssFeeder.Console.Parsers;
 using RssFeeder.Models;
 using Serilog;
 
-namespace RssFeeder.Console.ArticleParsers
+namespace RssFeeder.Console.TagParsers
 {
-    public class AllTagsParser : IArticleParser
+    public class AllTagsParser : ITagParser
     {
-        public string GetArticleBySelector(string html, SiteArticleDefinition options)
+        public string ParseTagsBySelector(string html, SiteArticleDefinition options)
         {
-            return GetArticleBySelector(html, options.ArticleSelector, options.ParagraphSelector);
+            return ParseTagsBySelector(html, options.ArticleSelector, options.ParagraphSelector);
         }
 
-        public string GetArticleBySelector(string html, string bodySelector, string paragraphSelector)
+        public string ParseTagsBySelector(string html, string bodySelector, string paragraphSelector)
         {
             // Load and parse the html from the source file
             var parser = new HtmlParser();

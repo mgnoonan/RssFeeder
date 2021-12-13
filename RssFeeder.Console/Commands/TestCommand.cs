@@ -2,7 +2,7 @@
 using HtmlAgilityPack;
 using Oakton;
 using RssFeeder.Console.Models;
-using RssFeeder.Console.Parsers;
+using RssFeeder.Console.TagParsers;
 using RssFeeder.Console.Utility;
 using Serilog;
 
@@ -23,7 +23,7 @@ namespace RssFeeder.Console.Commands
         public override bool Execute(TestInput input)
         {
             var webUtils = _container.Resolve<IWebUtils>();
-            var parser = _container.ResolveNamed<IArticleParser>("htmltag-parser");
+            var parser = _container.ResolveNamed<ITagParser>("htmltag-parser");
 
             string url = "https://media.townhall.com/townhall/reu/o/2021/224/171327fc-9d62-429d-b6c3-ede53197355a-1110x740.jpg";
             //string url = "https://pjmedia.com/columns/ari-j-kaufman/2021/08/12/what-did-san-francisco-expect-when-it-elected-the-progeny-of-of-militant-marxist-terrorists-n1468973";

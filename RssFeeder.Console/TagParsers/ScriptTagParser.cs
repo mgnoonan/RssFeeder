@@ -3,20 +3,19 @@ using System.Linq;
 using AngleSharp.Html.Parser;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using RssFeeder.Console.Parsers;
 using RssFeeder.Models;
 using Serilog;
 
-namespace RssFeeder.Console.ArticleParsers
+namespace RssFeeder.Console.TagParsers
 {
-    public class ScriptParser : IArticleParser
+    public class ScriptTagParser : ITagParser
     {
-        public string GetArticleBySelector(string html, SiteArticleDefinition options)
+        public string ParseTagsBySelector(string html, SiteArticleDefinition options)
         {
-            return GetArticleBySelector(html, options.ArticleSelector, options.ParagraphSelector);
+            return ParseTagsBySelector(html, options.ArticleSelector, options.ParagraphSelector);
         }
 
-        public string GetArticleBySelector(string html, string bodySelector, string paragraphSelector)
+        public string ParseTagsBySelector(string html, string bodySelector, string paragraphSelector)
         {
             // Load and parse the html from the source file
             var parser = new HtmlParser();
@@ -25,19 +24,19 @@ namespace RssFeeder.Console.ArticleParsers
             Log.Information("Attempting script block parsing using body selector '{bodySelector}' and paragraph selector '{paragraphSelector}'", bodySelector, paragraphSelector);
 
             // Query the document by CSS selectors to get the article text
-            var blocks = document.QuerySelectorAll("script");
-            if (blocks.Count() == 0)
+            var elements = document.QuerySelectorAll("script");
+            if (elements.Count() == 0)
             {
                 Log.Warning("Error reading article: '{bodySelector}' article body selector not found.", bodySelector);
                 return $"<p>Error reading article: '{bodySelector}' article body selector not found.</p>";
             }
 
             string content = "";
-            foreach (var block in blocks)
+            foreach (var element in elements)
             {
-                if (block.TextContent.Contains(bodySelector))
+                if (element.TextContent.Contains(bodySelector))
                 {
-                    var lines = block.TextContent.Replace("\\u003c", "<").Split("\n", StringSplitOptions.RemoveEmptyEntries);
+                    var lines = element.TextContent.Replace("\\u003c", "<").Split("\n", StringSplitOptions.RemoveEmptyEntries);
                     content = lines.Where(q => q.Contains(bodySelector)).FirstOrDefault();
                     int pos = content.IndexOf('{');
                     content = content.Substring(pos).Trim();

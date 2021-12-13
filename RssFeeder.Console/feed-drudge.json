@@ -1,4 +1,4 @@
-﻿[
+[
   {
     "Title": "The Drudge Report",
     "Enabled": "true",
@@ -10,8 +10,8 @@
     "Url": "http://www.drudgereport.com",
     "CustomParser": "RssFeeder.Console.FeedBuilders.DrudgeReportFeedBuilder",
     "CollectionName": "drudge-report",
-    "FileRetentionDays": 7,
-    "DatabaseRetentionDays": 7,
+    "FileRetentionDays": 3,
+    "DatabaseRetentionDays": 30,
     "Filters": [
       "cd0802700cef27a775ab057a2ef54aea",
       "cf69b6dd74d44010fdd0eff6d778e70f",
@@ -28,130 +28,5 @@
       "05a84c37048fe22a1b897a2b11e31c84",
       "caf4e88953540b46b5c438af9648c9da"
     ]
-  },
-  {
-    "Title": "Liberty Daily",
-    "Enabled": "true",
-    "EnableThumbnail": "false",
-    "Exportable": "true",
-    "Description": "Liberty Daily",
-    "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\liberty.xml",
-    "Language": "en-US",
-    "Url": "https://thelibertydaily.com/",
-    "CustomParser": "RssFeeder.Console.FeedBuilders.EagleSlantFeedBuilder",
-    "CollectionName": "liberty-daily",
-    "FileRetentionDays": 7,
-    "DatabaseRetentionDays": 7,
-    "Filters": []
-  },
-  {
-    "Title": "Eagle Slant",
-    "Enabled": "false",
-    "EnableThumbnail": "true",
-    "Exportable": "true",
-    "Description": "Eagle Slant",
-    "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\eagle.xml",
-    "Language": "en-US",
-    "Url": "https://eagleslant.com/",
-    "CustomParser": "RssFeeder.Console.FeedBuilders.EagleSlantFeedBuilder",
-    "CollectionName": "eagle-slant",
-    "FileRetentionDays": 7,
-    "DatabaseRetentionDays": 3,
-    "Filters": [
-      "29d8b3c4d9f1a32b659ebc0986ff8b59"
-    ]
-  },
-  {
-    "Title": "Bongino Report",
-    "Enabled": "true",
-    "EnableThumbnail": "true",
-    "Exportable": "true",
-    "Description": "The Bongino Report",
-    "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\bongino.xml",
-    "Language": "en-US",
-    "Url": "https://bonginoreport.com/",
-    "CustomParser": "RssFeeder.Console.FeedBuilders.BonginoReportFeedBuilder",
-    "CollectionName": "bongino-report",
-    "FileRetentionDays": 7,
-    "DatabaseRetentionDays": 7,
-    "Filters": []
-  },
-  {
-    "Title": "Citizen Free Press",
-    "Enabled": "true",
-    "EnableThumbnail": "true",
-    "Exportable": "true",
-    "Description": "Citizen Free Press",
-    "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\cfp.xml",
-    "Language": "en-US",
-    "Url": "https://www.citizenfreepress.com/",
-    "CustomParser": "RssFeeder.Console.FeedBuilders.CitizenFreePressFeedBuilder",
-    "CollectionName": "citizen-freepress",
-    "FileRetentionDays": 7,
-    "DatabaseRetentionDays": 7,
-    "Filters": [
-      "3fa6dfe31a8d75725aaa5620243838f2",
-      "b73f81a2fa4475d68ba7ba39faf9dfb6"
-    ]
-  },
-  {
-    "Title": "Rantingly",
-    "Enabled": "true",
-    "EnableThumbnail": "true",
-    "Exportable": "true",
-    "Description": "Rantingly",
-    "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\rantingly.xml",
-    "Language": "en-US",
-    "Url": "https://rantingly.com/",
-    "CustomParser": "RssFeeder.Console.FeedBuilders.RantinglyFeedBuilder",
-    "CollectionName": "rantingly",
-    "FileRetentionDays": 7,
-    "DatabaseRetentionDays": 7,
-    "Filters": []
-  },
-  {
-    "Title": "GutSmack",
-    "Enabled": "true",
-    "EnableThumbnail": "true",
-    "Exportable": "true",
-    "Description": "We watch ESPN so you don't have to...",
-    "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\gutsmack.xml",
-    "Language": "en-US",
-    "Url": "https://gutsmack.com/",
-    "CustomParser": "RssFeeder.Console.FeedBuilders.GutSmackFeedBuilder",
-    "CollectionName": "gutsmack",
-    "FileRetentionDays": 7,
-    "DatabaseRetentionDays": 7,
-    "Filters": []
-  },
-  {
-    "Title": "Populist Press Extra",
-    "Enabled": "true",
-    "EnableThumbnail": "true",
-    "Exportable": "true",
-    "Description": "Populist Press Extra",
-    "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\populist.xml",
-    "Language": "en-US",
-    "Url": "https://populist.press/",
-    "CustomParser": "RssFeeder.Console.FeedBuilders.PopulistPressFeedBuilder",
-    "CollectionName": "populist-press",
-    "FileRetentionDays": 7,
-    "DatabaseRetentionDays": 7,
-    "Filters": []
-  },
-  {
-    "Title": "Bad Blue",
-    "Enabled": "true",
-    "EnableThumbnail": "true",
-    "Exportable": "true",
-    "Description": "Bad Blue",
-    "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\badblue.xml",
-    "Language": "en-US",
-    "Url": "http://badblue.bitnamiapp.com/trendr8.htm",
-    "CustomParser": "RssFeeder.Console.FeedBuilders.BadBlueFeedBuilder",
-    "CollectionName": "bad-blue",
-    "FileRetentionDays": 7,
-    "DatabaseRetentionDays": 7,
-    "Filters": []
   }
 ]

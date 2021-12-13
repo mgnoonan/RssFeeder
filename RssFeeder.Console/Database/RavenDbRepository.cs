@@ -1,6 +1,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Operations;
 using Raven.Client.Documents.Session;
@@ -12,7 +13,7 @@ using Serilog;
 
 namespace RssFeeder.Console.Database
 {
-    public class RavenDbRepository : IRepository
+    public class RavenDbRepository : IRepository, IExportRepository
     {
         readonly ILogger _log;
         readonly IDocumentStore _store;
@@ -52,12 +53,27 @@ namespace RssFeeder.Console.Database
 
         public void CreateDocument<T>(string collectionName, T item, int expirationDays)
         {
+            CreateDocument<T>(collectionName, item, expirationDays, null, null, null);
+        }
+
+        public void CreateDocument<T>(string collectionName, T item, int expirationDays, string filename, Stream stream, string contentType)
+        {
             using (IDocumentSession session = _store.OpenSession(database: collectionName))
             {
-                DateTime expiry = DateTime.UtcNow.AddDays(expirationDays);
-
                 session.Store(item);
-                session.Advanced.GetMetadataFor(item)[Raven.Client.Constants.Documents.Metadata.Expires] = expiry;
+
+                if (expirationDays > 0)
+                {
+                    DateTime expiry = DateTime.UtcNow.AddDays(expirationDays);
+                    session.Advanced.GetMetadataFor(item)[Raven.Client.Constants.Documents.Metadata.Expires] = expiry;
+                }
+
+                // Store the attachement
+                if (!string.IsNullOrEmpty(filename))
+                {
+                    session.Advanced.Attachments.Store(item, filename, stream, contentType);
+                }
+
                 session.SaveChanges();
             }
         }
@@ -74,7 +90,7 @@ namespace RssFeeder.Console.Database
         public bool DocumentExists<T>(string collectionName, string feedID, string urlHash)
         {
             int count = 0;
-            string sqlQueryText = $"from RssFeedItems where UrlHash = \"{urlHash}\" and FeedId = \"{feedID}\"";
+            string sqlQueryText = $"from RssFeedItems where FeedAttributes.UrlHash = \"{urlHash}\" and FeedAttributes.FeedId = \"{feedID}\"";
 
             using (IDocumentSession session = _store.OpenSession(database: collectionName))
             {
@@ -99,10 +115,9 @@ namespace RssFeeder.Console.Database
 
         public List<T> GetStaleDocuments<T>(string collectionName, string feedId, short maximumAgeInDays)
         {
-            // index 'Auto/AllDocs/ByDateAddedAndFeedIdAndSiteNameAndUrl'
-            string sqlQueryText = $@"from @all_docs 
-                   where DateAdded <= '{DateTime.UtcNow.AddDays(-maximumAgeInDays):o}' 
-                   and FeedId = '{feedId}'";
+            string sqlQueryText = $@"from RssFeedItems 
+                   where FeedAttributes.DateAdded <= '{DateTime.UtcNow.AddDays(-maximumAgeInDays):o}' 
+                   and FeedAttributes.FeedId = '{feedId}'";
 
             return GetDocuments<T>(collectionName, sqlQueryText);
         }
@@ -116,11 +131,16 @@ namespace RssFeeder.Console.Database
 
         public List<T> GetExportDocuments<T>(string collectionName, string feedId, DateTime startDate)
         {
-            string sqlQueryText = $@"from @all_docs 
-                   where DateAdded >= '{TimeZoneInfo.ConvertTimeToUtc(startDate):o}'
-                   and FeedId = '{feedId}'";
+            string sqlQueryText = $@"from RssFeedItems 
+                   where FeedAttributes.DateAdded >= '{TimeZoneInfo.ConvertTimeToUtc(startDate):o}'
+                   and FeedAttributes.FeedId = '{feedId}'";
 
             return GetDocuments<T>(collectionName, sqlQueryText);
+        }
+
+        public void UpsertDocument<T>(string collectionName, T item)
+        {
+            CreateDocument(collectionName, item, 0);
         }
     }
 }

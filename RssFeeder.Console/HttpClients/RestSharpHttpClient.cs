@@ -1,10 +1,11 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using RestSharp;
 using Serilog;
 
-namespace RssFeeder.Console.WebCrawlers
+namespace RssFeeder.Console.HttpClients
 {
-    public class RestSharpWebCrawler : IWebCrawler
+    public class RestSharpHttpClient : IHttpClient
     {
         private readonly RestClient _client = new RestClient();
 
@@ -30,14 +31,14 @@ namespace RssFeeder.Console.WebCrawlers
                     .FirstOrDefault();
         }
 
-        public string GetString(string url)
+        public (string, Uri) GetString(string url)
         {
             Log.Information("Crawler GetString to {url}", url);
             var request = new RestRequest(url, DataFormat.None);
             var response = _client.Get(request);
-            Log.Information("Response status code = {statusCode}", response.StatusCode);
+            Log.Information("Response status code = {statusCode}, {uri}", response.StatusCode, response.ResponseUri);
 
-            return response.Content;
+            return (response.Content, response.ResponseUri);
         }
     }
 }

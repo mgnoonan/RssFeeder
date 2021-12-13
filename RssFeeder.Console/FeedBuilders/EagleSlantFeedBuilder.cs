@@ -13,20 +13,20 @@ namespace RssFeeder.Console.FeedBuilders
         public EagleSlantFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities) : base(log, webUtilities, utilities)
         { }
 
-        public List<RssFeedItem> ParseRssFeedItems(RssFeed feed, string html)
+        public List<RssFeedItem> GenerateRssFeedItemList(RssFeed feed, string html)
         {
-            return ParseRssFeedItems(feed.CollectionName, feed.Url, feed.Filters, html);
+            return GenerateRssFeedItemList(feed.CollectionName, feed.Url, feed.Filters, html);
         }
 
-        public List<RssFeedItem> ParseRssFeedItems(string feedCollectionName, string feedUrl, List<string> feedFilters, string html)
+        public List<RssFeedItem> GenerateRssFeedItemList(string feedCollectionName, string feedUrl, List<string> feedFilters, string html)
         {
-            var items = ParseRssFeedItems(html, feedFilters ?? new List<string>());
+            var items = GenerateRssFeedItemList(html, feedFilters ?? new List<string>(), feedUrl);
             PostProcessing(feedCollectionName, feedUrl, items);
 
             return items;
         }
 
-        public List<RssFeedItem> ParseRssFeedItems(string html, List<string> filters)
+        public List<RssFeedItem> GenerateRssFeedItemList(string html, List<string> filters, string feedUrl)
         {
             var list = new List<RssFeedItem>();
             var doc = new HtmlDocument();
@@ -43,10 +43,10 @@ namespace RssFeeder.Console.FeedBuilders
                 {
                     string title = WebUtility.HtmlDecode(node.InnerText.Trim());
 
-                    var item = CreateNodeLinks(filters, node, "main headlines", count++);
+                    var item = CreateNodeLinks(filters, node, "main headlines", count++, feedUrl);
                     if (item != null)
                     {
-                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
+                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                         list.Add(item);
                     }
                 }
@@ -62,10 +62,10 @@ namespace RssFeeder.Console.FeedBuilders
                 {
                     string title = WebUtility.HtmlDecode(node.InnerText.Trim());
 
-                    var item = CreateNodeLinks(filters, node, "left column", count++);
+                    var item = CreateNodeLinks(filters, node, "left column", count++, feedUrl);
                     if (item != null)
                     {
-                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
+                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                         list.Add(item);
                     }
                 }
@@ -82,10 +82,10 @@ namespace RssFeeder.Console.FeedBuilders
                 {
                     string title = WebUtility.HtmlDecode(node.InnerText.Trim());
 
-                    var item = CreateNodeLinks(filters, node, "middle column", count++);
+                    var item = CreateNodeLinks(filters, node, "middle column", count++, feedUrl);
                     if (item != null)
                     {
-                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.UrlHash, item.LinkLocation, item.Title, item.Url);
+                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                         list.Add(item);
                     }
                 }

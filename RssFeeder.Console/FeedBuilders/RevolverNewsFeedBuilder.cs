@@ -1,6 +1,9 @@
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Text;
+using System.Threading.Tasks;
 using AngleSharp.Dom;
 using AngleSharp.Html.Parser;
 using RssFeeder.Console.Utility;
@@ -9,9 +12,10 @@ using Serilog;
 
 namespace RssFeeder.Console.FeedBuilders
 {
-    class BadBlueFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
+    internal class RevolverNewsFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
     {
-        public BadBlueFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities) : base(log, webUtilities, utilities)
+        public RevolverNewsFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities) : 
+            base(logger, webUtilities, utilities)
         { }
 
         public List<RssFeedItem> GenerateRssFeedItemList(RssFeed feed, string html)
@@ -36,17 +40,17 @@ namespace RssFeeder.Console.FeedBuilders
             var parser = new HtmlParser();
             var document = parser.ParseDocument(html);
 
-            // Main headlines section
-            var container = document.QuerySelector("div.storyh1 > span");
-            var nodes = container.QuerySelectorAll("a");
+            // Featured links section
+            var container = document.QuerySelector("div.revolver > div.column.center > div.post-listing");
+            var nodes = container.QuerySelectorAll("div.title > a");
             if (nodes != null)
             {
                 count = 1;
-                foreach (var node in nodes)
+                foreach (var node in nodes.Take(5))
                 {
                     string title = WebUtility.HtmlDecode(node.Text().Trim());
 
-                    var item = CreateNodeLinks(filters, node, "main headlines", count++, feedUrl);
+                    var item = CreateNodeLinks(filters, node, "feature links", count++, feedUrl);
                     if (item != null)
                     {
                         log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
@@ -56,16 +60,16 @@ namespace RssFeeder.Console.FeedBuilders
             }
 
             // Stories section
-            container = document.QuerySelector("div.grid");
-            nodes = container.QuerySelectorAll("div.headlines > p > a");
+            container = document.QuerySelector("div.revolver > div.column.center > div.articles-wrapper > div.infinite-content");
+            nodes = container.QuerySelectorAll("div.title > a");
             if (nodes != null)
             {
                 count = 1;
-                foreach (var node in nodes)
+                foreach (var node in nodes.Take(5))
                 {
                     string title = WebUtility.HtmlDecode(node.Text().Trim());
 
-                    var item = CreateNodeLinks(filters, node, "all stories", count++, feedUrl);
+                    var item = CreateNodeLinks(filters, node, "news feed", count++, feedUrl);
                     if (item != null)
                     {
                         log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);

@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RssFeeder.Console.WebCrawlers
+namespace RssFeeder.Console.HttpClients
 {
-    public interface IWebCrawler
+    public interface IHttpClient
     {
-        string GetString(string url);
+        (string, Uri) GetString(string url);
         byte[] DownloadData(string url);
         string GetContentType(string url);
     }

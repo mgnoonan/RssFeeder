@@ -7,7 +7,7 @@ using RssFeeder.Mvc.Models;
 
 namespace RssFeeder.Mvc.Services
 {
-    public class CosmosDbService : ICosmosDbService
+    public class CosmosDbService : IDatabaseService
     {
         private readonly Container _container;
 

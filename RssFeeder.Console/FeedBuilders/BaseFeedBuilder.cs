@@ -29,18 +29,16 @@ namespace RssFeeder.Console.FeedBuilders
             // Replace any relative paths and add the feed id
             foreach (var item in items)
             {
-                item.FeedId = feedCollectionName;
                 item.FeedAttributes.FeedId = feedCollectionName;
 
-                if (item.Url.StartsWith("/"))
-                {
-                    item.Url = feedUrl + item.Url;
-                    //item.FeedAttributes.Url = feedUrl + item.Url;
-                }
+                // if (item.FeedAttributes.Url.StartsWith("/"))
+                // {
+                //     item.FeedAttributes.Url = feedUrl + item.FeedAttributes.Url;
+                // }
             }
         }
 
-        protected RssFeedItem CreateNodeLinks(List<string> filters, IElement node, string location, int count)
+        protected RssFeedItem CreateNodeLinks(List<string> filters, IElement node, string location, int count, string feedUrl)
         {
             string title = WebUtility.HtmlDecode(node.Text().Trim());
 
@@ -48,10 +46,10 @@ namespace RssFeeder.Console.FeedBuilders
             var attr = node.Attributes.GetNamedItem("href");
             string linkUrl = attr.Value.Trim().Replace(" ", string.Empty);
 
-            return CreateNodeLinks(filters, location, count, title, ref linkUrl);
+            return CreateNodeLinks(filters, location, count, title, linkUrl, feedUrl);
         }
 
-        protected RssFeedItem CreateNodeLinks(List<string> filters, HtmlNode node, string location, int count)
+        protected RssFeedItem CreateNodeLinks(List<string> filters, HtmlNode node, string location, int count, string feedUrl)
         {
             string title = WebUtility.HtmlDecode(node.InnerText.Trim());
 
@@ -62,7 +60,7 @@ namespace RssFeeder.Console.FeedBuilders
                 // Replace all errant spaces, which sometimes creep into Drudge's URLs
                 string linkUrl = attr.Value.Trim().Replace(" ", string.Empty);
 
-                return CreateNodeLinks(filters, location, count, title, ref linkUrl);
+                return CreateNodeLinks(filters, location, count, title, linkUrl, feedUrl);
             }
             catch (NullReferenceException)
             {
@@ -76,7 +74,7 @@ namespace RssFeeder.Console.FeedBuilders
             return null;
         }
 
-        private RssFeedItem CreateNodeLinks(List<string> filters, string location, int count, string title, ref string linkUrl)
+        private RssFeedItem CreateNodeLinks(List<string> filters, string location, int count, string title, string linkUrl, string feedUrl)
         {
             // Sometimes Drudge has completely empty links, ignore them
             if (string.IsNullOrEmpty(linkUrl))
@@ -87,7 +85,7 @@ namespace RssFeeder.Console.FeedBuilders
             // Repair any protocol typos if possible
             if (!linkUrl.ToLower().StartsWith("http"))
             {
-                linkUrl = webUtils.RepairUrl(linkUrl);
+                linkUrl = webUtils.RepairUrl(linkUrl, feedUrl);
             }
 
             // Calculate the MD5 hash for the link so we can be sure of uniqueness
@@ -102,12 +100,12 @@ namespace RssFeeder.Console.FeedBuilders
             {
                 return new RssFeedItem()
                 {
-                    Id = Guid.NewGuid().ToString(),
-                    Title = WebUtility.HtmlDecode(title),
-                    Url = linkUrl,
-                    UrlHash = hash,
-                    DateAdded = DateTime.Now.ToUniversalTime(),
-                    LinkLocation = $"{location}, article {count}",
+                    //Id = Guid.NewGuid().ToString(),
+                    // Title = WebUtility.HtmlDecode(title),
+                    // Url = linkUrl,
+                    // UrlHash = hash,
+                    // DateAdded = DateTime.Now.ToUniversalTime(),
+                    // LinkLocation = $"{location}, article {count}",
                     FeedAttributes = new FeedAttributes()
                     {
                         Title = WebUtility.HtmlDecode(title),

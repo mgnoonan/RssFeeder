@@ -1,9 +1,10 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using Autofac;
 using HtmlAgilityPack;
 using Oakton;
 using RssFeeder.Console.Models;
-using RssFeeder.Console.Parsers;
+using RssFeeder.Console.TagParsers;
 using RssFeeder.Console.Utility;
 using Serilog;
 
@@ -20,19 +21,19 @@ namespace RssFeeder.Console.Commands
 
             // The usage pattern definition here is completely
             // optional
-            Usage("Parse URL using default parser").Arguments(x => x.Url);
-            Usage("Parse URL using specified parser").Arguments(x => x.Url, x => x.Parser);
-            Usage("Parse URL using specified parser and selectors").Arguments(x => x.Url, x => x.Parser, x => x.BodySelector, x => x.ParagraphSelector);
+            Usage("Parse URL using default tag parser").Arguments(x => x.Url);
+            Usage("Parse URL using specified tag parser").Arguments(x => x.Url, x => x.Parser);
+            Usage("Parse URL using specified tag parser and selectors").Arguments(x => x.Url, x => x.Parser, x => x.BodySelector, x => x.ParagraphSelector);
         }
 
         public override bool Execute(ParseInput input)
         {
             var utils = _container.Resolve<IUtils>();
             var webUtils = _container.Resolve<IWebUtils>();
-            var parser = _container.ResolveNamed<IArticleParser>(input.Parser);
+            var parser = _container.ResolveNamed<ITagParser>(input.Parser);
 
             string urlHash = utils.CreateMD5Hash(input.Url);
-            string html = webUtils.DownloadString(input.Url);
+            (string html, Uri trueUri) = webUtils.DownloadString(input.Url);
 
             var doc = new HtmlDocument();
             doc.Load(new StringReader(html));
@@ -43,7 +44,7 @@ namespace RssFeeder.Console.Commands
             Log.Information("og:description = '{Description}'", ParseMetaTagAttributes(doc, "og:description", "content"));
             Log.Information("og:image = '{Image}'", ParseMetaTagAttributes(doc, "og:image", "content"));
 
-            string articleText = parser.GetArticleBySelector(doc.Text, input.BodySelector, input.ParagraphSelector);
+            string articleText = parser.ParseTagsBySelector(doc.Text, input.BodySelector, input.ParagraphSelector);
             Log.Information("Article text = '{ArticleText}'", articleText);
             Log.CloseAndFlush();
 
