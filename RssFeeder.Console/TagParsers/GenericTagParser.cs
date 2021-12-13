@@ -4,7 +4,7 @@ using AngleSharp.Html.Parser;
 using RssFeeder.Models;
 using Serilog;
 
-namespace RssFeeder.Console.Parsers
+namespace RssFeeder.Console.TagParsers
 {
     public class GenericTagParser : ITagParser
     {

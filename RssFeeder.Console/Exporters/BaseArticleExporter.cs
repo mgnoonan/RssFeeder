@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using AngleSharp.Html.Parser;
 using Antlr4.StringTemplate;
+using Baseline.ImTools;
 using HtmlAgilityPack;
 using Newtonsoft.Json;
 using RssFeeder.Console.Models;
@@ -42,7 +43,9 @@ namespace RssFeeder.Console.Exporters
         {
             // Extract the meta data from the Open Graph tags helpfully provided with almost every article
             string url = exportFeedItem.Url;
-            exportFeedItem.Url = item.OpenGraphAttributes.GetValueOrDefault("og:url") ?? "";
+            exportFeedItem.Url = item.OpenGraphAttributes.GetValueOrDefault("og:url") ?? 
+                item.HtmlAttributes.GetValueOrDefault("Url") ??
+                item.FeedAttributes.Url;
 
             if (string.IsNullOrWhiteSpace(exportFeedItem.Url) || hostName.Contains("frontpagemag.com"))
             {
@@ -50,8 +53,9 @@ namespace RssFeeder.Console.Exporters
             }
 
             // Extract the meta data from the Open Graph tags
-            exportFeedItem.Subtitle = item.OpenGraphAttributes.GetValueOrDefault("og:title") ?? "";
-            exportFeedItem.ImageUrl = item.OpenGraphAttributes.GetValueOrDefault("og:image") ?? "";
+            exportFeedItem.ArticleText = item.HtmlAttributes.GetValueOrDefault("ParserResult") ?? "";
+            exportFeedItem.Subtitle = item.OpenGraphAttributes.GetValueOrDefault("og:title") ?? null;
+            exportFeedItem.ImageUrl = item.OpenGraphAttributes.GetValueOrDefault("og:image") ?? null;
             exportFeedItem.SiteName = item.OpenGraphAttributes.GetValueOrDefault("og:site_name")?.ToLower() ?? "";
             exportFeedItem.HostName = hostName;
 
@@ -64,7 +68,7 @@ namespace RssFeeder.Console.Exporters
             // Fixup news.trust.org imageUrl links which have an embedded redirect
             if (string.IsNullOrWhiteSpace(exportFeedItem.ImageUrl) || (exportFeedItem.SiteName == "news.trust.org" && exportFeedItem.Url.Contains("news.trust.org")))
             {
-                exportFeedItem.ImageUrl = string.Empty;
+                exportFeedItem.ImageUrl = null;
             }
 
             // Remove the protocol portion if there is one, i.e. 'https://'
@@ -97,10 +101,17 @@ namespace RssFeeder.Console.Exporters
             if (item.HostName.Contains("rumble.com"))
             {
                 var text = item.HtmlAttributes.GetValueOrDefault("ParserResult") ?? "";
-                var value = GetJsonDynamic<IEnumerable<dynamic>>(text, "script", "embedUrl");
-                exportFeedItem.VideoUrl = value.First().embedUrl.Value;
-                exportFeedItem.VideoHeight = int.TryParse(Convert.ToString(value.First().height.Value), out int height) ? height : 0;
-                exportFeedItem.VideoWidth = int.TryParse(Convert.ToString(value.First().width.Value), out int width) ? width : 0;
+                var list = JsonConvert.DeserializeObject<List<JsonLdRumbleValues>>(text);
+                foreach(var value in list)
+                {
+                    if (string.IsNullOrWhiteSpace(value.embedUrl))
+                        continue;
+
+                    exportFeedItem.VideoUrl = value.embedUrl;
+                    exportFeedItem.VideoHeight = int.TryParse(Convert.ToString(value.height), out int height) ? height : 0;
+                    exportFeedItem.VideoWidth = int.TryParse(Convert.ToString(value.width), out int width) ? width : 0;
+                    break;
+                }
             }
             else
             {

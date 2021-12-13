@@ -2,7 +2,7 @@
   "profiles": {
     "RssFeeder.Console": {
       "commandName": "Project",
-      "commandLineArgs": "test"
+      "commandLineArgs": "build feed-bonginoreport.json"
     }
   }
 }

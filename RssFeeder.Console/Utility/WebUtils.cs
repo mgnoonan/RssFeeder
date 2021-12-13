@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using HtmlAgilityPack;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Edge;
 using RssFeeder.Console.HttpClients;
 using Serilog;
 
@@ -104,15 +104,15 @@ namespace RssFeeder.Console.Utility
         {
             Log.Information("Loading Selenium URL '{urlHash}':'{url}'", urlHash, url);
 
-            ChromeOptions options = new ChromeOptions();
+            var options = new EdgeOptions();
             options.AddArgument("headless");//Comment if we want to see the window. 
 
             string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            ChromeDriver driver = null;
+            EdgeDriver driver = null;
 
             try
             {
-                driver = new ChromeDriver(path, options);
+                driver = new EdgeDriver(path, options);
                 driver.Navigate().GoToUrl(url);
 
                 // Delete the file if it already exists
@@ -144,15 +144,15 @@ namespace RssFeeder.Console.Utility
 
         public void SaveThumbnailToDisk(string url, string filename)
         {
-            ChromeOptions options = new ChromeOptions();
+            var options = new EdgeOptions();
             options.AddArgument("headless");//Comment if we want to see the window. 
 
             string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            ChromeDriver driver = null;
+            EdgeDriver driver = null;
 
             try
             {
-                driver = new ChromeDriver(path, options);
+                driver = new EdgeDriver(path, options);
                 driver.Manage().Window.Size = new System.Drawing.Size(2000, 4000);
                 driver.Navigate().GoToUrl(url);
                 Thread.Sleep(5000);

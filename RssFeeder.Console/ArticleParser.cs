@@ -9,7 +9,7 @@ using HtmlAgilityPack;
 using Newtonsoft.Json;
 using RssFeeder.Console.ArticleDefinitions;
 using RssFeeder.Console.Models;
-using RssFeeder.Console.Parsers;
+using RssFeeder.Console.TagParsers;
 using RssFeeder.Console.Utility;
 using RssFeeder.Models;
 using Serilog;

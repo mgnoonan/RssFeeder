@@ -1,19 +1,20 @@
+using System.Threading.Tasks;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Rewrite;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
+using Raven.Client.Documents;
 using RssFeeder.Mvc.Models;
-using Serilog;
-using Microsoft.Azure.Cosmos;
 using RssFeeder.Mvc.Services;
-using System.Threading.Tasks;
-using MediatR;
+using Serilog;
 
 namespace RssFeeder.Mvc
 {
@@ -42,7 +43,18 @@ namespace RssFeeder.Mvc
             services.AddHealthChecks();
 
             // Repositories
+#if DEBUG
+            // Setup RavenDb
+            // docker run --rm -d -p 8080:8080 -p 38888:38888 ravendb/ravendb:latest
+            IDocumentStore store = new DocumentStore
+            {
+                Urls = new[] { "http://127.0.0.1:8080/" }
+                // Default database is not set
+            }.Initialize();
+            services.AddSingleton<IDatabaseService>(new RavenDbService(store));
+#else
             services.AddSingleton<ICosmosDbService>(InitializeCosmosClientInstanceAsync(Configuration.GetSection("CosmosDb")).GetAwaiter().GetResult());
+#endif
             services.AddSingleton<AppVersionInfo>();
             services.AddMediatR(typeof(Startup));
             services.AddMemoryCache();
@@ -78,10 +90,10 @@ namespace RssFeeder.Mvc
             app.UseSerilogRequestLogging(opts => opts.EnrichDiagnosticContext = LogHelper.EnrichFromRequest);
 
             app.UseRouting();
-
+#if !DEBUG
             app.UseAuthentication();
             app.UseAuthorization();
-
+#endif
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapHealthChecks("/health");

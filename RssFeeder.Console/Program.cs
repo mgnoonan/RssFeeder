@@ -15,7 +15,7 @@ using RssFeeder.Console.Exporters;
 using RssFeeder.Console.FeedBuilders;
 using RssFeeder.Console.HttpClients;
 using RssFeeder.Console.Models;
-using RssFeeder.Console.Parsers;
+using RssFeeder.Console.TagParsers;
 using RssFeeder.Console.Utility;
 using Serilog;
 using Serilog.Formatting.Compact;
@@ -58,9 +58,11 @@ namespace RssFeeder.Console
                .AddEnvironmentVariables();
             IConfigurationRoot configuration = configBuilder.Build();
 
+#if !DEBUG
             var config = new CosmosDbConfig();
             configuration.GetSection("CosmosDB").Bind(config);
             log.Information("Loaded CosmosDB from config. Endpoint='{endpointUri}', authKey='{authKeyPartial}*****'", config.endpoint, config.authKey.Substring(0, 5));
+#endif
 
             var crawlerConfig = new CrawlerConfig();
             configuration.GetSection("CrawlerConfig").Bind(crawlerConfig);
@@ -79,8 +81,11 @@ namespace RssFeeder.Console
 
             builder.RegisterInstance(Log.Logger).As<ILogger>();
             builder.RegisterInstance(store).As<IDocumentStore>();
+#if DEBUG
+            builder.RegisterType<RavenDbRepository>().As<IExportRepository>();
+#else
             builder.Register(c => new CosmosDbRepository("rssfeeder", config.endpoint, config.authKey, Log.Logger)).As<IExportRepository>();
-            //builder.RegisterType<RavenDbRepository>().As<IExportRepository>();
+#endif
             builder.RegisterType<RavenDbRepository>().As<IRepository>();
             builder.RegisterType<ArticleExporter>().As<IArticleExporter>().WithProperty("Config", crawlerConfig);
             builder.RegisterType<ArticleParser>().As<IArticleParser>().WithProperty("Config", crawlerConfig);
@@ -100,6 +105,7 @@ namespace RssFeeder.Console
             builder.RegisterType<AllTagsParser>().Named<ITagParser>("alltags-parser");
             builder.RegisterType<ScriptTagParser>().Named<ITagParser>("script-parser");
             builder.RegisterType<HtmlTagParser>().Named<ITagParser>("htmltag-parser");
+            builder.RegisterType<JsonLdTagParser>().Named<ITagParser>("jsonldtag-parser");
             builder.RegisterType<RestSharpHttpClient>().As<IHttpClient>().SingleInstance();
             builder.RegisterType<WebUtils>().As<IWebUtils>().SingleInstance();
             builder.RegisterType<Utils>().As<IUtils>().SingleInstance();

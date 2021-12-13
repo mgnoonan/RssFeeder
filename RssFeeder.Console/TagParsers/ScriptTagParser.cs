@@ -6,7 +6,7 @@ using Newtonsoft.Json.Linq;
 using RssFeeder.Models;
 using Serilog;
 
-namespace RssFeeder.Console.Parsers
+namespace RssFeeder.Console.TagParsers
 {
     public class ScriptTagParser : ITagParser
     {
@@ -24,19 +24,19 @@ namespace RssFeeder.Console.Parsers
             Log.Information("Attempting script block parsing using body selector '{bodySelector}' and paragraph selector '{paragraphSelector}'", bodySelector, paragraphSelector);
 
             // Query the document by CSS selectors to get the article text
-            var blocks = document.QuerySelectorAll("script");
-            if (blocks.Count() == 0)
+            var elements = document.QuerySelectorAll("script");
+            if (elements.Count() == 0)
             {
                 Log.Warning("Error reading article: '{bodySelector}' article body selector not found.", bodySelector);
                 return $"<p>Error reading article: '{bodySelector}' article body selector not found.</p>";
             }
 
             string content = "";
-            foreach (var block in blocks)
+            foreach (var element in elements)
             {
-                if (block.TextContent.Contains(bodySelector))
+                if (element.TextContent.Contains(bodySelector))
                 {
-                    var lines = block.TextContent.Replace("\\u003c", "<").Split("\n", StringSplitOptions.RemoveEmptyEntries);
+                    var lines = element.TextContent.Replace("\\u003c", "<").Split("\n", StringSplitOptions.RemoveEmptyEntries);
                     content = lines.Where(q => q.Contains(bodySelector)).FirstOrDefault();
                     int pos = content.IndexOf('{');
                     content = content.Substring(pos).Trim();

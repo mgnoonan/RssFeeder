@@ -5,7 +5,7 @@ using RssFeeder.Mvc.Models;
 
 namespace RssFeeder.Mvc.Services
 {
-    public interface ICosmosDbService
+    public interface IDatabaseService
     {
         Task<IEnumerable<RssFeedItem>> GetItemsAsync(QueryDefinition queryDef);
         Task<RssFeedItem> GetItemAsync(string id);

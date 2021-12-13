@@ -18,13 +18,13 @@ namespace RssFeeder.Mvc.Handlers
 {
     public class GetFeedHandler : IRequestHandler<GetFeedQuery, string>
     {
-        private readonly ICosmosDbService _repo;
+        private readonly IDatabaseService _repo;
         private readonly IMemoryCache _cache;
         private readonly List<FeedModel> _feeds;
         private readonly string _sourceFile = "feeds.json";
         private readonly IEnumerable<string> _collectionList = new string[] { "drudge-report", "eagle-slant", "bongino-report", "liberty-daily", "citizen-freepress", "rantingly", "gutsmack", "populist-press" };
 
-        public GetFeedHandler(ICosmosDbService repo, IMemoryCache cache)
+        public GetFeedHandler(IDatabaseService repo, IMemoryCache cache)
         {
             _repo = repo;
             _cache = cache;

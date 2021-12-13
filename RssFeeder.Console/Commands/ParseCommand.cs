@@ -4,7 +4,7 @@ using Autofac;
 using HtmlAgilityPack;
 using Oakton;
 using RssFeeder.Console.Models;
-using RssFeeder.Console.Parsers;
+using RssFeeder.Console.TagParsers;
 using RssFeeder.Console.Utility;
 using Serilog;
 
@@ -21,9 +21,9 @@ namespace RssFeeder.Console.Commands
 
             // The usage pattern definition here is completely
             // optional
-            Usage("Parse URL using default parser").Arguments(x => x.Url);
-            Usage("Parse URL using specified parser").Arguments(x => x.Url, x => x.Parser);
-            Usage("Parse URL using specified parser and selectors").Arguments(x => x.Url, x => x.Parser, x => x.BodySelector, x => x.ParagraphSelector);
+            Usage("Parse URL using default tag parser").Arguments(x => x.Url);
+            Usage("Parse URL using specified tag parser").Arguments(x => x.Url, x => x.Parser);
+            Usage("Parse URL using specified tag parser and selectors").Arguments(x => x.Url, x => x.Parser, x => x.BodySelector, x => x.ParagraphSelector);
         }
 
         public override bool Execute(ParseInput input)

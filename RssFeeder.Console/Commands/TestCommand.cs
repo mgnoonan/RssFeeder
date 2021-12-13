@@ -2,7 +2,7 @@
 using HtmlAgilityPack;
 using Oakton;
 using RssFeeder.Console.Models;
-using RssFeeder.Console.Parsers;
+using RssFeeder.Console.TagParsers;
 using RssFeeder.Console.Utility;
 using Serilog;
 
