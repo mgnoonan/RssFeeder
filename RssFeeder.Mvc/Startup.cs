@@ -53,7 +53,7 @@ namespace RssFeeder.Mvc
             }.Initialize();
             services.AddSingleton<IDatabaseService>(new RavenDbService(store));
 #else
-            services.AddSingleton<ICosmosDbService>(InitializeCosmosClientInstanceAsync(Configuration.GetSection("CosmosDb")).GetAwaiter().GetResult());
+            services.AddSingleton<IDatabaseService>(InitializeCosmosClientInstanceAsync(Configuration.GetSection("CosmosDb")).GetAwaiter().GetResult());
 #endif
             services.AddSingleton<AppVersionInfo>();
             services.AddMediatR(typeof(Startup));
