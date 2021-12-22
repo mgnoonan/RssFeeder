@@ -304,15 +304,15 @@ namespace RssFeeder.Console
             _utils.PurgeStaleFiles(workingFolder, feed.FileRetentionDays);
 
             // Purge stale documents from the database collection
-            var list = _exportRepository.GetStaleDocuments<RssFeedItem>(_exportCollectionName, feed.CollectionName, feed.DatabaseRetentionDays);
+            var list = _exportRepository.GetStaleDocuments<ExportFeedItem>(_exportCollectionName, feed.CollectionName, feed.DatabaseRetentionDays);
 
             foreach (var item in list)
             {
-                Log.Information("Removing UrlHash '{urlHash}' from {collectionName}", item.FeedAttributes.UrlHash, feed.CollectionName);
-                _exportRepository.DeleteDocument<RssFeedItem>(_exportCollectionName, item.Id, item.HostName);
+                Log.Information("Removing UrlHash '{urlHash}' from {collectionName}", item.UrlHash, feed.CollectionName);
+                _exportRepository.DeleteDocument<ExportFeedItem>(_exportCollectionName, item.Id, item.HostName);
             }
 
-            Log.Information("Removed {count} documents older than {maximumAgeInDays} days from {collectionName}", list.Count(), feed.DatabaseRetentionDays, feed.CollectionName);
+            Log.Information("Removed {count} documents older than {maximumAgeInDays} days from {collectionName}", list.Count, feed.DatabaseRetentionDays, feed.CollectionName);
         }
     }
 }

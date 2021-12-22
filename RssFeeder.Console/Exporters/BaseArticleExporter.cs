@@ -43,13 +43,14 @@ namespace RssFeeder.Console.Exporters
         {
             // Extract the meta data from the Open Graph tags helpfully provided with almost every article
             string url = exportFeedItem.Url;
-            exportFeedItem.Url = item.OpenGraphAttributes.GetValueOrDefault("og:url") ?? 
+            exportFeedItem.Url = item.OpenGraphAttributes.GetValueOrDefault("og:url") ??
                 item.HtmlAttributes.GetValueOrDefault("Url") ??
                 item.FeedAttributes.Url;
 
-            if (string.IsNullOrWhiteSpace(exportFeedItem.Url) || hostName.Contains("frontpagemag.com"))
+            // Make sure the Url is complete
+            if (!exportFeedItem.Url.StartsWith("http"))
             {
-                exportFeedItem.Url = url;
+                exportFeedItem.Url = item.HtmlAttributes.GetValueOrDefault("Url") ?? item.FeedAttributes.Url;
             }
 
             // Extract the meta data from the Open Graph tags
@@ -75,23 +76,6 @@ namespace RssFeeder.Console.Exporters
             if (exportFeedItem.SiteName.IndexOf('/') > 0)
             {
                 exportFeedItem.SiteName = exportFeedItem.SiteName.Substring(exportFeedItem.SiteName.LastIndexOf('/') + 1);
-            }
-
-            // Make sure the Url is complete
-            if (!exportFeedItem.Url.StartsWith("http"))
-            {
-                if (exportFeedItem.Url.StartsWith("//"))
-                {
-                    exportFeedItem.Url = string.Format("https://{0}{1}", exportFeedItem.HostName, exportFeedItem.Url.Substring(2));
-                }
-                else if (exportFeedItem.Url.StartsWith("/"))
-                {
-                    exportFeedItem.Url = string.Format("https://{0}{1}", exportFeedItem.HostName, exportFeedItem.Url.Substring(0));
-                }
-                else
-                {
-                    exportFeedItem.Url = string.Format("https://{0}/{1}", exportFeedItem.HostName, exportFeedItem.Url.Substring(0));
-                }
             }
         }
 
@@ -119,7 +103,7 @@ namespace RssFeeder.Console.Exporters
             {
                 var text = item.HtmlAttributes.GetValueOrDefault("ParserResult") ?? "";
                 var list = JsonConvert.DeserializeObject<List<JsonLdRumbleValues>>(text);
-                foreach(var value in list)
+                foreach (var value in list)
                 {
                     if (string.IsNullOrWhiteSpace(value.embedUrl))
                         continue;
