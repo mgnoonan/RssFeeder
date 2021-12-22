@@ -43,9 +43,7 @@ namespace RssFeeder.Console.Exporters
         {
             // Extract the meta data from the Open Graph tags helpfully provided with almost every article
             string url = exportFeedItem.Url;
-            exportFeedItem.Url = item.OpenGraphAttributes.GetValueOrDefault("og:url") ??
-                item.HtmlAttributes.GetValueOrDefault("Url") ??
-                item.FeedAttributes.Url;
+            exportFeedItem.Url = item.OpenGraphAttributes.GetValueOrDefault("og:url") ?? "";
 
             // Make sure the Url is complete
             if (!exportFeedItem.Url.StartsWith("http"))

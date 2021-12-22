@@ -76,9 +76,13 @@ namespace RssFeeder.Console
 
         private string GetHostName(RssFeedItem item)
         {
-            string url = item.OpenGraphAttributes.ContainsKey("og:url") ?
-                            item.OpenGraphAttributes["og:url"].ToLower() :
-                            item.FeedAttributes.Url.ToLower();
+            string url = item.OpenGraphAttributes.GetValueOrDefault("og:url").ToLower() ?? "";
+
+            // Make sure the Url is complete
+            if (!url.StartsWith("http"))
+            {
+                url = item.HtmlAttributes.GetValueOrDefault("Url") ?? item.FeedAttributes.Url;
+            }
 
             if (!url.StartsWith("http"))
             {
