@@ -76,6 +76,23 @@ namespace RssFeeder.Console.Exporters
             {
                 exportFeedItem.SiteName = exportFeedItem.SiteName.Substring(exportFeedItem.SiteName.LastIndexOf('/') + 1);
             }
+
+            // Make sure the Url is complete
+            if (!exportFeedItem.Url.StartsWith("http"))
+            {
+                if (exportFeedItem.Url.StartsWith("//"))
+                {
+                    exportFeedItem.Url = string.Format("https://{0}{1}", exportFeedItem.HostName, exportFeedItem.Url.Substring(2));
+                }
+                else if (exportFeedItem.Url.StartsWith("/"))
+                {
+                    exportFeedItem.Url = string.Format("https://{0}{1}", exportFeedItem.HostName, exportFeedItem.Url.Substring(0));
+                }
+                else
+                {
+                    exportFeedItem.Url = string.Format("https://{0}/{1}", exportFeedItem.HostName, exportFeedItem.Url.Substring(0));
+                }
+            }
         }
 
         protected virtual void SetBasicArticleMetaData(ExportFeedItem exportFeedItem, RssFeedItem item, string hostName)
