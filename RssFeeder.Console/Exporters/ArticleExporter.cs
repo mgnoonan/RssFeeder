@@ -10,11 +10,16 @@ public class ArticleExporter : BaseArticleExporter, IArticleExporter
 {
     public ExportFeedItem FormatItem(RssFeedItem item, RssFeed feed)
     {
+        // The UrlHash is a hash of the feed source, not the ultimate target URL. This is to avoid
+        // over-crawling with link shortening services such as bit.ly and t.co. Once we detect a hash
+        // has been crawled from the source, there is no need to crawl again. It means the hash does
+        // not truly reflect the target URL, but that's ok as there are duplicate crawls across the 
+        // different feeds anyway.
         var exportFeedItem = new ExportFeedItem
         {
             Id = Guid.NewGuid().ToString(),
             FeedId = item.FeedAttributes.FeedId,
-            Url = item.FeedAttributes.Url,
+            Url = GetCanonicalUrl(item),
             UrlHash = item.FeedAttributes.UrlHash,
             DateAdded = item.FeedAttributes.DateAdded,
             LinkLocation = item.FeedAttributes.LinkLocation,

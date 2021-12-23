@@ -39,6 +39,23 @@ namespace RssFeeder.Console.Exporters
             return t.Render();
         }
 
+        protected virtual string GetCanonicalUrl(RssFeedItem item)
+        {
+            // The best reference URL is usually from the OpenGraph tags, however they are NOT
+            // always set to a full canonical URL (looking at you, frontpagemag.com)
+            string url = item.OpenGraphAttributes.GetValueOrDefault("og:url") ?? "";
+
+            // If the URL doesn't have a protocol assigned (not canonical) fall back to the URL
+            // we crawled (which also might be null)
+            if (!url.StartsWith("http"))
+            {
+                url = item.HtmlAttributes.GetValueOrDefault("Url");
+            }
+
+            // Last but not least, fall back to the URL we detected in the feed
+            return url ?? item.FeedAttributes.Url;
+        }
+
         protected virtual void SetExtendedArticleMetaData(ExportFeedItem exportFeedItem, RssFeedItem item, string hostName)
         {
             // Extract the meta data from the Open Graph tags helpfully provided with almost every article
@@ -97,11 +114,13 @@ namespace RssFeeder.Console.Exporters
                 exportFeedItem.SiteName = hostName;
             }
 
-            if (item.HostName.Contains("rumble.com"))
+            if (item.SiteName == "rumble")
             {
                 var text = item.HtmlAttributes.GetValueOrDefault("ParserResult") ?? "";
                 if (!text.StartsWith("<"))
                 {
+                    Log.Information("EXPORT: Processing rumble.com ld+json data");
+
                     // application/ld+json parser result
                     var list = JsonConvert.DeserializeObject<List<JsonLdRumbleValues>>(text);
                     foreach (var value in list)
