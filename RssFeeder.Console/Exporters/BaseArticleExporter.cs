@@ -100,16 +100,20 @@ namespace RssFeeder.Console.Exporters
             if (item.HostName.Contains("rumble.com"))
             {
                 var text = item.HtmlAttributes.GetValueOrDefault("ParserResult") ?? "";
-                var list = JsonConvert.DeserializeObject<List<JsonLdRumbleValues>>(text);
-                foreach (var value in list)
+                if (!text.StartsWith("<"))
                 {
-                    if (string.IsNullOrWhiteSpace(value.embedUrl))
-                        continue;
+                    // application/ld+json parser result
+                    var list = JsonConvert.DeserializeObject<List<JsonLdRumbleValues>>(text);
+                    foreach (var value in list)
+                    {
+                        if (string.IsNullOrWhiteSpace(value.embedUrl))
+                            continue;
 
-                    exportFeedItem.VideoUrl = value.embedUrl;
-                    exportFeedItem.VideoHeight = int.TryParse(Convert.ToString(value.height), out int height) ? height : 0;
-                    exportFeedItem.VideoWidth = int.TryParse(Convert.ToString(value.width), out int width) ? width : 0;
-                    break;
+                        exportFeedItem.VideoUrl = value.embedUrl;
+                        exportFeedItem.VideoHeight = int.TryParse(Convert.ToString(value.height), out int height) ? height : 0;
+                        exportFeedItem.VideoWidth = int.TryParse(Convert.ToString(value.width), out int width) ? width : 0;
+                        break;
+                    }
                 }
             }
             else

@@ -95,9 +95,7 @@ namespace RssFeeder.Console
 
         private string GetSiteName(RssFeedItem item)
         {
-            string siteName = item.OpenGraphAttributes.ContainsKey("og:site_name") ?
-                                item.OpenGraphAttributes["og:site_name"].ToLower() :
-                                item.HostName;
+            string siteName = item.OpenGraphAttributes.GetValueOrDefault("og:site_name").ToLower() ?? item.HostName;
 
             return siteName;
         }
