@@ -48,6 +48,10 @@ namespace RssFeeder.Console.Utility
 
                 // List of html tags we really don't care to save
                 var excludeHtmlTags = new List<string> { "style", "link", "svg" };
+                if (trueUri.AbsoluteUri.Contains("apnews.com") || trueUri.AbsoluteUri.Contains("rumble.com"))
+                {
+                    removeScriptElements = false;
+                }
                 if (removeScriptElements)
                 {
                     excludeHtmlTags.Add("script");
