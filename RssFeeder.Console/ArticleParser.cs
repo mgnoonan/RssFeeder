@@ -76,17 +76,17 @@ namespace RssFeeder.Console
 
         private string GetHostName(RssFeedItem item)
         {
-            string url = item.OpenGraphAttributes.GetValueOrDefault("og:url")?.ToLower() ?? "";
+            string url = item.OpenGraphAttributes.GetValueOrDefault("og:url") ?? "";
 
             // Make sure the Url is complete
             if (!url.StartsWith("http"))
             {
-                url = item.HtmlAttributes.GetValueOrDefault("Url")?.ToLower() ?? item.FeedAttributes.Url;
+                url = item.HtmlAttributes.GetValueOrDefault("Url") ?? item.FeedAttributes.Url;
             }
 
             if (!url.StartsWith("http"))
             {
-                url = _webUtils.RepairUrl(url, item.FeedAttributes.Url.ToLower());
+                url = _webUtils.RepairUrl(url, item.FeedAttributes.Url);
             }
 
             Uri uri = new Uri(url);
