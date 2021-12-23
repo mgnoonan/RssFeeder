@@ -217,9 +217,9 @@ namespace RssFeeder.Console
                         articleCount--;
                     }
                 }
-
-                Log.Information("Downloaded {count} new articles to the {collectionName} collection", articleCount, feed.CollectionName);
             }
+
+            Log.Information("Downloaded {count} new articles to the {collectionName} collection", articleCount, feed.CollectionName);
         }
 
         private List<RssFeedItem> GenerateFeedLinks(RssFeed feed, string workingFolder)
