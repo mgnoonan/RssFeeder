@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AngleSharp.Html.Parser;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json;
+﻿using AngleSharp.Html.Parser;
 using RssFeeder.Models;
 using Serilog;
 
@@ -30,8 +23,17 @@ namespace RssFeeder.Console.TagParsers
             var elements = document.QuerySelectorAll("script");
             if (elements.Length == 0)
             {
-                Log.Warning("Error reading article: '{bodySelector}' article body selector not found.", "script");
-                return "<p>Error reading article: 'script' article body selector not found.</p>";
+                Log.Warning("Error finding json+ld script block: Falling back to HtmlTagTagParse on '{bodySelector}' and paragraph selector '{paragraphSelector}'", bodySelector, paragraphSelector);
+
+                // Query the document by CSS selectors to get the article text
+                var container = document.QuerySelector(bodySelector);
+                if (container == null)
+                {
+                    Log.Warning("Error reading article: '{bodySelector}' article body selector not found.", bodySelector);
+                    return $"<p>Error reading article: '{bodySelector}' article body selector not found.</p>";
+                }
+
+                return container.QuerySelector(paragraphSelector).OuterHtml;
             }
 
             foreach (var element in elements)

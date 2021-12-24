@@ -67,9 +67,9 @@ namespace RssFeeder.Console.TagParsers
             Log.Information("Found {totalCount} paragraph selectors '{paragraphSelector}' in html body", paragraphs.Count(), paragraphSelector);
             Log.Information("Parent with the most paragraph selectors is '{bodySelector}':{highCount}", bodySelector, highCount);
 
-            if (highCount == 1)
+            if (highCount <= 1)
             {
-                Log.Warning("Only 1 paragraph selector found, that doesn't count");
+                Log.Warning("Only {highCount} paragraph selector found, that doesn't count", highCount);
                 return string.Empty;
             }
 

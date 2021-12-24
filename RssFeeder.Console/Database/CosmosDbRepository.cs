@@ -112,7 +112,7 @@ namespace RssFeeder.Console.Database
 
         public void EnsureDatabaseExists(string database = null, bool createDatabaseIfNotExists = true)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         public List<T> GetExportDocuments<T>(string collectionName, string feedId, DateTime startDate)

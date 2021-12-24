@@ -35,6 +35,12 @@ namespace RssFeeder.Console.Utility
                 Log.Information("Loading URL '{urlHash}':'{url}'", urlHash, url);
                 (string content, Uri trueUri) = _crawler.GetString(url);
 
+                if (trueUri is null)
+                {
+                    Log.Warning("Failure to crawl url '{url}'", url);
+                    return (string.Empty, new Uri(url));
+                }
+
                 // Use custom load method to account for compression headers
                 HtmlDocument doc = new HtmlDocument();
                 doc.LoadHtml(content);
@@ -42,6 +48,10 @@ namespace RssFeeder.Console.Utility
 
                 // List of html tags we really don't care to save
                 var excludeHtmlTags = new List<string> { "style", "link", "svg" };
+                if (trueUri.AbsoluteUri.Contains("apnews.com") || trueUri.AbsoluteUri.Contains("rumble.com"))
+                {
+                    removeScriptElements = false;
+                }
                 if (removeScriptElements)
                 {
                     excludeHtmlTags.Add("script");

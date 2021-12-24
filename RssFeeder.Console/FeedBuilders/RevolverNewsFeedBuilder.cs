@@ -46,7 +46,7 @@ namespace RssFeeder.Console.FeedBuilders
             if (nodes != null)
             {
                 count = 1;
-                foreach (var node in nodes.Take(5))
+                foreach (var node in nodes)
                 {
                     string title = WebUtility.HtmlDecode(node.Text().Trim());
 

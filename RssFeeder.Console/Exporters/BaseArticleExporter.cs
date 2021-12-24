@@ -39,17 +39,33 @@ namespace RssFeeder.Console.Exporters
             return t.Render();
         }
 
+        protected virtual string GetCanonicalUrl(RssFeedItem item)
+        {
+            // The best reference URL is usually from the OpenGraph tags, however they are NOT
+            // always set to a full canonical URL (looking at you, frontpagemag.com)
+            string url = item.OpenGraphAttributes.GetValueOrDefault("og:url") ?? "";
+
+            // If the URL doesn't have a protocol assigned (not canonical) fall back to the URL
+            // we crawled (which also might be null)
+            if (!url.StartsWith("http"))
+            {
+                url = item.HtmlAttributes.GetValueOrDefault("Url");
+            }
+
+            // Last but not least, fall back to the URL we detected in the feed
+            return url ?? item.FeedAttributes.Url;
+        }
+
         protected virtual void SetExtendedArticleMetaData(ExportFeedItem exportFeedItem, RssFeedItem item, string hostName)
         {
             // Extract the meta data from the Open Graph tags helpfully provided with almost every article
             string url = exportFeedItem.Url;
-            exportFeedItem.Url = item.OpenGraphAttributes.GetValueOrDefault("og:url") ?? 
-                item.HtmlAttributes.GetValueOrDefault("Url") ??
-                item.FeedAttributes.Url;
+            exportFeedItem.Url = item.OpenGraphAttributes.GetValueOrDefault("og:url") ?? "";
 
-            if (string.IsNullOrWhiteSpace(exportFeedItem.Url) || hostName.Contains("frontpagemag.com"))
+            // Make sure the Url is complete
+            if (!exportFeedItem.Url.StartsWith("http"))
             {
-                exportFeedItem.Url = url;
+                exportFeedItem.Url = item.HtmlAttributes.GetValueOrDefault("Url") ?? item.FeedAttributes.Url;
             }
 
             // Extract the meta data from the Open Graph tags
@@ -98,19 +114,25 @@ namespace RssFeeder.Console.Exporters
                 exportFeedItem.SiteName = hostName;
             }
 
-            if (item.HostName.Contains("rumble.com"))
+            if (item.SiteName == "rumble")
             {
                 var text = item.HtmlAttributes.GetValueOrDefault("ParserResult") ?? "";
-                var list = JsonConvert.DeserializeObject<List<JsonLdRumbleValues>>(text);
-                foreach(var value in list)
+                if (!text.StartsWith("<"))
                 {
-                    if (string.IsNullOrWhiteSpace(value.embedUrl))
-                        continue;
+                    Log.Information("EXPORT: Processing rumble.com ld+json data");
 
-                    exportFeedItem.VideoUrl = value.embedUrl;
-                    exportFeedItem.VideoHeight = int.TryParse(Convert.ToString(value.height), out int height) ? height : 0;
-                    exportFeedItem.VideoWidth = int.TryParse(Convert.ToString(value.width), out int width) ? width : 0;
-                    break;
+                    // application/ld+json parser result
+                    var list = JsonConvert.DeserializeObject<List<JsonLdRumbleValues>>(text);
+                    foreach (var value in list)
+                    {
+                        if (string.IsNullOrWhiteSpace(value.embedUrl))
+                            continue;
+
+                        exportFeedItem.VideoUrl = value.embedUrl;
+                        exportFeedItem.VideoHeight = int.TryParse(Convert.ToString(value.height), out int height) ? height : 0;
+                        exportFeedItem.VideoWidth = int.TryParse(Convert.ToString(value.width), out int width) ? width : 0;
+                        break;
+                    }
                 }
             }
             else

@@ -195,14 +195,14 @@ namespace RssFeeder.Console
                         else
                         {
                             // Download the Url contents, first using HttpClient but if that fails use Selenium
-                            (string newFilename, Uri trueUri) = _webUtils.SaveUrlToDisk(item.FeedAttributes.Url, item.FeedAttributes.UrlHash, filename, !filename.Contains("_apnews_com") && !filename.Contains("_rumble_com"));
+                            (string newFilename, Uri trueUri) = _webUtils.SaveUrlToDisk(item.FeedAttributes.Url, item.FeedAttributes.UrlHash, filename);
                             item.FeedAttributes.FileName = newFilename;
                             item.HtmlAttributes.Add("Url", trueUri.AbsoluteUri);
 
                             // Must have had an error on loading the url so attempt with Selenium
-                            if (string.IsNullOrEmpty(newFilename) || newFilename.Contains("ajc_com") || newFilename.Contains("rumble_com"))
+                            if (string.IsNullOrEmpty(newFilename) || newFilename.Contains("ajc_com"))
                             {
-                                (newFilename, trueUri) = _webUtils.WebDriverUrlToDisk(item.FeedAttributes.Url, item.FeedAttributes.UrlHash, newFilename);
+                                (newFilename, trueUri) = _webUtils.WebDriverUrlToDisk(item.FeedAttributes.Url, item.FeedAttributes.UrlHash, filename);
                                 item.FeedAttributes.FileName = newFilename;
                                 item.HtmlAttributes["Url"] = trueUri.AbsoluteUri;
                             }
@@ -217,9 +217,9 @@ namespace RssFeeder.Console
                         articleCount--;
                     }
                 }
-
-                Log.Information("Downloaded {count} new articles to the {collectionName} collection", articleCount, feed.CollectionName);
             }
+
+            Log.Information("Downloaded {count} new articles to the {collectionName} collection", articleCount, feed.CollectionName);
         }
 
         private List<RssFeedItem> GenerateFeedLinks(RssFeed feed, string workingFolder)
@@ -304,15 +304,15 @@ namespace RssFeeder.Console
             _utils.PurgeStaleFiles(workingFolder, feed.FileRetentionDays);
 
             // Purge stale documents from the database collection
-            var list = _exportRepository.GetStaleDocuments<RssFeedItem>(_exportCollectionName, feed.CollectionName, feed.DatabaseRetentionDays);
+            var list = _exportRepository.GetStaleDocuments<ExportFeedItem>(_exportCollectionName, feed.CollectionName, feed.DatabaseRetentionDays);
 
             foreach (var item in list)
             {
-                Log.Information("Removing UrlHash '{urlHash}' from {collectionName}", item.FeedAttributes.UrlHash, feed.CollectionName);
-                _exportRepository.DeleteDocument<RssFeedItem>(_exportCollectionName, item.Id, item.HostName);
+                Log.Information("Removing UrlHash '{urlHash}' from {collectionName}", item.UrlHash, feed.CollectionName);
+                _exportRepository.DeleteDocument<ExportFeedItem>(_exportCollectionName, item.Id, item.HostName);
             }
 
-            Log.Information("Removed {count} documents older than {maximumAgeInDays} days from {collectionName}", list.Count(), feed.DatabaseRetentionDays, feed.CollectionName);
+            Log.Information("Removed {count} documents older than {maximumAgeInDays} days from {collectionName}", list.Count, feed.DatabaseRetentionDays, feed.CollectionName);
         }
     }
 }

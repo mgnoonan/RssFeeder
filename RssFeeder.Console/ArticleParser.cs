@@ -76,13 +76,17 @@ namespace RssFeeder.Console
 
         private string GetHostName(RssFeedItem item)
         {
-            string url = item.OpenGraphAttributes.ContainsKey("og:url") ?
-                            item.OpenGraphAttributes["og:url"].ToLower() :
-                            item.FeedAttributes.Url.ToLower();
+            string url = item.OpenGraphAttributes.GetValueOrDefault("og:url") ?? "";
+
+            // Make sure the Url is complete
+            if (!url.StartsWith("http"))
+            {
+                url = item.HtmlAttributes.GetValueOrDefault("Url") ?? item.FeedAttributes.Url;
+            }
 
             if (!url.StartsWith("http"))
             {
-                url = _webUtils.RepairUrl(url, item.FeedAttributes.Url.ToLower());
+                url = _webUtils.RepairUrl(url, item.FeedAttributes.Url);
             }
 
             Uri uri = new Uri(url);
@@ -91,9 +95,7 @@ namespace RssFeeder.Console
 
         private string GetSiteName(RssFeedItem item)
         {
-            string siteName = item.OpenGraphAttributes.ContainsKey("og:site_name") ?
-                                item.OpenGraphAttributes["og:site_name"].ToLower() :
-                                item.HostName;
+            string siteName = item.OpenGraphAttributes.GetValueOrDefault("og:site_name")?.ToLower() ?? item.HostName;
 
             return siteName;
         }
