@@ -126,7 +126,15 @@ namespace RssFeeder.Console
                     }
                     else
                     {
-                        Log.Warning("Duplicate open graph tag '{propertyValue}'", propertyValue);
+                        for (int i = 1; i < 100; i++)
+                        {
+                            string newPropertyValue = $"{propertyValue}:{i:0#}";
+                            if (!attributes.ContainsKey(newPropertyValue))
+                            {
+                                attributes.Add(newPropertyValue, contentValue);
+                                break;
+                            }
+                        }
                     }
                 }
             }
