@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace RssFeeder.Models;
 
-public class RssFeedItem
+public record RssFeedItem
 {
     public RssFeedItem()
     {
@@ -20,7 +20,7 @@ public class RssFeedItem
     public FeedAttributes FeedAttributes { get; set; }
 }
 
-public class FeedAttributes
+public record FeedAttributes
 {
     public string FeedId { get; set; }
     public string Url { get; set; }

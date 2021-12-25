@@ -1,6 +1,6 @@
 ﻿namespace RssFeeder.Models;
 
-public class SiteArticleDefinition
+public record SiteArticleDefinition
 {
     public string Id { get; set; }
     public string SiteName { get; set; }

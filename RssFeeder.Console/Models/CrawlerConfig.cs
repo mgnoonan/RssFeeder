@@ -1,9 +1,9 @@
 ﻿namespace RssFeeder.Console.Models;
 
-public class CrawlerConfig
+public record CrawlerConfig
 {
-    public string[] Exclusions { get; set; }
-    public string[] VideoHosts { get; set; }
-    public string[] IncludeScripts { get; set; }
-    public string[] WebDriver { get; set; }
+    public string[] Exclusions { get; init; }
+    public string[] VideoHosts { get; init; }
+    public string[] IncludeScripts { get; init; }
+    public string[] WebDriver { get; init; }
 }

@@ -1,6 +1,6 @@
 ﻿namespace RssFeeder.Models;
 
-public class Feed
+public record Feed
 {
     public string id { get; set; }
     public string description { get; set; }

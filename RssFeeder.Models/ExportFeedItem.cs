@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace RssFeeder.Models;
 
-public class ExportFeedItem
+public record ExportFeedItem
 {
     [JsonProperty(PropertyName = "id")]
     public string Id { get; set; }

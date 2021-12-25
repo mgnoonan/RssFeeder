@@ -1,7 +1,7 @@
 ﻿namespace RssFeeder.Console.Models;
 
-public class CosmosDbConfig
+public record CosmosDbConfig
 {
-    public string endpoint { get; set; }
-    public string authKey { get; set; }
+    public string endpoint { get; init; }
+    public string authKey { get; init; }
 }
