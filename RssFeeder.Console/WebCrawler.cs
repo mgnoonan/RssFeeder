@@ -206,8 +206,13 @@ public class WebCrawler : IWebCrawler
     {
         (string html, Uri trueUri) = _webUtils.DownloadString(feed.Url);
 
+        // Build the file stem so we can save the html source and a screenshot of the feed page
+        var uri = new Uri(feed.Url);
+        string hostname = uri.Host.ToLower();
+        string friendlyHostname = hostname.Replace(".", "_");
+        string fileStem = Path.Combine(workingFolder, $"{DateTime.Now.ToUniversalTime():yyyyMMddhhmmss}_{friendlyHostname}");
+
         // Save the feed html source for posterity
-        string fileStem = Path.Combine(workingFolder, $"{DateTime.Now.ToUniversalTime():yyyyMMddhhmmss}_{feed.Url.Replace("://", "_").Replace(".", "_").Replace("/", "")}");
         _utils.SaveTextToDisk(html, fileStem + ".html", false);
 
         // Save thumbnail snapshot of the page
