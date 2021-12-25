@@ -157,24 +157,20 @@ public class WebCrawler : IWebCrawler
                 try
                 {
                     // Construct unique file name
-                    string friendlyHostname = item.FeedAttributes.Url.Replace("://", "_").Replace(".", "_");
-                    int index = friendlyHostname.IndexOf("/");
-                    if (index == -1)
-                    {
-                        friendlyHostname += "/";
-                        index = friendlyHostname.IndexOf("/");
-                    }
-
-                    friendlyHostname = friendlyHostname.Substring(0, index);
-                    string extension = GetFileExtension(new Uri(item.FeedAttributes.Url));
+                    var uri = new Uri(item.FeedAttributes.Url);
+                    string hostname = uri.Host.ToLower();
+                    string friendlyHostname = hostname.Replace(".", "_");
+                    string extension = GetFileExtension(uri);
                     string filename = Path.Combine(workingFolder, $"{item.FeedAttributes.UrlHash}_{friendlyHostname}{extension}");
 
                     // Check for crawler exclusions, downloading content is blocked from these sites
-                    Uri uri = new Uri(item.FeedAttributes.Url);
-                    string hostName = uri.GetComponents(UriComponents.Host, UriFormat.Unescaped).ToLower();
-                    if (Config.Exclusions.Contains(hostName))
+                    if (Config.Exclusions.Contains(hostname))
                     {
-                        Log.Information("Host '{hostName}' found on the exclusion list, skipping download", hostName);
+                        Log.Information("Host '{hostName}' found on the exclusion list, skipping download", hostname);
+                    }
+                    else if (uri.AbsolutePath == "/")
+                    {
+                        Log.Information("URI '{uri}' detected as a home page rather than an article, skipping download", uri);
                     }
                     else
                     {
