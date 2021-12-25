@@ -1,8 +1,8 @@
-﻿namespace RssFeeder.Console.Exporters
+﻿namespace RssFeeder.Console.Exporters;
+
+public class ExportTemplates
 {
-    public class ExportTemplates
-    {
-        public const string MetaDataTemplate = @"
+    public const string MetaDataTemplate = @"
 <p>
     The post <a href=""$item.Url$"">$item.Title$</a> captured from <a href=""$feed.Url$"">$feed.Title$</a> $item.LinkLocation$ on $item.DateAdded$ UTC.
 </p>
@@ -21,21 +21,20 @@
 </p>
 ";
 
-        public const string ExtendedTemplate = @"<img src=""$item.ImageUrl$"" />
+    public const string ExtendedTemplate = @"<img src=""$item.ImageUrl$"" />
 <h3>$item.Subtitle$</h3>
 $ArticleText$
 " + MetaDataTemplate;
 
-        public const string VideoTemplate = @"<iframe class=""{class}"" width=""$item.VideoWidth$"" height=""$item.VideoHeight$"" src=""$item.VideoUrl$"" frameborder=""0"" allow=""{allow}"" allowfullscreen></iframe>
+    public const string VideoTemplate = @"<iframe class=""{class}"" width=""$item.VideoWidth$"" height=""$item.VideoHeight$"" src=""$item.VideoUrl$"" frameborder=""0"" allow=""{allow}"" allowfullscreen></iframe>
 <h3>$item.Subtitle$</h3>
 $ArticleText$
 " + MetaDataTemplate;
 
-        public const string GraphicTemplate = @"<img src=""$item.ImageUrl$"" />
+    public const string GraphicTemplate = @"<img src=""$item.ImageUrl$"" />
 " + MetaDataTemplate;
 
-        public const string BasicTemplate = @"<h3>$item.Title$</h3>
+    public const string BasicTemplate = @"<h3>$item.Title$</h3>
 <p><a href=""$item.Url$"">Click here to read the full article</a></p>
 " + MetaDataTemplate;
-    }
 }

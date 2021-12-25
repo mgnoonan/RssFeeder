@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 
-namespace RssFeeder.Models
-{
+namespace RssFeeder.Models;
+
     public class RssFeed
     {
         public int Id { get; set; }
@@ -19,4 +19,3 @@ namespace RssFeeder.Models
         public short DatabaseRetentionDays { get; set; }
         public List<string> Filters { get; set; }
     }
-}

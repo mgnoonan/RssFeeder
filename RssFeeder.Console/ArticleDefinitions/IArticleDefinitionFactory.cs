@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using RssFeeder.Models;
+﻿namespace RssFeeder.Console.ArticleDefinitions;
 
-namespace RssFeeder.Console.ArticleDefinitions
+public interface IArticleDefinitionFactory
 {
-    public interface IArticleDefinitionFactory
-    {
-        SiteArticleDefinition Get(string sitename);
-    }
+    SiteArticleDefinition Get(string sitename);
 }

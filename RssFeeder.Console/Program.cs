@@ -1,62 +1,48 @@
-using System;
-using System.IO;
-using System.Net;
 using System.Reflection;
-using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
-using Oakton;
 using Oakton.Help;
-using Raven.Client.Documents;
-using RssFeeder.Console.ArticleDefinitions;
 using RssFeeder.Console.Commands;
-using RssFeeder.Console.Database;
-using RssFeeder.Console.Exporters;
-using RssFeeder.Console.FeedBuilders;
 using RssFeeder.Console.HttpClients;
-using RssFeeder.Console.Models;
-using RssFeeder.Console.TagParsers;
-using RssFeeder.Console.Utility;
-using Serilog;
 using Serilog.Formatting.Compact;
 using Serilog.Sinks.SystemConsole.Themes;
 
-namespace RssFeeder.Console
+namespace RssFeeder.Console;
+
+/// <summary>
+/// A utility to retrieve RSS Feeds from remote servers
+/// </summary>
+class Program
 {
     /// <summary>
-    /// A utility to retrieve RSS Feeds from remote servers
+    /// The main entry point for the application.
     /// </summary>
-    class Program
+    [STAThread]
+    static void Main(string[] args)
     {
-        /// <summary>
-        /// The main entry point for the application.
-        /// </summary>
-        [STAThread]
-        static void Main(string[] args)
-        {
-            // Grab the current assembly name
-            AssemblyName assemblyName = Assembly.GetExecutingAssembly().GetName();
+        // Grab the current assembly name
+        AssemblyName assemblyName = Assembly.GetExecutingAssembly().GetName();
 
-            // Init Serilog
-            // docker run --name seq -e ACCEPT_EULA=Y -p 5341:80 datalust/seq:latest
-            var log = new LoggerConfiguration()
-                .Enrich.FromLogContext()
-                .MinimumLevel.Information()
-                .WriteTo.Console(theme: AnsiConsoleTheme.Code)
-                .WriteTo.File(new RenderedCompactJsonFormatter(), "RssFeeder.log", rollingInterval: RollingInterval.Day, retainedFileCountLimit: 14)
-                .WriteTo.Seq("http://localhost:5341")
-                .CreateLogger();
-            Log.Logger = log;
+        // Init Serilog
+        // docker run --name seq -e ACCEPT_EULA=Y -p 5341:80 datalust/seq:latest
+        var log = new LoggerConfiguration()
+            .Enrich.FromLogContext()
+            .MinimumLevel.Information()
+            .WriteTo.Console(theme: AnsiConsoleTheme.Code)
+            .WriteTo.File(new RenderedCompactJsonFormatter(), "RssFeeder.log", rollingInterval: RollingInterval.Day, retainedFileCountLimit: 14)
+            .WriteTo.Seq("http://localhost:5341")
+            .CreateLogger();
+        Log.Logger = log;
 
-            log.Information("START: Machine: {machineName} Assembly: {assembly}", Environment.MachineName, assemblyName.FullName);
+        log.Information("START: Machine: {machineName} Assembly: {assembly}", Environment.MachineName, assemblyName.FullName);
 
-            // Load configuration
-            var configBuilder = new ConfigurationBuilder()
-               .SetBasePath(Directory.GetCurrentDirectory())
-               .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-               //.AddUserSecrets<Program>()
-               .AddEnvironmentVariables();
-            IConfigurationRoot configuration = configBuilder.Build();
+        // Load configuration
+        var configBuilder = new ConfigurationBuilder()
+           .SetBasePath(Directory.GetCurrentDirectory())
+           .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+           //.AddUserSecrets<Program>()
+           .AddEnvironmentVariables();
+        IConfigurationRoot configuration = configBuilder.Build();
 
 #if !DEBUG
             var config = new CosmosDbConfig();
@@ -64,75 +50,73 @@ namespace RssFeeder.Console
             log.Information("Loaded CosmosDB from config. Endpoint='{endpointUri}', authKey='{authKeyPartial}*****'", config.endpoint, config.authKey.Substring(0, 5));
 #endif
 
-            var crawlerConfig = new CrawlerConfig();
-            configuration.GetSection("CrawlerConfig").Bind(crawlerConfig);
-            Log.Information("Crawler config: {@config}", crawlerConfig);
+        var crawlerConfig = new CrawlerConfig();
+        configuration.GetSection("CrawlerConfig").Bind(crawlerConfig);
+        Log.Information("Crawler config: {@config}", crawlerConfig);
 
-            // Setup dependency injection
-            var builder = new ContainerBuilder();
+        // Setup dependency injection
+        var builder = new ContainerBuilder();
 
-            // Setup RavenDb
-            // docker run --rm -d -p 8080:8080 -p 38888:38888 ravendb/ravendb:latest
-            IDocumentStore store = new DocumentStore
-            {
-                Urls = new[] { "http://127.0.0.1:8080/" }
-                // Default database is not set
-            }.Initialize();
+        // Setup RavenDb
+        // docker run --rm -d -p 8080:8080 -p 38888:38888 ravendb/ravendb:latest
+        IDocumentStore store = new DocumentStore
+        {
+            Urls = new[] { "http://127.0.0.1:8080/" }
+            // Default database is not set
+        }.Initialize();
 
-            builder.RegisterInstance(Log.Logger).As<ILogger>();
-            builder.RegisterInstance(store).As<IDocumentStore>();
+        builder.RegisterInstance(Log.Logger).As<ILogger>();
+        builder.RegisterInstance(store).As<IDocumentStore>();
 #if DEBUG
-            builder.RegisterType<RavenDbRepository>().As<IExportRepository>();
+        builder.RegisterType<RavenDbRepository>().As<IExportRepository>();
 #else
             builder.Register(c => new CosmosDbRepository("rssfeeder", config.endpoint, config.authKey, Log.Logger)).As<IExportRepository>();
 #endif
-            builder.RegisterType<RavenDbRepository>().As<IRepository>();
-            builder.RegisterType<ArticleExporter>().As<IArticleExporter>().WithProperty("Config", crawlerConfig);
-            builder.RegisterType<ArticleParser>().As<IArticleParser>().WithProperty("Config", crawlerConfig);
-            builder.RegisterType<WebCrawler>().As<IWebCrawler>().WithProperty("Config", crawlerConfig);
-            builder.RegisterType<DrudgeReportFeedBuilder>().Named<IRssFeedBuilder>("drudge-report");
-            builder.RegisterType<EagleSlantFeedBuilder>().Named<IRssFeedBuilder>("eagle-slant");
-            builder.RegisterType<LibertyDailyFeedBuilder>().Named<IRssFeedBuilder>("liberty-daily");
-            builder.RegisterType<BonginoReportFeedBuilder>().Named<IRssFeedBuilder>("bongino-report");
-            builder.RegisterType<CitizenFreePressFeedBuilder>().Named<IRssFeedBuilder>("citizen-freepress");
-            builder.RegisterType<RantinglyFeedBuilder>().Named<IRssFeedBuilder>("rantingly");
-            builder.RegisterType<GutSmackFeedBuilder>().Named<IRssFeedBuilder>("gutsmack");
-            builder.RegisterType<PopulistPressFeedBuilder>().Named<IRssFeedBuilder>("populist-press");
-            builder.RegisterType<BadBlueFeedBuilder>().Named<IRssFeedBuilder>("bad-blue");
-            builder.RegisterType<RevolverNewsFeedBuilder>().Named<IRssFeedBuilder>("revolver-news");
-            builder.RegisterType<GenericTagParser>().Named<ITagParser>("generic-parser");
-            builder.RegisterType<AdaptiveTagParser>().Named<ITagParser>("adaptive-parser");
-            builder.RegisterType<AllTagsParser>().Named<ITagParser>("alltags-parser");
-            builder.RegisterType<ScriptTagParser>().Named<ITagParser>("script-parser");
-            builder.RegisterType<HtmlTagParser>().Named<ITagParser>("htmltag-parser");
-            builder.RegisterType<JsonLdTagParser>().Named<ITagParser>("jsonldtag-parser");
-            builder.RegisterType<RestSharpHttpClient>().As<IHttpClient>().SingleInstance();
-            builder.RegisterType<WebUtils>().As<IWebUtils>().SingleInstance();
-            builder.RegisterType<Utils>().As<IUtils>().SingleInstance();
-            builder.RegisterType<ArticleDefinitionFactory>().As<IArticleDefinitionFactory>().SingleInstance();
-            builder.RegisterType<TestCommand>().SingleInstance().WithProperty("Config", crawlerConfig);
-            builder.RegisterType<TestInput>().SingleInstance();
-            builder.RegisterType<BuildCommand>().SingleInstance();
-            builder.RegisterType<BuildInput>().SingleInstance();
-            builder.RegisterType<ParseCommand>().SingleInstance();
-            builder.RegisterType<ParseInput>().SingleInstance();
-            builder.RegisterType<DownloadCommand>().SingleInstance();
-            builder.RegisterType<DownloadInput>().SingleInstance();
-            builder.RegisterType<HelpInput>().SingleInstance();
+        builder.RegisterType<RavenDbRepository>().As<IRepository>();
+        builder.RegisterType<ArticleExporter>().As<IArticleExporter>().WithProperty("Config", crawlerConfig);
+        builder.RegisterType<ArticleParser>().As<IArticleParser>().WithProperty("Config", crawlerConfig);
+        builder.RegisterType<WebCrawler>().As<IWebCrawler>().WithProperty("Config", crawlerConfig);
+        builder.RegisterType<DrudgeReportFeedBuilder>().Named<IRssFeedBuilder>("drudge-report");
+        builder.RegisterType<LibertyDailyFeedBuilder>().Named<IRssFeedBuilder>("liberty-daily");
+        builder.RegisterType<BonginoReportFeedBuilder>().Named<IRssFeedBuilder>("bongino-report");
+        builder.RegisterType<CitizenFreePressFeedBuilder>().Named<IRssFeedBuilder>("citizen-freepress");
+        builder.RegisterType<RantinglyFeedBuilder>().Named<IRssFeedBuilder>("rantingly");
+        builder.RegisterType<GutSmackFeedBuilder>().Named<IRssFeedBuilder>("gutsmack");
+        builder.RegisterType<PopulistPressFeedBuilder>().Named<IRssFeedBuilder>("populist-press");
+        builder.RegisterType<BadBlueFeedBuilder>().Named<IRssFeedBuilder>("bad-blue");
+        builder.RegisterType<RevolverNewsFeedBuilder>().Named<IRssFeedBuilder>("revolver-news");
+        builder.RegisterType<GenericTagParser>().Named<ITagParser>("generic-parser");
+        builder.RegisterType<AdaptiveTagParser>().Named<ITagParser>("adaptive-parser");
+        builder.RegisterType<AllTagsParser>().Named<ITagParser>("alltags-parser");
+        builder.RegisterType<ScriptTagParser>().Named<ITagParser>("script-parser");
+        builder.RegisterType<HtmlTagParser>().Named<ITagParser>("htmltag-parser");
+        builder.RegisterType<JsonLdTagParser>().Named<ITagParser>("jsonldtag-parser");
+        builder.RegisterType<RestSharpHttpClient>().As<IHttpClient>().SingleInstance();
+        builder.RegisterType<WebUtils>().As<IWebUtils>().SingleInstance();
+        builder.RegisterType<Utils>().As<IUtils>().SingleInstance();
+        builder.RegisterType<ArticleDefinitionFactory>().As<IArticleDefinitionFactory>().SingleInstance();
+        builder.RegisterType<TestCommand>().SingleInstance().WithProperty("Config", crawlerConfig);
+        builder.RegisterType<TestInput>().SingleInstance();
+        builder.RegisterType<BuildCommand>().SingleInstance();
+        builder.RegisterType<BuildInput>().SingleInstance();
+        builder.RegisterType<ParseCommand>().SingleInstance();
+        builder.RegisterType<ParseInput>().SingleInstance();
+        builder.RegisterType<DownloadCommand>().SingleInstance();
+        builder.RegisterType<DownloadInput>().SingleInstance();
+        builder.RegisterType<HelpInput>().SingleInstance();
 
-            var container = builder.Build();
-            var serviceProvider = new AutofacServiceProvider(container);
+        var container = builder.Build();
+        var serviceProvider = new AutofacServiceProvider(container);
 
-            // set up TLS defaults
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+        // set up TLS defaults
+        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
 
-            var executor = CommandExecutor.For(_ =>
-            {
+        var executor = CommandExecutor.For(_ =>
+        {
                 // Find and apply all command classes discovered
                 // in this assembly
                 _.RegisterCommands(typeof(Program).GetTypeInfo().Assembly);
-            }, new AutofacCommandCreator(container));
-            executor.Execute(args);
-        }
+        }, new AutofacCommandCreator(container));
+        executor.Execute(args);
     }
 }

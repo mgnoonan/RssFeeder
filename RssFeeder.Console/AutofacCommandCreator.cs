@@ -1,26 +1,21 @@
-﻿using System;
-using Autofac;
-using Oakton;
+﻿namespace RssFeeder.Console;
 
-namespace RssFeeder.Console
+public class AutofacCommandCreator : ICommandCreator
 {
-    public class AutofacCommandCreator : ICommandCreator
+    private readonly IContainer _container;
+
+    public AutofacCommandCreator(IContainer container)
     {
-        private readonly IContainer _container;
+        _container = container;
+    }
 
-        public AutofacCommandCreator(IContainer container)
-        {
-            _container = container;
-        }
+    public IOaktonCommand CreateCommand(Type commandType)
+    {
+        return (IOaktonCommand)_container.Resolve(commandType, new TypedParameter(typeof(IContainer), _container));
+    }
 
-        public IOaktonCommand CreateCommand(Type commandType)
-        {
-            return (IOaktonCommand)_container.Resolve(commandType, new TypedParameter(typeof(IContainer), _container));
-        }
-
-        public object CreateModel(Type modelType)
-        {
-            return _container.Resolve(modelType);
-        }
+    public object CreateModel(Type modelType)
+    {
+        return _container.Resolve(modelType);
     }
 }
