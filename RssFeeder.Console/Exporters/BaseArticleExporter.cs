@@ -131,8 +131,9 @@ public class BaseArticleExporter
         {
             // Most other sites provide video open graph tags
             exportFeedItem.VideoUrl = item.OpenGraphAttributes.GetValueOrDefault("og:video:secure_url") ??
-                item.OpenGraphAttributes?.GetValueOrDefault("og:video:url") ??
-                item.OpenGraphAttributes?.GetValueOrDefault("og:video") ?? "";
+                item.OpenGraphAttributes.GetValueOrDefault("og:video:url") ??
+                item.OpenGraphAttributes.GetValueOrDefault("og:video") ?? 
+                "";
             exportFeedItem.VideoHeight = int.TryParse(item.OpenGraphAttributes.GetValueOrDefault("og:video:height"), out int height) ? height : 0;
             exportFeedItem.VideoWidth = int.TryParse(item.OpenGraphAttributes.GetValueOrDefault("og:video:width"), out int width) ? width : 0;
         }
