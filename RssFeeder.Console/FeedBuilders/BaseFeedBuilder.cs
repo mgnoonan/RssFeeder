@@ -79,11 +79,13 @@ class BaseFeedBuilder
             linkUrl = webUtils.RepairUrl(linkUrl, feedUrl);
         }
 
+        var uri = new Uri(linkUrl);
+
         // Calculate the MD5 hash for the link so we can be sure of uniqueness
-        string hash = utils.CreateMD5Hash(linkUrl.ToLower());
+        string hash = utils.CreateMD5Hash(uri.AbsoluteUri.ToLower());
         if (filters.Contains(hash))
         {
-            log.Debug("Hash '{hash}' found in filter list", hash);
+            log.Information("Hash '{hash}':'{uri}' found in filter list", hash, uri);
             return null;
         }
 
@@ -91,19 +93,14 @@ class BaseFeedBuilder
         {
             return new RssFeedItem()
             {
-                //Id = Guid.NewGuid().ToString(),
-                // Title = WebUtility.HtmlDecode(title),
-                // Url = linkUrl,
-                // UrlHash = hash,
-                // DateAdded = DateTime.Now.ToUniversalTime(),
-                // LinkLocation = $"{location}, article {count}",
                 FeedAttributes = new FeedAttributes()
                 {
                     Title = WebUtility.HtmlDecode(title),
-                    Url = linkUrl,
+                    Url = uri.AbsoluteUri,
                     UrlHash = hash,
                     DateAdded = DateTime.Now.ToUniversalTime(),
-                    LinkLocation = $"{location}, article {count}"
+                    LinkLocation = $"{location}, article {count}",
+                    IsUrlShortened = uri.Host.ToLower() == "t.co"
                 }
             };
         }

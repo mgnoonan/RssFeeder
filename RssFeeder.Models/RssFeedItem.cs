@@ -29,4 +29,5 @@ public record FeedAttributes
     public DateTime DateAdded { get; set; }
     public string FileName { get; set; }
     public string LinkLocation { get; set; }
+    public bool IsUrlShortened { get; set; }
 }
