@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Reflection;
 using Autofac.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
@@ -50,9 +51,9 @@ class Program
             log.Information("Loaded CosmosDB from config. Endpoint='{endpointUri}', authKey='{authKeyPartial}*****'", config.endpoint, config.authKey.Substring(0, 5));
 #endif
 
-        var crawlerConfig = new CrawlerConfig();
-        configuration.GetSection("CrawlerConfig").Bind(crawlerConfig);
-        Log.Information("Crawler config: {@config}", crawlerConfig);
+        //var crawlerConfig = new CrawlerConfig();
+        //configuration.GetSection("CrawlerConfig").Bind(crawlerConfig);
+        //Log.Information("Crawler config: {@config}", crawlerConfig);
 
         // Setup dependency injection
         var builder = new ContainerBuilder();
@@ -64,6 +65,14 @@ class Program
             Urls = new[] { "http://127.0.0.1:8080/" }
             // Default database is not set
         }.Initialize();
+
+        var crawlerConfig = new CrawlerConfig();
+        using (IDocumentSession session = store.OpenSession(database: "site-parsers"))
+        {
+            crawlerConfig = session.Advanced.RawQuery<CrawlerConfig>("from CrawlerConfig").First();
+        }
+        Log.Information("Crawler config: {@config}", crawlerConfig);
+        System.Console.ReadLine();
 
         builder.RegisterInstance(Log.Logger).As<ILogger>();
         builder.RegisterInstance(store).As<IDocumentStore>();
@@ -113,9 +122,9 @@ class Program
 
         var executor = CommandExecutor.For(_ =>
         {
-                // Find and apply all command classes discovered
-                // in this assembly
-                _.RegisterCommands(typeof(Program).GetTypeInfo().Assembly);
+            // Find and apply all command classes discovered
+            // in this assembly
+            _.RegisterCommands(typeof(Program).GetTypeInfo().Assembly);
         }, new AutofacCommandCreator(container));
         executor.Execute(args);
     }
