@@ -72,7 +72,6 @@ class Program
             crawlerConfig = session.Advanced.RawQuery<CrawlerConfig>("from CrawlerConfig").First();
         }
         Log.Information("Crawler config: {@config}", crawlerConfig);
-        System.Console.ReadLine();
 
         builder.RegisterInstance(Log.Logger).As<ILogger>();
         builder.RegisterInstance(store).As<IDocumentStore>();

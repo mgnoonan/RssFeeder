@@ -17,6 +17,10 @@ public class BaseArticleExporter
                 template = template.Replace("{class}", "rumble");
                 template = template.Replace("{allow}", "");
                 break;
+            case "gab tv":
+                template = template.Replace("{class}", "studio-video");
+                template = template.Replace("{allow}", "");
+                break;
         }
 
         var t = new Template(template, '$', '$');
@@ -125,8 +129,10 @@ public class BaseArticleExporter
         }
         else
         {
-            // These may be YouTube-only Open Graph tags
-            exportFeedItem.VideoUrl = item.OpenGraphAttributes.GetValueOrDefault("og:video:url") ?? "";
+            // Most other sites provide video open graph tags
+            exportFeedItem.VideoUrl = item.OpenGraphAttributes.GetValueOrDefault("og:video:secure_url") ??
+                item.OpenGraphAttributes?.GetValueOrDefault("og:video:url") ??
+                item.OpenGraphAttributes?.GetValueOrDefault("og:video") ?? "";
             exportFeedItem.VideoHeight = int.TryParse(item.OpenGraphAttributes.GetValueOrDefault("og:video:height"), out int height) ? height : 0;
             exportFeedItem.VideoWidth = int.TryParse(item.OpenGraphAttributes.GetValueOrDefault("og:video:width"), out int width) ? width : 0;
         }
