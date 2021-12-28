@@ -93,6 +93,7 @@ class Program
         builder.RegisterType<PopulistPressFeedBuilder>().Named<IRssFeedBuilder>("populist-press");
         builder.RegisterType<BadBlueFeedBuilder>().Named<IRssFeedBuilder>("bad-blue");
         builder.RegisterType<RevolverNewsFeedBuilder>().Named<IRssFeedBuilder>("revolver-news");
+        builder.RegisterType<FreedomPressFeedBuilder>().Named<IRssFeedBuilder>("freedom-press");
         builder.RegisterType<GenericTagParser>().Named<ITagParser>("generic-parser");
         builder.RegisterType<AdaptiveTagParser>().Named<ITagParser>("adaptive-parser");
         builder.RegisterType<AllTagsParser>().Named<ITagParser>("alltags-parser");
