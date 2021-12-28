@@ -103,6 +103,12 @@ public class ArticleParser : IArticleParser
                 string contentValue = node.Attributes["content"]?.Value ?? "unspecified";
                 Log.Information("Found open graph attribute '{propertyValue}':'{contentValue}'", propertyValue, contentValue);
 
+                if (contentValue.Contains("&#x"))
+                {
+                    contentValue = System.Web.HttpUtility.HtmlDecode(contentValue);
+                    Log.Information("Decoded content value '{contentValue}'", contentValue);
+                }
+
                 if (!attributes.ContainsKey(propertyValue))
                 {
                     attributes.Add(propertyValue, contentValue);
