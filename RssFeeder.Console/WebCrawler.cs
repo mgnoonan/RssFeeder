@@ -100,7 +100,7 @@ public class WebCrawler : IWebCrawler
 
     private void ParseAndSave(RssFeed feed, RssFeedItem item)
     {
-        var uri = new Uri(item.HtmlAttributes.GetValueOrDefault("Url"));
+        var uri = new Uri(item.HtmlAttributes.GetValueOrDefault("Url") ?? item.FeedAttributes.Url);
         if (uri.AbsolutePath == "/")
         {
             Log.Information("URI '{uri}' detected as a home page rather than an article, skipping parse operation", uri);
