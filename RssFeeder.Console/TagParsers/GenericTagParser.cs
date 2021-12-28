@@ -13,7 +13,7 @@ public class GenericTagParser : ITagParser
         var parser = new HtmlParser();
         var document = parser.ParseDocument(html);
 
-        Log.Information("Attempting generic parsing using body selector '{bodySelector}' and paragraph selector '{paragraphSelector}'", bodySelector, paragraphSelector);
+        Log.Information("Attempting generic tag parsing using body selector '{bodySelector}' and paragraph selector '{paragraphSelector}'", bodySelector, paragraphSelector);
 
         // Query the document by CSS selectors to get the article text
         var container = document.QuerySelector(bodySelector);
@@ -24,6 +24,7 @@ public class GenericTagParser : ITagParser
         }
 
         var paragraphs = container.QuerySelectorAll(paragraphSelector);
+        Log.Information("'{paragraphSelector}' returned {count} paragraphs", paragraphSelector, paragraphs.Length);
 
         return BuildArticleText(paragraphs);
     }
