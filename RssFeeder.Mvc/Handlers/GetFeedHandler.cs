@@ -22,7 +22,7 @@ namespace RssFeeder.Mvc.Handlers
         private readonly IMemoryCache _cache;
         private readonly List<FeedModel> _feeds;
         private readonly string _sourceFile = "feeds.json";
-        private readonly IEnumerable<string> _collectionList = new string[] { "drudge-report", "eagle-slant", "bongino-report", "liberty-daily", "citizen-freepress", "rantingly", "gutsmack", "populist-press", "revolver-news" };
+        private readonly IEnumerable<string> _collectionList = new string[] { "drudge-report", "eagle-slant", "bongino-report", "liberty-daily", "citizen-freepress", "rantingly", "gutsmack", "populist-press", "revolver-news", "freedom-press" };
 
         public GetFeedHandler(IDatabaseService repo, IMemoryCache cache)
         {
