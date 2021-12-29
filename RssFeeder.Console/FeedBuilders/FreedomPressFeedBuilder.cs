@@ -47,6 +47,25 @@ internal class FreedomPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             }
         }
 
+        // Stories section
+        container = document.QuerySelector("#container11 > div.wrapper > div.inner");
+        nodes = container.QuerySelectorAll("div > ul > li > a");
+        if (nodes != null)
+        {
+            count = 1;
+            foreach (var node in nodes)
+            {
+                string title = WebUtility.HtmlDecode(node.Text().Trim());
+
+                var item = CreateNodeLinks(filters, node, "first section", count++, feedUrl);
+                if (item != null)
+                {
+                    log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+                    list.Add(item);
+                }
+            }
+        }
+
         return list;
     }
 }

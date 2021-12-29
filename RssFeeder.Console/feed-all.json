@@ -157,7 +157,7 @@
     "Title": "Freedom of the Press",
     "Enabled": "true",
     "EnableThumbnail": "true",
-    "Exportable": "false",
+    "Exportable": "true",
     "Description": "Freedom of the Press",
     "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\freedompress.xml",
     "Language": "en-US",

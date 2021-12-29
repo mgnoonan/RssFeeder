@@ -24,7 +24,7 @@ public class GenericTagParser : ITagParser
         }
 
         var paragraphs = container.QuerySelectorAll(paragraphSelector);
-        Log.Information("'{paragraphSelector}' returned {count} paragraphs", paragraphSelector, paragraphs.Length);
+        Log.Information("Paragraph selector '{paragraphSelector}' returned {count} paragraphs", paragraphSelector, paragraphs.Length);
 
         return BuildArticleText(paragraphs);
     }
