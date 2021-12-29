@@ -1,10 +1,10 @@
 ﻿namespace RssFeeder.Console.FeedBuilders;
 
-internal class RevolverNewsFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
+internal class FreedomPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    public RevolverNewsFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities) :
-        base(logger, webUtilities, utilities)
-    { }
+    public FreedomPressFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities) : base(logger, webUtilities, utilities)
+    {
+    }
 
     public List<RssFeedItem> GenerateRssFeedItemList(RssFeed feed, string html)
     {
@@ -29,8 +29,8 @@ internal class RevolverNewsFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         var document = parser.ParseDocument(html);
 
         // Featured links section
-        var container = document.QuerySelector("div.revolver > div.column.center > div.post-listing");
-        var nodes = container.QuerySelectorAll("div.title > a");
+        var container = document.QuerySelector("#home-section");
+        var nodes = container.QuerySelectorAll("#links68 > li > a");
         if (nodes != null)
         {
             count = 1;
@@ -38,7 +38,7 @@ internal class RevolverNewsFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             {
                 string title = WebUtility.HtmlDecode(node.Text().Trim());
 
-                var item = CreateNodeLinks(filters, node, "feature links", count++, feedUrl);
+                var item = CreateNodeLinks(filters, node, "headlines", count++, feedUrl);
                 if (item != null)
                 {
                     log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
@@ -48,16 +48,16 @@ internal class RevolverNewsFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         }
 
         // Stories section
-        container = document.QuerySelector("div.revolver > div.column.center > div.articles-wrapper > div.infinite-content");
-        nodes = container.QuerySelectorAll("div.title > a");
+        container = document.QuerySelector("#container11 > div.wrapper > div.inner");
+        nodes = container.QuerySelectorAll("div > ul > li > a");
         if (nodes != null)
         {
             count = 1;
-            foreach (var node in nodes.Take(5))
+            foreach (var node in nodes)
             {
                 string title = WebUtility.HtmlDecode(node.Text().Trim());
 
-                var item = CreateNodeLinks(filters, node, "news feed", count++, feedUrl);
+                var item = CreateNodeLinks(filters, node, "first section", count++, feedUrl);
                 if (item != null)
                 {
                     log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);

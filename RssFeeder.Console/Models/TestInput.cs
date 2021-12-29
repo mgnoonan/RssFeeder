@@ -1,6 +1,5 @@
-﻿namespace RssFeeder.Console.Models
+﻿namespace RssFeeder.Console.Models;
+
+public record TestInput
 {
-    public class TestInput
-    {
-    }
 }

@@ -1,53 +1,44 @@
-﻿using System;
-using System.IO;
-using Autofac;
-using Oakton;
-using RssFeeder.Console.Models;
-using RssFeeder.Console.Utility;
-using Serilog;
+﻿namespace RssFeeder.Console.Commands;
 
-namespace RssFeeder.Console.Commands
+public class DownloadCommand : OaktonCommand<DownloadInput>
 {
-    public class DownloadCommand : OaktonCommand<DownloadInput>
+    private readonly IContainer _container;
+
+    public DownloadCommand(IContainer container)
     {
-        private readonly IContainer _container;
+        _container = container;
 
-        public DownloadCommand(IContainer container)
+        // The usage pattern definition here is completely
+        // optional
+        Usage("Download URL using Web Driver").Arguments(x => x.Url);
+    }
+
+    public override bool Execute(DownloadInput input)
+    {
+        var utils = _container.Resolve<IUtils>();
+        var webUtils = _container.Resolve<IWebUtils>();
+
+        // Create the working folder for the collection if it doesn't exist
+        string workingFolder = Path.Combine(utils.GetAssemblyDirectory(), "test-download");
+        if (!Directory.Exists(workingFolder))
         {
-            _container = container;
-
-            // The usage pattern definition here is completely
-            // optional
-            Usage("Download URL using Web Driver").Arguments(x => x.Url);
+            Log.Information("Creating folder '{workingFolder}'", workingFolder);
+            Directory.CreateDirectory(workingFolder);
         }
 
-        public override bool Execute(DownloadInput input)
-        {
-            var utils = _container.Resolve<IUtils>();
-            var webUtils = _container.Resolve<IWebUtils>();
+        // Create the target filename
+        string hash = utils.CreateMD5Hash(input.Url.ToLower());
+        string filename = $"{workingFolder}\\{DateTime.Now:yyyyMMddhhmmss}_{hash}";
 
-            // Create the working folder for the collection if it doesn't exist
-            string workingFolder = Path.Combine(utils.GetAssemblyDirectory(), "test-download");
-            if (!Directory.Exists(workingFolder))
-            {
-                Log.Information("Creating folder '{workingFolder}'", workingFolder);
-                Directory.CreateDirectory(workingFolder);
-            }
+        // Download the URL contents using the web driver to the target filename
+        webUtils.WebDriverUrlToDisk(input.Url, hash, filename + ".html");
 
-            // Create the target filename
-            string hash = utils.CreateMD5Hash(input.Url.ToLower());
-            string filename = $"{workingFolder}\\{DateTime.Now:yyyyMMddhhmmss}_{hash}";
+        // Optionally capture a screenshot to the target filename
+        if (input.CaptureFlag)
+            webUtils.SaveThumbnailToDisk(input.Url, filename + ".png");
 
-            // Download the URL contents using the web driver to the target filename
-            webUtils.WebDriverUrlToDisk(input.Url, hash, filename + ".html");
-
-            // Optionally capture a screenshot to the target filename
-            if (input.CaptureFlag)
-                webUtils.SaveThumbnailToDisk(input.Url, filename + ".png");
-
-            // Just telling the OS that the command
-            // finished up okay
-            return true;
-        }
+        // Just telling the OS that the command
+        // finished up okay
+        return true;
     }
 }

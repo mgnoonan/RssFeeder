@@ -7,7 +7,7 @@
     "Description": "The Drudge Report",
     "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\drudge.xml",
     "Language": "en-US",
-    "Url": "http://www.drudgereport.com",
+    "Url": "https://www.drudgereport.com",
     "CustomParser": "RssFeeder.Console.FeedBuilders.DrudgeReportFeedBuilder",
     "CollectionName": "drudge-report",
     "FileRetentionDays": 3,
@@ -151,6 +151,21 @@
     "CollectionName": "revolver-news",
     "FileRetentionDays": 7,
     "DatabaseRetentionDays": 30,
+    "Filters": []
+  },
+  {
+    "Title": "Freedom of the Press",
+    "Enabled": "true",
+    "EnableThumbnail": "true",
+    "Exportable": "true",
+    "Description": "Freedom of the Press",
+    "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\freedompress.xml",
+    "Language": "en-US",
+    "Url": "https://freedomofthepress.com/",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.FreedomPressFeedBuilder",
+    "CollectionName": "freedom-press",
+    "FileRetentionDays": 7,
+    "DatabaseRetentionDays": 7,
     "Filters": []
   }
 ]
