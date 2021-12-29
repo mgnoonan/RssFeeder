@@ -115,5 +115,18 @@
     "FeedlyUrl": "",
     "RssUrl": "/api/rss/revolver-news",
     "Filters": []
+  },
+  {
+    "id": "",
+    "Title": "Freedom of the Press",
+    "Url": "https://freedomofthepress.com/",
+    "Description": "Freedom of the Press",
+    "Language": "en-US",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.FreedomPressFeedBuilder",
+    "CollectionName": "freedom-press",
+    "authoremail": "editor@freedomofthepress.com",
+    "FeedlyUrl": "",
+    "RssUrl": "/api/rss/freedom-press",
+    "Filters": []
   }
 ]
