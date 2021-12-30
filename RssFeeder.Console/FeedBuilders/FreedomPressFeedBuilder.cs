@@ -30,7 +30,7 @@ internal class FreedomPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 
         // Featured links section
         var container = document.QuerySelector("#home-section");
-        var nodes = container.QuerySelectorAll("#links68 > li > a");
+        var nodes = container.QuerySelectorAll("ul > li > a");
         if (nodes != null)
         {
             count = 1;
@@ -48,8 +48,8 @@ internal class FreedomPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         }
 
         // Stories section
-        container = document.QuerySelector("#container11 > div.wrapper > div.inner");
-        nodes = container.QuerySelectorAll("div > ul > li > a");
+        container = document.QuerySelector("#home-section > div.container:nth-child(1)");
+        nodes = container.QuerySelectorAll("div.wrapper > div.inner > div > ul > li > a");
         if (nodes != null)
         {
             count = 1;
