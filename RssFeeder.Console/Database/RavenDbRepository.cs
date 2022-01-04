@@ -95,8 +95,9 @@ public class RavenDbRepository : IRepository, IExportRepository
 
         using (IDocumentSession session = _store.OpenSession(database: collectionName))
         {
-            return session.Advanced.RawQuery<T>(sqlQueryText)
-                .ToList();
+            var list = session.Advanced.RawQuery<T>(sqlQueryText).ToList();
+            Log.Information("Query: ({count}) documents returned", list.Count);
+            return list;
         }
     }
 
@@ -116,10 +117,10 @@ public class RavenDbRepository : IRepository, IExportRepository
         return GetDocuments<T>(collectionName, sqlQueryText);
     }
 
-    public List<T> GetExportDocuments<T>(string collectionName, string feedId, DateTime startDate)
+    public List<T> GetExportDocuments<T>(string collectionName, string feedId, Guid runID)
     {
         string sqlQueryText = $@"from RssFeedItems 
-                   where FeedAttributes.DateAdded >= '{TimeZoneInfo.ConvertTimeToUtc(startDate):o}'
+                   where RunId = '{runID}'
                    and FeedAttributes.FeedId = '{feedId}'";
 
         return GetDocuments<T>(collectionName, sqlQueryText);

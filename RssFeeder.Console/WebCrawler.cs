@@ -43,11 +43,11 @@ public class WebCrawler : IWebCrawler
             _exportRepository.EnsureDatabaseExists(_exportCollectionName, true);
     }
 
-    public void Crawl(RssFeed feed)
+    public void Crawl(Guid runID, RssFeed feed)
     {
         string workingFolder = PrepareWorkspace(feed);
         var list = GenerateFeedLinks(feed, workingFolder);
-        DownloadList(feed, workingFolder, list);
+        DownloadList(runID, feed, workingFolder, list);
         //ParseAndSave(feed, list);
     }
 
@@ -138,7 +138,7 @@ public class WebCrawler : IWebCrawler
         }
     }
 
-    private void DownloadList(RssFeed feed, string workingFolder, List<RssFeedItem> list)
+    private void DownloadList(Guid runID, RssFeed feed, string workingFolder, List<RssFeedItem> list)
     {
         _articleParser.Initialize(_container, _definitions, _webUtils);
 
@@ -147,6 +147,7 @@ public class WebCrawler : IWebCrawler
         int articleCount = 0;
         foreach (var item in list)
         {
+            using (LogContext.PushProperty("runID", runID))
             using (LogContext.PushProperty("url", item.FeedAttributes.Url))
             using (LogContext.PushProperty("urlHash", item.FeedAttributes.UrlHash))
             {
@@ -196,6 +197,7 @@ public class WebCrawler : IWebCrawler
                     }
 
                     // Parse the saved file as dictated by the site definitions
+                    item.RunId = runID;
                     ParseAndSave(feed, item);
                 }
                 catch (Exception ex)
@@ -255,7 +257,7 @@ public class WebCrawler : IWebCrawler
         return ".html";
     }
 
-    public void Export(RssFeed feed, DateTime startDate)
+    public void Export(Guid runID, RssFeed feed, DateTime startDate)
     {
         if (!feed.Exportable)
         {
@@ -264,15 +266,16 @@ public class WebCrawler : IWebCrawler
         }
 
         // Get the articles from the source repository starting at the top of the hour
-        var list = _crawlerRepository.GetExportDocuments<RssFeedItem>(_crawlerCollectionName, feed.CollectionName, startDate);
+        var list = _crawlerRepository.GetExportDocuments<RssFeedItem>(_crawlerCollectionName, feed.CollectionName, runID);
 
         // Loop through the list and upsert to the target repository
         foreach (var item in list)
         {
+            using (LogContext.PushProperty("runID", runID))
             using (LogContext.PushProperty("url", item.FeedAttributes.Url))
             using (LogContext.PushProperty("urlHash", item.FeedAttributes.UrlHash))
             {
-
+                Log.Information("Preparing '{urlHash}' for export", item.FeedAttributes.UrlHash);
                 var exportFeedItem = _exporter.FormatItem(item, feed);
 
                 Log.Information("EXPORT: UrlHash '{urlHash}' from {collectionName}", item.FeedAttributes.UrlHash, feed.CollectionName);

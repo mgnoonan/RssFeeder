@@ -15,6 +15,7 @@ public record RssFeedItem
     public string Id { get; set; }
     public string SiteName { get; set; }
     public string HostName { get; set; }
+    public Guid RunId { get; set; }
     public Dictionary<string, string> OpenGraphAttributes { get; set; }
     public Dictionary<string, string> HtmlAttributes { get; set; }
     public FeedAttributes FeedAttributes { get; set; }

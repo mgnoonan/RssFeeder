@@ -107,11 +107,9 @@ public class CosmosDbRepository : IRepository, IExportRepository
         //throw new NotImplementedException();
     }
 
-    public List<T> GetExportDocuments<T>(string collectionName, string feedId, DateTime startDate)
+    public List<T> GetExportDocuments<T>(string collectionName, string feedId, Guid runID)
     {
-        string sqlQueryText = $"SELECT * FROM c WHERE c.DateAdded >= '{TimeZoneInfo.ConvertTimeToUtc(startDate):o}' AND c.FeedId = '{feedId}'";
-
-        return GetDocuments<T>(collectionName, sqlQueryText);
+        throw new NotImplementedException();
     }
 
     public void UpsertDocument<T>(string collectionName, T item)
