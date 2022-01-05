@@ -98,13 +98,13 @@ public class WebCrawler : IWebCrawler
         }
     }
 
-    private void ParseAndSave(RssFeed feed, RssFeedItem item)
+    private bool TryParseAndSave(RssFeed feed, RssFeedItem item)
     {
         var uri = new Uri(item.HtmlAttributes.GetValueOrDefault("Url") ?? item.FeedAttributes.Url);
         if (uri.AbsolutePath == "/")
         {
             Log.Information("URI '{uri}' detected as a home page rather than an article, skipping parse operation", uri);
-            return;
+            return false;
         }
 
         try
@@ -115,6 +115,7 @@ public class WebCrawler : IWebCrawler
         catch (Exception ex)
         {
             Log.Error(ex, "PARSE_ERROR: UrlHash '{urlHash}':'{url}'", item.FeedAttributes.UrlHash, item.FeedAttributes.Url);
+            return false;
         }
 
         try
@@ -131,11 +132,15 @@ public class WebCrawler : IWebCrawler
                     _crawlerRepository.CreateDocument<RssFeedItem>(_crawlerCollectionName, item, feed.DatabaseRetentionDays, Path.GetFileName(item.FeedAttributes.FileName), stream, "text/html");
                 }
             }
+
+            return true;
         }
         catch (Exception ex)
         {
             Log.Error(ex, "SAVE_ERROR: UrlHash '{urlHash}':'{url}'", item.FeedAttributes.UrlHash, item.FeedAttributes.Url);
         }
+
+        return false;
     }
 
     private void DownloadList(Guid runID, RssFeed feed, string workingFolder, List<RssFeedItem> list)
@@ -158,9 +163,7 @@ public class WebCrawler : IWebCrawler
                     continue;
                 }
 
-                // Increment new article count
                 Log.Information("UrlHash '{urlHash}' not found in collection '{collectionName}'", item.FeedAttributes.UrlHash, feed.CollectionName);
-                articleCount++;
 
                 try
                 {
@@ -198,12 +201,12 @@ public class WebCrawler : IWebCrawler
 
                     // Parse the saved file as dictated by the site definitions
                     item.RunId = runID;
-                    ParseAndSave(feed, item);
+                    if (TryParseAndSave(feed, item))
+                        articleCount++;
                 }
                 catch (Exception ex)
                 {
                     Log.Error(ex, "DOWNLOAD_ERROR: UrlHash '{urlHash}':'{url}'", item.FeedAttributes.UrlHash, item.FeedAttributes.Url);
-                    articleCount--;
                 }
             }
         }
