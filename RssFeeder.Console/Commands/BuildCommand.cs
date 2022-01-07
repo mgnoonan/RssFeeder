@@ -63,6 +63,7 @@ public class BuildCommand : OaktonCommand<BuildInput>
                             crawler.Crawl(runID, feed);
                             crawler.Export(runID, feed, startDate);
                         }
+
                         crawler.Purge(feed);
                     }
                 }
