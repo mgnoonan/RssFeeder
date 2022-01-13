@@ -48,23 +48,23 @@ internal class FreedomPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         }
 
         // Stories section
-        container = document.QuerySelector("#home-section > div:nth-of-type(4) > div.wrapper > div.inner");
-        nodes = container.QuerySelectorAll("a");
-        if (nodes != null)
-        {
-            count = 1;
-            foreach (var node in nodes)
-            {
-                string title = WebUtility.HtmlDecode(node.Text().Trim());
+        //container = document.QuerySelector("#home-section > div:nth-child(3) > div.wrapper > div.inner");
+        //nodes = container.QuerySelectorAll("a");
+        //if (nodes != null)
+        //{
+        //    count = 1;
+        //    foreach (var node in nodes)
+        //    {
+        //        string title = WebUtility.HtmlDecode(node.Text().Trim());
 
-                var item = CreateNodeLinks(filters, node, "first section", count++, feedUrl);
-                if (item != null)
-                {
-                    log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                    list.Add(item);
-                }
-            }
-        }
+        //        var item = CreateNodeLinks(filters, node, "first section", count++, feedUrl);
+        //        if (item != null)
+        //        {
+        //            log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+        //            list.Add(item);
+        //        }
+        //    }
+        //}
 
         return list;
     }

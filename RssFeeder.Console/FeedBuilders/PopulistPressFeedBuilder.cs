@@ -188,7 +188,7 @@ class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         try
         {
             Log.Information("TryParseEmbeddedUrl '{selector}' from '{url}'", selector, url);
-            (string content, Uri trueUri) = _webUtilities.DownloadString(url);
+            (HttpStatusCode statusCode, string content, Uri trueUri) = _webUtilities.DownloadString(url);
 
             var parser = new HtmlParser();
             var document = parser.ParseDocument(content);

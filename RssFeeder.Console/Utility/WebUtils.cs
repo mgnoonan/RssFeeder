@@ -26,7 +26,7 @@ public class WebUtils : IWebUtils
         try
         {
             Log.Information("Loading URL '{urlHash}':'{url}'", urlHash, url);
-            (string content, Uri trueUri) = _crawler.GetString(url);
+            (HttpStatusCode status, string content, Uri trueUri) = _crawler.GetString(url);
 
             if (trueUri is null)
             {
@@ -228,7 +228,7 @@ public class WebUtils : IWebUtils
         return sb.ToString();
     }
 
-    public (string, Uri) DownloadString(string url)
+    public (HttpStatusCode, string, Uri) DownloadString(string url)
     {
         return _crawler.GetString(url);
     }

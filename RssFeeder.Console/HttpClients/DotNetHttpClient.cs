@@ -30,9 +30,9 @@ public class DotNetHttpClient : IHttpClient
         }
     }
 
-    public (string, Uri) GetString(string url)
+    public (HttpStatusCode, string, Uri) GetString(string url)
     {
-        return (GetStringAsync(url).GetAwaiter().GetResult(), default);
+        return (HttpStatusCode.OK, GetStringAsync(url).GetAwaiter().GetResult(), default);
     }
 
     private Task<string> GetStringAsync(string url)

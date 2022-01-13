@@ -2,7 +2,7 @@
 
 public interface IWebUtils
 {
-    (string, Uri) DownloadString(string url);
+    (HttpStatusCode, string, Uri) DownloadString(string url);
     (string, Uri) SaveUrlToDisk(string url, string urlHash, string filename, bool removeScriptElements = true);
     (string, Uri) WebDriverUrlToDisk(string url, string urlHash, string filename);
     void SaveThumbnailToDisk(string url, string filename);

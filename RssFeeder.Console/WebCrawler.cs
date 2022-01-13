@@ -152,7 +152,6 @@ public class WebCrawler : IWebCrawler
         int articleCount = 0;
         foreach (var item in list)
         {
-            using (LogContext.PushProperty("runID", runID))
             using (LogContext.PushProperty("url", item.FeedAttributes.Url))
             using (LogContext.PushProperty("urlHash", item.FeedAttributes.UrlHash))
             {
@@ -216,7 +215,7 @@ public class WebCrawler : IWebCrawler
 
     private List<RssFeedItem> GenerateFeedLinks(RssFeed feed, string workingFolder)
     {
-        (string html, Uri trueUri) = _webUtils.DownloadString(feed.Url);
+        (HttpStatusCode statusCode, string html, Uri trueUri) = _webUtils.DownloadString(feed.Url);
 
         // Build the file stem so we can save the html source and a screenshot of the feed page
         var uri = new Uri(feed.Url);

@@ -57,6 +57,7 @@ public class BuildCommand : OaktonCommand<BuildInput>
                 try
                 {
                     using (LogContext.PushProperty("collectionName", feed.CollectionName))
+                    using (LogContext.PushProperty("runID", runID))
                     {
                         if (feed.Enabled)
                         {

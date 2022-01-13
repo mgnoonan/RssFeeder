@@ -89,25 +89,26 @@ public class RavenDbRepository : IRepository, IExportRepository
         return count > 0;
     }
 
-    public List<T> GetDocuments<T>(string collectionName, string sqlQueryText)
+    public List<T> GetDocuments<T>(string collectionName, string sqlQueryText, Dictionary<string, object> parameters = default, bool addWait = false)
     {
         Log.Information("Query: {query}", sqlQueryText);
 
         using (IDocumentSession session = _store.OpenSession(database: collectionName))
         {
-            var list = session.Advanced.RawQuery<T>(sqlQueryText).ToList();
+            var query = session.Advanced.RawQuery<T>(sqlQueryText);
+            foreach (var p in parameters ?? new Dictionary<string, object>())
+            {
+                query.AddParameter(p.Key, p.Value);
+            }
+            if (addWait)
+            {
+                query.WaitForNonStaleResults();
+            }
+
+            var list = query.ToList();
             Log.Information("Query: ({count}) documents returned", list.Count);
             return list;
         }
-    }
-
-    public List<T> GetStaleDocuments<T>(string collectionName, string feedId, short maximumAgeInDays)
-    {
-        string sqlQueryText = $@"from RssFeedItems 
-                   where FeedAttributes.DateAdded <= '{DateTime.UtcNow.AddDays(-maximumAgeInDays):o}' 
-                   and FeedAttributes.FeedId = '{feedId}'";
-
-        return GetDocuments<T>(collectionName, sqlQueryText);
     }
 
     public List<T> GetAllDocuments<T>(string collectionName)
@@ -119,11 +120,15 @@ public class RavenDbRepository : IRepository, IExportRepository
 
     public List<T> GetExportDocuments<T>(string collectionName, string feedId, Guid runID)
     {
-        string sqlQueryText = $@"from RssFeedItems 
-                   where RunId = '{runID}'
-                   and FeedAttributes.FeedId = '{feedId}'";
+        string sqlQueryText = $"from RssFeedItems where RunId = $runId and FeedAttributes.FeedId = $feedId";
 
-        return GetDocuments<T>(collectionName, sqlQueryText);
+        var parameters = new Dictionary<string, object>
+        {
+            { "runId", runID },
+            { "feedId", feedId }
+        };
+
+        return GetDocuments<T>(collectionName, sqlQueryText, parameters, true);
     }
 
     public void UpsertDocument<T>(string collectionName, T item)
