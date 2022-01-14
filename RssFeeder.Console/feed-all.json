@@ -164,8 +164,8 @@
     "Url": "https://freedomofthepress.com/",
     "CustomParser": "RssFeeder.Console.FeedBuilders.FreedomPressFeedBuilder",
     "CollectionName": "freedom-press",
-    "FileRetentionDays": 7,
-    "DatabaseRetentionDays": 7,
+    "FileRetentionDays": 30,
+    "DatabaseRetentionDays": 30,
     "Filters": []
   }
 ]

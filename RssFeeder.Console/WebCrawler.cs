@@ -158,7 +158,7 @@ public class WebCrawler : IWebCrawler
                 // No need to continue if we already crawled the article
                 if (_crawlerRepository.DocumentExists<RssFeedItem>(_crawlerCollectionName, feed.CollectionName, item.FeedAttributes.UrlHash))
                 {
-                    Log.Information("UrlHash '{urlHash}' already exists in collection '{collectionName}'", item.FeedAttributes.UrlHash, feed.CollectionName);
+                    //Log.Information("UrlHash '{urlHash}' already exists in collection '{collectionName}'", item.FeedAttributes.UrlHash, feed.CollectionName);
                     continue;
                 }
 
@@ -299,17 +299,5 @@ public class WebCrawler : IWebCrawler
         }
 
         _utils.PurgeStaleFiles(workingFolder, feed.FileRetentionDays);
-
-        // Purge stale documents from the database collection
-        // NOTE: Purges are now controlled automatically by RavenDB and CosmosDB
-        //var list = _exportRepository.GetStaleDocuments<ExportFeedItem>(_exportCollectionName, feed.CollectionName, feed.DatabaseRetentionDays);
-
-        //foreach (var item in list)
-        //{
-        //    Log.Information("Removing UrlHash '{urlHash}' from {collectionName}", item.UrlHash, feed.CollectionName);
-        //    _exportRepository.DeleteDocument<ExportFeedItem>(_exportCollectionName, item.Id, item.HostName);
-        //}
-
-        //Log.Information("Removed {count} documents older than {maximumAgeInDays} days from {collectionName}", list.Count, feed.DatabaseRetentionDays, feed.CollectionName);
     }
 }

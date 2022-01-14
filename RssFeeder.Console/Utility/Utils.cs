@@ -52,7 +52,7 @@ public class Utils : IUtils
         var file = new FileInfo(path);
         if (file.CreationTime < date)
         {
-            Log.Logger.Information("Removing {fileName}", file.FullName);
+            //Log.Logger.Information("Removing {fileName}", file.FullName);
             file.Delete();
             return true;
         }
