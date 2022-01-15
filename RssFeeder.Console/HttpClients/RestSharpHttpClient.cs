@@ -1,4 +1,6 @@
-﻿using RestSharp;
+﻿using System.Threading;
+using Polly;
+using RestSharp;
 
 namespace RssFeeder.Console.HttpClients;
 
@@ -28,13 +30,22 @@ public class RestSharpHttpClient : IHttpClient
                 .FirstOrDefault();
     }
 
-    public (string, Uri) GetString(string url)
+    public (HttpStatusCode, string, Uri) GetString(string url)
     {
         Log.Information("Crawler GetString to {url}", url);
+
         var request = new RestRequest(url, DataFormat.None);
         var response = _client.Get(request);
-        Log.Information("Response status code = {statusCode}, {uri}", response.StatusCode, response.ResponseUri);
+        Log.Information("Response status code = {intStatusCode} {statusCode}, {uri}", (int)response.StatusCode, response.StatusCode, response.ResponseUri);
 
-        return (response.Content, response.ResponseUri);
+        // Poor man's retry since we can't use Polly here
+        if ((int)response.StatusCode == 522)
+        {
+            Thread.Sleep(3);
+            response = _client.Get(request);
+            Log.Information("Retry status code = {intStatusCode} {statusCode}, {uri}", (int)response.StatusCode, response.StatusCode, response.ResponseUri);
+        }
+
+        return (response.StatusCode, response.Content, response.ResponseUri);
     }
 }

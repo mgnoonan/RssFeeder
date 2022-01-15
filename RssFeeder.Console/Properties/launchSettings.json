@@ -2,7 +2,7 @@
   "profiles": {
     "RssFeeder.Console": {
       "commandName": "Project",
-      "commandLineArgs": "build feed-bonginoreport.json"
+      "commandLineArgs": "build feed-freedompress.json"
     }
   }
 }

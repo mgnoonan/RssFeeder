@@ -41,7 +41,7 @@ class Program
         var configBuilder = new ConfigurationBuilder()
            .SetBasePath(Directory.GetCurrentDirectory())
            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-           //.AddUserSecrets<Program>()
+           .AddUserSecrets<Program>()
            .AddEnvironmentVariables();
         IConfigurationRoot configuration = configBuilder.Build();
 
@@ -78,7 +78,7 @@ class Program
 #if DEBUG
         builder.RegisterType<RavenDbRepository>().As<IExportRepository>();
 #else
-            builder.Register(c => new CosmosDbRepository("rssfeeder", config.endpoint, config.authKey, Log.Logger)).As<IExportRepository>();
+        builder.Register(c => new CosmosDbRepository("rssfeeder", config.endpoint, config.authKey, Log.Logger)).As<IExportRepository>();
 #endif
         builder.RegisterType<RavenDbRepository>().As<IRepository>();
         builder.RegisterType<ArticleExporter>().As<IArticleExporter>().WithProperty("Config", crawlerConfig);

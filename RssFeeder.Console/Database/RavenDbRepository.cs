@@ -1,3 +1,5 @@
+using RssFeeder.Models;
+
 namespace RssFeeder.Console.Database;
 
 public class RavenDbRepository : IRepository, IExportRepository
@@ -76,53 +78,68 @@ public class RavenDbRepository : IRepository, IExportRepository
 
     public bool DocumentExists<T>(string collectionName, string feedID, string urlHash)
     {
-        int count = 0;
-        string sqlQueryText = $"from RssFeedItems where FeedAttributes.UrlHash = \"{urlHash}\" and FeedAttributes.FeedId = \"{feedID}\"";
+        string sqlQueryText = "from RssFeedItems where FeedAttributes.UrlHash = $urlHash and FeedAttributes.FeedId = $feedId";
+
+        var parameters = new Dictionary<string, object>
+        {
+            { "urlHash", urlHash },
+            { "feedId", feedID }
+        };
 
         using (IDocumentSession session = _store.OpenSession(database: collectionName))
         {
-            count = session.Advanced.RawQuery<T>(sqlQueryText)
-                .ToList()
-                .Count;
-        }
+            var query = session.Advanced.RawQuery<T>(sqlQueryText);
+            foreach (var p in parameters ?? new Dictionary<string, object>())
+            {
+                query.AddParameter(p.Key, p.Value);
+            }
 
-        return count > 0;
+            var list = query.ToList();
+            return list.Count > 0;
+        }
     }
 
-    public List<T> GetDocuments<T>(string collectionName, string sqlQueryText)
+    public List<T> GetDocuments<T>(string collectionName, string sqlQueryText, Dictionary<string, object> parameters = default, bool addWait = false)
     {
-        Log.Information("Query: {query}", sqlQueryText);
+        Log.Information("Query: {sqlQueryText} Parameters: {@parameters}", sqlQueryText, parameters);
 
         using (IDocumentSession session = _store.OpenSession(database: collectionName))
         {
-            return session.Advanced.RawQuery<T>(sqlQueryText)
-                .ToList();
+            var query = session.Advanced.RawQuery<T>(sqlQueryText);
+            foreach (var p in parameters ?? new Dictionary<string, object>())
+            {
+                query.AddParameter(p.Key, p.Value);
+            }
+            if (addWait)
+            {
+                query.WaitForNonStaleResults();
+            }
+
+            var list = query.ToList();
+            Log.Information("Query: ({count}) documents returned", list.Count);
+            return list;
         }
-    }
-
-    public List<T> GetStaleDocuments<T>(string collectionName, string feedId, short maximumAgeInDays)
-    {
-        string sqlQueryText = $@"from RssFeedItems 
-                   where FeedAttributes.DateAdded <= '{DateTime.UtcNow.AddDays(-maximumAgeInDays):o}' 
-                   and FeedAttributes.FeedId = '{feedId}'";
-
-        return GetDocuments<T>(collectionName, sqlQueryText);
     }
 
     public List<T> GetAllDocuments<T>(string collectionName)
     {
-        string sqlQueryText = $"from @all_docs";
+        Log.Information("Query: Retrieving all documents for type {type}", typeof(T).Name);
+        string sqlQueryText = "from SiteArticleDefinition";
 
         return GetDocuments<T>(collectionName, sqlQueryText);
     }
 
-    public List<T> GetExportDocuments<T>(string collectionName, string feedId, DateTime startDate)
+    public List<T> GetExportDocuments<T>(string collectionName, string feedId, Guid runID)
     {
-        string sqlQueryText = $@"from RssFeedItems 
-                   where FeedAttributes.DateAdded >= '{TimeZoneInfo.ConvertTimeToUtc(startDate):o}'
-                   and FeedAttributes.FeedId = '{feedId}'";
+        string sqlQueryText = "from RssFeedItems where RunId = $runId and FeedAttributes.FeedId = $feedId";
 
-        return GetDocuments<T>(collectionName, sqlQueryText);
+        var parameters = new Dictionary<string, object>
+        {
+            { "runId", runID },
+            { "feedId", feedId }
+        };
+
+        return GetDocuments<T>(collectionName, sqlQueryText, parameters, true);
     }
 
     public void UpsertDocument<T>(string collectionName, T item)

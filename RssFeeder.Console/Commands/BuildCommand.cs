@@ -48,18 +48,23 @@ public class BuildCommand : OaktonCommand<BuildInput>
             // Deserialize into our options class
             feedList = JsonConvert.DeserializeObject<List<RssFeed>>(json);
             var startDate = DateTime.UtcNow;
+            
+            var runID = Guid.NewGuid();
+            Log.Information("Run ID = {runID}", runID);
 
             foreach (var feed in feedList)
             {
                 try
                 {
                     using (LogContext.PushProperty("collectionName", feed.CollectionName))
+                    using (LogContext.PushProperty("runID", runID))
                     {
                         if (feed.Enabled)
                         {
-                            crawler.Crawl(feed);
-                            crawler.Export(feed, startDate);
+                            crawler.Crawl(runID, feed);
+                            crawler.Export(runID, feed, startDate);
                         }
+
                         crawler.Purge(feed);
                     }
                 }

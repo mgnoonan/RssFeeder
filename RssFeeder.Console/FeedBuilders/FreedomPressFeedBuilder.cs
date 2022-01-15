@@ -29,8 +29,8 @@ internal class FreedomPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         var document = parser.ParseDocument(html);
 
         // Featured links section
-        var container = document.QuerySelector("#home-section");
-        var nodes = container.QuerySelectorAll("#links68 > li > a");
+        var container = document.QuerySelector("#home-section > ul");
+        var nodes = container.QuerySelectorAll("a");
         if (nodes != null)
         {
             count = 1;
@@ -48,20 +48,23 @@ internal class FreedomPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         }
 
         // Stories section
-        container = document.QuerySelector("#container11 > div.wrapper > div.inner");
-        nodes = container.QuerySelectorAll("div > ul > li > a");
-        if (nodes != null)
+        var containers = document.QuerySelectorAll("#home-section > div.columns");
+        foreach (var element in containers.Take(1))
         {
-            count = 1;
-            foreach (var node in nodes)
+            nodes = element.QuerySelectorAll("a");
+            if (nodes != null)
             {
-                string title = WebUtility.HtmlDecode(node.Text().Trim());
-
-                var item = CreateNodeLinks(filters, node, "first section", count++, feedUrl);
-                if (item != null)
+                count = 1;
+                foreach (var node in nodes)
                 {
-                    log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                    list.Add(item);
+                    string title = WebUtility.HtmlDecode(node.Text().Trim());
+
+                    var item = CreateNodeLinks(filters, node, "first section", count++, feedUrl);
+                    if (item != null)
+                    {
+                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+                        list.Add(item);
+                    }
                 }
             }
         }

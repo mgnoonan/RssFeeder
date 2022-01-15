@@ -43,11 +43,11 @@ public class WebCrawler : IWebCrawler
             _exportRepository.EnsureDatabaseExists(_exportCollectionName, true);
     }
 
-    public void Crawl(RssFeed feed)
+    public void Crawl(Guid runID, RssFeed feed)
     {
         string workingFolder = PrepareWorkspace(feed);
         var list = GenerateFeedLinks(feed, workingFolder);
-        DownloadList(feed, workingFolder, list);
+        DownloadList(runID, feed, workingFolder, list);
         //ParseAndSave(feed, list);
     }
 
@@ -98,13 +98,13 @@ public class WebCrawler : IWebCrawler
         }
     }
 
-    private void ParseAndSave(RssFeed feed, RssFeedItem item)
+    private bool TryParseAndSave(RssFeed feed, RssFeedItem item)
     {
         var uri = new Uri(item.HtmlAttributes.GetValueOrDefault("Url") ?? item.FeedAttributes.Url);
         if (uri.AbsolutePath == "/")
         {
             Log.Information("URI '{uri}' detected as a home page rather than an article, skipping parse operation", uri);
-            return;
+            return false;
         }
 
         try
@@ -115,6 +115,7 @@ public class WebCrawler : IWebCrawler
         catch (Exception ex)
         {
             Log.Error(ex, "PARSE_ERROR: UrlHash '{urlHash}':'{url}'", item.FeedAttributes.UrlHash, item.FeedAttributes.Url);
+            return false;
         }
 
         try
@@ -131,14 +132,18 @@ public class WebCrawler : IWebCrawler
                     _crawlerRepository.CreateDocument<RssFeedItem>(_crawlerCollectionName, item, feed.DatabaseRetentionDays, Path.GetFileName(item.FeedAttributes.FileName), stream, "text/html");
                 }
             }
+
+            return true;
         }
         catch (Exception ex)
         {
             Log.Error(ex, "SAVE_ERROR: UrlHash '{urlHash}':'{url}'", item.FeedAttributes.UrlHash, item.FeedAttributes.Url);
         }
+
+        return false;
     }
 
-    private void DownloadList(RssFeed feed, string workingFolder, List<RssFeedItem> list)
+    private void DownloadList(Guid runID, RssFeed feed, string workingFolder, List<RssFeedItem> list)
     {
         _articleParser.Initialize(_container, _definitions, _webUtils);
 
@@ -153,13 +158,11 @@ public class WebCrawler : IWebCrawler
                 // No need to continue if we already crawled the article
                 if (_crawlerRepository.DocumentExists<RssFeedItem>(_crawlerCollectionName, feed.CollectionName, item.FeedAttributes.UrlHash))
                 {
-                    Log.Information("UrlHash '{urlHash}' already exists in collection '{collectionName}'", item.FeedAttributes.UrlHash, feed.CollectionName);
+                    //Log.Information("UrlHash '{urlHash}' already exists in collection '{collectionName}'", item.FeedAttributes.UrlHash, feed.CollectionName);
                     continue;
                 }
 
-                // Increment new article count
                 Log.Information("UrlHash '{urlHash}' not found in collection '{collectionName}'", item.FeedAttributes.UrlHash, feed.CollectionName);
-                articleCount++;
 
                 try
                 {
@@ -196,12 +199,13 @@ public class WebCrawler : IWebCrawler
                     }
 
                     // Parse the saved file as dictated by the site definitions
-                    ParseAndSave(feed, item);
+                    item.RunId = runID;
+                    if (TryParseAndSave(feed, item))
+                        articleCount++;
                 }
                 catch (Exception ex)
                 {
                     Log.Error(ex, "DOWNLOAD_ERROR: UrlHash '{urlHash}':'{url}'", item.FeedAttributes.UrlHash, item.FeedAttributes.Url);
-                    articleCount--;
                 }
             }
         }
@@ -211,7 +215,7 @@ public class WebCrawler : IWebCrawler
 
     private List<RssFeedItem> GenerateFeedLinks(RssFeed feed, string workingFolder)
     {
-        (string html, Uri trueUri) = _webUtils.DownloadString(feed.Url);
+        (HttpStatusCode statusCode, string html, Uri trueUri) = _webUtils.DownloadString(feed.Url);
 
         // Build the file stem so we can save the html source and a screenshot of the feed page
         var uri = new Uri(feed.Url);
@@ -255,7 +259,7 @@ public class WebCrawler : IWebCrawler
         return ".html";
     }
 
-    public void Export(RssFeed feed, DateTime startDate)
+    public void Export(Guid runID, RssFeed feed, DateTime startDate)
     {
         if (!feed.Exportable)
         {
@@ -264,15 +268,16 @@ public class WebCrawler : IWebCrawler
         }
 
         // Get the articles from the source repository starting at the top of the hour
-        var list = _crawlerRepository.GetExportDocuments<RssFeedItem>(_crawlerCollectionName, feed.CollectionName, startDate);
+        var list = _crawlerRepository.GetExportDocuments<RssFeedItem>(_crawlerCollectionName, feed.CollectionName, runID);
 
         // Loop through the list and upsert to the target repository
         foreach (var item in list)
         {
+            using (LogContext.PushProperty("runID", runID))
             using (LogContext.PushProperty("url", item.FeedAttributes.Url))
             using (LogContext.PushProperty("urlHash", item.FeedAttributes.UrlHash))
             {
-
+                Log.Information("Preparing '{urlHash}' for export", item.FeedAttributes.UrlHash);
                 var exportFeedItem = _exporter.FormatItem(item, feed);
 
                 Log.Information("EXPORT: UrlHash '{urlHash}' from {collectionName}", item.FeedAttributes.UrlHash, feed.CollectionName);
@@ -294,16 +299,5 @@ public class WebCrawler : IWebCrawler
         }
 
         _utils.PurgeStaleFiles(workingFolder, feed.FileRetentionDays);
-
-        // Purge stale documents from the database collection
-        var list = _exportRepository.GetStaleDocuments<ExportFeedItem>(_exportCollectionName, feed.CollectionName, feed.DatabaseRetentionDays);
-
-        foreach (var item in list)
-        {
-            Log.Information("Removing UrlHash '{urlHash}' from {collectionName}", item.UrlHash, feed.CollectionName);
-            _exportRepository.DeleteDocument<ExportFeedItem>(_exportCollectionName, item.Id, item.HostName);
-        }
-
-        Log.Information("Removed {count} documents older than {maximumAgeInDays} days from {collectionName}", list.Count, feed.DatabaseRetentionDays, feed.CollectionName);
     }
 }
