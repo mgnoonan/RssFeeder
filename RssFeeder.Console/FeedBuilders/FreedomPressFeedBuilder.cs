@@ -1,4 +1,6 @@
-﻿namespace RssFeeder.Console.FeedBuilders;
+﻿using System.Linq;
+
+namespace RssFeeder.Console.FeedBuilders;
 
 internal class FreedomPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
@@ -41,7 +43,7 @@ internal class FreedomPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                 var item = CreateNodeLinks(filters, node, "headlines", count++, feedUrl);
                 if (item != null)
                 {
-                    log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+                    log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                     list.Add(item);
                 }
             }
@@ -49,7 +51,9 @@ internal class FreedomPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 
         // Stories section
         var containers = document.QuerySelectorAll("#home-section > div.columns");
-        foreach (var element in containers.Take(1))
+        string[] sectionName = new string[] { "first", "previous banner", "second", "third" };
+        int sectionCounter = 0;
+        foreach (var element in containers.Take(3))
         {
             nodes = element.QuerySelectorAll("a");
             if (nodes != null)
@@ -59,14 +63,16 @@ internal class FreedomPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                 {
                     string title = WebUtility.HtmlDecode(node.Text().Trim());
 
-                    var item = CreateNodeLinks(filters, node, "first section", count++, feedUrl);
+                    var item = CreateNodeLinks(filters, node, $"{sectionName[sectionCounter]} section", count++, feedUrl);
                     if (item != null)
                     {
-                        log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+                        log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                         list.Add(item);
                     }
                 }
             }
+
+            sectionCounter++;
         }
 
         return list;
