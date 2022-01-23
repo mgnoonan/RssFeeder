@@ -167,5 +167,20 @@
     "FileRetentionDays": 30,
     "DatabaseRetentionDays": 30,
     "Filters": []
+  },
+  {
+    "Title": "Conservagator",
+    "Enabled": "true",
+    "EnableThumbnail": "true",
+    "Exportable": "true",
+    "Description": "Conservagator",
+    "OutputFile": "",
+    "Language": "en-US",
+    "Url": "https://conservagator.com/",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.ConservagatorFeedBuilder",
+    "CollectionName": "conservagator",
+    "FileRetentionDays": 7,
+    "DatabaseRetentionDays": 30,
+    "Filters": []
   }
 ]

@@ -27,7 +27,7 @@ log.Information("START: Machine: {machineName} Assembly: {assembly}", Environmen
 // Load configuration
 var configBuilder = new ConfigurationBuilder()
    .SetBasePath(Directory.GetCurrentDirectory())
-   .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+   .AddJsonFile("appsettings.json", optional: false)
    .AddUserSecrets<Program>()
    .AddEnvironmentVariables();
 IConfigurationRoot configuration = configBuilder.Build();
@@ -77,6 +77,7 @@ builder.RegisterType<PopulistPressFeedBuilder>().Named<IRssFeedBuilder>("populis
 builder.RegisterType<BadBlueFeedBuilder>().Named<IRssFeedBuilder>("bad-blue");
 builder.RegisterType<RevolverNewsFeedBuilder>().Named<IRssFeedBuilder>("revolver-news");
 builder.RegisterType<FreedomPressFeedBuilder>().Named<IRssFeedBuilder>("freedom-press");
+builder.RegisterType<ConservagatorFeedBuilder>().Named<IRssFeedBuilder>("conservagator");
 builder.RegisterType<GenericTagParser>().Named<ITagParser>("generic-parser");
 builder.RegisterType<AdaptiveTagParser>().Named<ITagParser>("adaptive-parser");
 builder.RegisterType<AllTagsParser>().Named<ITagParser>("alltags-parser");

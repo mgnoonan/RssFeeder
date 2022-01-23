@@ -200,6 +200,8 @@ public class WebCrawler : IWebCrawler
 
                     // Parse the saved file as dictated by the site definitions
                     item.RunId = runID;
+                    if (string.IsNullOrEmpty(item.HostName)) item.HostName = hostname;
+                    if (string.IsNullOrEmpty(item.SiteName)) item.SiteName = hostname;
                     if (TryParseAndSave(feed, item))
                         articleCount++;
                 }
