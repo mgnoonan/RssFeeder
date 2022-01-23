@@ -11,7 +11,7 @@ public class RestSharpHttpClient : IHttpClient
     {
         Log.Information("Crawler DownloadData to {url}", url);
         var request = new RestRequest(url);
-        var response = _client.DownloadDataAsync(request).Result;
+        var response = _client.DownloadDataAsync(request).GetAwaiter().GetResult();
 
         return response;
     }
@@ -20,7 +20,7 @@ public class RestSharpHttpClient : IHttpClient
     {
         Log.Information("Crawler GetContentType to {url}", url);
         var request = new RestRequest(url);
-        var response = _client.HeadAsync(request).Result;
+        var response = _client.HeadAsync(request).GetAwaiter().GetResult();
         Log.Information("Response status code = {statusCode}", response.StatusCode);
 
         return response.Headers
@@ -34,14 +34,14 @@ public class RestSharpHttpClient : IHttpClient
         Log.Information("Crawler GetString to {url}", url);
 
         var request = new RestRequest(url);
-        var response = _client.GetAsync(request).Result;
+        var response = _client.GetAsync(request).GetAwaiter().GetResult();
         Log.Information("Response status code = {intStatusCode} {statusCode}, {uri}", (int)response.StatusCode, response.StatusCode, response.ResponseUri);
 
         // Poor man's retry since we can't use Polly here
         if ((int)response.StatusCode == 522)
         {
             Thread.Sleep(3);
-            response = _client.GetAsync(request).Result;
+            response = _client.GetAsync(request).GetAwaiter().GetResult();
             Log.Information("Retry status code = {intStatusCode} {statusCode}, {uri}", (int)response.StatusCode, response.StatusCode, response.ResponseUri);
         }
 
