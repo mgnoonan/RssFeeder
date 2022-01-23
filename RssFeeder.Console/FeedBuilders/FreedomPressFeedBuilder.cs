@@ -1,6 +1,4 @@
-﻿using System.Linq;
-
-namespace RssFeeder.Console.FeedBuilders;
+﻿namespace RssFeeder.Console.FeedBuilders;
 
 internal class FreedomPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {

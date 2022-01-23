@@ -43,6 +43,12 @@
     <None Update="crawlerconfig.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="secrets.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="feed-conservagator.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="feed-freedompress.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

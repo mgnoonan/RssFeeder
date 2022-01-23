@@ -1,0 +1,17 @@
+﻿[
+  {
+    "Title": "Conservagator",
+    "Enabled": "true",
+    "EnableThumbnail": "false",
+    "Exportable": "false",
+    "Description": "Conservagator",
+    "OutputFile": "",
+    "Language": "en-US",
+    "Url": "https://conservagator.com/",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.ConservagatorFeedBuilder",
+    "CollectionName": "conservagator",
+    "FileRetentionDays": 7,
+    "DatabaseRetentionDays": 7,
+    "Filters": []
+  }
+]
