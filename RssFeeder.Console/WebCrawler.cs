@@ -31,7 +31,7 @@ public class WebCrawler : IWebCrawler
     public void Initialize(IContainer container, string crawlerCollectionName, string exportCollectionName)
     {
         Log.Information($"{nameof(WebCrawler)} initializing");
-        Log.Information("Crawler exclusion list: {@exclusions}", Config.Exclusions);
+        Log.Debug("Crawler exclusion list: {@exclusions}", Config.Exclusions);
 
         _container = container;
         _crawlerCollectionName = crawlerCollectionName;
