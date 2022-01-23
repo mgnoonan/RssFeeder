@@ -16,7 +16,7 @@ public class CosmosDbRepository : IRepository, IExportRepository
 
     public List<T> GetDocuments<T>(string collectionName, string sqlQueryText, Dictionary<string, object> parameters = default, bool addWait = false)
     {
-        Log.Information("GetDocuments: query = '{sqlQueryText}'", sqlQueryText);
+        _log.Debug("GetDocuments: query = '{sqlQueryText}'", sqlQueryText);
         var result = QueryItems<T>(collectionName, sqlQueryText);
 
         _log.Information("GetDocuments returned {count} documents from collection '{collectionName}'", result.Count, collectionName);

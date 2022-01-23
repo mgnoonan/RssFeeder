@@ -101,7 +101,7 @@ public class RavenDbRepository : IRepository, IExportRepository
 
     public List<T> GetDocuments<T>(string collectionName, string sqlQueryText, Dictionary<string, object> parameters = default, bool addWait = false)
     {
-        Log.Information("Query: {sqlQueryText} Parameters: {@parameters}", sqlQueryText, parameters);
+        Log.Debug("Query: {sqlQueryText} Parameters: {@parameters}", sqlQueryText, parameters);
 
         using (IDocumentSession session = _store.OpenSession(database: collectionName))
         {
@@ -116,14 +116,14 @@ public class RavenDbRepository : IRepository, IExportRepository
             }
 
             var list = query.ToList();
-            Log.Information("Query: ({count}) documents returned", list.Count);
+            Log.Debug("Query: ({count}) documents returned", list.Count);
             return list;
         }
     }
 
     public List<T> GetAllDocuments<T>(string collectionName)
     {
-        Log.Information("Query: Retrieving all documents for type {type}", typeof(T).Name);
+        Log.Debug("Query: Retrieving all documents for type {type}", typeof(T).Name);
         string sqlQueryText = "from SiteArticleDefinition";
 
         return GetDocuments<T>(collectionName, sqlQueryText);

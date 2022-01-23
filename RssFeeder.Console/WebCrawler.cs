@@ -77,18 +77,7 @@ public class WebCrawler : IWebCrawler
                 {
                     // Parse the downloaded file as dictated by the site parsing definitions
                     _articleParser.Parse(item);
-
-                    if (string.IsNullOrEmpty(item.FeedAttributes.FileName))
-                    {
-                        _crawlerRepository.CreateDocument<RssFeedItem>(_crawlerCollectionName, item, feed.DatabaseRetentionDays, "", null, "");
-                    }
-                    else
-                    {
-                        using (var stream = new MemoryStream(File.ReadAllBytes(item.FeedAttributes.FileName)))
-                        {
-                            _crawlerRepository.CreateDocument<RssFeedItem>(_crawlerCollectionName, item, feed.DatabaseRetentionDays, Path.GetFileName(item.FeedAttributes.FileName), stream, "text/html");
-                        }
-                    }
+                    _crawlerRepository.CreateDocument<RssFeedItem>(_crawlerCollectionName, item, feed.DatabaseRetentionDays);
                 }
                 catch (Exception ex)
                 {
@@ -158,7 +147,7 @@ public class WebCrawler : IWebCrawler
                 // No need to continue if we already crawled the article
                 if (_crawlerRepository.DocumentExists<RssFeedItem>(_crawlerCollectionName, feed.CollectionName, item.FeedAttributes.UrlHash))
                 {
-                    //Log.Information("UrlHash '{urlHash}' already exists in collection '{collectionName}'", item.FeedAttributes.UrlHash, feed.CollectionName);
+                    Log.Debug("UrlHash '{urlHash}' already exists in collection '{collectionName}'", item.FeedAttributes.UrlHash, feed.CollectionName);
                     continue;
                 }
 

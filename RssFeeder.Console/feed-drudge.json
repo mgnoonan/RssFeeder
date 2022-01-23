@@ -5,7 +5,6 @@
     "EnableThumbnail": "true",
     "Exportable": "true",
     "Description": "The Drudge Report",
-    "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\drudge.xml",
     "Language": "en-US",
     "Url": "http://www.drudgereport.com",
     "CustomParser": "RssFeeder.Console.FeedBuilders.DrudgeReportFeedBuilder",

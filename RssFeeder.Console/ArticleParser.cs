@@ -20,7 +20,7 @@ public class ArticleParser : IArticleParser
         // Article failed to download for some reason, skip over meta data processing
         if (!File.Exists(item.FeedAttributes.FileName))
         {
-            Log.Information("No file to parse, skipping metadata values for '{url}'", item.FeedAttributes.Url);
+            Log.Debug("No file to parse, skipping metadata values for '{url}'", item.FeedAttributes.Url);
             return;
         }
 
@@ -30,7 +30,7 @@ public class ArticleParser : IArticleParser
             item.FeedAttributes.FileName.EndsWith(".gif") ||
             item.FeedAttributes.FileName.EndsWith(".pdf"))
         {
-            Log.Information("Graphics file detected, skipping metadata values for '{url}'", item.FeedAttributes.Url);
+            Log.Debug("Graphics file detected, skipping metadata values for '{url}'", item.FeedAttributes.Url);
             return;
         }
 
@@ -101,13 +101,13 @@ public class ArticleParser : IArticleParser
             if (propertyValue.StartsWith("og:"))
             {
                 string contentValue = node.Attributes["content"]?.Value ?? "unspecified";
-                Log.Information("Found open graph attribute '{propertyValue}':'{contentValue}'", propertyValue, contentValue);
 
                 while (contentValue.Contains("&#x"))
                 {
                     contentValue = System.Web.HttpUtility.HtmlDecode(contentValue);
-                    Log.Information("Decoded content value '{contentValue}'", contentValue);
+                    Log.Debug("Decoded content value '{contentValue}'", contentValue);
                 }
+                Log.Information("Found open graph attribute '{propertyValue}':'{contentValue}'", propertyValue, contentValue);
 
                 if (!attributes.ContainsKey(propertyValue))
                 {

@@ -1,5 +1,4 @@
 ﻿using System.Threading;
-using Polly;
 using RestSharp;
 
 namespace RssFeeder.Console.HttpClients;

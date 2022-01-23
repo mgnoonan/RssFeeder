@@ -5,7 +5,6 @@
     "EnableThumbnail": "false",
     "Exportable": "false",
     "Description": "Revolver News",
-    "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\revolvernews.xml",
     "Language": "en-US",
     "Url": "https://www.revolver.news/",
     "CustomParser": "RssFeeder.Console.FeedBuilders.RevolverNewsFeedBuilder",
