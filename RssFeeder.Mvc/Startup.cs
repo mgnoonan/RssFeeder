@@ -81,6 +81,7 @@ namespace RssFeeder.Mvc
                     //.AddRedirect(@"^.env", "/")
                     //.Add(RewriteRules.RedirectWordpressRequests)
                     //.Add(RewriteRules.RedirectPhpFileRequests)
+                    .AddRedirect(@"^content/rss/", "/")
                     .AddRewrite(@"^content/rss/drudge\.xml", "api/rss/drudge-report",
                         skipRemainingRules: true);
             app.UseRewriter(options);
