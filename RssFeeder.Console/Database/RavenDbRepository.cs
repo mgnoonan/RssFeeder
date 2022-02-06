@@ -1,4 +1,6 @@
+using System.IO;
 using RssFeeder.Models;
+using Sparrow;
 
 namespace RssFeeder.Console.Database;
 
@@ -40,12 +42,12 @@ public class RavenDbRepository : IRepository, IExportRepository
         }
     }
 
-    public void CreateDocument<T>(string collectionName, T item, int expirationDays)
+    public void SaveDocument<T>(string collectionName, T item, int expirationDays)
     {
-        CreateDocument<T>(collectionName, item, expirationDays, null, null, null);
+        SaveDocument<T>(collectionName, item, expirationDays, null, null, null);
     }
 
-    public void CreateDocument<T>(string collectionName, T item, int expirationDays, string filename, Stream stream, string contentType)
+    public void SaveDocument<T>(string collectionName, T item, int expirationDays, string filename, Stream stream, string contentType)
     {
         using (IDocumentSession session = _store.OpenSession(database: collectionName))
         {
@@ -101,7 +103,7 @@ public class RavenDbRepository : IRepository, IExportRepository
 
     public List<T> GetDocuments<T>(string collectionName, string sqlQueryText, Dictionary<string, object> parameters = default, bool addWait = false)
     {
-        Log.Information("Query: {sqlQueryText} Parameters: {@parameters}", sqlQueryText, parameters);
+        Log.Debug("Query: {sqlQueryText} Parameters: {@parameters}", sqlQueryText, parameters);
 
         using (IDocumentSession session = _store.OpenSession(database: collectionName))
         {
@@ -116,14 +118,14 @@ public class RavenDbRepository : IRepository, IExportRepository
             }
 
             var list = query.ToList();
-            Log.Information("Query: ({count}) documents returned", list.Count);
+            Log.Debug("Query: ({count}) documents returned", list.Count);
             return list;
         }
     }
 
     public List<T> GetAllDocuments<T>(string collectionName)
     {
-        Log.Information("Query: Retrieving all documents for type {type}", typeof(T).Name);
+        Log.Debug("Query: Retrieving all documents for type {type}", typeof(T).Name);
         string sqlQueryText = "from SiteArticleDefinition";
 
         return GetDocuments<T>(collectionName, sqlQueryText);
@@ -144,6 +146,19 @@ public class RavenDbRepository : IRepository, IExportRepository
 
     public void UpsertDocument<T>(string collectionName, T item)
     {
-        CreateDocument(collectionName, item, 0);
+        SaveDocument(collectionName, item, 0);
+    }
+
+    public List<T> GetStaleDocuments<T>(string collectionName, string feedId, short maximumAgeInDays)
+    {
+        string sqlQueryText = "from RssFeedItems where FeedAttributes.FeedId = $feedId and HtmlAttributes.ParserResult.length > 0 and FeedAttributes.DateAdded <= $ts";
+
+        var parameters = new Dictionary<string, object>
+        {
+            { "feedId", feedId },
+            { "ts", DateTime.UtcNow.AddDays(-maximumAgeInDays) }
+        };
+
+        return GetDocuments<T>(collectionName, sqlQueryText, parameters);
     }
 }

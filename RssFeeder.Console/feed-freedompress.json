@@ -5,7 +5,6 @@
     "EnableThumbnail": "false",
     "Exportable": "false",
     "Description": "Freedom of the Press",
-    "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\freedompress.xml",
     "Language": "en-US",
     "Url": "https://freedomofthepress.com/",
     "CustomParser": "RssFeeder.Console.FeedBuilders.FreedomPressFeedBuilder",

@@ -31,7 +31,7 @@ public class WebCrawler : IWebCrawler
     public void Initialize(IContainer container, string crawlerCollectionName, string exportCollectionName)
     {
         Log.Information($"{nameof(WebCrawler)} initializing");
-        Log.Information("Crawler exclusion list: {@exclusions}", Config.Exclusions);
+        Log.Debug("Crawler exclusion list: {@exclusions}", Config.Exclusions);
 
         _container = container;
         _crawlerCollectionName = crawlerCollectionName;
@@ -77,18 +77,7 @@ public class WebCrawler : IWebCrawler
                 {
                     // Parse the downloaded file as dictated by the site parsing definitions
                     _articleParser.Parse(item);
-
-                    if (string.IsNullOrEmpty(item.FeedAttributes.FileName))
-                    {
-                        _crawlerRepository.CreateDocument<RssFeedItem>(_crawlerCollectionName, item, feed.DatabaseRetentionDays, "", null, "");
-                    }
-                    else
-                    {
-                        using (var stream = new MemoryStream(File.ReadAllBytes(item.FeedAttributes.FileName)))
-                        {
-                            _crawlerRepository.CreateDocument<RssFeedItem>(_crawlerCollectionName, item, feed.DatabaseRetentionDays, Path.GetFileName(item.FeedAttributes.FileName), stream, "text/html");
-                        }
-                    }
+                    _crawlerRepository.SaveDocument<RssFeedItem>(_crawlerCollectionName, item, feed.DatabaseRetentionDays);
                 }
                 catch (Exception ex)
                 {
@@ -123,13 +112,13 @@ public class WebCrawler : IWebCrawler
 
             if (string.IsNullOrEmpty(item.FeedAttributes.FileName))
             {
-                _crawlerRepository.CreateDocument<RssFeedItem>(_crawlerCollectionName, item, feed.DatabaseRetentionDays, "", null, "");
+                _crawlerRepository.SaveDocument<RssFeedItem>(_crawlerCollectionName, item, feed.DatabaseRetentionDays, "", null, "");
             }
             else
             {
                 using (var stream = new MemoryStream(File.ReadAllBytes(item.FeedAttributes.FileName)))
                 {
-                    _crawlerRepository.CreateDocument<RssFeedItem>(_crawlerCollectionName, item, feed.DatabaseRetentionDays, Path.GetFileName(item.FeedAttributes.FileName), stream, "text/html");
+                    _crawlerRepository.SaveDocument<RssFeedItem>(_crawlerCollectionName, item, feed.DatabaseRetentionDays, Path.GetFileName(item.FeedAttributes.FileName), stream, "text/html");
                 }
             }
 
@@ -158,7 +147,7 @@ public class WebCrawler : IWebCrawler
                 // No need to continue if we already crawled the article
                 if (_crawlerRepository.DocumentExists<RssFeedItem>(_crawlerCollectionName, feed.CollectionName, item.FeedAttributes.UrlHash))
                 {
-                    //Log.Information("UrlHash '{urlHash}' already exists in collection '{collectionName}'", item.FeedAttributes.UrlHash, feed.CollectionName);
+                    Log.Debug("UrlHash '{urlHash}' already exists in collection '{collectionName}'", item.FeedAttributes.UrlHash, feed.CollectionName);
                     continue;
                 }
 
@@ -296,10 +285,22 @@ public class WebCrawler : IWebCrawler
         string workingFolder = Path.Combine(_utils.GetAssemblyDirectory(), feed.CollectionName);
         if (!Directory.Exists(workingFolder))
         {
-            Log.Logger.Information("Folder '{workingFolder}' does not exist", workingFolder);
+            Log.Warning("Folder '{workingFolder}' does not exist", workingFolder);
             return;
         }
 
         _utils.PurgeStaleFiles(workingFolder, feed.FileRetentionDays);
+
+        // Purge stale documents from the database collection
+        var list = _crawlerRepository.GetStaleDocuments<RssFeedItem>(_crawlerCollectionName, feed.CollectionName, 7);
+        Log.Information("Stripped {count} documents older than 7 days from {collectionName}", list.Count, feed.CollectionName);
+
+        foreach (var item in list)
+        {
+            Log.Debug("Stripping UrlHash '{urlHash}' from {collectionName}", item.FeedAttributes.UrlHash, feed.CollectionName);
+            item.OpenGraphAttributes = default;
+            item.HtmlAttributes = default;
+            _crawlerRepository.SaveDocument<RssFeedItem>(_crawlerCollectionName, item, feed.DatabaseRetentionDays);
+        }
     }
 }

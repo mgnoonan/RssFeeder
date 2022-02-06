@@ -5,24 +5,7 @@ using Oakton.Help;
 using RssFeeder.Console;
 using RssFeeder.Console.Commands;
 using RssFeeder.Console.HttpClients;
-using Serilog.Formatting.Compact;
-using Serilog.Sinks.SystemConsole.Themes;
 
-
-// Init Serilog
-// docker run --name seq -e ACCEPT_EULA=Y -p 5341:80 datalust/seq:latest
-var log = new LoggerConfiguration()
-    .Enrich.FromLogContext()
-    .MinimumLevel.Information()
-    .WriteTo.Console(theme: AnsiConsoleTheme.Code)
-    .WriteTo.File(new RenderedCompactJsonFormatter(), "RssFeeder.log", rollingInterval: RollingInterval.Day, retainedFileCountLimit: 14)
-    .WriteTo.Seq("http://localhost:5341")
-    .CreateLogger();
-Log.Logger = log;
-
-// Grab the current assembly name
-var assemblyName = Assembly.GetExecutingAssembly().Location;
-log.Information("START: Machine: {machineName} Assembly: {assembly}", Environment.MachineName, assemblyName);
 
 // Load configuration
 var configBuilder = new ConfigurationBuilder()
@@ -31,6 +14,17 @@ var configBuilder = new ConfigurationBuilder()
    .AddUserSecrets<Program>()
    .AddEnvironmentVariables();
 IConfigurationRoot configuration = configBuilder.Build();
+
+// Init Serilog
+// docker run --name seq -e ACCEPT_EULA=Y -p 5341:80 datalust/seq:latest
+var log = new LoggerConfiguration()
+    .ReadFrom.Configuration(configuration)
+    .CreateLogger();
+Log.Logger = log;
+
+// Grab the current assembly name
+var assemblyName = Assembly.GetExecutingAssembly().Location;
+log.Information("START: Machine: {machineName} Assembly: {assembly}", Environment.MachineName, assemblyName);
 
 #if !DEBUG
 var config = new CosmosDbConfig();
@@ -54,7 +48,7 @@ using (IDocumentSession session = store.OpenSession(database: "site-parsers"))
 {
     crawlerConfig = session.Advanced.RawQuery<CrawlerConfig>("from CrawlerConfig").First();
 }
-Log.Information("Crawler config: {@config}", crawlerConfig);
+Log.Debug("Crawler config: {@config}", crawlerConfig);
 
 builder.RegisterInstance(Log.Logger).As<ILogger>();
 builder.RegisterInstance(store).As<IDocumentStore>();

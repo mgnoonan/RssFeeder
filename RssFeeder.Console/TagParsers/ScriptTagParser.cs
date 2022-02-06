@@ -31,9 +31,9 @@ public class ScriptTagParser : ITagParser
                 var lines = element.TextContent.Replace("\\u003c", "<").Split("\n", StringSplitOptions.RemoveEmptyEntries);
                 content = lines.Where(q => q.Contains(bodySelector)).FirstOrDefault();
                 int pos = content.IndexOf('{');
-                content = content.Substring(pos).Trim();
+                content = content[pos..].Trim();
                 pos = content.LastIndexOf('}') + 1;
-                content = content.Substring(0, pos).Trim();
+                content = content[..pos].Trim();
                 break;
             }
         }

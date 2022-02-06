@@ -5,7 +5,6 @@
     "EnableThumbnail": "false",
     "Exportable": "false",
     "Description": "Bad Blue",
-    "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\badblue.xml",
     "Language": "en-US",
     "Url": "http://badblue.bitnamiapp.com/trendr8.htm",
     "CustomParser": "RssFeeder.Console.FeedBuilders.BadBlueFeedBuilder",

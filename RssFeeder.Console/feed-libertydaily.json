@@ -5,7 +5,6 @@
     "EnableThumbnail": "false",
     "Exportable": "false",
     "Description": "Liberty Daily",
-    "OutputFile": "C:\\inetpub\\wwwroot\\content\\rss\\liberty.xml",
     "Language": "en-US",
     "Url": "https://thelibertydaily.com/",
     "CustomParser": "RssFeeder.Console.FeedBuilders.EagleSlantFeedBuilder",

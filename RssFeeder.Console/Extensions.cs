@@ -6,7 +6,7 @@ internal static class Extensions
     {
         if (dict == null)
         {
-            throw new ArgumentNullException("Invalid dictionary reference");
+            throw new ArgumentNullException(nameof(dict));
         }
         if (key == null)
         {

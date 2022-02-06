@@ -38,12 +38,12 @@ public class BuildCommand : OaktonCommand<BuildInput>
             // Get the directory of the current executable, all config 
             // files should be in this path
             string configFile = Path.Combine(utils.GetAssemblyDirectory(), input.ConfigFile);
-            Log.Logger.Information("Reading from config file: {configFile}", configFile);
+            Log.Information("Reading from config file: {configFile}", configFile);
 
             // Read the options in JSON format
             using StreamReader sr = new StreamReader(configFile);
             string json = sr.ReadToEnd();
-            Log.Logger.Information("Options: {@options}", json);
+            Log.Debug("Options: {@options}", json);
 
             // Deserialize into our options class
             feedList = JsonConvert.DeserializeObject<List<RssFeed>>(json);

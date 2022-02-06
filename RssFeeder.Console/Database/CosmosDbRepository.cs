@@ -16,19 +16,19 @@ public class CosmosDbRepository : IRepository, IExportRepository
 
     public List<T> GetDocuments<T>(string collectionName, string sqlQueryText, Dictionary<string, object> parameters = default, bool addWait = false)
     {
-        Log.Information("GetDocuments: query = '{sqlQueryText}'", sqlQueryText);
+        _log.Debug("GetDocuments: query = '{sqlQueryText}'", sqlQueryText);
         var result = QueryItems<T>(collectionName, sqlQueryText);
 
         _log.Information("GetDocuments returned {count} documents from collection '{collectionName}'", result.Count, collectionName);
         return result;
     }
 
-    public void CreateDocument<T>(string collectionName, T item, int expirationDays)
+    public void SaveDocument<T>(string collectionName, T item, int expirationDays)
     {
-        CreateDocument<T>(collectionName, item, expirationDays, null, null, null);
+        SaveDocument<T>(collectionName, item, expirationDays, null, null, null);
     }
 
-    public void CreateDocument<T>(string collectionName, T item, int expirationDays, string filename, Stream stream, string contentType)
+    public void SaveDocument<T>(string collectionName, T item, int expirationDays, string filename, Stream stream, string contentType)
     {
         var container = _client.GetContainer(_databaseName, collectionName);
         var result = container.CreateItemAsync(item).Result;
@@ -114,5 +114,10 @@ public class CosmosDbRepository : IRepository, IExportRepository
         {
             _log.Error("Unable to create document for '{@item}'", item);
         }
+    }
+
+    public List<T> GetStaleDocuments<T>(string collectionName, string feedId, short maximumAgeInDays)
+    {
+        throw new NotImplementedException();
     }
 }

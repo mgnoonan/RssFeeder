@@ -1,6 +1,6 @@
 ﻿namespace RssFeeder.Console.Exporters;
 
-public class JsonLdRumbleValues
+public record JsonLdRumbleValues
 {
     public string context { get; set; }
     public string type { get; set; }
@@ -21,19 +21,19 @@ public class JsonLdRumbleValues
     public string[] sameAs { get; set; }
 }
 
-public class Interactionstatistic
+public record Interactionstatistic
 {
     public string type { get; set; }
     public Interactiontype interactionType { get; set; }
     public int userInteractionCount { get; set; }
 }
 
-public class Interactiontype
+public record Interactiontype
 {
     public string type { get; set; }
 }
 
-public class Potentialaction
+public record Potentialaction
 {
     public string type { get; set; }
     public string target { get; set; }
