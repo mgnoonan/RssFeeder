@@ -28,7 +28,29 @@ internal class FreedomPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         var parser = new HtmlParser();
         var document = parser.ParseDocument(html);
 
-        // Featured links section
+        // Above the fold
+        var containers = document.QuerySelectorAll("#home-section > div.default");
+        foreach (var element in containers.Take(3))
+        {
+            var links = element.QuerySelectorAll("a");
+            if (links != null)
+            {
+                count = 1;
+                foreach (var link in links)
+                {
+                    string title = WebUtility.HtmlDecode(link.Text().Trim());
+
+                    var item = CreateNodeLinks(filters, link, "above the fold", count++, feedUrl);
+                    if (item != null)
+                    {
+                        log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+                        list.Add(item);
+                    }
+                }
+            }
+        }
+
+        // Headlines links section
         var container = document.QuerySelector("#home-section > ul");
         var nodes = container.QuerySelectorAll("a");
         if (nodes != null)
@@ -48,7 +70,7 @@ internal class FreedomPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         }
 
         // Stories section
-        var containers = document.QuerySelectorAll("#home-section > div.columns");
+        containers = document.QuerySelectorAll("#home-section > div.columns");
         string[] sectionName = new string[] { "first", "previous banner", "second", "third" };
         int sectionCounter = 0;
         foreach (var element in containers.Take(3))

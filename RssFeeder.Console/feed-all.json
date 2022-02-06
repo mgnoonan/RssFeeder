@@ -10,7 +10,7 @@
     "CustomParser": "RssFeeder.Console.FeedBuilders.DrudgeReportFeedBuilder",
     "CollectionName": "drudge-report",
     "FileRetentionDays": 3,
-    "DatabaseRetentionDays": 30,
+    "DatabaseRetentionDays": 180,
     "Filters": [
       "cd0802700cef27a775ab057a2ef54aea",
       "cf69b6dd74d44010fdd0eff6d778e70f",
@@ -39,7 +39,7 @@
     "CustomParser": "RssFeeder.Console.FeedBuilders.EagleSlantFeedBuilder",
     "CollectionName": "liberty-daily",
     "FileRetentionDays": 3,
-    "DatabaseRetentionDays": 30,
+    "DatabaseRetentionDays": 180,
     "Filters": []
   },
   {
@@ -53,7 +53,7 @@
     "CustomParser": "RssFeeder.Console.FeedBuilders.BonginoReportFeedBuilder",
     "CollectionName": "bongino-report",
     "FileRetentionDays": 3,
-    "DatabaseRetentionDays": 30,
+    "DatabaseRetentionDays": 180,
     "Filters": []
   },
   {
@@ -67,7 +67,7 @@
     "CustomParser": "RssFeeder.Console.FeedBuilders.CitizenFreePressFeedBuilder",
     "CollectionName": "citizen-freepress",
     "FileRetentionDays": 3,
-    "DatabaseRetentionDays": 30,
+    "DatabaseRetentionDays": 180,
     "Filters": [
       "3fa6dfe31a8d75725aaa5620243838f2",
       "b73f81a2fa4475d68ba7ba39faf9dfb6",
@@ -85,7 +85,7 @@
     "CustomParser": "RssFeeder.Console.FeedBuilders.RantinglyFeedBuilder",
     "CollectionName": "rantingly",
     "FileRetentionDays": 3,
-    "DatabaseRetentionDays": 30,
+    "DatabaseRetentionDays": 180,
     "Filters": []
   },
   {
@@ -99,7 +99,7 @@
     "CustomParser": "RssFeeder.Console.FeedBuilders.GutSmackFeedBuilder",
     "CollectionName": "gutsmack",
     "FileRetentionDays": 3,
-    "DatabaseRetentionDays": 30,
+    "DatabaseRetentionDays": 180,
     "Filters": []
   },
   {
@@ -113,7 +113,7 @@
     "CustomParser": "RssFeeder.Console.FeedBuilders.PopulistPressFeedBuilder",
     "CollectionName": "populist-press",
     "FileRetentionDays": 3,
-    "DatabaseRetentionDays": 30,
+    "DatabaseRetentionDays": 180,
     "Filters": []
   },
   {
@@ -127,8 +127,10 @@
     "CustomParser": "RssFeeder.Console.FeedBuilders.BadBlueFeedBuilder",
     "CollectionName": "bad-blue",
     "FileRetentionDays": 7,
-    "DatabaseRetentionDays": 30,
-    "Filters": []
+    "DatabaseRetentionDays": 180,
+    "Filters": [
+      "c9ed3a5ca63f6e46ccdca67b1bc1e9a0"
+    ]
   },
   {
     "Title": "Revolver News",
@@ -141,7 +143,7 @@
     "CustomParser": "RssFeeder.Console.FeedBuilders.RevolverNewsFeedBuilder",
     "CollectionName": "revolver-news",
     "FileRetentionDays": 7,
-    "DatabaseRetentionDays": 30,
+    "DatabaseRetentionDays": 180,
     "Filters": []
   },
   {
@@ -154,8 +156,8 @@
     "Url": "https://freedomofthepress.com/",
     "CustomParser": "RssFeeder.Console.FeedBuilders.FreedomPressFeedBuilder",
     "CollectionName": "freedom-press",
-    "FileRetentionDays": 30,
-    "DatabaseRetentionDays": 30,
+    "FileRetentionDays": 7,
+    "DatabaseRetentionDays": 180,
     "Filters": []
   },
   {
@@ -169,7 +171,7 @@
     "CustomParser": "RssFeeder.Console.FeedBuilders.ConservagatorFeedBuilder",
     "CollectionName": "conservagator",
     "FileRetentionDays": 7,
-    "DatabaseRetentionDays": 30,
+    "DatabaseRetentionDays": 180,
     "Filters": []
   }
 ]
