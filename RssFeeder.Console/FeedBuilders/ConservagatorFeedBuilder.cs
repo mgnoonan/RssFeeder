@@ -22,6 +22,7 @@ internal class ConservagatorFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
     public List<RssFeedItem> GenerateRssFeedItemList(string html, List<string> filters, string feedUrl)
     {
         var list = new List<RssFeedItem>();
+        bool offset = DateTime.Now.Hour % 2 == 0;
         int count;
 
         // Load and parse the html from the source file
@@ -55,9 +56,9 @@ internal class ConservagatorFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             "Pundit Beacon","Blue State Conservative","CommDigiNews",
             "Freedom First Press"
         };
-        int sectionCounter = 0;
+        int sectionCounter = offset ? 0 : 12;
 
-        foreach (var element in containers.Take(12))
+        foreach (var element in containers.Skip(sectionCounter).Take(12))
         {
             var nodes = element.QuerySelectorAll("ul.rss-aggregator > li.feed-item > a");
             if (nodes != null)
