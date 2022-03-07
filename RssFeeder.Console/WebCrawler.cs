@@ -270,7 +270,7 @@ public class WebCrawler : IWebCrawler
             using (LogContext.PushProperty("url", item.FeedAttributes.Url))
             using (LogContext.PushProperty("urlHash", item.FeedAttributes.UrlHash))
             {
-                Log.Information("Preparing '{urlHash}' for export", item.FeedAttributes.UrlHash);
+                Log.Debug("Preparing '{urlHash}' for export", item.FeedAttributes.UrlHash);
                 var exportFeedItem = _exporter.FormatItem(item, feed);
 
                 Log.Information("EXPORT: UrlHash '{urlHash}' from {collectionName}", item.FeedAttributes.UrlHash, feed.CollectionName);

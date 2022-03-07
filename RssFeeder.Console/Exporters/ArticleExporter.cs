@@ -33,7 +33,7 @@ public class ArticleExporter : BaseArticleExporter, IArticleExporter
 
         if (Config.VideoHosts.Contains(hostName))
         {
-            Log.Information("Applying video metadata values for '{hostname}'", hostName);
+            Log.Debug("Applying video metadata values for '{hostname}'", hostName);
             SetVideoMetaData(exportFeedItem, item, hostName);
             if (exportFeedItem.VideoHeight > 0)
             {
@@ -49,7 +49,7 @@ public class ArticleExporter : BaseArticleExporter, IArticleExporter
             var result = item.HtmlAttributes.GetValueOrDefault("ParserResult") ?? "";
             if (string.IsNullOrEmpty(result))
             {
-                Log.Information("No parsed result, applying basic metadata values for '{hostname}'", hostName);
+                Log.Debug("No parsed result, applying basic metadata values for '{hostname}'", hostName);
 
                 // Article failed to download, display minimal basic meta data
                 SetBasicArticleMetaData(exportFeedItem, item, hostName);
@@ -57,7 +57,7 @@ public class ArticleExporter : BaseArticleExporter, IArticleExporter
             }
             else
             {
-                Log.Information("Applying extended metadata values for '{hostname}'", hostName);
+                Log.Debug("Applying extended metadata values for '{hostname}'", hostName);
 
                 SetExtendedArticleMetaData(exportFeedItem, item, hostName);
                 exportFeedItem.ArticleText = ApplyTemplateToDescription(exportFeedItem, feed, ExportTemplates.ExtendedTemplate);
