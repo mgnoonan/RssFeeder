@@ -110,17 +110,7 @@ public class WebCrawler : IWebCrawler
         try
         {
 
-            if (string.IsNullOrEmpty(item.FeedAttributes.FileName))
-            {
-                _crawlerRepository.SaveDocument<RssFeedItem>(_crawlerCollectionName, item, feed.DatabaseRetentionDays, "", null, "");
-            }
-            else
-            {
-                using (var stream = new MemoryStream(File.ReadAllBytes(item.FeedAttributes.FileName)))
-                {
-                    _crawlerRepository.SaveDocument<RssFeedItem>(_crawlerCollectionName, item, feed.DatabaseRetentionDays, Path.GetFileName(item.FeedAttributes.FileName), stream, "text/html");
-                }
-            }
+            _crawlerRepository.SaveDocument<RssFeedItem>(_crawlerCollectionName, item, feed.DatabaseRetentionDays, "", null, "");
 
             return true;
         }
