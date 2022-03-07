@@ -58,7 +58,7 @@ internal class ConservagatorFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         bool firstHalf = false;
 		int endIndex = firstHalf ? sectionName.Length / 2 : sectionName.Length;
         int startIndex = firstHalf ? 0 : sectionName.Length / 2;
-		int sectionCounter = startIndex + 1;
+		int sectionCounter = startIndex;
 
         foreach (var element in containers.ToArray()[startIndex..endIndex])
         {
