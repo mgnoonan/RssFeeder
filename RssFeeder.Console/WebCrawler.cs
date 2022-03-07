@@ -151,7 +151,7 @@ public class WebCrawler : IWebCrawler
                     continue;
                 }
 
-                Log.Information("UrlHash '{urlHash}' not found in collection '{collectionName}'", item.FeedAttributes.UrlHash, feed.CollectionName);
+                Log.Information("BEGIN: UrlHash {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
 
                 try
                 {
@@ -198,6 +198,8 @@ public class WebCrawler : IWebCrawler
                 {
                     Log.Error(ex, "DOWNLOAD_ERROR: UrlHash '{urlHash}':'{url}'", item.FeedAttributes.UrlHash, item.FeedAttributes.Url);
                 }
+
+                Log.Information("END: UrlHash {urlHash}", item.FeedAttributes.UrlHash);
             }
         }
 
