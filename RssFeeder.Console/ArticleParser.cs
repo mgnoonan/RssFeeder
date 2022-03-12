@@ -34,7 +34,7 @@ public class ArticleParser : IArticleParser
             return;
         }
 
-        Log.Information("Parsing meta tags from file '{fileName}'", item.FeedAttributes.FileName);
+        Log.Debug("Parsing meta tags from file '{fileName}'", item.FeedAttributes.FileName);
 
         var doc = new HtmlDocument();
         doc.Load(item.FeedAttributes.FileName);

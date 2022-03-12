@@ -70,7 +70,7 @@ public class WebCrawler : IWebCrawler
 
         foreach (var item in list)
         {
-            using (LogContext.PushProperty("url", item.FeedAttributes.Url))
+            //using (LogContext.PushProperty("url", item.FeedAttributes.Url))
             using (LogContext.PushProperty("urlHash", item.FeedAttributes.UrlHash))
             {
                 try
@@ -131,7 +131,7 @@ public class WebCrawler : IWebCrawler
         int articleCount = 0;
         foreach (var item in list)
         {
-            using (LogContext.PushProperty("url", item.FeedAttributes.Url))
+            //using (LogContext.PushProperty("url", item.FeedAttributes.Url))
             using (LogContext.PushProperty("urlHash", item.FeedAttributes.UrlHash))
             {
                 // No need to continue if we already crawled the article
@@ -257,7 +257,7 @@ public class WebCrawler : IWebCrawler
         foreach (var item in list)
         {
             using (LogContext.PushProperty("runID", runID))
-            using (LogContext.PushProperty("url", item.FeedAttributes.Url))
+            //using (LogContext.PushProperty("url", item.FeedAttributes.Url))
             using (LogContext.PushProperty("urlHash", item.FeedAttributes.UrlHash))
             {
                 Log.Debug("Preparing '{urlHash}' for export", item.FeedAttributes.UrlHash);
