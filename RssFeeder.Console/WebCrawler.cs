@@ -141,7 +141,7 @@ public class WebCrawler : IWebCrawler
                     continue;
                 }
 
-                Log.Information("BEGIN: UrlHash {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+                Log.Information("BEGIN: UrlHash {urlHash}|{linkLocation}|{title}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title);
 
                 try
                 {

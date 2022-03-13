@@ -162,7 +162,7 @@ public class ArticleParser : IArticleParser
 
         if (string.IsNullOrWhiteSpace(sourceAttributeValue))
         {
-            Log.Warning("Error reading attribute '{attribute}' from meta tag '{property}'", targetAttributeName, targetAttributeValue);
+            Log.Debug("Attribute '{attribute}' from meta tag '{property}' not found", targetAttributeName, targetAttributeValue);
         }
         else
         {

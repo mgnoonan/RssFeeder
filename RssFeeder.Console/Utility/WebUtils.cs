@@ -224,7 +224,7 @@ public class WebUtils : IWebUtils
             }
         }
 
-        Log.Information("Repaired link '{url}'", sb.ToString());
+        Log.Information("Repaired link '{pathAndQuery}' to '{url}'", pathAndQuery, sb.ToString());
         return sb.ToString();
     }
 
