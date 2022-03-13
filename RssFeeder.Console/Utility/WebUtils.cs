@@ -214,13 +214,15 @@ public class WebUtils : IWebUtils
                 // Start with the defaultBaseUrl and add a trailing forward slash
                 sb.AppendFormat("{0}{1}", defaultBaseUrl.Trim(), defaultBaseUrl.EndsWith("/") ? "" : "/");
 
-                // Add the starting forward slash if there isn't one
+                // Account for any starting forward slash
                 if (!pathAndQuery.StartsWith("/"))
                 {
-                    sb.Append("/");
+                    sb.Append(pathAndQuery);
                 }
-
-                sb.Append(pathAndQuery);
+                else
+                {
+                    sb.Append(pathAndQuery[1..]);
+                }
             }
         }
 

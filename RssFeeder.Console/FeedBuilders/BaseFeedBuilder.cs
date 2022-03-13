@@ -76,9 +76,9 @@ class BaseFeedBuilder
         // Repair any protocol typos if possible
         if (!linkUrl.ToLower().StartsWith("http"))
         {
-            //linkUrl = webUtils.RepairUrl(linkUrl, feedUrl);
-            log.Information("Invalid link url {url}", linkUrl);
-            return null;
+            linkUrl = webUtils.RepairUrl(linkUrl, feedUrl);
+            //log.Information("Invalid link url {url}", linkUrl);
+            //return null;
         }
 
         var uri = new Uri(linkUrl);
