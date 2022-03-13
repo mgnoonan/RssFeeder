@@ -25,7 +25,7 @@ public class WebUtils : IWebUtils
 
         try
         {
-            Log.Information("Loading URL '{urlHash}':'{url}'", urlHash, url);
+            Log.Debug("Loading URL '{urlHash}':'{url}'", urlHash, url);
             (HttpStatusCode status, string content, Uri trueUri) = _crawler.GetString(url);
 
             if (trueUri is null)
@@ -69,7 +69,7 @@ public class WebUtils : IWebUtils
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "SaveUrlToDisk: '{urlHash}':'{url}' - Unexpected error '{message}'", urlHash, url, ex.Message);
+            Log.Error(ex, "SaveUrlToDisk: Unexpected error '{message}'", ex.Message);
         }
 
         return (string.Empty, new Uri(url));
@@ -79,7 +79,7 @@ public class WebUtils : IWebUtils
     {
         try
         {
-            Log.Information("Loading image URL '{urlHash}':'{url}'", urlHash, url);
+            Log.Debug("Loading image URL '{urlHash}':'{url}'", urlHash, url);
             var fileBytes = _crawler.DownloadData(url);
 
             // Delete the file if it already exists
@@ -97,7 +97,7 @@ public class WebUtils : IWebUtils
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "SaveUrlToDisk: '{urlHash}':'{url}' - Unexpected error '{message}'", urlHash, url, ex.Message);
+            Log.Error(ex, "SaveImageToDisk: Unexpected error '{message}'", ex.Message);
         }
 
         return string.Empty;
@@ -105,7 +105,7 @@ public class WebUtils : IWebUtils
 
     public (string, Uri) WebDriverUrlToDisk(string url, string urlHash, string filename)
     {
-        Log.Information("Loading Selenium URL '{urlHash}':'{url}'", urlHash, url);
+        Log.Debug("Loading Selenium URL '{urlHash}':'{url}'", urlHash, url);
 
         var options = new EdgeOptions();
         options.AddArgument("headless");//Comment if we want to see the window. 
@@ -124,14 +124,14 @@ public class WebUtils : IWebUtils
                 File.Delete(filename);
             }
 
-            Log.Information("Saving text file '{fileName}'", filename);
+            Log.Debug("Saving text file '{fileName}'", filename);
             File.WriteAllText(filename, driver.PageSource);
 
             return (filename, new Uri(driver.Url));
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "WebDriverUrlToDisk: '{urlHash}':'{url}' - Unexpected error '{message}'", urlHash, url, ex.Message);
+            Log.Error(ex, "WebDriverUrlToDisk: Unexpected error '{message}'", ex.Message);
         }
         finally
         {
@@ -188,7 +188,7 @@ public class WebUtils : IWebUtils
     /// </returns>
     public string RepairUrl(string pathAndQuery, string defaultBaseUrl)
     {
-        Log.Information("Attempting to repair link '{url}'", pathAndQuery);
+        Log.Debug("Attempting to repair link '{url}'", pathAndQuery);
         StringBuilder sb = new StringBuilder();
 
         if (pathAndQuery.StartsWith("//"))
@@ -214,17 +214,19 @@ public class WebUtils : IWebUtils
                 // Start with the defaultBaseUrl and add a trailing forward slash
                 sb.AppendFormat("{0}{1}", defaultBaseUrl.Trim(), defaultBaseUrl.EndsWith("/") ? "" : "/");
 
-                // Add the starting forward slash if there isn't one
+                // Account for any starting forward slash
                 if (!pathAndQuery.StartsWith("/"))
                 {
-                    sb.Append("/");
+                    sb.Append(pathAndQuery);
                 }
-
-                sb.Append(pathAndQuery);
+                else
+                {
+                    sb.Append(pathAndQuery[1..]);
+                }
             }
         }
 
-        Log.Information("Repaired link '{url}'", sb.ToString());
+        Log.Information("Repaired link '{pathAndQuery}' to '{url}'", pathAndQuery, sb.ToString());
         return sb.ToString();
     }
 

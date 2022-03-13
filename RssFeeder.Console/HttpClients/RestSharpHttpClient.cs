@@ -9,7 +9,7 @@ public class RestSharpHttpClient : IHttpClient
 
     public byte[] DownloadData(string url)
     {
-        Log.Information("Crawler DownloadData to {url}", url);
+        Log.Information("RestSharpHttpClient DownloadData to {url}", url);
         var request = new RestRequest(url);
         var response = _client.DownloadDataAsync(request).GetAwaiter().GetResult();
 
@@ -18,7 +18,7 @@ public class RestSharpHttpClient : IHttpClient
 
     public string GetContentType(string url)
     {
-        Log.Information("Crawler GetContentType to {url}", url);
+        Log.Information("RestSharpHttpClient GetContentType to {url}", url);
         var request = new RestRequest(url);
         var response = _client.HeadAsync(request).GetAwaiter().GetResult();
         Log.Information("Response status code = {statusCode}", response.StatusCode);
@@ -31,7 +31,7 @@ public class RestSharpHttpClient : IHttpClient
 
     public (HttpStatusCode, string, Uri) GetString(string url)
     {
-        Log.Information("Crawler GetString to {url}", url);
+        Log.Information("RestSharpHttpClient GetString to {url}", url);
 
         var request = new RestRequest(url);
         var response = _client.GetAsync(request).GetAwaiter().GetResult();

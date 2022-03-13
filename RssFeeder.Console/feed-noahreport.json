@@ -1,0 +1,16 @@
+[
+  {
+    "Title": "Noah Report",
+    "Enabled": "true",
+    "EnableThumbnail": "false",
+    "Exportable": "false",
+    "Description": "Noah Report",
+    "Language": "en-US",
+    "Url": "https://noahreport.com/",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.NoahReportFeedBuilder",
+    "CollectionName": "noah-report",
+    "FileRetentionDays": 7,
+    "DatabaseRetentionDays": 7,
+    "Filters": []
+  }
+]

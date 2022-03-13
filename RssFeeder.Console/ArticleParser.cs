@@ -34,7 +34,7 @@ public class ArticleParser : IArticleParser
             return;
         }
 
-        Log.Information("Parsing meta tags from file '{fileName}'", item.FeedAttributes.FileName);
+        Log.Debug("Parsing meta tags from file '{fileName}'", item.FeedAttributes.FileName);
 
         var doc = new HtmlDocument();
         doc.Load(item.FeedAttributes.FileName);
@@ -162,7 +162,7 @@ public class ArticleParser : IArticleParser
 
         if (string.IsNullOrWhiteSpace(sourceAttributeValue))
         {
-            Log.Warning("Error reading attribute '{attribute}' from meta tag '{property}'", targetAttributeName, targetAttributeValue);
+            Log.Debug("Attribute '{attribute}' from meta tag '{property}' not found", targetAttributeName, targetAttributeValue);
         }
         else
         {

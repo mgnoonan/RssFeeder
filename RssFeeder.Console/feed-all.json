@@ -123,13 +123,14 @@
     "Exportable": "true",
     "Description": "Bad Blue",
     "Language": "en-US",
-    "Url": "http://badblue.bitnamiapp.com/trendr8.htm",
+    "Url": "http://www.badblue.com/trendr8.htm",
     "CustomParser": "RssFeeder.Console.FeedBuilders.BadBlueFeedBuilder",
     "CollectionName": "bad-blue",
     "FileRetentionDays": 7,
     "DatabaseRetentionDays": 180,
     "Filters": [
-      "c9ed3a5ca63f6e46ccdca67b1bc1e9a0"
+      "c9ed3a5ca63f6e46ccdca67b1bc1e9a0",
+      "467ce4c01c974a5fd4f3ed39d95c7ec0"
     ]
   },
   {
@@ -170,6 +171,20 @@
     "Url": "https://conservagator.com/",
     "CustomParser": "RssFeeder.Console.FeedBuilders.ConservagatorFeedBuilder",
     "CollectionName": "conservagator",
+    "FileRetentionDays": 7,
+    "DatabaseRetentionDays": 180,
+    "Filters": []
+  },
+  {
+    "Title": "Noah Report",
+    "Enabled": "true",
+    "EnableThumbnail": "true",
+    "Exportable": "true",
+    "Description": "Noah Report",
+    "Language": "en-US",
+    "Url": "https://noahreport.com/",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.NoahReportFeedBuilder",
+    "CollectionName": "noah-report",
     "FileRetentionDays": 7,
     "DatabaseRetentionDays": 180,
     "Filters": []

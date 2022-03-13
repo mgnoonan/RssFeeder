@@ -44,6 +44,9 @@
     <None Update="crawlerconfig.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="feed-noahreport.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="secrets.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

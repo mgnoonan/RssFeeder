@@ -70,7 +70,7 @@ public class WebCrawler : IWebCrawler
 
         foreach (var item in list)
         {
-            using (LogContext.PushProperty("url", item.FeedAttributes.Url))
+            //using (LogContext.PushProperty("url", item.FeedAttributes.Url))
             using (LogContext.PushProperty("urlHash", item.FeedAttributes.UrlHash))
             {
                 try
@@ -110,17 +110,7 @@ public class WebCrawler : IWebCrawler
         try
         {
 
-            if (string.IsNullOrEmpty(item.FeedAttributes.FileName))
-            {
-                _crawlerRepository.SaveDocument<RssFeedItem>(_crawlerCollectionName, item, feed.DatabaseRetentionDays, "", null, "");
-            }
-            else
-            {
-                using (var stream = new MemoryStream(File.ReadAllBytes(item.FeedAttributes.FileName)))
-                {
-                    _crawlerRepository.SaveDocument<RssFeedItem>(_crawlerCollectionName, item, feed.DatabaseRetentionDays, Path.GetFileName(item.FeedAttributes.FileName), stream, "text/html");
-                }
-            }
+            _crawlerRepository.SaveDocument<RssFeedItem>(_crawlerCollectionName, item, feed.DatabaseRetentionDays, "", null, "");
 
             return true;
         }
@@ -141,7 +131,7 @@ public class WebCrawler : IWebCrawler
         int articleCount = 0;
         foreach (var item in list)
         {
-            using (LogContext.PushProperty("url", item.FeedAttributes.Url))
+            //using (LogContext.PushProperty("url", item.FeedAttributes.Url))
             using (LogContext.PushProperty("urlHash", item.FeedAttributes.UrlHash))
             {
                 // No need to continue if we already crawled the article
@@ -151,7 +141,7 @@ public class WebCrawler : IWebCrawler
                     continue;
                 }
 
-                Log.Information("UrlHash '{urlHash}' not found in collection '{collectionName}'", item.FeedAttributes.UrlHash, feed.CollectionName);
+                Log.Information("BEGIN: UrlHash {urlHash}|{linkLocation}|{title}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title);
 
                 try
                 {
@@ -198,6 +188,8 @@ public class WebCrawler : IWebCrawler
                 {
                     Log.Error(ex, "DOWNLOAD_ERROR: UrlHash '{urlHash}':'{url}'", item.FeedAttributes.UrlHash, item.FeedAttributes.Url);
                 }
+
+                Log.Information("END: UrlHash {urlHash}", item.FeedAttributes.UrlHash);
             }
         }
 
@@ -265,10 +257,10 @@ public class WebCrawler : IWebCrawler
         foreach (var item in list)
         {
             using (LogContext.PushProperty("runID", runID))
-            using (LogContext.PushProperty("url", item.FeedAttributes.Url))
+            //using (LogContext.PushProperty("url", item.FeedAttributes.Url))
             using (LogContext.PushProperty("urlHash", item.FeedAttributes.UrlHash))
             {
-                Log.Information("Preparing '{urlHash}' for export", item.FeedAttributes.UrlHash);
+                Log.Debug("Preparing '{urlHash}' for export", item.FeedAttributes.UrlHash);
                 var exportFeedItem = _exporter.FormatItem(item, feed);
 
                 Log.Information("EXPORT: UrlHash '{urlHash}' from {collectionName}", item.FeedAttributes.UrlHash, feed.CollectionName);

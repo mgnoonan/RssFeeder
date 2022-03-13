@@ -141,5 +141,18 @@
     "FeedlyUrl": "",
     "RssUrl": "/api/rss/conservagator",
     "Filters": []
+  },
+  {
+    "id": "",
+    "Title": "Noah Report",
+    "Url": "https://noahreport.com/",
+    "Description": "Noah Report",
+    "Language": "en-US",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.NoahReportFeedBuilder",
+    "CollectionName": "noah-report",
+    "authoremail": "editor@noahreport.com",
+    "FeedlyUrl": "",
+    "RssUrl": "/api/rss/noah-report",
+    "Filters": []
   }
 ]
