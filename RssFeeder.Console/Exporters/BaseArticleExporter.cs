@@ -209,7 +209,7 @@ public class BaseArticleExporter
                 sourceAttributeValue = System.Web.HttpUtility.HtmlDecode(sourceAttributeValue);
             }
 
-            Log.Information("Meta attribute '{attribute}':'{property}' has a decoded value of '{value}'", targetAttributeName, targetAttributeValue, sourceAttributeValue);
+            Log.Debug("Meta attribute '{attribute}':'{property}' has a decoded value of '{value}'", targetAttributeName, targetAttributeValue, sourceAttributeValue);
 
         }
 

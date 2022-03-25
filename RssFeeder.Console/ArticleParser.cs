@@ -107,7 +107,7 @@ public class ArticleParser : IArticleParser
                     contentValue = System.Web.HttpUtility.HtmlDecode(contentValue);
                     Log.Debug("Decoded content value '{contentValue}'", contentValue);
                 }
-                Log.Information("Found open graph attribute '{propertyValue}':'{contentValue}'", propertyValue, contentValue);
+                Log.Debug("Found open graph attribute '{propertyValue}':'{contentValue}'", propertyValue, contentValue);
 
                 if (!attributes.ContainsKey(propertyValue))
                 {
@@ -172,7 +172,7 @@ public class ArticleParser : IArticleParser
                 sourceAttributeValue = System.Web.HttpUtility.HtmlDecode(sourceAttributeValue);
             }
 
-            Log.Information("Meta attribute '{attribute}':'{property}' has a decoded value of '{value}'", targetAttributeName, targetAttributeValue, sourceAttributeValue);
+            Log.Debug("Meta attribute '{attribute}':'{property}' has a decoded value of '{value}'", targetAttributeName, targetAttributeValue, sourceAttributeValue);
 
         }
 
