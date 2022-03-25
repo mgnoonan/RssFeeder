@@ -166,7 +166,7 @@ class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         {
             if (!TryParseEmbeddedUrl(item.FeedAttributes.Url, selector, out IElement link))
                 break;
-            if (link == null)
+            if (link is null)
                 continue;
             if (!link.Text().Contains("Click here"))
                 continue;

@@ -4,11 +4,11 @@ internal static class Extensions
 {
     public static void Upsert<TKey, TValue>(this Dictionary<TKey, TValue> dict, TKey key, TValue value)
     {
-        if (dict == null)
+        if (dict is null)
         {
             throw new ArgumentNullException(nameof(dict));
         }
-        if (key == null)
+        if (key is null)
         {
             throw new ArgumentNullException(nameof(key));
         }
