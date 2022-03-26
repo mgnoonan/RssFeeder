@@ -24,7 +24,7 @@ namespace RssFeeder.Mvc
                         .UseSerilog((hostingContext, loggerConfiguration) =>
                         {
                             var telemetryConfiguration = TelemetryConfiguration.CreateDefault();
-                            telemetryConfiguration.InstrumentationKey = hostingContext.Configuration["ApplicationInsights:InstrumentationKey"];
+                            telemetryConfiguration.ConnectionString = hostingContext.Configuration["ApplicationInsights:ConnectionString"];
 
                             loggerConfiguration
                                 .ReadFrom.Configuration(hostingContext.Configuration)
