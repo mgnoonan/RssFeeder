@@ -90,7 +90,7 @@ public class WebCrawler : IWebCrawler
     private bool TryParseAndSave(RssFeed feed, RssFeedItem item)
     {
         var uri = new Uri(item.HtmlAttributes.GetValueOrDefault("Url") ?? item.FeedAttributes.Url);
-        if (uri.AbsolutePath == "/")
+        if (uri.AbsolutePath == "/" && string.IsNullOrEmpty(uri.Query))
         {
             Log.Information("URI '{uri}' detected as a home page rather than an article, skipping parse operation", uri);
             return false;
@@ -157,7 +157,7 @@ public class WebCrawler : IWebCrawler
                     {
                         Log.Information("Host '{hostName}' found on the exclusion list, skipping download", hostname);
                     }
-                    else if (uri.AbsolutePath == "/")
+                    else if (uri.AbsolutePath == "/" && string.IsNullOrEmpty(uri.Query))
                     {
                         Log.Information("URI '{uri}' detected as a home page rather than an article, skipping download", uri);
                     }
