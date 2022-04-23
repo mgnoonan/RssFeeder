@@ -70,7 +70,7 @@ public class WebCrawler : IWebCrawler
 
         foreach (var item in list)
         {
-            //using (LogContext.PushProperty("url", item.FeedAttributes.Url))
+            using (LogContext.PushProperty("url", item.FeedAttributes.Url))
             using (LogContext.PushProperty("urlHash", item.FeedAttributes.UrlHash))
             {
                 try
