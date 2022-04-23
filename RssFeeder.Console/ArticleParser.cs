@@ -73,7 +73,7 @@ public class ArticleParser : IArticleParser
             return ("adaptive-parser", "", "");
         }
 
-        if (definition.RouteTemplates.Length > 0)
+        if (definition.RouteTemplates?.Length > 0)
         {
             var matcher = new RouteMatcher();
             foreach (var articleRoute in definition.RouteTemplates)
@@ -87,12 +87,12 @@ public class ArticleParser : IArticleParser
 
             // Might have forgotten to create a **catch-all template, fall back to adaptive parser
             Log.Warning("Missing **catch-all template. Falling back to adaptive parser.");
-            return ("adaptive-parser", "", "p");
+            return ("adaptive-parser", "", "");
         }
         else
         {
             // No route templates defined, fall back to older style definition or adpative parser
-            Log.Debug("No route templates defined. falling back to {parser}", definition.Parser);
+            Log.Information("No route templates defined. falling back to {@parser}", definition);
             return (string.IsNullOrEmpty(definition.Parser) ? "adaptive-parser" : definition.Parser,
                 definition.ArticleSelector, definition.ParagraphSelector);
         }
