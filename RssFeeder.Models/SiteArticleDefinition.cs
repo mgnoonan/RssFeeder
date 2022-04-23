@@ -7,5 +7,5 @@ public record SiteArticleDefinition
     public string ArticleSelector { get; set; }
     public string ParagraphSelector { get; set; }
     public string Parser { get; set; }
-    public RouteTemplate[] Routes { get; set; }
+    public ArticleRouteTemplate[] RouteTemplates { get; set; }
 }

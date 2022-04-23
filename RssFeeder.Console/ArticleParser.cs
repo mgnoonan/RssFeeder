@@ -1,4 +1,8 @@
-﻿namespace RssFeeder.Console;
+﻿using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.AspNetCore.Routing.Template;
+
+namespace RssFeeder.Console;
 
 public class ArticleParser : IArticleParser
 {
@@ -50,11 +54,62 @@ public class ArticleParser : IArticleParser
 
         using (LogContext.PushProperty("siteName", item.SiteName))
         {
-            // If a specific article parser was not found in the database then
-            // use the fallback adaptive parser
-            var parser = _container.ResolveNamed<ITagParser>(definition?.Parser ?? "adaptive-parser");
-            item.HtmlAttributes.Add("ParserResult", parser.ParseTagsBySelector(doc.Text, definition));
+            // Determine the named parser to use along with article and para selectors
+            (string namedParser, string articleSelector, string paragraphSelector) = GetRouteMatchedTagParser(definition, GetRouteOnly(item));
+
+            // Resolve the named parameter using DI
+            var parser = _container.ResolveNamed<ITagParser>(namedParser);
+
+            // Parse the content to get the article text
+            item.HtmlAttributes.Add("ParserResult", parser.ParseTagsBySelector(doc.Text, articleSelector, paragraphSelector));
         }
+    }
+
+    private (string, string, string) GetRouteMatchedTagParser(SiteArticleDefinition definition, string routeToMatch)
+    {
+        if (definition is null)
+            return ("adaptive-parser", "", "");
+
+        if (definition.RouteTemplates.Length > 0)
+        {
+            var matcher = new RouteMatcher();
+            foreach(var articleRoute in definition.RouteTemplates)
+            {
+                if (matcher.Match(articleRoute.Template, routeToMatch) != null)
+                {
+                    Log.Information("Matched {routeToMatch} on route {name} template {template} and parser {parser}", routeToMatch, articleRoute.Name, articleRoute.Template, articleRoute.Parser);
+                    return (articleRoute.Parser, articleRoute.ArticleSelector, articleRoute.ParagraphSelector);
+                }
+            }
+
+            // Might have forgotten to create a **catch-all template, fall back to adaptive parser
+            return ("adaptive-parser", "", "");
+        }
+        else
+        {
+            // No route templates defined, fall back to older style definition or adpative parser
+            return (string.IsNullOrEmpty(definition.Parser) ? "adaptive-parser" : definition.Parser, 
+                definition.ArticleSelector, definition.ParagraphSelector);
+        }
+    }
+
+    private string GetRouteOnly(RssFeedItem item)
+    {
+        string url = item.OpenGraphAttributes.GetValueOrDefault("og:url") ?? "";
+
+        // Make sure the Url is complete
+        if (!url.StartsWith("http"))
+        {
+            url = item.HtmlAttributes.GetValueOrDefault("Url") ?? item.FeedAttributes.Url;
+        }
+
+        if (!url.StartsWith("http"))
+        {
+            url = _webUtils.RepairUrl(url, item.FeedAttributes.Url);
+        }
+
+        Uri uri = new Uri(url);
+        return uri.GetComponents(UriComponents.Path, UriFormat.Unescaped).ToLower();
     }
 
     private string GetHostName(RssFeedItem item)
@@ -82,7 +137,6 @@ public class ArticleParser : IArticleParser
 
         return siteName;
     }
-
 
     private Dictionary<string, string> ParseOpenGraphAttributes(HtmlDocument doc)
     {
