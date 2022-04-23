@@ -13,6 +13,9 @@ public class AdaptiveTagParser : ITagParser
         var parser = new HtmlParser();
         var document = parser.ParseDocument(html);
 
+        if (string.IsNullOrEmpty(paragraphSelector))
+            paragraphSelector = "p";
+
         Log.Debug("Attempting adaptive parsing using paragraph selector '{paragraphSelector}'", paragraphSelector);
 
         // Query the document by CSS selectors to get the article text

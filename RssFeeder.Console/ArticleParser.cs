@@ -68,14 +68,17 @@ public class ArticleParser : IArticleParser
     private (string, string, string) GetRouteMatchedTagParser(SiteArticleDefinition definition, string routeToMatch)
     {
         if (definition is null)
+        {
+            Log.Debug("SiteDefinition is null. Falling back to adaptive parser.");
             return ("adaptive-parser", "", "");
+        }
 
         if (definition.RouteTemplates.Length > 0)
         {
             var matcher = new RouteMatcher();
-            foreach(var articleRoute in definition.RouteTemplates)
+            foreach (var articleRoute in definition.RouteTemplates)
             {
-                if (matcher.Match(articleRoute.Template, routeToMatch) != null)
+                if (matcher.Match(articleRoute.Template, "/" + routeToMatch) != null)
                 {
                     Log.Information("Matched {routeToMatch} on route {name} template {template} and parser {parser}", routeToMatch, articleRoute.Name, articleRoute.Template, articleRoute.Parser);
                     return (articleRoute.Parser, articleRoute.ArticleSelector, articleRoute.ParagraphSelector);
@@ -83,12 +86,14 @@ public class ArticleParser : IArticleParser
             }
 
             // Might have forgotten to create a **catch-all template, fall back to adaptive parser
-            return ("adaptive-parser", "", "");
+            Log.Warning("Missing **catch-all template. Falling back to adaptive parser.");
+            return ("adaptive-parser", "", "p");
         }
         else
         {
             // No route templates defined, fall back to older style definition or adpative parser
-            return (string.IsNullOrEmpty(definition.Parser) ? "adaptive-parser" : definition.Parser, 
+            Log.Debug("No route templates defined. falling back to {parser}", definition.Parser);
+            return (string.IsNullOrEmpty(definition.Parser) ? "adaptive-parser" : definition.Parser,
                 definition.ArticleSelector, definition.ParagraphSelector);
         }
     }
