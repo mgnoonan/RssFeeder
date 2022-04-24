@@ -11,7 +11,7 @@ public class DotNetHttpClient : IHttpClient
 
     public DotNetHttpClient()
     {
-        if (_client == null)
+        if (_client is null)
         {
             _client = new HttpClient(new SocketsHttpHandler
             {

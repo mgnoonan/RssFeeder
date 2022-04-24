@@ -17,7 +17,7 @@ public class HtmlTagParser : ITagParser
 
         // Query the document by CSS selectors to get the article text
         var container = document.QuerySelector(bodySelector);
-        if (container == null)
+        if (container is null)
         {
             Log.Warning("Error reading article: '{bodySelector}' article body selector not found.", bodySelector);
             return $"<p>Error reading article: '{bodySelector}' article body selector not found.</p>";
