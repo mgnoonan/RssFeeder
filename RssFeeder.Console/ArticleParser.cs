@@ -80,7 +80,7 @@ public class ArticleParser : IArticleParser
             {
                 if (matcher.Match(articleRoute.Template, "/" + routeToMatch) != null)
                 {
-                    Log.Information("Matched {routeToMatch} on route {name} template {template} and parser {parser}", routeToMatch, articleRoute.Name, articleRoute.Template, articleRoute.Parser);
+                    Log.Information("Matched route {routeName} on template {template}", articleRoute.Name, articleRoute.Template);
                     return (articleRoute.Parser, articleRoute.ArticleSelector, articleRoute.ParagraphSelector);
                 }
             }
@@ -92,7 +92,7 @@ public class ArticleParser : IArticleParser
         else
         {
             // No route templates defined, fall back to older style definition or adpative parser
-            Log.Information("No route templates defined. falling back to {@parser}", definition);
+            Log.Debug("No route templates defined. falling back to {@parser}", definition);
             return (string.IsNullOrEmpty(definition.Parser) ? "adaptive-parser" : definition.Parser,
                 definition.ArticleSelector, definition.ParagraphSelector);
         }
