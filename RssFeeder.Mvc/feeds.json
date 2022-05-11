@@ -80,12 +80,12 @@
   {
     "id": "fcdb9d55-feef-482f-9e6f-21f6ea41e977",
     "Title": "Populist Press",
-    "Url": "https://populist.press/",
+    "Url": "https://populistpress.com/",
     "Description": "Populist Press Extra",
     "Language": "en-US",
     "CustomParser": "RssFeeder.Console.FeedBuilders.PopulistPressFeedBuilder",
     "CollectionName": "populist-press",
-    "authoremail": "email@populist.press",
+    "authoremail": "email@populistpress.com",
     "FeedlyUrl": "",
     "RssUrl": "/api/rss/populist-press",
     "Filters": []

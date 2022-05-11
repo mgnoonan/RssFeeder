@@ -80,7 +80,7 @@ class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         }
 
         // Column 1
-        container = document.QuerySelector("#home_page_main_feed_left");
+        container = document.QuerySelector("#column_1");
         if (container != null)
         {
             var nodes = container.QuerySelectorAll("a");
@@ -104,7 +104,7 @@ class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         }
 
         // Column 2
-        container = document.QuerySelector("#home_page_main_feed_center");
+        container = document.QuerySelector("#column_2");
         if (container != null)
         {
             var nodes = container.QuerySelectorAll("a");
@@ -134,7 +134,7 @@ class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         }
 
         // Column 3
-        container = document.QuerySelector("#home_page_main_feed_right");
+        container = document.QuerySelector("#column_3");
         if (container != null)
         {
             var nodes = container.QuerySelectorAll("a");
