@@ -40,6 +40,17 @@ class BaseFeedBuilder
         return CreateNodeLinks(filters, location, count, title, linkUrl, feedUrl);
     }
 
+    protected RssFeedItem CreatePairedNodeLinks(List<string> filters, IElement nodeTitleOnly, IElement nodeLinkOnly, string location, int count, string feedUrl)
+    {
+        string title = WebUtility.HtmlDecode(nodeTitleOnly.Text().Trim());
+
+        // Replace all errant spaces, which sometimes creep into Drudge's URLs
+        var attr = nodeLinkOnly.Attributes.GetNamedItem("href");
+        string linkUrl = attr.Value.Trim().Replace(" ", string.Empty);
+
+        return CreateNodeLinks(filters, location, count, title, linkUrl, feedUrl);
+    }
+
     protected RssFeedItem CreateNodeLinks(List<string> filters, HtmlNode node, string location, int count, string feedUrl)
     {
         string title = WebUtility.HtmlDecode(node.InnerText.Trim());

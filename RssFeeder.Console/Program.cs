@@ -73,6 +73,7 @@ builder.RegisterType<RevolverNewsFeedBuilder>().Named<IRssFeedBuilder>("revolver
 builder.RegisterType<FreedomPressFeedBuilder>().Named<IRssFeedBuilder>("freedom-press");
 builder.RegisterType<ConservagatorFeedBuilder>().Named<IRssFeedBuilder>("conservagator");
 builder.RegisterType<NoahReportFeedBuilder>().Named<IRssFeedBuilder>("noah-report");
+builder.RegisterType<ProTrumpNewsFeedBuilder>().Named<IRssFeedBuilder>("protrump-news");
 builder.RegisterType<GenericTagParser>().Named<ITagParser>("generic-parser");
 builder.RegisterType<AdaptiveTagParser>().Named<ITagParser>("adaptive-parser");
 builder.RegisterType<AllTagsParser>().Named<ITagParser>("alltags-parser");

@@ -154,5 +154,18 @@
     "FeedlyUrl": "",
     "RssUrl": "/api/rss/noah-report",
     "Filters": []
+  },
+  {
+    "id": "",
+    "Title": "ProTrump News",
+    "Url": "https://protrumpnews.com/",
+    "Description": "ProTrump News",
+    "Language": "en-US",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.ProTrumpNewsFeedBuilder",
+    "CollectionName": "protrump-news",
+    "authoremail": "editor@protrumpnews.com",
+    "FeedlyUrl": "",
+    "RssUrl": "/api/rss/protrump-news",
+    "Filters": []
   }
 ]
