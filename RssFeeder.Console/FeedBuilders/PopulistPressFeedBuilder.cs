@@ -117,7 +117,7 @@ class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                 var nodeTitle = pairedContainer.QuerySelector("span.mf-headline > a");
                 var nodeLink = pairedContainer.QuerySelector("span.iconbox > a");
 
-                var item = CreatePairedNodeLinks(filters, nodeTitle, nodeLink, "column 1", count++, feedUrl);
+                var item = CreatePairedNodeLinks(filters, nodeTitle, nodeLink, "column 2", count++, feedUrl);
 
                 // Unfortunately the reference site links are included in the column links, so the
                 // CINDY ADAMS link signals the end of the article list in column 2
@@ -144,7 +144,7 @@ class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                 var nodeTitle = pairedContainer.QuerySelector("span.mf-headline > a");
                 var nodeLink = pairedContainer.QuerySelector("span.iconbox > a");
 
-                var item = CreatePairedNodeLinks(filters, nodeTitle, nodeLink, "column 1", count++, feedUrl);
+                var item = CreatePairedNodeLinks(filters, nodeTitle, nodeLink, "column 3", count++, feedUrl);
 
                 // Unfortunately the reference site links are included in the column links, so the
                 // PRIVACY POLICY link signals the end of the article list in column 2
