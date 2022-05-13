@@ -83,11 +83,14 @@ class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         container = document.QuerySelector("#column_1");
         if (container != null)
         {
-            var nodes = container.QuerySelectorAll("a");
+            var pairedContainers = container.QuerySelectorAll("ul > li > h2");
             count = 1;
-            foreach (var node in nodes)
+            foreach (var pairedContainer in pairedContainers)
             {
-                var item = CreateNodeLinks(filters, node, "column 1", count++, feedUrl);
+                var nodeTitle = pairedContainer.QuerySelector("span.mf-headline > a");
+                var nodeLink = pairedContainer.QuerySelector("span.iconbox > a");
+
+                var item = CreatePairedNodeLinks(filters, nodeTitle, nodeLink, "column 1", count++, feedUrl);
 
                 // Unfortunately the reference site links are included in the column links, so the
                 // AMERICAN THINKER link signals the end of the article list in column 1
@@ -107,17 +110,14 @@ class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         container = document.QuerySelector("#column_2");
         if (container != null)
         {
-            var nodes = container.QuerySelectorAll("a");
+            var pairedContainers = container.QuerySelectorAll("ul > li > h2");
             count = 1;
-            foreach (var node in nodes)
+            foreach (var pairedContainer in pairedContainers)
             {
-                string title = WebUtility.HtmlDecode(node.Text().Trim());
-                if (string.IsNullOrWhiteSpace(title))
-                    continue;
+                var nodeTitle = pairedContainer.QuerySelector("span.mf-headline > a");
+                var nodeLink = pairedContainer.QuerySelector("span.iconbox > a");
 
-                Log.Information("Checking column 2 title '{title}'", title);
-
-                var item = CreateNodeLinks(filters, node, "column 2", count++, feedUrl);
+                var item = CreatePairedNodeLinks(filters, nodeTitle, nodeLink, "column 1", count++, feedUrl);
 
                 // Unfortunately the reference site links are included in the column links, so the
                 // CINDY ADAMS link signals the end of the article list in column 2
@@ -137,11 +137,14 @@ class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         container = document.QuerySelector("#column_3");
         if (container != null)
         {
-            var nodes = container.QuerySelectorAll("a");
+            var pairedContainers = container.QuerySelectorAll("ul > li > h2");
             count = 1;
-            foreach (var node in nodes)
+            foreach (var pairedContainer in pairedContainers)
             {
-                var item = CreateNodeLinks(filters, node, "column 3", count++, feedUrl);
+                var nodeTitle = pairedContainer.QuerySelector("span.mf-headline > a");
+                var nodeLink = pairedContainer.QuerySelector("span.iconbox > a");
+
+                var item = CreatePairedNodeLinks(filters, nodeTitle, nodeLink, "column 1", count++, feedUrl);
 
                 // Unfortunately the reference site links are included in the column links, so the
                 // PRIVACY POLICY link signals the end of the article list in column 2
