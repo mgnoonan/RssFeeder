@@ -167,5 +167,18 @@
     "FeedlyUrl": "",
     "RssUrl": "/api/rss/protrump-news",
     "Filters": []
+  },
+  {
+    "id": "",
+    "Title": "Off The Press",
+    "Url": "https://offthepress.com/",
+    "Description": "Off The Press",
+    "Language": "en-US",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.OffThePressFeedBuilder",
+    "CollectionName": "off-the-press",
+    "authoremail": "editor@offthepress.com",
+    "FeedlyUrl": "",
+    "RssUrl": "/api/rss/off-the-press",
+    "Filters": []
   }
 ]
