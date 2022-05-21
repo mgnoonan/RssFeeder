@@ -34,6 +34,16 @@ public class WebUtils : IWebUtils
                 return (string.Empty, new Uri(url));
             }
 
+            switch (status)
+            {
+                case HttpStatusCode.OK:
+                    break;
+                case HttpStatusCode.NotFound:
+                    return (string.Empty, new Uri(url));
+                default:
+                    break;
+            }
+
             // Use custom load method to account for compression headers
             HtmlDocument doc = new HtmlDocument();
             doc.LoadHtml(content);
