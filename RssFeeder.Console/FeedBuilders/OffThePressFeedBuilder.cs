@@ -27,7 +27,7 @@ internal class OffThePressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         var parser = new HtmlParser();
         var document = parser.ParseDocument(html);
 
-        // Above the Fold section
+        // Main Headlines section
         var container = document.QuerySelector("div.featured-story > div.container-fluid");
         if (container != null)
         {
@@ -36,6 +36,23 @@ internal class OffThePressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             foreach (var node in nodes)
             {
                 var item = CreateNodeLinks(filters, node, "main headlines", count++, feedUrl);
+                if (item != null)
+                {
+                    log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+                    list.Add(item);
+                }
+            }
+        }
+
+        // Column 1
+        container = document.QuerySelector("div.section > div.container-fluid > div.col-xs-12 > div.post-wrapper");
+        if (container != null)
+        {
+            var nodes = container.QuerySelectorAll("a");
+            count = 1;
+            foreach (var node in nodes)
+            {
+                var item = CreateNodeLinks(filters, node, "column 1", count++, feedUrl);
                 if (item != null)
                 {
                     log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);

@@ -1,0 +1,16 @@
+[
+  {
+    "Title": "Off the Press",
+    "Enabled": "true",
+    "EnableThumbnail": "true",
+    "Exportable": "true",
+    "Description": "Off the Press",
+    "Language": "en-US",
+    "Url": "https://offthepress.com/",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.OffThePressFeedBuilder",
+    "CollectionName": "off-the-press",
+    "FileRetentionDays": 7,
+    "DatabaseRetentionDays": 180,
+    "Filters": []
+  }
+]
