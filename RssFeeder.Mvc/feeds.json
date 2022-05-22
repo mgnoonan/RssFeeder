@@ -180,5 +180,18 @@
     "FeedlyUrl": "",
     "RssUrl": "/api/rss/off-the-press",
     "Filters": []
+  },
+  {
+    "id": "",
+    "Title": "Rubin Report",
+    "Url": "https://www.rubinwealthadvisors.com/rubinreport/",
+    "Description": "Rubin Report",
+    "Language": "en-US",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.RubinReportFeedBuilder",
+    "CollectionName": "rubin-report",
+    "authoremail": "editor@rubinwealthadvisors.com",
+    "FeedlyUrl": "",
+    "RssUrl": "/api/rss/rubin-report",
+    "Filters": []
   }
 ]

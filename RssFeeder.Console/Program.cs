@@ -75,6 +75,7 @@ builder.RegisterType<ConservagatorFeedBuilder>().Named<IRssFeedBuilder>("conserv
 builder.RegisterType<NoahReportFeedBuilder>().Named<IRssFeedBuilder>("noah-report");
 builder.RegisterType<ProTrumpNewsFeedBuilder>().Named<IRssFeedBuilder>("protrump-news");
 builder.RegisterType<OffThePressFeedBuilder>().Named<IRssFeedBuilder>("off-the-press");
+builder.RegisterType<RubinReportFeedBuilder>().Named<IRssFeedBuilder>("rubin-report");
 builder.RegisterType<GenericTagParser>().Named<ITagParser>("generic-parser");
 builder.RegisterType<AdaptiveTagParser>().Named<ITagParser>("adaptive-parser");
 builder.RegisterType<AllTagsParser>().Named<ITagParser>("alltags-parser");

@@ -216,5 +216,19 @@
     "FileRetentionDays": 7,
     "DatabaseRetentionDays": 180,
     "Filters": []
+  },
+  {
+    "Title": "Rubin Report",
+    "Enabled": "true",
+    "EnableThumbnail": "false",
+    "Exportable": "true",
+    "Description": "Rubin Report",
+    "Language": "en-US",
+    "Url": "https://www.rubinwealthadvisors.com/rubinreport/",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.RubinReportFeedBuilder",
+    "CollectionName": "rubin-report",
+    "FileRetentionDays": 7,
+    "DatabaseRetentionDays": 180,
+    "Filters": []
   }
 ]
