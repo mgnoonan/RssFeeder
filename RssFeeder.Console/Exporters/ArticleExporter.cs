@@ -31,7 +31,13 @@ public class ArticleExporter : BaseArticleExporter, IArticleExporter
             return exportFeedItem;
         }
 
-        if (Config.VideoHosts.Contains(hostName))
+        bool hasSupportedVideoFormat = (item.OpenGraphAttributes.ContainsKey("og:video:secure_url") ||
+            item.OpenGraphAttributes.ContainsKey("og:video:url") ||
+            item.OpenGraphAttributes.ContainsKey("og:video") ||
+            item.SiteName == "rumble") && 
+            ((item.OpenGraphAttributes.GetValueOrDefault("og:video:type") ?? "text/html") == "text/html");
+
+        if (hasSupportedVideoFormat)
         {
             Log.Debug("Applying video metadata values for '{hostname}'", hostName);
             SetVideoMetaData(exportFeedItem, item, hostName);

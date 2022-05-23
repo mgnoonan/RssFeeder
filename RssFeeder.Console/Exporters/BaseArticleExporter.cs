@@ -111,7 +111,7 @@ public class BaseArticleExporter
             var text = item.HtmlAttributes.GetValueOrDefault("ParserResult") ?? "";
             if (!text.StartsWith("<"))
             {
-                Log.Information("EXPORT: Processing rumble.com ld+json data");
+                Log.Debug("EXPORT: Processing rumble.com ld+json data");
 
                 // application/ld+json parser result
                 var list = JsonConvert.DeserializeObject<List<JsonLdRumbleValues>>(text);
