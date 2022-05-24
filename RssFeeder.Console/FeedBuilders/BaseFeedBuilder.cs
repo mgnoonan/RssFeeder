@@ -88,11 +88,13 @@ class BaseFeedBuilder
         if (!linkUrl.ToLower().StartsWith("http"))
         {
             linkUrl = webUtils.RepairUrl(linkUrl, feedUrl);
-            //log.Information("Invalid link url {url}", linkUrl);
-            //return null;
         }
 
-        var uri = new Uri(linkUrl);
+        if (!Uri.TryCreate(linkUrl, UriKind.Absolute, out Uri uri))
+        {
+            log.Warning("Unable to parse Uri {linkUrl}", linkUrl);
+            return null;
+        }
 
         // Calculate the MD5 hash for the link so we can be sure of uniqueness
         string hash = utils.CreateMD5Hash(uri.AbsoluteUri.ToLower());
