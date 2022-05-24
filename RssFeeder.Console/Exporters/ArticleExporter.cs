@@ -31,12 +31,15 @@ public class ArticleExporter : BaseArticleExporter, IArticleExporter
             return exportFeedItem;
         }
 
-        string videoType = item.OpenGraphAttributes.GetValueOrDefault("og:video:type") ?? "";
-        bool hasSupportedVideoFormat = (item.OpenGraphAttributes.ContainsKey("og:video:secure_url") ||
-            item.OpenGraphAttributes.ContainsKey("og:video:url") ||
-            item.OpenGraphAttributes.ContainsKey("og:video") ||
-            item.SiteName == "rumble") && 
-            (videoType == "text/html" || videoType == "video/mp4");
+        string videoUrl = item.OpenGraphAttributes.GetValueOrDefault("og:video:secure_url") ??
+            item.OpenGraphAttributes.GetValueOrDefault("og:video:url") ??
+            item.OpenGraphAttributes.GetValueOrDefault("og:video") ??
+            "";
+        string videoType = item.OpenGraphAttributes.GetValueOrDefault("og:video:type") ??
+            (videoUrl.EndsWith(".mp4") ? "video/mp4" : "");
+
+        // Rumble has not seen fit to provide OpenGraph video tags so watch for that sitename specifically
+        bool hasSupportedVideoFormat = (videoUrl.Length > 0 || item.SiteName == "rumble") && (videoType == "text/html" || videoType == "video/mp4");
 
         if (hasSupportedVideoFormat)
         {
