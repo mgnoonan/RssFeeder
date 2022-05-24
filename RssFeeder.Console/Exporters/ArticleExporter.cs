@@ -35,11 +35,12 @@ public class ArticleExporter : BaseArticleExporter, IArticleExporter
             item.OpenGraphAttributes.GetValueOrDefault("og:video:url") ??
             item.OpenGraphAttributes.GetValueOrDefault("og:video") ??
             "";
+        // Some sites do not provide OpenGraph video tags so watch for those specifically
         string videoType = item.OpenGraphAttributes.GetValueOrDefault("og:video:type") ??
-            (videoUrl.EndsWith(".mp4") ? "video/mp4" : "");
+            (videoUrl.EndsWith(".mp4") ? "video/mp4" : videoUrl.Contains("youtube.com") || videoUrl.Contains("rumble.com") ? "text/html" : "");
 
-        // Rumble has not seen fit to provide OpenGraph video tags so watch for that sitename specifically
-        bool hasSupportedVideoFormat = (videoUrl.Length > 0 || item.SiteName == "rumble") && (videoType == "text/html" || videoType == "video/mp4");
+        bool hasSupportedVideoFormat = videoUrl.Length > 0 && 
+            (videoType == "text/html" || videoType == "video/mp4");
 
         if (hasSupportedVideoFormat)
         {
