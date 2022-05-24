@@ -26,7 +26,12 @@ public class ExportTemplates
 $ArticleText$
 " + MetaDataTemplate;
 
-    public const string VideoTemplate = @"<iframe class=""{class}"" width=""$item.VideoWidth$"" height=""$item.VideoHeight$"" src=""$item.VideoUrl$"" frameborder=""0"" allow=""{allow}"" allowfullscreen></iframe>
+    public const string HtmlVideoTemplate = @"<iframe class=""{class}"" width=""$item.VideoWidth$"" height=""$item.VideoHeight$"" src=""$item.VideoUrl$"" frameborder=""0"" allow=""{allow}"" allowfullscreen></iframe>
+<h3>$item.Subtitle$</h3>
+$ArticleText$
+" + MetaDataTemplate;
+
+    public const string Mp4VideoTemplate = @"<video class=""{class}"" width=""$item.VideoWidth$"" height=""$item.VideoHeight$"" controls=""controls""><source src=""$item.VideoUrl$"" type=""video/mp4""></video>
 <h3>$item.Subtitle$</h3>
 $ArticleText$
 " + MetaDataTemplate;

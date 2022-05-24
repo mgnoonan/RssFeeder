@@ -31,11 +31,12 @@ public class ArticleExporter : BaseArticleExporter, IArticleExporter
             return exportFeedItem;
         }
 
+        string videoType = item.OpenGraphAttributes.GetValueOrDefault("og:video:type") ?? "";
         bool hasSupportedVideoFormat = (item.OpenGraphAttributes.ContainsKey("og:video:secure_url") ||
             item.OpenGraphAttributes.ContainsKey("og:video:url") ||
             item.OpenGraphAttributes.ContainsKey("og:video") ||
             item.SiteName == "rumble") && 
-            ((item.OpenGraphAttributes.GetValueOrDefault("og:video:type") ?? "text/html") == "text/html");
+            (videoType == "text/html" || videoType == "video/mp4");
 
         if (hasSupportedVideoFormat)
         {
@@ -43,7 +44,14 @@ public class ArticleExporter : BaseArticleExporter, IArticleExporter
             SetVideoMetaData(exportFeedItem, item, hostName);
             if (exportFeedItem.VideoHeight > 0)
             {
-                exportFeedItem.ArticleText = ApplyTemplateToDescription(exportFeedItem, feed, ExportTemplates.VideoTemplate);
+                if (videoType == "video/mp4")
+                {
+                    exportFeedItem.ArticleText = ApplyTemplateToDescription(exportFeedItem, feed, ExportTemplates.Mp4VideoTemplate);
+                }
+                else
+                {
+                    exportFeedItem.ArticleText = ApplyTemplateToDescription(exportFeedItem, feed, ExportTemplates.HtmlVideoTemplate);
+                }
             }
             else
             {

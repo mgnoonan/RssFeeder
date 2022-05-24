@@ -134,8 +134,8 @@ public class BaseArticleExporter
                 item.OpenGraphAttributes.GetValueOrDefault("og:video:url") ??
                 item.OpenGraphAttributes.GetValueOrDefault("og:video") ?? 
                 "";
-            exportFeedItem.VideoHeight = int.TryParse(item.OpenGraphAttributes.GetValueOrDefault("og:video:height"), out int height) ? height : 0;
-            exportFeedItem.VideoWidth = int.TryParse(item.OpenGraphAttributes.GetValueOrDefault("og:video:width"), out int width) ? width : 0;
+            exportFeedItem.VideoHeight = int.TryParse(item.OpenGraphAttributes.GetValueOrDefault("og:video:height") ?? item.OpenGraphAttributes.GetValueOrDefault("og:image:height"), out int height) ? height : 0;
+            exportFeedItem.VideoWidth = int.TryParse(item.OpenGraphAttributes.GetValueOrDefault("og:video:width") ?? item.OpenGraphAttributes.GetValueOrDefault("og:image:width"), out int width) ? width : 0;
         }
         Log.Information("Video URL: '{url}' ({height}x{width})", exportFeedItem.VideoUrl, exportFeedItem.VideoHeight, exportFeedItem.VideoWidth);
 
