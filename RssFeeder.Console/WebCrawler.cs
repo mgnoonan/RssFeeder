@@ -164,17 +164,20 @@ public class WebCrawler : IWebCrawler
                     else
                     {
                         // Download the Url contents, first using HttpClient but if that fails use Selenium
-                        (string newFilename, Uri trueUri) = _webUtils.SaveUrlToDisk(item.FeedAttributes.Url, item.FeedAttributes.UrlHash, filename);
-                        item.FeedAttributes.FileName = newFilename;
-                        item.HtmlAttributes.Add("Url", trueUri.AbsoluteUri);
+                        (bool success, string newFilename, Uri trueUri) = _webUtils.TrySaveUrlToDisk(item.FeedAttributes.Url, item.FeedAttributes.UrlHash, filename);
+                        if (success)
+                        {
+                            item.FeedAttributes.FileName = newFilename;
+                            item.HtmlAttributes.Add("Url", trueUri.AbsoluteUri);
+                        }
 
                         // Must have had an error on loading the url so attempt with Selenium
-                        if (string.IsNullOrEmpty(newFilename) || newFilename.Contains("ajc_com"))
-                        {
-                            (newFilename, trueUri) = _webUtils.WebDriverUrlToDisk(item.FeedAttributes.Url, item.FeedAttributes.UrlHash, filename);
-                            item.FeedAttributes.FileName = newFilename;
-                            item.HtmlAttributes["Url"] = trueUri.AbsoluteUri;
-                        }
+                        //if (string.IsNullOrEmpty(newFilename) || newFilename.Contains("ajc_com"))
+                        //{
+                        //    (newFilename, trueUri) = _webUtils.WebDriverUrlToDisk(item.FeedAttributes.Url, item.FeedAttributes.UrlHash, filename);
+                        //    item.FeedAttributes.FileName = newFilename;
+                        //    item.HtmlAttributes["Url"] = trueUri.AbsoluteUri;
+                        //}
                     }
 
                     // Parse the saved file as dictated by the site definitions

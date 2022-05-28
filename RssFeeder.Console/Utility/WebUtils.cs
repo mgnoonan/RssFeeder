@@ -18,10 +18,10 @@ public class WebUtils : IWebUtils
         _crawler = crawler;
     }
 
-    public (string, Uri) SaveUrlToDisk(string url, string urlHash, string filename, bool removeScriptElements = true)
+    public (bool, string, Uri) TrySaveUrlToDisk(string url, string urlHash, string filename, bool removeScriptElements = true)
     {
         if (!filename.EndsWith(".html"))
-            return (SaveImageToDisk(url, urlHash, filename), new Uri(url));
+            return (true, SaveImageToDisk(url, urlHash, filename), new Uri(url));
 
         try
         {
@@ -31,7 +31,7 @@ public class WebUtils : IWebUtils
             if (trueUri is null)
             {
                 Log.Warning("Failure to crawl url '{url}'", url);
-                return (string.Empty, new Uri(url));
+                return (false, string.Empty, new Uri(url));
             }
 
             switch (status)
@@ -39,7 +39,7 @@ public class WebUtils : IWebUtils
                 case HttpStatusCode.OK:
                     break;
                 case HttpStatusCode.NotFound:
-                    return (string.Empty, new Uri(url));
+                    return (false, string.Empty, new Uri(url));
                 default:
                     break;
             }
@@ -75,14 +75,14 @@ public class WebUtils : IWebUtils
             Log.Information("Saving text file '{fileName}'", filename);
             doc.Save(filename);
 
-            return (filename, trueUri);
+            return (true, filename, trueUri);
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "SaveUrlToDisk: Unexpected error '{message}'", ex.Message);
+            Log.Warning("SaveUrlToDisk: Unexpected error '{message}'", ex.Message);
         }
 
-        return (string.Empty, new Uri(url));
+        return (false, string.Empty, new Uri(url));
     }
 
     private string SaveImageToDisk(string url, string urlHash, string filename)
