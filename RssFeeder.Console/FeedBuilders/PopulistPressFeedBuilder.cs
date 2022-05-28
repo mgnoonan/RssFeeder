@@ -51,7 +51,7 @@ class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                 var item = CreateNodeLinks(filters, node, "above the fold", count++, feedUrl);
                 if (item != null)
                 {
-                    TryParseEmbeddedUrl(item, _selectors);
+                    //TryParseEmbeddedUrl(item, _selectors);
                     log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                     list.Add(item);
                 }
@@ -71,7 +71,7 @@ class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                     var item = CreateNodeLinks(filters, node, "main headlines", count++, feedUrl);
                     if (item != null && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
                     {
-                        TryParseEmbeddedUrl(item, _selectors);
+                        //TryParseEmbeddedUrl(item, _selectors);
                         log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                         list.Add(item);
                     }
@@ -80,14 +80,17 @@ class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         }
 
         // Column 1
-        container = document.QuerySelector("#home_page_main_feed_left");
+        container = document.QuerySelector("#column_1");
         if (container != null)
         {
-            var nodes = container.QuerySelectorAll("a");
+            var pairedContainers = container.QuerySelectorAll("ul > li > h2");
             count = 1;
-            foreach (var node in nodes)
+            foreach (var pairedContainer in pairedContainers)
             {
-                var item = CreateNodeLinks(filters, node, "column 1", count++, feedUrl);
+                var nodeTitle = pairedContainer.QuerySelector("span.mf-headline > a");
+                var nodeLink = pairedContainer.QuerySelector("span.iconbox > a");
+
+                var item = CreatePairedNodeLinks(filters, nodeTitle, nodeLink, "column 1", count++, feedUrl);
 
                 // Unfortunately the reference site links are included in the column links, so the
                 // AMERICAN THINKER link signals the end of the article list in column 1
@@ -96,7 +99,7 @@ class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 
                 if (item != null && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
                 {
-                    TryParseEmbeddedUrl(item, _selectors);
+                    //TryParseEmbeddedUrl(item, _selectors);
                     log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                     list.Add(item);
                 }
@@ -104,20 +107,17 @@ class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         }
 
         // Column 2
-        container = document.QuerySelector("#home_page_main_feed_center");
+        container = document.QuerySelector("#column_2");
         if (container != null)
         {
-            var nodes = container.QuerySelectorAll("a");
+            var pairedContainers = container.QuerySelectorAll("ul > li > h2");
             count = 1;
-            foreach (var node in nodes)
+            foreach (var pairedContainer in pairedContainers)
             {
-                string title = WebUtility.HtmlDecode(node.Text().Trim());
-                if (string.IsNullOrWhiteSpace(title))
-                    continue;
+                var nodeTitle = pairedContainer.QuerySelector("span.mf-headline > a");
+                var nodeLink = pairedContainer.QuerySelector("span.iconbox > a");
 
-                Log.Information("Checking column 2 title '{title}'", title);
-
-                var item = CreateNodeLinks(filters, node, "column 2", count++, feedUrl);
+                var item = CreatePairedNodeLinks(filters, nodeTitle, nodeLink, "column 2", count++, feedUrl);
 
                 // Unfortunately the reference site links are included in the column links, so the
                 // CINDY ADAMS link signals the end of the article list in column 2
@@ -126,7 +126,7 @@ class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 
                 if (item != null && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
                 {
-                    TryParseEmbeddedUrl(item, _selectors);
+                    //TryParseEmbeddedUrl(item, _selectors);
                     log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                     list.Add(item);
                 }
@@ -134,14 +134,17 @@ class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         }
 
         // Column 3
-        container = document.QuerySelector("#home_page_main_feed_right");
+        container = document.QuerySelector("#column_3");
         if (container != null)
         {
-            var nodes = container.QuerySelectorAll("a");
+            var pairedContainers = container.QuerySelectorAll("ul > li > h2");
             count = 1;
-            foreach (var node in nodes)
+            foreach (var pairedContainer in pairedContainers)
             {
-                var item = CreateNodeLinks(filters, node, "column 3", count++, feedUrl);
+                var nodeTitle = pairedContainer.QuerySelector("span.mf-headline > a");
+                var nodeLink = pairedContainer.QuerySelector("span.iconbox > a");
+
+                var item = CreatePairedNodeLinks(filters, nodeTitle, nodeLink, "column 3", count++, feedUrl);
 
                 // Unfortunately the reference site links are included in the column links, so the
                 // PRIVACY POLICY link signals the end of the article list in column 2
@@ -150,7 +153,7 @@ class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 
                 if (item != null && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
                 {
-                    TryParseEmbeddedUrl(item, _selectors);
+                    //TryParseEmbeddedUrl(item, _selectors);
                     log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                     list.Add(item);
                 }
@@ -177,8 +180,6 @@ class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             Log.Information("Embedded Url found '{url}'", url);
             item.FeedAttributes.UrlHash = _utilities.CreateMD5Hash(url);
             item.FeedAttributes.Url = url;
-            //item.FeedAttributes.UrlHash = _utilities.CreateMD5Hash(url);
-            //item.FeedAttributes.Url = url;
             break;
         }
     }

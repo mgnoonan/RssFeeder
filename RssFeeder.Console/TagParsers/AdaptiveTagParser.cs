@@ -1,4 +1,7 @@
-﻿namespace RssFeeder.Console.TagParsers;
+﻿using System.Text.RegularExpressions;
+using AngleSharp.Html.Dom;
+
+namespace RssFeeder.Console.TagParsers;
 
 public class AdaptiveTagParser : ITagParser
 {
@@ -17,7 +20,48 @@ public class AdaptiveTagParser : ITagParser
             paragraphSelector = "p";
 
         Log.Debug("Attempting adaptive parsing using paragraph selector '{paragraphSelector}'", paragraphSelector);
+        bodySelector = GetHighestParagraphCountSelector(document, paragraphSelector, true);
 
+        if (string.IsNullOrEmpty(bodySelector))
+        {
+            paragraphSelector = "br";
+            Log.Debug("Attempting adaptive parsing using paragraph selector '{paragraphSelector}'", paragraphSelector);
+            bodySelector = GetHighestParagraphCountSelector(document, paragraphSelector, false);
+        }
+
+        if (string.IsNullOrEmpty(bodySelector))
+            return string.Empty;
+
+        return GetArticleText(document, bodySelector, paragraphSelector);
+    }
+
+    private string GetArticleText(IHtmlDocument document, string bodySelector, string paragraphSelector)
+    {
+        try
+        {
+            // Query the document by CSS selectors to get the article text
+            var container = document.QuerySelector(bodySelector);
+
+            // Get only the paragraphs under the parent
+            switch (paragraphSelector)
+            {
+                case "p":
+                    var paragraphs2 = container.QuerySelectorAll(paragraphSelector);
+                    return BuildArticleText(paragraphs2);
+                case "br":
+                    return BuildArticleText(container.InnerHtml);
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Error parsing paragraph selectors '{paragraphSelector}', '{message}'", paragraphSelector, ex.Message);
+        }
+
+        return string.Empty;
+    }
+
+    private static string GetHighestParagraphCountSelector(IHtmlDocument document, string paragraphSelector, bool skipIfEmptyContent)
+    {
         // Query the document by CSS selectors to get the article text
         var paragraphs = document.QuerySelectorAll(paragraphSelector);
         if (!paragraphs.Any())
@@ -26,10 +70,11 @@ public class AdaptiveTagParser : ITagParser
             return string.Empty;
         }
 
+        // Build up the counts for each parent selector
         var dict = new Dictionary<string, int>();
         foreach (var p in paragraphs)
         {
-            if (string.IsNullOrWhiteSpace(System.Web.HttpUtility.HtmlDecode(p.TextContent)))
+            if (skipIfEmptyContent && string.IsNullOrWhiteSpace(System.Web.HttpUtility.HtmlDecode(p.TextContent)))
             {
                 continue;
             }
@@ -49,6 +94,7 @@ public class AdaptiveTagParser : ITagParser
 
         // Get the parent with the most paragraphs, it should be the article content
         int highCount = default;
+        string bodySelector = "";
         foreach (var key in dict.Keys)
         {
             if (dict[key] > highCount)
@@ -67,22 +113,7 @@ public class AdaptiveTagParser : ITagParser
             return string.Empty;
         }
 
-        try
-        {
-            // Query the document by CSS selectors to get the article text
-            var container = document.QuerySelector(bodySelector);
-
-            // Get only the paragraphs under the parent
-            var paragraphs2 = container.QuerySelectorAll(paragraphSelector);
-
-            return BuildArticleText(paragraphs2);
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "Error parsing paragraph selectors '{paragraphSelector}', '{message}'", paragraphSelector, ex.Message);
-        }
-
-        return string.Empty;
+        return bodySelector;
     }
 
     protected virtual string BuildArticleText(IHtmlCollection<IElement> paragraphs)
@@ -102,5 +133,10 @@ public class AdaptiveTagParser : ITagParser
         }
 
         return description.ToString();
+    }
+
+    protected virtual string BuildArticleText(string innerHtml)
+    {
+        return String.Concat("<p>", Regex.Replace(innerHtml, "<br\\s?\\/?>", "</p><p>"), "</p>");
     }
 }

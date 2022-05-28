@@ -40,6 +40,17 @@ class BaseFeedBuilder
         return CreateNodeLinks(filters, location, count, title, linkUrl, feedUrl);
     }
 
+    protected RssFeedItem CreatePairedNodeLinks(List<string> filters, IElement nodeTitleOnly, IElement nodeLinkOnly, string location, int count, string feedUrl)
+    {
+        string title = WebUtility.HtmlDecode(nodeTitleOnly.Text().Trim());
+
+        // Replace all errant spaces, which sometimes creep into Drudge's URLs
+        var attr = nodeLinkOnly.Attributes.GetNamedItem("href");
+        string linkUrl = attr.Value.Trim().Replace(" ", string.Empty);
+
+        return CreateNodeLinks(filters, location, count, title, linkUrl, feedUrl);
+    }
+
     protected RssFeedItem CreateNodeLinks(List<string> filters, HtmlNode node, string location, int count, string feedUrl)
     {
         string title = WebUtility.HtmlDecode(node.InnerText.Trim());
@@ -77,11 +88,13 @@ class BaseFeedBuilder
         if (!linkUrl.ToLower().StartsWith("http"))
         {
             linkUrl = webUtils.RepairUrl(linkUrl, feedUrl);
-            //log.Information("Invalid link url {url}", linkUrl);
-            //return null;
         }
 
-        var uri = new Uri(linkUrl);
+        if (!Uri.TryCreate(linkUrl, UriKind.Absolute, out Uri uri))
+        {
+            log.Warning("Unable to parse Uri {linkUrl}", linkUrl);
+            return null;
+        }
 
         // Calculate the MD5 hash for the link so we can be sure of uniqueness
         string hash = utils.CreateMD5Hash(uri.AbsoluteUri.ToLower());

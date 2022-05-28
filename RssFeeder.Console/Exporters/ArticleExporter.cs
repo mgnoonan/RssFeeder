@@ -31,13 +31,31 @@ public class ArticleExporter : BaseArticleExporter, IArticleExporter
             return exportFeedItem;
         }
 
-        if (Config.VideoHosts.Contains(hostName))
+        string videoUrl = item.OpenGraphAttributes.GetValueOrDefault("og:video:secure_url") ??
+            item.OpenGraphAttributes.GetValueOrDefault("og:video:url") ??
+            item.OpenGraphAttributes.GetValueOrDefault("og:video") ??
+            "";
+        // Some sites do not provide OpenGraph video tags so watch for those specifically
+        string videoType = item.OpenGraphAttributes.GetValueOrDefault("og:video:type") ??
+            (videoUrl.EndsWith(".mp4") ? "video/mp4" : videoUrl.Contains("youtube.com") || item.SiteName == "rumble" ? "text/html" : "");
+
+        bool hasSupportedVideoFormat = (videoUrl.Length > 0 || item.SiteName == "rumble") && 
+            (videoType == "text/html" || videoType == "video/mp4");
+
+        if (hasSupportedVideoFormat)
         {
             Log.Debug("Applying video metadata values for '{hostname}'", hostName);
             SetVideoMetaData(exportFeedItem, item, hostName);
             if (exportFeedItem.VideoHeight > 0)
             {
-                exportFeedItem.ArticleText = ApplyTemplateToDescription(exportFeedItem, feed, ExportTemplates.VideoTemplate);
+                if (videoType == "video/mp4")
+                {
+                    exportFeedItem.ArticleText = ApplyTemplateToDescription(exportFeedItem, feed, ExportTemplates.Mp4VideoTemplate);
+                }
+                else
+                {
+                    exportFeedItem.ArticleText = ApplyTemplateToDescription(exportFeedItem, feed, ExportTemplates.HtmlVideoTemplate);
+                }
             }
             else
             {

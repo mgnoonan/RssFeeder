@@ -131,7 +131,7 @@ public class WebCrawler : IWebCrawler
         int articleCount = 0;
         foreach (var item in list)
         {
-            //using (LogContext.PushProperty("url", item.FeedAttributes.Url))
+            using (LogContext.PushProperty("url", item.FeedAttributes.Url))
             using (LogContext.PushProperty("urlHash", item.FeedAttributes.UrlHash))
             {
                 // No need to continue if we already crawled the article
@@ -164,17 +164,20 @@ public class WebCrawler : IWebCrawler
                     else
                     {
                         // Download the Url contents, first using HttpClient but if that fails use Selenium
-                        (string newFilename, Uri trueUri) = _webUtils.SaveUrlToDisk(item.FeedAttributes.Url, item.FeedAttributes.UrlHash, filename);
-                        item.FeedAttributes.FileName = newFilename;
-                        item.HtmlAttributes.Add("Url", trueUri.AbsoluteUri);
+                        (bool success, string newFilename, Uri trueUri) = _webUtils.TrySaveUrlToDisk(item.FeedAttributes.Url, item.FeedAttributes.UrlHash, filename);
+                        if (success)
+                        {
+                            item.FeedAttributes.FileName = newFilename;
+                            item.HtmlAttributes.Add("Url", trueUri.AbsoluteUri);
+                        }
 
                         // Must have had an error on loading the url so attempt with Selenium
-                        if (string.IsNullOrEmpty(newFilename) || newFilename.Contains("ajc_com"))
-                        {
-                            (newFilename, trueUri) = _webUtils.WebDriverUrlToDisk(item.FeedAttributes.Url, item.FeedAttributes.UrlHash, filename);
-                            item.FeedAttributes.FileName = newFilename;
-                            item.HtmlAttributes["Url"] = trueUri.AbsoluteUri;
-                        }
+                        //if (string.IsNullOrEmpty(newFilename) || newFilename.Contains("ajc_com"))
+                        //{
+                        //    (newFilename, trueUri) = _webUtils.WebDriverUrlToDisk(item.FeedAttributes.Url, item.FeedAttributes.UrlHash, filename);
+                        //    item.FeedAttributes.FileName = newFilename;
+                        //    item.HtmlAttributes["Url"] = trueUri.AbsoluteUri;
+                        //}
                     }
 
                     // Parse the saved file as dictated by the site definitions
@@ -257,7 +260,7 @@ public class WebCrawler : IWebCrawler
         foreach (var item in list)
         {
             using (LogContext.PushProperty("runID", runID))
-            //using (LogContext.PushProperty("url", item.FeedAttributes.Url))
+            using (LogContext.PushProperty("url", item.FeedAttributes.Url))
             using (LogContext.PushProperty("urlHash", item.FeedAttributes.UrlHash))
             {
                 Log.Debug("Preparing '{urlHash}' for export", item.FeedAttributes.UrlHash);
