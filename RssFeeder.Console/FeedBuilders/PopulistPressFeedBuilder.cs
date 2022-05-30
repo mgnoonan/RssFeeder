@@ -90,6 +90,9 @@ class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                 var nodeTitle = pairedContainer.QuerySelector("span.mf-headline > a");
                 var nodeLink = pairedContainer.QuerySelector("span.iconbox > a");
 
+                if (nodeLink == null)
+                    continue;
+
                 var item = CreatePairedNodeLinks(filters, nodeTitle, nodeLink, "column 1", count++, feedUrl);
 
                 // Unfortunately the reference site links are included in the column links, so the
@@ -117,6 +120,9 @@ class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                 var nodeTitle = pairedContainer.QuerySelector("span.mf-headline > a");
                 var nodeLink = pairedContainer.QuerySelector("span.iconbox > a");
 
+                if (nodeLink == null)
+                    continue;
+
                 var item = CreatePairedNodeLinks(filters, nodeTitle, nodeLink, "column 2", count++, feedUrl);
 
                 // Unfortunately the reference site links are included in the column links, so the
@@ -143,6 +149,9 @@ class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             {
                 var nodeTitle = pairedContainer.QuerySelector("span.mf-headline > a");
                 var nodeLink = pairedContainer.QuerySelector("span.iconbox > a");
+
+                if (nodeLink == null)
+                    continue;
 
                 var item = CreatePairedNodeLinks(filters, nodeTitle, nodeLink, "column 3", count++, feedUrl);
 

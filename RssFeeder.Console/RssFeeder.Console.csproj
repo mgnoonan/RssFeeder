@@ -44,6 +44,9 @@
     <None Update="crawlerconfig.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="feed-populistpress.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="feed-offthepress.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
