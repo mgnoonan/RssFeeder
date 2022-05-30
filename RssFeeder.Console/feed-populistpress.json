@@ -1,0 +1,16 @@
+﻿[
+  {
+    "Title": "Populist Press Extra",
+    "Enabled": "true",
+    "EnableThumbnail": "false",
+    "Exportable": "false",
+    "Description": "Populist Press Extra",
+    "Language": "en-US",
+    "Url": "https://populistpress.com/",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.PopulistPressFeedBuilder",
+    "CollectionName": "populist-press",
+    "FileRetentionDays": 3,
+    "DatabaseRetentionDays": 180,
+    "Filters": []
+  }
+]

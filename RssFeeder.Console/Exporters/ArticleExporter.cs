@@ -40,7 +40,7 @@ public class ArticleExporter : BaseArticleExporter, IArticleExporter
             (videoUrl.EndsWith(".mp4") ? "video/mp4" : videoUrl.Contains("youtube.com") || item.SiteName == "rumble" ? "text/html" : "");
 
         bool hasSupportedVideoFormat = (videoUrl.Length > 0 || item.SiteName == "rumble") && 
-            (videoType == "text/html" || videoType == "video/mp4");
+            (videoType == "text/html" || videoType == "video/mp4" || videoType == "application/x-mpegURL");
 
         if (hasSupportedVideoFormat)
         {
@@ -48,7 +48,7 @@ public class ArticleExporter : BaseArticleExporter, IArticleExporter
             SetVideoMetaData(exportFeedItem, item, hostName);
             if (exportFeedItem.VideoHeight > 0)
             {
-                if (videoType == "video/mp4")
+                if (videoType == "video/mp4" || videoType == "application/x-mpegURL")
                 {
                     exportFeedItem.ArticleText = ApplyTemplateToDescription(exportFeedItem, feed, ExportTemplates.Mp4VideoTemplate);
                 }
