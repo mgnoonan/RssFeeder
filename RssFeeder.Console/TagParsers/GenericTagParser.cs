@@ -35,16 +35,24 @@ public class GenericTagParser : ITagParser
 
         foreach (var p in paragraphs)
         {
-            string value = p.TextContent.Trim();
-
             if (p.TagName.ToLower().StartsWith("h"))
             {
-                description.AppendLine($"<h4>{value}</h4>");
+                description.AppendLine($"<h4>{p.TextContent.Trim()}</h4>");
             }
             else
             {
-                // Replace any <br> tags and empty paragraphs
-                description.AppendLine($"<p>{value}</p>");
+                // Watch for the older style line breaks and convert to proper paragraphs
+                if (p.InnerHtml.Contains("<br>"))
+                {
+                    Log.Information("Replacing old style line breaks with paragraph tags");
+                    string value = p.InnerHtml.Replace("<br>", "</p><p>");
+                    description.AppendLine($"<p>{value}</p>");
+                }
+                else
+                {
+                    string value = p.TextContent.Trim();
+                    description.AppendLine($"<p>{value}</p>");
+                }
             }
         }
 
