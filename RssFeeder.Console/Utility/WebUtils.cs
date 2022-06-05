@@ -18,11 +18,12 @@ public class WebUtils : IWebUtils
         _crawler = crawler;
     }
 
-    public (bool, string, Uri) TrySaveUrlToDisk(string url, string urlHash, string filename, bool removeScriptElements = true)
+    public (bool, bool, string, Uri) TrySaveUrlToDisk(string url, string urlHash, string filename, bool removeScriptElements = true)
     {
         if (!filename.EndsWith(".html"))
-            return (true, SaveImageToDisk(url, urlHash, filename), new Uri(url));
+            return (true, false, SaveImageToDisk(url, urlHash, filename), new Uri(url));
 
+        bool retryWithSelenium = false;
         try
         {
             Log.Debug("Loading URL '{urlHash}':'{url}'", urlHash, url);
@@ -31,7 +32,7 @@ public class WebUtils : IWebUtils
             if (trueUri is null)
             {
                 Log.Warning("Failure to crawl url '{url}'", url);
-                return (false, string.Empty, new Uri(url));
+                return (false, retryWithSelenium, string.Empty, new Uri(url));
             }
 
             switch (status)
@@ -39,7 +40,7 @@ public class WebUtils : IWebUtils
                 case HttpStatusCode.OK:
                     break;
                 case HttpStatusCode.NotFound:
-                    return (false, string.Empty, new Uri(url));
+                    return (false, retryWithSelenium, string.Empty, new Uri(url));
                 default:
                     break;
             }
@@ -50,7 +51,7 @@ public class WebUtils : IWebUtils
             doc.OptionFixNestedTags = true;
 
             // List of html tags we really don't care to save
-            var excludeHtmlTags = new List<string> { "style", "link", "svg", "form" };
+            var excludeHtmlTags = new List<string> { "style", "link", "svg", "form", "iframe", "noscript" };
             if (trueUri.AbsoluteUri.Contains("apnews.com") || trueUri.AbsoluteUri.Contains("rumble.com"))
             {
                 removeScriptElements = false;
@@ -75,14 +76,15 @@ public class WebUtils : IWebUtils
             Log.Information("Saving text file '{fileName}'", filename);
             doc.Save(filename);
 
-            return (true, filename, trueUri);
+            return (true, retryWithSelenium, filename, trueUri);
         }
         catch (Exception ex)
         {
-            Log.Warning("SaveUrlToDisk: Unexpected error '{message}'", ex.Message);
+            Log.Warning(ex,"SaveUrlToDisk: Unexpected error '{message}'", ex.Message);
+            retryWithSelenium = ex.Message.Contains("Moved");
         }
 
-        return (false, string.Empty, new Uri(url));
+        return (false, retryWithSelenium, string.Empty, new Uri(url));
     }
 
     private string SaveImageToDisk(string url, string urlHash, string filename)
