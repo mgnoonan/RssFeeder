@@ -50,7 +50,7 @@ public class WebUtils : IWebUtils
             doc.OptionFixNestedTags = true;
 
             // List of html tags we really don't care to save
-            var excludeHtmlTags = new List<string> { "style", "link", "svg" };
+            var excludeHtmlTags = new List<string> { "style", "link", "svg", "form" };
             if (trueUri.AbsoluteUri.Contains("apnews.com") || trueUri.AbsoluteUri.Contains("rumble.com"))
             {
                 removeScriptElements = false;

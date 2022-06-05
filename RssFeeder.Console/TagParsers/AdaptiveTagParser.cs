@@ -128,7 +128,7 @@ public class AdaptiveTagParser : ITagParser
             }
             else
             {
-                description.AppendLine($"<p>{p.TextContent.Trim()}</p>");
+                description.AppendLine($"<p>{p.InnerHtml}</p>");
             }
         }
 
