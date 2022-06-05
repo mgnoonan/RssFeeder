@@ -137,8 +137,8 @@ public class BaseArticleExporter
             var length = text.IndexOf('\"', start) - start;
 
             exportFeedItem.VideoUrl = text.Substring(start, length);
-            exportFeedItem.VideoHeight = 0;
-            exportFeedItem.VideoWidth = 0;
+            exportFeedItem.VideoHeight = 1080;
+            exportFeedItem.VideoWidth = 1920;
 
         }
         else
