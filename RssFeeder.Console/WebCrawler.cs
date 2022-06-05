@@ -230,7 +230,7 @@ public class WebCrawler : IWebCrawler
             string path = uri.GetComponents(UriComponents.Path, UriFormat.Unescaped).ToLower();
             string query = uri.GetComponents(UriComponents.Query, UriFormat.Unescaped).ToLower();
 
-            string extension = path.EndsWith(".png") ? ".png" :
+            string extension = path.EndsWith(".png") || query.Contains("format=png") ? ".png" :
                 path.EndsWith(".jpg") || path.EndsWith(".jpeg") || query.Contains("format=jpg") ? ".jpg" :
                 path.EndsWith(".gif") ? ".gif" :
                 ".html";
