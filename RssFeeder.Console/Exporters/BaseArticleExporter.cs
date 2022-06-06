@@ -111,7 +111,7 @@ public class BaseArticleExporter
             var text = item.HtmlAttributes.GetValueOrDefault("ParserResult") ?? "";
             if (!text.StartsWith("<"))
             {
-                Log.Debug("EXPORT: Processing rumble.com ld+json data");
+                Log.Debug("EXPORT: Processing rumble.com ld+json metadata");
 
                 // application/ld+json parser result
                 var list = JsonConvert.DeserializeObject<List<JsonLdRumbleValues>>(text);
@@ -127,9 +127,25 @@ public class BaseArticleExporter
                 }
             }
         }
+        else if (item.SiteName == "bitchute")
+        {
+            Log.Information("EXPORT: Processing bitchute.com metadata");
+
+            // Bitchute logic is a little convoluted, they don't provide much metadata
+            var text = item.HtmlAttributes.GetValueOrDefault("ParserResult") ?? "";
+            var start = text.IndexOf("https://");
+            var length = text.IndexOf('\"', start) - start;
+
+            exportFeedItem.VideoUrl = text.Substring(start, length);
+            exportFeedItem.VideoHeight = 1080;
+            exportFeedItem.VideoWidth = 1920;
+
+        }
         else
         {
-            // Most other sites provide video open graph tags
+            Log.Debug("EXPORT: Processing open graph video metadata");
+
+            // Sites that provide video metadata via open graph tags
             exportFeedItem.VideoUrl = item.OpenGraphAttributes.GetValueOrDefault("og:video:secure_url") ??
                 item.OpenGraphAttributes.GetValueOrDefault("og:video:url") ??
                 item.OpenGraphAttributes.GetValueOrDefault("og:video") ?? 
@@ -137,7 +153,11 @@ public class BaseArticleExporter
             exportFeedItem.VideoHeight = int.TryParse(item.OpenGraphAttributes.GetValueOrDefault("og:video:height") ?? item.OpenGraphAttributes.GetValueOrDefault("og:image:height"), out int height) ? height : 0;
             exportFeedItem.VideoWidth = int.TryParse(item.OpenGraphAttributes.GetValueOrDefault("og:video:width") ?? item.OpenGraphAttributes.GetValueOrDefault("og:image:width"), out int width) ? width : 0;
         }
-        Log.Information("Video URL: '{url}' ({height}x{width})", exportFeedItem.VideoUrl, exportFeedItem.VideoHeight, exportFeedItem.VideoWidth);
+
+        using (LogContext.PushProperty("hostName", hostName))
+        {
+            Log.Information("Video URL: '{url}' ({height}x{width})", exportFeedItem.VideoUrl, exportFeedItem.VideoHeight, exportFeedItem.VideoWidth);
+        }
 
         // There's no article text for most video sites, so just use the meta description
         var description = item.OpenGraphAttributes.GetValueOrDefault("og:description") ?? "";

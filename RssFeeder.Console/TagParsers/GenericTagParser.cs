@@ -50,8 +50,7 @@ public class GenericTagParser : ITagParser
                 }
                 else
                 {
-                    string value = p.TextContent.Trim();
-                    description.AppendLine($"<p>{value}</p>");
+                    description.AppendLine($"<p>{p.InnerHtml}</p>");
                 }
             }
         }

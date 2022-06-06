@@ -37,9 +37,10 @@ public class ArticleExporter : BaseArticleExporter, IArticleExporter
             "";
         // Some sites do not provide OpenGraph video tags so watch for those specifically
         string videoType = item.OpenGraphAttributes.GetValueOrDefault("og:video:type") ??
-            (videoUrl.EndsWith(".mp4") ? "video/mp4" : videoUrl.Contains("youtube.com") || item.SiteName == "rumble" ? "text/html" : "");
+            (videoUrl.EndsWith(".mp4") || item.SiteName == "bitchute" ? "video/mp4" : 
+            videoUrl.Contains("youtube.com") || item.SiteName == "rumble" ? "text/html" : "");
 
-        bool hasSupportedVideoFormat = (videoUrl.Length > 0 || item.SiteName == "rumble") && 
+        bool hasSupportedVideoFormat = (videoUrl.Length > 0 || item.SiteName == "rumble" || item.SiteName == "bitchute") && 
             (videoType == "text/html" || videoType == "video/mp4" || videoType == "application/x-mpegURL");
 
         if (hasSupportedVideoFormat)
