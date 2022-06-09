@@ -63,7 +63,7 @@ internal class ConservagatorFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             if (nodes != null)
             {
                 count = 1;
-                foreach (var node in nodes)
+                foreach (var node in nodes.Take(2))
                 {
                     string title = WebUtility.HtmlDecode(node.Text().Trim());
 

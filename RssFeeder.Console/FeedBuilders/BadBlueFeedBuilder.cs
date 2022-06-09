@@ -52,7 +52,7 @@ class BadBlueFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         if (nodes != null)
         {
             count = 1;
-            foreach (var node in nodes)
+            foreach (var node in nodes.Take(20))
             {
                 string title = WebUtility.HtmlDecode(node.Text().Trim());
 

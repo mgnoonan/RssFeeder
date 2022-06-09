@@ -233,6 +233,7 @@ public class WebCrawler : IWebCrawler
             string extension = path.EndsWith(".png") || query.Contains("format=png") ? ".png" :
                 path.EndsWith(".jpg") || path.EndsWith(".jpeg") || query.Contains("format=jpg") ? ".jpg" :
                 path.EndsWith(".gif") ? ".gif" :
+                path.EndsWith(".pdf") ? ".pdf" :
                 ".html";
 
             return extension;
