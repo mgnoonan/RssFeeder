@@ -24,7 +24,7 @@ public class ArticleExporter : BaseArticleExporter, IArticleExporter
         string hostName = uri.GetComponents(UriComponents.Host, UriFormat.Unescaped).ToLower();
 
         var fileName = item.FeedAttributes.FileName ?? "";
-        if (fileName.EndsWith(".png") || fileName.EndsWith(".jpg") || fileName.EndsWith(".gif"))
+        if (fileName.EndsWith(".png") || fileName.EndsWith(".jpg") || fileName.EndsWith(".gif") || fileName.EndsWith(".pdf"))
         {
             SetGraphicMetaData(item, exportFeedItem);
             exportFeedItem.ArticleText = ApplyTemplateToDescription(exportFeedItem, feed, ExportTemplates.GraphicTemplate);

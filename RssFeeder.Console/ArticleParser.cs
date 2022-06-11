@@ -34,7 +34,7 @@ public class ArticleParser : IArticleParser
             item.FeedAttributes.FileName.EndsWith(".gif") ||
             item.FeedAttributes.FileName.EndsWith(".pdf"))
         {
-            Log.Debug("Graphics file detected, skipping metadata values for '{url}'", item.FeedAttributes.Url);
+            Log.Information("Binary file detected, skipping metadata values for '{url}'", item.FeedAttributes.Url);
             return;
         }
 
