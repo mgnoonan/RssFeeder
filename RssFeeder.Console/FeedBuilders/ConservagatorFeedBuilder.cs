@@ -57,7 +57,7 @@ internal class ConservagatorFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         };
 		int sectionCounter = 0;
 
-        foreach (var element in containers)
+        foreach (var element in containers.Take(12))
         {
             var nodes = element.QuerySelectorAll("ul.rss-aggregator > li.feed-item > a");
             if (nodes != null)
