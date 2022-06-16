@@ -59,9 +59,12 @@ public class ArticleParser : IArticleParser
 
             // Resolve the named parameter using DI
             var parser = _container.ResolveNamed<ITagParser>(namedParser);
+            parser.Initialize(doc.Text, item);
 
             // Parse the content to get the article text
-            item.HtmlAttributes.Add("ParserResult", parser.ParseTagsBySelector(doc.Text, articleSelector, paragraphSelector));
+            parser.PreParse();
+            item.HtmlAttributes.Add("ParserResult", parser.ParseTagsBySelector(articleSelector, paragraphSelector));
+            parser.PostParse();
         }
     }
 

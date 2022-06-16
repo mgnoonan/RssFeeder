@@ -1,17 +1,17 @@
 ﻿namespace RssFeeder.Console.TagParsers;
 
-public class AllTagsParser : ITagParser
+public class AllTagsParser : TagParserBase, ITagParser
 {
-    public string ParseTagsBySelector(string html, SiteArticleDefinition options)
+    public string ParseTagsBySelector(SiteArticleDefinition options)
     {
-        return ParseTagsBySelector(html, options.ArticleSelector, options.ParagraphSelector);
+        return ParseTagsBySelector(options.ArticleSelector, options.ParagraphSelector);
     }
 
-    public string ParseTagsBySelector(string html, string bodySelector, string paragraphSelector)
+    public string ParseTagsBySelector(string bodySelector, string paragraphSelector)
     {
         // Load and parse the html from the source file
         var parser = new HtmlParser();
-        var document = parser.ParseDocument(html);
+        var document = parser.ParseDocument(_sourceHtml);
 
         Log.Information("Attempting alltags parsing using paragraph selector '{paragraphSelector}'", paragraphSelector);
 
