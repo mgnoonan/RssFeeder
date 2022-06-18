@@ -80,41 +80,41 @@
                 }
             }
 
-            // Column 2
-            // #link-70828 > a
-            container = document.QuerySelector("div.homepage-column-2 > div.sl-links-main");
-            if (container != null)
-            {
-                var nodes = container.QuerySelectorAll("a");
-                count = 1;
-                foreach (var node in nodes)
-                {
-                    var item = CreateNodeLinks(filters, node, "column 2", count++, feedUrl);
-                    if (item != null)
-                    {
-                        log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                        list.Add(item);
-                    }
-                }
-            }
+            //// Column 2
+            //// #link-70828 > a
+            //container = document.QuerySelector("div.homepage-column-2 > div.sl-links-main");
+            //if (container != null)
+            //{
+            //    var nodes = container.QuerySelectorAll("a");
+            //    count = 1;
+            //    foreach (var node in nodes)
+            //    {
+            //        var item = CreateNodeLinks(filters, node, "column 2", count++, feedUrl);
+            //        if (item != null)
+            //        {
+            //            log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+            //            list.Add(item);
+            //        }
+            //    }
+            //}
 
-            // Column 3
-            // #link-70828 > a
-            container = document.QuerySelector("div.homepage-column-3 > div.sl-links-main");
-            if (container != null)
-            {
-                var nodes = container.QuerySelectorAll("a");
-                count = 1;
-                foreach (var node in nodes)
-                {
-                    var item = CreateNodeLinks(filters, node, "column 3", count++, feedUrl);
-                    if (item != null)
-                    {
-                        log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                        list.Add(item);
-                    }
-                }
-            }
+            //// Column 3
+            //// #link-70828 > a
+            //container = document.QuerySelector("div.homepage-column-3 > div.sl-links-main");
+            //if (container != null)
+            //{
+            //    var nodes = container.QuerySelectorAll("a");
+            //    count = 1;
+            //    foreach (var node in nodes)
+            //    {
+            //        var item = CreateNodeLinks(filters, node, "column 3", count++, feedUrl);
+            //        if (item != null)
+            //        {
+            //            log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+            //            list.Add(item);
+            //        }
+            //    }
+            //}
 
             return list;
         }

@@ -87,24 +87,24 @@ class RantinglyFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             }
         }
 
-        // Column 2
-        container = document.QuerySelector("#column-2 > div > div.wpd-posted-links");
-        if (container != null)
-        {
-            var nodes = container.QuerySelectorAll("a");
-            count = 1;
-            foreach (var node in nodes)
-            {
-                string title = WebUtility.HtmlDecode(node.Text().Trim());
+        //// Column 2
+        //container = document.QuerySelector("#column-2 > div > div.wpd-posted-links");
+        //if (container != null)
+        //{
+        //    var nodes = container.QuerySelectorAll("a");
+        //    count = 1;
+        //    foreach (var node in nodes)
+        //    {
+        //        string title = WebUtility.HtmlDecode(node.Text().Trim());
 
-                var item = CreateNodeLinks(filters, node, "column 2", count++, feedUrl);
-                if (item != null && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
-                {
-                    log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                    list.Add(item);
-                }
-            }
-        }
+        //        var item = CreateNodeLinks(filters, node, "column 2", count++, feedUrl);
+        //        if (item != null && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
+        //        {
+        //            log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+        //            list.Add(item);
+        //        }
+        //    }
+        //}
 
         return list;
     }

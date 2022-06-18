@@ -73,13 +73,13 @@ internal class FreedomPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         containers = document.QuerySelectorAll("#home-section > div.columns");
         string[] sectionName = new string[] { "first", "previous banner", "second", "third" };
         int sectionCounter = 0;
-        foreach (var element in containers.Take(3))
+        foreach (var element in containers.Take(1))
         {
             nodes = element.QuerySelectorAll("a");
             if (nodes != null)
             {
                 count = 1;
-                foreach (var node in nodes)
+                foreach (var node in nodes.Take(20))
                 {
                     string title = WebUtility.HtmlDecode(node.Text().Trim());
 

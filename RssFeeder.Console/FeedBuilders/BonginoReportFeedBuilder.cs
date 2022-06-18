@@ -67,25 +67,25 @@ class BonginoReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             }
         }
 
-        // All Stories section
-        // //section.all-stories > div > div > div.col-12.col-sm-8 > div > div > div > h5 > a
-        container = document.QuerySelector("section.all-stories");
-        nodes = container.QuerySelectorAll("a");
-        if (nodes != null)
-        {
-            count = 1;
-            foreach (var node in nodes)
-            {
-                string title = WebUtility.HtmlDecode(node.Text().Trim());
+        //// All Stories section
+        //// //section.all-stories > div > div > div.col-12.col-sm-8 > div > div > div > h5 > a
+        //container = document.QuerySelector("section.all-stories");
+        //nodes = container.QuerySelectorAll("a");
+        //if (nodes != null)
+        //{
+        //    count = 1;
+        //    foreach (var node in nodes)
+        //    {
+        //        string title = WebUtility.HtmlDecode(node.Text().Trim());
 
-                var item = CreateNodeLinks(filters, node, "all stories", count++, feedUrl);
-                if (item != null)
-                {
-                    log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                    list.Add(item);
-                }
-            }
-        }
+        //        var item = CreateNodeLinks(filters, node, "all stories", count++, feedUrl);
+        //        if (item != null)
+        //        {
+        //            log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+        //            list.Add(item);
+        //        }
+        //    }
+        //}
 
         // Video Stories section
         // //section.stories-video > div > div > div.col-12.col-sm-8 > div > div > div > h5 > a

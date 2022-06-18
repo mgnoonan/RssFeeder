@@ -109,65 +109,65 @@ class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             }
         }
 
-        // Column 2
-        container = document.QuerySelector("#column_2");
-        if (container != null)
-        {
-            var pairedContainers = container.QuerySelectorAll("ul > li > h2");
-            count = 1;
-            foreach (var pairedContainer in pairedContainers)
-            {
-                var nodeTitle = pairedContainer.QuerySelector("span.mf-headline > a");
-                var nodeLink = pairedContainer.QuerySelector("span.iconbox > a");
+        //// Column 2
+        //container = document.QuerySelector("#column_2");
+        //if (container != null)
+        //{
+        //    var pairedContainers = container.QuerySelectorAll("ul > li > h2");
+        //    count = 1;
+        //    foreach (var pairedContainer in pairedContainers)
+        //    {
+        //        var nodeTitle = pairedContainer.QuerySelector("span.mf-headline > a");
+        //        var nodeLink = pairedContainer.QuerySelector("span.iconbox > a");
 
-                if (nodeLink == null)
-                    continue;
+        //        if (nodeLink == null)
+        //            continue;
 
-                var item = CreatePairedNodeLinks(filters, nodeTitle, nodeLink, "column 2", count++, feedUrl);
+        //        var item = CreatePairedNodeLinks(filters, nodeTitle, nodeLink, "column 2", count++, feedUrl);
 
-                // Unfortunately the reference site links are included in the column links, so the
-                // CINDY ADAMS link signals the end of the article list in column 2
-                if (item.FeedAttributes.Url.Contains("cindy-adams"))
-                    break;
+        //        // Unfortunately the reference site links are included in the column links, so the
+        //        // CINDY ADAMS link signals the end of the article list in column 2
+        //        if (item.FeedAttributes.Url.Contains("cindy-adams"))
+        //            break;
 
-                if (item != null && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
-                {
-                    //TryParseEmbeddedUrl(item, _selectors);
-                    log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                    list.Add(item);
-                }
-            }
-        }
+        //        if (item != null && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
+        //        {
+        //            //TryParseEmbeddedUrl(item, _selectors);
+        //            log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+        //            list.Add(item);
+        //        }
+        //    }
+        //}
 
-        // Column 3
-        container = document.QuerySelector("#column_3");
-        if (container != null)
-        {
-            var pairedContainers = container.QuerySelectorAll("ul > li > h2");
-            count = 1;
-            foreach (var pairedContainer in pairedContainers)
-            {
-                var nodeTitle = pairedContainer.QuerySelector("span.mf-headline > a");
-                var nodeLink = pairedContainer.QuerySelector("span.iconbox > a");
+        //// Column 3
+        //container = document.QuerySelector("#column_3");
+        //if (container != null)
+        //{
+        //    var pairedContainers = container.QuerySelectorAll("ul > li > h2");
+        //    count = 1;
+        //    foreach (var pairedContainer in pairedContainers)
+        //    {
+        //        var nodeTitle = pairedContainer.QuerySelector("span.mf-headline > a");
+        //        var nodeLink = pairedContainer.QuerySelector("span.iconbox > a");
 
-                if (nodeLink == null)
-                    continue;
+        //        if (nodeLink == null)
+        //            continue;
 
-                var item = CreatePairedNodeLinks(filters, nodeTitle, nodeLink, "column 3", count++, feedUrl);
+        //        var item = CreatePairedNodeLinks(filters, nodeTitle, nodeLink, "column 3", count++, feedUrl);
 
-                // Unfortunately the reference site links are included in the column links, so the
-                // PRIVACY POLICY link signals the end of the article list in column 2
-                if (item.FeedAttributes.Url.Contains("privacy-policy-2"))
-                    break;
+        //        // Unfortunately the reference site links are included in the column links, so the
+        //        // PRIVACY POLICY link signals the end of the article list in column 2
+        //        if (item.FeedAttributes.Url.Contains("privacy-policy-2"))
+        //            break;
 
-                if (item != null && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
-                {
-                    //TryParseEmbeddedUrl(item, _selectors);
-                    log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                    list.Add(item);
-                }
-            }
-        }
+        //        if (item != null && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
+        //        {
+        //            //TryParseEmbeddedUrl(item, _selectors);
+        //            log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+        //            list.Add(item);
+        //        }
+        //    }
+        //}
 
         return list;
     }
