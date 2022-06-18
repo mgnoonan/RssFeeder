@@ -69,31 +69,31 @@ internal class FreedomPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             }
         }
 
-        //// Stories section
-        //containers = document.QuerySelectorAll("#home-section > div.columns");
-        //string[] sectionName = new string[] { "first", "previous banner", "second", "third" };
-        //int sectionCounter = 0;
-        //foreach (var element in containers.Take(3))
-        //{
-        //    nodes = element.QuerySelectorAll("a");
-        //    if (nodes != null)
-        //    {
-        //        count = 1;
-        //        foreach (var node in nodes)
-        //        {
-        //            string title = WebUtility.HtmlDecode(node.Text().Trim());
+        // Stories section
+        containers = document.QuerySelectorAll("#home-section > div.columns");
+        string[] sectionName = new string[] { "first", "previous banner", "second", "third" };
+        int sectionCounter = 0;
+        foreach (var element in containers.Take(1))
+        {
+            nodes = element.QuerySelectorAll("a");
+            if (nodes != null)
+            {
+                count = 1;
+                foreach (var node in nodes.Take(20))
+                {
+                    string title = WebUtility.HtmlDecode(node.Text().Trim());
 
-        //            var item = CreateNodeLinks(filters, node, $"{sectionName[sectionCounter]} section", count++, feedUrl);
-        //            if (item != null)
-        //            {
-        //                log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-        //                list.Add(item);
-        //            }
-        //        }
-        //    }
+                    var item = CreateNodeLinks(filters, node, $"{sectionName[sectionCounter]} section", count++, feedUrl);
+                    if (item != null)
+                    {
+                        log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+                        list.Add(item);
+                    }
+                }
+            }
 
-        //    sectionCounter++;
-        //}
+            sectionCounter++;
+        }
 
         return list;
     }
