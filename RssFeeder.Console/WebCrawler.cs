@@ -134,6 +134,13 @@ public class WebCrawler : IWebCrawler
             using (LogContext.PushProperty("url", item.FeedAttributes.Url))
             using (LogContext.PushProperty("urlHash", item.FeedAttributes.UrlHash))
             {
+                // Throttle any articles beyond the headlines
+                if (articleCount >= 25 && !item.FeedAttributes.IsHeadline)
+                {
+                    Log.Information("Throttling engaged");
+                    break;
+                }
+
                 // No need to continue if we already crawled the article
                 if (_crawlerRepository.DocumentExists<RssFeedItem>(_crawlerCollectionName, feed.CollectionName, item.FeedAttributes.UrlHash))
                 {

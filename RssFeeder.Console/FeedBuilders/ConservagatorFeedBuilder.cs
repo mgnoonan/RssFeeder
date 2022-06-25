@@ -55,9 +55,9 @@ internal class ConservagatorFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             "Pundit Beacon","Blue State Conservative","CommDigiNews",
             "Freedom First Press"
         };
-		int sectionCounter = 0;
+        int sectionCounter = 0;
 
-        foreach (var element in containers.Take(25))
+        foreach (var element in containers)
         {
             var nodes = element.QuerySelectorAll("ul.rss-aggregator > li.feed-item > a");
             if (nodes != null)
@@ -67,7 +67,7 @@ internal class ConservagatorFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                 {
                     string title = WebUtility.HtmlDecode(node.Text().Trim());
 
-                    var item = CreateNodeLinks(filters, node, $"{sectionName[sectionCounter]} section", count++, feedUrl);
+                    var item = CreateNodeLinks(filters, node, $"{sectionName[sectionCounter]} section", count++, feedUrl, false);
                     if (item != null)
                     {
                         log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);

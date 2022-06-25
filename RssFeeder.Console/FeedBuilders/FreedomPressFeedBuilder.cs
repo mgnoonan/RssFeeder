@@ -40,7 +40,7 @@ internal class FreedomPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                 {
                     string title = WebUtility.HtmlDecode(link.Text().Trim());
 
-                    var item = CreateNodeLinks(filters, link, "above the fold", count++, feedUrl);
+                    var item = CreateNodeLinks(filters, link, "above the fold", count++, feedUrl, true);
                     if (item != null)
                     {
                         log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
@@ -60,7 +60,7 @@ internal class FreedomPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             {
                 string title = WebUtility.HtmlDecode(node.Text().Trim());
 
-                var item = CreateNodeLinks(filters, node, "headlines", count++, feedUrl);
+                var item = CreateNodeLinks(filters, node, "headlines", count++, feedUrl, true);
                 if (item != null)
                 {
                     log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
@@ -79,11 +79,11 @@ internal class FreedomPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             if (nodes != null)
             {
                 count = 1;
-                foreach (var node in nodes.Take(20))
+                foreach (var node in nodes)
                 {
                     string title = WebUtility.HtmlDecode(node.Text().Trim());
 
-                    var item = CreateNodeLinks(filters, node, $"{sectionName[sectionCounter]} section", count++, feedUrl);
+                    var item = CreateNodeLinks(filters, node, $"{sectionName[sectionCounter]} section", count++, feedUrl, false);
                     if (item != null)
                     {
                         log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
