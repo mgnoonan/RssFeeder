@@ -35,7 +35,7 @@ internal class OffThePressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             count = 1;
             foreach (var node in nodes)
             {
-                var item = CreateNodeLinks(filters, node, "main headlines", count++, feedUrl);
+                var item = CreateNodeLinks(filters, node, "main headlines", count++, feedUrl, true);
                 if (item != null)
                 {
                     log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
@@ -52,7 +52,7 @@ internal class OffThePressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             count = 1;
             foreach (var node in nodes)
             {
-                var item = CreateNodeLinks(filters, node, "column 1", count++, feedUrl);
+                var item = CreateNodeLinks(filters, node, "column 1", count++, feedUrl, false);
                 if (item != null)
                 {
                     log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);

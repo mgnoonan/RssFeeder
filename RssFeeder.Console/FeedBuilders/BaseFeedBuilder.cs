@@ -29,7 +29,7 @@ class BaseFeedBuilder
         }
     }
 
-    protected RssFeedItem CreateNodeLinks(List<string> filters, IElement node, string location, int count, string feedUrl)
+    protected RssFeedItem CreateNodeLinks(List<string> filters, IElement node, string location, int count, string feedUrl, bool isHeadline)
     {
         string title = WebUtility.HtmlDecode(node.Text().Trim());
 
@@ -37,10 +37,10 @@ class BaseFeedBuilder
         var attr = node.Attributes.GetNamedItem("href");
         string linkUrl = attr.Value.Trim().Replace(" ", string.Empty);
 
-        return CreateNodeLinks(filters, location, count, title, linkUrl, feedUrl);
+        return CreateNodeLinks(filters, location, count, title, linkUrl, feedUrl, isHeadline);
     }
 
-    protected RssFeedItem CreatePairedNodeLinks(List<string> filters, IElement nodeTitleOnly, IElement nodeLinkOnly, string location, int count, string feedUrl)
+    protected RssFeedItem CreatePairedNodeLinks(List<string> filters, IElement nodeTitleOnly, IElement nodeLinkOnly, string location, int count, string feedUrl, bool isHeadline)
     {
         string title = WebUtility.HtmlDecode(nodeTitleOnly.Text().Trim());
 
@@ -48,10 +48,10 @@ class BaseFeedBuilder
         var attr = nodeLinkOnly.Attributes.GetNamedItem("href");
         string linkUrl = attr.Value.Trim().Replace(" ", string.Empty);
 
-        return CreateNodeLinks(filters, location, count, title, linkUrl, feedUrl);
+        return CreateNodeLinks(filters, location, count, title, linkUrl, feedUrl, isHeadline);
     }
 
-    protected RssFeedItem CreateNodeLinks(List<string> filters, HtmlNode node, string location, int count, string feedUrl)
+    protected RssFeedItem CreateNodeLinks(List<string> filters, HtmlNode node, string location, int count, string feedUrl, bool isHeadline)
     {
         string title = WebUtility.HtmlDecode(node.InnerText.Trim());
 
@@ -62,7 +62,7 @@ class BaseFeedBuilder
             // Replace all errant spaces, which sometimes creep into Drudge's URLs
             string linkUrl = attr.Value.Trim().Replace(" ", string.Empty);
 
-            return CreateNodeLinks(filters, location, count, title, linkUrl, feedUrl);
+            return CreateNodeLinks(filters, location, count, title, linkUrl, feedUrl, isHeadline);
         }
         catch (NullReferenceException)
         {
@@ -76,7 +76,7 @@ class BaseFeedBuilder
         return null;
     }
 
-    private RssFeedItem CreateNodeLinks(List<string> filters, string location, int count, string title, string linkUrl, string feedUrl)
+    private RssFeedItem CreateNodeLinks(List<string> filters, string location, int count, string title, string linkUrl, string feedUrl, bool isHeadline)
     {
         // Sometimes Drudge has completely empty links, ignore them
         if (string.IsNullOrEmpty(linkUrl))
@@ -115,7 +115,8 @@ class BaseFeedBuilder
                     UrlHash = hash,
                     DateAdded = DateTime.Now.ToUniversalTime(),
                     LinkLocation = $"{location}, article {count}",
-                    IsUrlShortened = uri.Host.ToLower() == "t.co"
+                    IsUrlShortened = uri.Host.ToLower() == "t.co",
+                    IsHeadline = isHeadline
                 }
             };
         }

@@ -48,7 +48,7 @@ class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             count = 1;
             foreach (var node in nodes)
             {
-                var item = CreateNodeLinks(filters, node, "above the fold", count++, feedUrl);
+                var item = CreateNodeLinks(filters, node, "above the fold", count++, feedUrl, true);
                 if (item != null)
                 {
                     //TryParseEmbeddedUrl(item, _selectors);
@@ -68,7 +68,7 @@ class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                 count = 1;
                 foreach (var node in nodes)
                 {
-                    var item = CreateNodeLinks(filters, node, "main headlines", count++, feedUrl);
+                    var item = CreateNodeLinks(filters, node, "main headlines", count++, feedUrl, true);
                     if (item != null && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
                     {
                         //TryParseEmbeddedUrl(item, _selectors);
@@ -93,7 +93,7 @@ class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                 if (nodeLink == null)
                     continue;
 
-                var item = CreatePairedNodeLinks(filters, nodeTitle, nodeLink, "column 1", count++, feedUrl);
+                var item = CreatePairedNodeLinks(filters, nodeTitle, nodeLink, "column 1", count++, feedUrl, false);
 
                 // Unfortunately the reference site links are included in the column links, so the
                 // AMERICAN THINKER link signals the end of the article list in column 1
@@ -109,107 +109,66 @@ class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             }
         }
 
-        //// Column 2
-        //container = document.QuerySelector("#column_2");
-        //if (container != null)
-        //{
-        //    var pairedContainers = container.QuerySelectorAll("ul > li > h2");
-        //    count = 1;
-        //    foreach (var pairedContainer in pairedContainers)
-        //    {
-        //        var nodeTitle = pairedContainer.QuerySelector("span.mf-headline > a");
-        //        var nodeLink = pairedContainer.QuerySelector("span.iconbox > a");
+        // Column 2
+        container = document.QuerySelector("#column_2");
+        if (container != null)
+        {
+            var pairedContainers = container.QuerySelectorAll("ul > li > h2");
+            count = 1;
+            foreach (var pairedContainer in pairedContainers)
+            {
+                var nodeTitle = pairedContainer.QuerySelector("span.mf-headline > a");
+                var nodeLink = pairedContainer.QuerySelector("span.iconbox > a");
 
-        //        if (nodeLink == null)
-        //            continue;
+                if (nodeLink == null)
+                    continue;
 
-        //        var item = CreatePairedNodeLinks(filters, nodeTitle, nodeLink, "column 2", count++, feedUrl);
+                var item = CreatePairedNodeLinks(filters, nodeTitle, nodeLink, "column 2", count++, feedUrl, false);
 
-        //        // Unfortunately the reference site links are included in the column links, so the
-        //        // CINDY ADAMS link signals the end of the article list in column 2
-        //        if (item.FeedAttributes.Url.Contains("cindy-adams"))
-        //            break;
+                // Unfortunately the reference site links are included in the column links, so the
+                // CINDY ADAMS link signals the end of the article list in column 2
+                if (item.FeedAttributes.Url.Contains("cindy-adams"))
+                    break;
 
-        //        if (item != null && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
-        //        {
-        //            //TryParseEmbeddedUrl(item, _selectors);
-        //            log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-        //            list.Add(item);
-        //        }
-        //    }
-        //}
+                if (item != null && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
+                {
+                    //TryParseEmbeddedUrl(item, _selectors);
+                    log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+                    list.Add(item);
+                }
+            }
+        }
 
-        //// Column 3
-        //container = document.QuerySelector("#column_3");
-        //if (container != null)
-        //{
-        //    var pairedContainers = container.QuerySelectorAll("ul > li > h2");
-        //    count = 1;
-        //    foreach (var pairedContainer in pairedContainers)
-        //    {
-        //        var nodeTitle = pairedContainer.QuerySelector("span.mf-headline > a");
-        //        var nodeLink = pairedContainer.QuerySelector("span.iconbox > a");
+        // Column 3
+        container = document.QuerySelector("#column_3");
+        if (container != null)
+        {
+            var pairedContainers = container.QuerySelectorAll("ul > li > h2");
+            count = 1;
+            foreach (var pairedContainer in pairedContainers)
+            {
+                var nodeTitle = pairedContainer.QuerySelector("span.mf-headline > a");
+                var nodeLink = pairedContainer.QuerySelector("span.iconbox > a");
 
-        //        if (nodeLink == null)
-        //            continue;
+                if (nodeLink == null)
+                    continue;
 
-        //        var item = CreatePairedNodeLinks(filters, nodeTitle, nodeLink, "column 3", count++, feedUrl);
+                var item = CreatePairedNodeLinks(filters, nodeTitle, nodeLink, "column 3", count++, feedUrl, false);
 
-        //        // Unfortunately the reference site links are included in the column links, so the
-        //        // PRIVACY POLICY link signals the end of the article list in column 2
-        //        if (item.FeedAttributes.Url.Contains("privacy-policy-2"))
-        //            break;
+                // Unfortunately the reference site links are included in the column links, so the
+                // PRIVACY POLICY link signals the end of the article list in column 2
+                if (item.FeedAttributes.Url.Contains("privacy-policy-2"))
+                    break;
 
-        //        if (item != null && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
-        //        {
-        //            //TryParseEmbeddedUrl(item, _selectors);
-        //            log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-        //            list.Add(item);
-        //        }
-        //    }
-        //}
+                if (item != null && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
+                {
+                    //TryParseEmbeddedUrl(item, _selectors);
+                    log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+                    list.Add(item);
+                }
+            }
+        }
 
         return list;
-    }
-
-    private void TryParseEmbeddedUrl(RssFeedItem item, List<string> selectors)
-    {
-        foreach (string selector in selectors)
-        {
-            if (!TryParseEmbeddedUrl(item.FeedAttributes.Url, selector, out IElement link))
-                break;
-            if (link is null)
-                continue;
-            if (!link.Text().Contains("Click here"))
-                continue;
-
-            var attr = link.Attributes["href"];
-            string url = attr.Value;
-
-            Log.Information("Embedded Url found '{url}'", url);
-            item.FeedAttributes.UrlHash = _utilities.CreateMD5Hash(url);
-            item.FeedAttributes.Url = url;
-            break;
-        }
-    }
-
-    private bool TryParseEmbeddedUrl(string url, string selector, out IElement link)
-    {
-        try
-        {
-            Log.Information("TryParseEmbeddedUrl '{selector}' from '{url}'", selector, url);
-            (HttpStatusCode statusCode, string content, Uri trueUri) = _webUtilities.DownloadString(url);
-
-            var parser = new HtmlParser();
-            var document = parser.ParseDocument(content);
-            link = document.QuerySelector(selector);
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "Error parsing embedded url '{url}'", url);
-            link = null;
-            return false;
-        }
     }
 }
