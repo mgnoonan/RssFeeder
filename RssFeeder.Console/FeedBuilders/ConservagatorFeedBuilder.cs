@@ -55,9 +55,9 @@ internal class ConservagatorFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             "Pundit Beacon","Blue State Conservative","CommDigiNews",
             "Freedom First Press"
         };
-		int sectionCounter = 0;
+        int sectionCounter = 0;
 
-        foreach (var element in containers.Take(25))
+        foreach (var element in containers)
         {
             var nodes = element.QuerySelectorAll("ul.rss-aggregator > li.feed-item > a");
             if (nodes != null)
