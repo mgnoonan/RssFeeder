@@ -13,11 +13,7 @@ public class TagParserBase
 
     public virtual void PostParse()
     {
-    }
-
-    public virtual void PreParse()
-    {
-        if (_item.SiteName != "youtube")
+        if (_item.SiteName == "youtube")
             return;
 
         var result = _item.HtmlAttributes.GetValueOrDefault("ParserResult") ?? "";
@@ -26,6 +22,8 @@ public class TagParserBase
         string iframe = GetYoutubeVideoIFrame(result);
         if (iframe.Length > 0)
         {
+            Log.Information("Embedded video detected");
+
             string url = GetAttributeValue(iframe, "src");
             string type = GetAttributeValue(iframe, "type");
             string width = GetAttributeValue(iframe, "width");
@@ -36,6 +34,10 @@ public class TagParserBase
             _item.OpenGraphAttributes.Add("og:x:video:width", width);
             _item.OpenGraphAttributes.Add("og:x:video:height", height);
         }
+    }
+
+    public virtual void PreParse()
+    {
     }
 
     private string GetAttributeValue(string html, string attributeName)

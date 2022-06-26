@@ -64,29 +64,6 @@ public class WebCrawler : IWebCrawler
         return workingFolder;
     }
 
-    private void ParseAndSave(RssFeed feed, List<RssFeedItem> list)
-    {
-        _articleParser.Initialize(_container, _definitions, _webUtils);
-
-        foreach (var item in list)
-        {
-            using (LogContext.PushProperty("url", item.FeedAttributes.Url))
-            using (LogContext.PushProperty("urlHash", item.FeedAttributes.UrlHash))
-            {
-                try
-                {
-                    // Parse the downloaded file as dictated by the site parsing definitions
-                    _articleParser.Parse(item);
-                    _crawlerRepository.SaveDocument<RssFeedItem>(_crawlerCollectionName, item, feed.DatabaseRetentionDays);
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex, "PARSE_ERROR: UrlHash '{urlHash}':'{url}'", item.FeedAttributes.UrlHash, item.FeedAttributes.Url);
-                }
-            }
-        }
-    }
-
     private bool TryParseAndSave(RssFeed feed, RssFeedItem item)
     {
         var uri = new Uri(item.HtmlAttributes.GetValueOrDefault("Url") ?? item.FeedAttributes.Url);
@@ -137,7 +114,7 @@ public class WebCrawler : IWebCrawler
                 // Throttle any articles beyond the headlines
                 if (articleCount >= 25 && !item.FeedAttributes.IsHeadline)
                 {
-                    Log.Information("Throttling engaged");
+                    Log.Debug("Throttling engaged");
                     break;
                 }
 
