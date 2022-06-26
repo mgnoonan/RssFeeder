@@ -148,10 +148,15 @@ public class BaseArticleExporter
             // Sites that provide video metadata via open graph tags
             exportFeedItem.VideoUrl = item.OpenGraphAttributes.GetValueOrDefault("og:video:secure_url") ??
                 item.OpenGraphAttributes.GetValueOrDefault("og:video:url") ??
-                item.OpenGraphAttributes.GetValueOrDefault("og:video") ?? 
+                item.OpenGraphAttributes.GetValueOrDefault("og:video") ??
+                item.OpenGraphAttributes.GetValueOrDefault("og:x:video") ??
                 "";
-            exportFeedItem.VideoHeight = int.TryParse(item.OpenGraphAttributes.GetValueOrDefault("og:video:height") ?? item.OpenGraphAttributes.GetValueOrDefault("og:image:height"), out int height) ? height : 0;
-            exportFeedItem.VideoWidth = int.TryParse(item.OpenGraphAttributes.GetValueOrDefault("og:video:width") ?? item.OpenGraphAttributes.GetValueOrDefault("og:image:width"), out int width) ? width : 0;
+            exportFeedItem.VideoHeight = int.TryParse(item.OpenGraphAttributes.GetValueOrDefault("og:video:height") ??
+                item.OpenGraphAttributes.GetValueOrDefault("og:x:video:height") ??
+                item.OpenGraphAttributes.GetValueOrDefault("og:image:height"), out int height) ? height : 0;
+            exportFeedItem.VideoWidth = int.TryParse(item.OpenGraphAttributes.GetValueOrDefault("og:video:width") ??
+                item.OpenGraphAttributes.GetValueOrDefault("og:x:video:width") ??
+                item.OpenGraphAttributes.GetValueOrDefault("og:image:width"), out int width) ? width : 0;
         }
 
         using (LogContext.PushProperty("hostName", hostName))
