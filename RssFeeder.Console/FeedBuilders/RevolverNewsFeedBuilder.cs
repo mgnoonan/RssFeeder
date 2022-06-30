@@ -28,32 +28,32 @@ internal class RevolverNewsFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         var parser = new HtmlParser();
         var document = parser.ParseDocument(html);
 
-        // Featured links section
-        var container = document.QuerySelector("div.revolver > div.column.center > div.post-listing");
-        var nodes = container.QuerySelectorAll("div.title > a");
-        if (nodes != null)
-        {
-            count = 1;
-            foreach (var node in nodes)
-            {
-                string title = WebUtility.HtmlDecode(node.Text().Trim());
+        //// Featured links section
+        //var container = document.QuerySelector("div.revolver > div.column.center > div.post-listing");
+        //var nodes = container.QuerySelectorAll("div.title > a");
+        //if (nodes != null)
+        //{
+        //    count = 1;
+        //    foreach (var node in nodes)
+        //    {
+        //        string title = WebUtility.HtmlDecode(node.Text().Trim());
 
-                var item = CreateNodeLinks(filters, node, "feature links", count++, feedUrl, true);
-                if (item != null)
-                {
-                    log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                    list.Add(item);
-                }
-            }
-        }
+        //        var item = CreateNodeLinks(filters, node, "feature links", count++, feedUrl, true);
+        //        if (item != null)
+        //        {
+        //            log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+        //            list.Add(item);
+        //        }
+        //    }
+        //}
 
         // Stories section
-        container = document.QuerySelector("div.revolver > div.column.center > div.articles-wrapper > div.infinite-content");
-        nodes = container.QuerySelectorAll("div.title > a");
+        var container = document.QuerySelector("div.list-articles");
+        var nodes = container.QuerySelectorAll("article.item > div.text > h2.title > a");
         if (nodes != null)
         {
             count = 1;
-            foreach (var node in nodes.Take(5))
+            foreach (var node in nodes.Take(25))
             {
                 string title = WebUtility.HtmlDecode(node.Text().Trim());
 
