@@ -33,6 +33,8 @@ public class TagParserBase
             _item.OpenGraphAttributes.Add("og:x:video:type", type);
             _item.OpenGraphAttributes.Add("og:x:video:width", width);
             _item.OpenGraphAttributes.Add("og:x:video:height", height);
+
+            _item.HtmlAttributes["ParserResult"] = result.Replace(iframe, "");
         }
     }
 
@@ -61,7 +63,8 @@ public class TagParserBase
 
         if (hasVideo && pos > 0)
         {
-            var len = html.IndexOf("</iframe>", pos) - pos;
+            string end = "</iframe>";
+            var len = html.IndexOf(end, pos) - pos + end.Length;
             return html.Substring(pos, len);
         }
 
