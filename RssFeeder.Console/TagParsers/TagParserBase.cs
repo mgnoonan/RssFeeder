@@ -30,7 +30,7 @@ public class TagParserBase
             string height = GetAttributeValue(iframe, "height");
 
             _item.OpenGraphAttributes.Add("og:x:video", url);
-            _item.OpenGraphAttributes.Add("og:x:video:type", type);
+            _item.OpenGraphAttributes.Add("og:x:video:type", "text/html");
             _item.OpenGraphAttributes.Add("og:x:video:width", width);
             _item.OpenGraphAttributes.Add("og:x:video:height", height);
 
