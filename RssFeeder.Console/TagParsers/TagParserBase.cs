@@ -56,9 +56,10 @@ public class TagParserBase
 
     private string GetYoutubeVideoIFrame(string html)
     {
-        var pos = html.ToLowerInvariant().IndexOf("<iframe class=\"youtube-player\"");
+        bool hasVideo = html.ToLowerInvariant().Contains("youtube.com/embed");
+        var pos = html.ToLowerInvariant().IndexOf("<iframe ");
 
-        if (pos > 0)
+        if (hasVideo && pos > 0)
         {
             var len = html.IndexOf("</iframe>", pos) - pos;
             return html.Substring(pos, len);

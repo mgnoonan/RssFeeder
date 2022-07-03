@@ -53,7 +53,7 @@ internal class RevolverNewsFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         if (nodes != null)
         {
             count = 1;
-            foreach (var node in nodes.Take(25))
+            foreach (var node in nodes)
             {
                 string title = WebUtility.HtmlDecode(node.Text().Trim());
 
