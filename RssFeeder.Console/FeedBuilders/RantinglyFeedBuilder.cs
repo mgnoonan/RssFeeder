@@ -37,7 +37,7 @@ class RantinglyFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             {
                 string title = WebUtility.HtmlDecode(node.Text().Trim());
 
-                var item = CreateNodeLinks(filters, node, "above the fold", count++, feedUrl);
+                var item = CreateNodeLinks(filters, node, "above the fold", count++, feedUrl, true);
                 if (item != null)
                 {
                     log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
@@ -58,7 +58,7 @@ class RantinglyFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                 {
                     string title = WebUtility.HtmlDecode(node.Text().Trim());
 
-                    var item = CreateNodeLinks(filters, node, "main headlines", count++, feedUrl);
+                    var item = CreateNodeLinks(filters, node, "main headlines", count++, feedUrl, true);
                     if (item != null && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
                     {
                         log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
@@ -78,7 +78,7 @@ class RantinglyFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             {
                 string title = WebUtility.HtmlDecode(node.Text().Trim());
 
-                var item = CreateNodeLinks(filters, node, "column 1", count++, feedUrl);
+                var item = CreateNodeLinks(filters, node, "column 1", count++, feedUrl, false);
                 if (item != null && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
                 {
                     log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
@@ -87,24 +87,24 @@ class RantinglyFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             }
         }
 
-        //// Column 2
-        //container = document.QuerySelector("#column-2 > div > div.wpd-posted-links");
-        //if (container != null)
-        //{
-        //    var nodes = container.QuerySelectorAll("a");
-        //    count = 1;
-        //    foreach (var node in nodes)
-        //    {
-        //        string title = WebUtility.HtmlDecode(node.Text().Trim());
+        // Column 2
+        container = document.QuerySelector("#column-2 > div > div.wpd-posted-links");
+        if (container != null)
+        {
+            var nodes = container.QuerySelectorAll("a");
+            count = 1;
+            foreach (var node in nodes)
+            {
+                string title = WebUtility.HtmlDecode(node.Text().Trim());
 
-        //        var item = CreateNodeLinks(filters, node, "column 2", count++, feedUrl);
-        //        if (item != null && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
-        //        {
-        //            log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-        //            list.Add(item);
-        //        }
-        //    }
-        //}
+                var item = CreateNodeLinks(filters, node, "column 2", count++, feedUrl, false);
+                if (item != null && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
+                {
+                    log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+                    list.Add(item);
+                }
+            }
+        }
 
         return list;
     }

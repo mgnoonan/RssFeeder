@@ -1,0 +1,20 @@
+﻿[
+  {
+    "Title": "Citizen Free Press",
+    "Enabled": "true",
+    "EnableThumbnail": "false",
+    "Exportable": "true",
+    "Description": "Citizen Free Press",
+    "Language": "en-US",
+    "Url": "https://www.citizenfreepress.com/",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.CitizenFreePressFeedBuilder",
+    "CollectionName": "citizen-freepress",
+    "FileRetentionDays": 3,
+    "DatabaseRetentionDays": 180,
+    "Filters": [
+      "3fa6dfe31a8d75725aaa5620243838f2",
+      "b73f81a2fa4475d68ba7ba39faf9dfb6",
+      "9efbe7b79d607392f56e97f9a2a8441d"
+    ]
+  }
+]

@@ -100,6 +100,7 @@ public class BaseArticleExporter
         exportFeedItem.ImageUrl = item.OpenGraphAttributes.GetValueOrDefault("og:image") ?? "";
         exportFeedItem.SiteName = item.OpenGraphAttributes.GetValueOrDefault("og:site_name")?.ToLower() ?? "";
         exportFeedItem.HostName = hostName;
+        var description = item.OpenGraphAttributes.GetValueOrDefault("og:description") ?? "";
 
         if (string.IsNullOrWhiteSpace(exportFeedItem.SiteName))
         {
@@ -132,11 +133,11 @@ public class BaseArticleExporter
             Log.Information("EXPORT: Processing bitchute.com metadata");
 
             // Bitchute logic is a little convoluted, they don't provide much metadata
-            var text = item.HtmlAttributes.GetValueOrDefault("ParserResult") ?? "";
-            var start = text.IndexOf("https://");
-            var length = text.IndexOf('\"', start) - start;
+            var result = item.HtmlAttributes.GetValueOrDefault("ParserResult") ?? "";
+            var start = result.IndexOf("https://");
+            var length = result.IndexOf('\"', start) - start;
 
-            exportFeedItem.VideoUrl = text.Substring(start, length);
+            exportFeedItem.VideoUrl = result.Substring(start, length);
             exportFeedItem.VideoHeight = 1080;
             exportFeedItem.VideoWidth = 1920;
 
@@ -148,10 +149,19 @@ public class BaseArticleExporter
             // Sites that provide video metadata via open graph tags
             exportFeedItem.VideoUrl = item.OpenGraphAttributes.GetValueOrDefault("og:video:secure_url") ??
                 item.OpenGraphAttributes.GetValueOrDefault("og:video:url") ??
-                item.OpenGraphAttributes.GetValueOrDefault("og:video") ?? 
+                item.OpenGraphAttributes.GetValueOrDefault("og:video") ??
+                item.OpenGraphAttributes.GetValueOrDefault("og:x:video") ??
                 "";
-            exportFeedItem.VideoHeight = int.TryParse(item.OpenGraphAttributes.GetValueOrDefault("og:video:height") ?? item.OpenGraphAttributes.GetValueOrDefault("og:image:height"), out int height) ? height : 0;
-            exportFeedItem.VideoWidth = int.TryParse(item.OpenGraphAttributes.GetValueOrDefault("og:video:width") ?? item.OpenGraphAttributes.GetValueOrDefault("og:image:width"), out int width) ? width : 0;
+            exportFeedItem.VideoHeight = int.TryParse(item.OpenGraphAttributes.GetValueOrDefault("og:video:height") ??
+                item.OpenGraphAttributes.GetValueOrDefault("og:x:video:height") ??
+                item.OpenGraphAttributes.GetValueOrDefault("og:image:height"), out int height) ? height : 0;
+            exportFeedItem.VideoWidth = int.TryParse(item.OpenGraphAttributes.GetValueOrDefault("og:video:width") ??
+                item.OpenGraphAttributes.GetValueOrDefault("og:x:video:width") ??
+                item.OpenGraphAttributes.GetValueOrDefault("og:image:width"), out int width) ? width : 0;
+
+            string result = item.HtmlAttributes.GetValueOrDefault("ParserResult") ?? "";
+            if (!string.IsNullOrEmpty(result))
+                description = result;
         }
 
         using (LogContext.PushProperty("hostName", hostName))
@@ -160,7 +170,6 @@ public class BaseArticleExporter
         }
 
         // There's no article text for most video sites, so just use the meta description
-        var description = item.OpenGraphAttributes.GetValueOrDefault("og:description") ?? "";
         exportFeedItem.ArticleText = $"<p>{description}</p>";
     }
 

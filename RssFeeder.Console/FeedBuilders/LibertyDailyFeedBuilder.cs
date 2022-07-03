@@ -35,7 +35,7 @@ class LibertyDailyFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             {
                 string title = WebUtility.HtmlDecode(node.InnerText.Trim());
 
-                var item = CreateNodeLinks(filters, node, "above the fold", count++, feedUrl);
+                var item = CreateNodeLinks(filters, node, "above the fold", count++, feedUrl, true);
                 if (item != null)
                 {
                     log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
@@ -54,7 +54,7 @@ class LibertyDailyFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             {
                 string title = WebUtility.HtmlDecode(node.InnerText.Trim());
 
-                var item = CreateNodeLinks(filters, node, "main headlines", count++, feedUrl);
+                var item = CreateNodeLinks(filters, node, "main headlines", count++, feedUrl, true);
                 if (item != null)
                 {
                     log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
@@ -74,7 +74,7 @@ class LibertyDailyFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             {
                 string title = WebUtility.HtmlDecode(node.InnerText.Trim());
 
-                var item = CreateNodeLinks(filters, node, "left column", count++, feedUrl);
+                var item = CreateNodeLinks(filters, node, "left column", count++, feedUrl, false);
                 if (item != null)
                 {
                     log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
@@ -94,7 +94,7 @@ class LibertyDailyFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             {
                 string title = WebUtility.HtmlDecode(node.InnerText.Trim());
 
-                var item = CreateNodeLinks(filters, node, "middle column", count++, feedUrl);
+                var item = CreateNodeLinks(filters, node, "middle column", count++, feedUrl, false);
                 if (item != null)
                 {
                     log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
@@ -114,7 +114,7 @@ class LibertyDailyFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             {
                 string title = WebUtility.HtmlDecode(node.InnerText.Trim());
 
-                var item = CreateNodeLinks(filters, node, "right column", count++, feedUrl);
+                var item = CreateNodeLinks(filters, node, "right column", count++, feedUrl, false);
                 if (item != null)
                 {
                     log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);

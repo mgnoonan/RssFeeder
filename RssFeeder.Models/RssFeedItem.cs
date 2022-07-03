@@ -31,4 +31,5 @@ public record FeedAttributes
     public string FileName { get; set; }
     public string LinkLocation { get; set; }
     public bool IsUrlShortened { get; set; }
+    public bool IsHeadline { get; set; }
 }

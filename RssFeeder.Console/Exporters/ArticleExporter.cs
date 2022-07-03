@@ -34,9 +34,11 @@ public class ArticleExporter : BaseArticleExporter, IArticleExporter
         string videoUrl = item.OpenGraphAttributes.GetValueOrDefault("og:video:secure_url") ??
             item.OpenGraphAttributes.GetValueOrDefault("og:video:url") ??
             item.OpenGraphAttributes.GetValueOrDefault("og:video") ??
+            item.OpenGraphAttributes.GetValueOrDefault("og:x:video") ??
             "";
         // Some sites do not provide OpenGraph video tags so watch for those specifically
         string videoType = item.OpenGraphAttributes.GetValueOrDefault("og:video:type") ??
+            item.OpenGraphAttributes.GetValueOrDefault("og:x:video:type") ??
             (videoUrl.EndsWith(".mp4") || item.SiteName == "bitchute" ? "video/mp4" : 
             videoUrl.Contains("youtube.com") || item.SiteName == "rumble" ? "text/html" : "");
 

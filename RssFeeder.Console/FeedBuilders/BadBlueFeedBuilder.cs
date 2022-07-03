@@ -37,7 +37,7 @@ class BadBlueFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             {
                 string title = WebUtility.HtmlDecode(node.Text().Trim());
 
-                var item = CreateNodeLinks(filters, node, "main headlines", count++, feedUrl);
+                var item = CreateNodeLinks(filters, node, "main headlines", count++, feedUrl, true);
                 if (item != null)
                 {
                     log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
@@ -52,11 +52,11 @@ class BadBlueFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         if (nodes != null)
         {
             count = 1;
-            foreach (var node in nodes.Take(25))
+            foreach (var node in nodes)
             {
                 string title = WebUtility.HtmlDecode(node.Text().Trim());
 
-                var item = CreateNodeLinks(filters, node, "all stories", count++, feedUrl);
+                var item = CreateNodeLinks(filters, node, "all stories", count++, feedUrl, false);
                 if (item != null)
                 {
                     log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
