@@ -65,19 +65,6 @@
     "Filters": []
   },
   {
-    "id": "fd4e150a-4953-4551-ad04-fa1b463a9159",
-    "Title": "GutSmack",
-    "Url": "https://gutsmack.com/",
-    "Description": "We watch ESPN so you don't have to...",
-    "Language": "en-US",
-    "CustomParser": "RssFeeder.Console.FeedBuilders.GutSmackFeedBuilder",
-    "CollectionName": "gutsmack",
-    "authoremail": "email@gutsmack.com",
-    "FeedlyUrl": "",
-    "RssUrl": "/api/rss/gutsmack",
-    "Filters": []
-  },
-  {
     "id": "fcdb9d55-feef-482f-9e6f-21f6ea41e977",
     "Title": "Populist Press",
     "Url": "https://populistpress.com/",
