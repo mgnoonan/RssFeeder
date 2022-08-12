@@ -89,20 +89,6 @@
     "Filters": []
   },
   {
-    "Title": "GutSmack",
-    "Enabled": "true",
-    "EnableThumbnail": "false",
-    "Exportable": "true",
-    "Description": "We watch ESPN so you don't have to...",
-    "Language": "en-US",
-    "Url": "https://gutsmack.com/",
-    "CustomParser": "RssFeeder.Console.FeedBuilders.GutSmackFeedBuilder",
-    "CollectionName": "gutsmack",
-    "FileRetentionDays": 3,
-    "DatabaseRetentionDays": 180,
-    "Filters": []
-  },
-  {
     "Title": "Populist Press Extra",
     "Enabled": "true",
     "EnableThumbnail": "false",
