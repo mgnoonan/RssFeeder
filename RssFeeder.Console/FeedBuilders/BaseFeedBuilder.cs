@@ -15,7 +15,14 @@ class BaseFeedBuilder
 
     protected void PostProcessing(string feedCollectionName, string feedUrl, List<RssFeedItem> items)
     {
-        log.Information("FOUND {count} articles in {url}", items.Count, feedUrl);
+        if (items.Count > 0)
+        {
+            log.Information("FOUND {count} articles in {url}", items.Count, feedUrl);
+        }
+        else
+        {
+            log.Error("FOUND {count} articles in {url}", items.Count, feedUrl);
+        }
 
         // Replace any relative paths and add the feed id
         foreach (var item in items)
