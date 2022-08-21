@@ -29,31 +29,14 @@ internal class OffThePressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 
         // Main Headlines section
         // #content > div > div.elementor.elementor-24 > div > div > section.elementor-section.elementor-top-section.elementor-element.elementor-element-5a300b6.elementor-section-stretched.elementor-section-boxed.elementor-section-height-default.elementor-section-height-default > div > div > div > div > div > div.elementor-element.elementor-element-18c69d5.elementor-grid-1.elementor-posts--thumbnail-none.elementor-posts--align-center.elementor-grid-tablet-1.elementor-grid-mobile-1.elementor-widget.elementor-widget-posts > div > div > article > div > h3 > a
-        var container = document.QuerySelector("div.page-content > div.elementor > div.elementor-inner");
-        if (container != null)
-        {
-            var nodes = container.QuerySelectorAll("article > div > h3 > a");
-            count = 1;
-            foreach (var node in nodes)
-            {
-                var item = CreateNodeLinks(filters, node, "main headlines", count++, feedUrl, false);
-                if (item != null)
-                {
-                    log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                    list.Add(item);
-                }
-            }
-        }
-
-        //// Column 1
-        //container = document.QuerySelector("div.section > div.container-fluid > div.col-xs-12 > div.post-wrapper");
+        //var container = document.QuerySelector("div.page-content > div.elementor > div.elementor-inner");
         //if (container != null)
         //{
-        //    var nodes = container.QuerySelectorAll("a");
+        //    var nodes = container.QuerySelectorAll("article > div > h3 > a");
         //    count = 1;
         //    foreach (var node in nodes)
         //    {
-        //        var item = CreateNodeLinks(filters, node, "column 1", count++, feedUrl, false);
+        //        var item = CreateNodeLinks(filters, node, "main headlines", count++, feedUrl, false);
         //        if (item != null)
         //        {
         //            log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
@@ -61,6 +44,23 @@ internal class OffThePressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         //        }
         //    }
         //}
+
+        // Column 1
+        var container = document.QuerySelector("#post-list");
+        if (container != null)
+        {
+            var nodes = container.QuerySelectorAll("a");
+            count = 1;
+            foreach (var node in nodes)
+            {
+                var item = CreateNodeLinks(filters, node, "column 1", count++, feedUrl, false);
+                if (item != null)
+                {
+                    log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+                    list.Add(item);
+                }
+            }
+        }
 
         return list;
     }
