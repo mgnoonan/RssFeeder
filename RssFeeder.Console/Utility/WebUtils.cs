@@ -80,8 +80,8 @@ public class WebUtils : IWebUtils
         }
         catch (Exception ex)
         {
-            Log.Warning(ex,"SaveUrlToDisk: Unexpected error '{message}'", ex.Message);
-            retryWithSelenium = ex.Message.Contains("Moved");
+            Log.Warning(ex, "SaveUrlToDisk: Unexpected error '{message}'", ex.Message);
+            retryWithSelenium = ex.Message.Contains("Moved") || ex.Message.Contains("Request timed out");
         }
 
         return (false, retryWithSelenium, string.Empty, new Uri(url));
