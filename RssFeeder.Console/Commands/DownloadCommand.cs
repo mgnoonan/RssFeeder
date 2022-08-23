@@ -31,7 +31,7 @@ public class DownloadCommand : OaktonCommand<DownloadInput>
         string filename = $"{workingFolder}\\{DateTime.Now:yyyyMMddhhmmss}_{hash}";
 
         // Download the URL contents using the web driver to the target filename
-        webUtils.WebDriverUrlToDisk(input.Url, hash, filename + ".html");
+        webUtils.WebDriverUrlToDisk(input.Url, filename + ".html");
 
         // Optionally capture a screenshot to the target filename
         if (input.CaptureFlag)
