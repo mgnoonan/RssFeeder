@@ -115,9 +115,9 @@ public class WebUtils : IWebUtils
         return string.Empty;
     }
 
-    public (string, Uri) WebDriverUrlToDisk(string url, string urlHash, string filename)
+    public (string, Uri) WebDriverUrlToDisk(string url, string filename)
     {
-        Log.Debug("Loading Selenium URL '{urlHash}':'{url}'", urlHash, url);
+        Log.Information("WebDriverUrlToDisk to {url}", url);
 
         var options = new EdgeOptions();
         options.AddArgument("headless");//Comment if we want to see the window. 
@@ -136,7 +136,7 @@ public class WebUtils : IWebUtils
                 File.Delete(filename);
             }
 
-            Log.Debug("Saving text file '{fileName}'", filename);
+            Log.Information("Saving text file '{fileName}'", filename);
             File.WriteAllText(filename, driver.PageSource);
 
             return (filename, new Uri(driver.Url));
