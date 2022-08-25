@@ -39,6 +39,11 @@ public class GenericTagParser : TagParserBase, ITagParser
             {
                 description.AppendLine($"<h4>{p.TextContent.Trim()}</h4>");
             }
+            else if (p.TagName.ToLower() == "ul")
+            {
+                // Unordered list will have all the <li> elements inside
+                description.AppendLine($"<p><ul>{p.InnerHtml}</ul></p>");
+            }
             else
             {
                 // Watch for the older style line breaks and convert to proper paragraphs
