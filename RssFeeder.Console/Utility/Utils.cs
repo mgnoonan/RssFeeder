@@ -17,7 +17,7 @@ public class Utils : IUtils
                 File.Delete(filepath);
             }
 
-            Log.Logger.Information("Saving text file '{filepath}'", filepath);
+            Log.Logger.Information("Saving {bytes:N0} bytes to text file '{fileName}'", text.Length, filepath);
 
             // WriteAllText creates a file, writes the specified string to the file,
             // and then closes the file.    You do NOT need to call Flush() or Close().
