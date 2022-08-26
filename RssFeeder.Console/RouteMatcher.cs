@@ -5,7 +5,7 @@ namespace RssFeeder.Console;
 
 internal class RouteMatcher : IRouteMatcher
 {
-    public RouteValueDictionary? Match(string routeTemplate, string requestPath)
+    public RouteValueDictionary Match(string routeTemplate, string requestPath)
     {
         var template = TemplateParser.Parse(routeTemplate);
 
