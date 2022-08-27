@@ -23,9 +23,9 @@ public class GenericTagParser : TagParserBase, ITagParser
 
         string text = BuildArticleText(paragraphs);
 
-        if (!string.IsNullOrEmpty(template.EmbeddedArticleUrl))
+        if (!string.IsNullOrEmpty(template.EmbeddedArticleUrlSelector))
         {
-            var link = container.QuerySelector(template.EmbeddedArticleUrl);
+            var link = container.QuerySelector(template.EmbeddedArticleUrlSelector);
             if (link is not null)
             {
                 text += $"<p>{link.OuterHtml}</p>";
