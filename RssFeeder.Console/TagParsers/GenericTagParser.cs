@@ -28,6 +28,7 @@ public class GenericTagParser : TagParserBase, ITagParser
             var link = container.QuerySelector(template.EmbeddedArticleUrlSelector);
             if (link is not null)
             {
+                Log.Information("Detected embedded article url using selector {embeddedArticleUrlSelector}", template.EmbeddedArticleUrlSelector);
                 text += $"<p>{link.OuterHtml}</p>";
             }
         }
