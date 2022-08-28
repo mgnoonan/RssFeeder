@@ -1,8 +1,4 @@
-﻿using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Routing.Patterns;
-using Microsoft.AspNetCore.Routing.Template;
-
-namespace RssFeeder.Console;
+﻿namespace RssFeeder.Console;
 
 public class ArticleParser : IArticleParser
 {
@@ -148,7 +144,7 @@ public class ArticleParser : IArticleParser
 
             if (Uri.TryCreate(url.ToLower(), UriKind.Absolute, out var uri))
             {
-                uri.GetComponents(UriComponents.Host, UriFormat.Unescaped);
+                return uri.GetComponents(UriComponents.Host, UriFormat.Unescaped);
             }
         }
 
