@@ -135,21 +135,24 @@ public class ArticleParser : IArticleParser
 
     private string GetHostName(RssFeedItem item)
     {
-        string url = item.OpenGraphAttributes.GetValueOrDefault("og:url") ?? "";
+        return GetHostName(item.OpenGraphAttributes.GetValueOrDefault("og:url"),
+                           item.HtmlAttributes.GetValueOrDefault("Url"),
+                           item.FeedAttributes.Url);
+    }
 
-        // Make sure the Url is complete
-        if (!url.StartsWith("http"))
+    private string GetHostName(params string[] urls)
+    {
+        foreach (string url in urls)
         {
-            url = item.HtmlAttributes.GetValueOrDefault("Url") ?? item.FeedAttributes.Url;
+            if (string.IsNullOrEmpty(url)) continue;
+
+            if (Uri.TryCreate(url.ToLower(), UriKind.Absolute, out var uri))
+            {
+                uri.GetComponents(UriComponents.Host, UriFormat.Unescaped);
+            }
         }
 
-        if (!url.StartsWith("http"))
-        {
-            url = _webUtils.RepairUrl(url, item.FeedAttributes.Url);
-        }
-
-        Uri uri = new Uri(url);
-        return uri.GetComponents(UriComponents.Host, UriFormat.Unescaped).ToLower();
+        throw new UriFormatException("No valid Url was found");
     }
 
     private string GetSiteName(RssFeedItem item)
