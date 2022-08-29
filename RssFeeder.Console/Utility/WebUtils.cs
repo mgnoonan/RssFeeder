@@ -73,7 +73,7 @@ public class WebUtils : IWebUtils
                 File.Delete(filename);
             }
 
-            Log.Information("Saving text file '{fileName}'", filename);
+            Log.Information("Saving {bytes:N0} bytes to text file '{fileName}'", doc.DocumentNode.OuterLength, filename);
             doc.Save(filename);
 
             return (true, retryWithSelenium, filename, trueUri);
@@ -115,9 +115,9 @@ public class WebUtils : IWebUtils
         return string.Empty;
     }
 
-    public (string, Uri) WebDriverUrlToDisk(string url, string urlHash, string filename)
+    public (string, Uri) WebDriverUrlToDisk(string url, string filename)
     {
-        Log.Debug("Loading Selenium URL '{urlHash}':'{url}'", urlHash, url);
+        Log.Information("WebDriverClient GetString to {url}", url);
 
         var options = new EdgeOptions();
         options.AddArgument("headless");//Comment if we want to see the window. 
@@ -130,20 +130,24 @@ public class WebUtils : IWebUtils
             driver = new EdgeDriver(path, options);
             driver.Navigate().GoToUrl(url);
 
+            // Web Driver does not support returning the response code, but if
+            // we got to here then it is most likely a 200 OK result
+            Log.Information("Response status code = {httpStatusCode} {httpStatusText}, {uri}", 200, "OK", driver.Url);
+
             // Delete the file if it already exists
             if (File.Exists(filename))
             {
                 File.Delete(filename);
             }
 
-            Log.Debug("Saving text file '{fileName}'", filename);
+            Log.Information("Saving {bytes:N0} bytes to text file '{fileName}'", driver.PageSource.Length, filename);
             File.WriteAllText(filename, driver.PageSource);
 
             return (filename, new Uri(driver.Url));
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "WebDriverUrlToDisk: Unexpected error '{message}'", ex.Message);
+            Log.Error(ex, "WebDriverClient: Unexpected error '{message}'", ex.Message);
         }
         finally
         {

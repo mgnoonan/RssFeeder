@@ -2,10 +2,10 @@
 
 public record SiteArticleDefinition
 {
-    public string Id { get; set; }
-    public string SiteName { get; set; }
-    public string ArticleSelector { get; set; }
-    public string ParagraphSelector { get; set; }
-    public string Parser { get; set; }
-    public ArticleRouteTemplate[] RouteTemplates { get; set; }
+    public string Id { get; init; }
+    public string SiteName { get; init; }
+    public string ArticleSelector { get; init; }
+    public string ParagraphSelector { get; init; }
+    public string Parser { get; init; }
+    public ArticleRouteTemplate[] RouteTemplates { get; init; }
 }

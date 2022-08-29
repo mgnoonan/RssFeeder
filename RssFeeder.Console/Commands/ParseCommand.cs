@@ -21,6 +21,12 @@ public class ParseCommand : OaktonCommand<ParseInput>
         var utils = _container.Resolve<IUtils>();
         var webUtils = _container.Resolve<IWebUtils>();
         var parser = _container.ResolveNamed<ITagParser>(input.Parser);
+        var template = new ArticleRouteTemplate
+        {
+            ArticleSelector = input.BodySelector,
+            ParagraphSelector = input.ParagraphSelector,
+            Name = input.Parser
+        };
 
         string urlHash = utils.CreateMD5Hash(input.Url);
         (HttpStatusCode statusCode, string html, Uri trueUri) = webUtils.DownloadString(input.Url);
@@ -35,7 +41,7 @@ public class ParseCommand : OaktonCommand<ParseInput>
         Log.Information("og:image = '{Image}'", ParseMetaTagAttributes(doc, "og:image", "content"));
 
         parser.Initialize(doc.Text, null);
-        string articleText = parser.ParseTagsBySelector(input.BodySelector, input.ParagraphSelector);
+        string articleText = parser.ParseTagsBySelector(template);
         Log.Information("Article text = '{ArticleText}'", articleText);
         Log.CloseAndFlush();
 

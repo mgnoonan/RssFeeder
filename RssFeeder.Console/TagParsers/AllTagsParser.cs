@@ -2,16 +2,12 @@
 
 public class AllTagsParser : TagParserBase, ITagParser
 {
-    public string ParseTagsBySelector(SiteArticleDefinition options)
-    {
-        return ParseTagsBySelector(options.ArticleSelector, options.ParagraphSelector);
-    }
-
-    public string ParseTagsBySelector(string bodySelector, string paragraphSelector)
+    public string ParseTagsBySelector(ArticleRouteTemplate template)
     {
         // Load and parse the html from the source file
         var parser = new HtmlParser();
         var document = parser.ParseDocument(_sourceHtml);
+        string paragraphSelector = template.ParagraphSelector;
 
         Log.Information("Attempting alltags parsing using paragraph selector '{paragraphSelector}'", paragraphSelector);
 

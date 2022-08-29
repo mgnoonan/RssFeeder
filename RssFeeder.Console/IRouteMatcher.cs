@@ -4,5 +4,5 @@ namespace RssFeeder.Console;
 
 internal interface IRouteMatcher
 {
-    RouteValueDictionary? Match(string routeTemplate, string requestPath);
+    RouteValueDictionary Match(string routeTemplate, string requestPath);
 }

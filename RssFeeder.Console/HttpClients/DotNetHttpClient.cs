@@ -20,8 +20,7 @@ public class DotNetHttpClient : IHttpClient
                 SslOptions = new SslClientAuthenticationOptions
                 {
                     AllowRenegotiation = true,
-                    EnabledSslProtocols = System.Security.Authentication.SslProtocols.Tls13 | System.Security.Authentication.SslProtocols.Tls12 |
-                                          System.Security.Authentication.SslProtocols.Tls11 | System.Security.Authentication.SslProtocols.Tls
+                    EnabledSslProtocols = System.Security.Authentication.SslProtocols.Tls13 | System.Security.Authentication.SslProtocols.Tls12
                 },
                 UseCookies = true
             });

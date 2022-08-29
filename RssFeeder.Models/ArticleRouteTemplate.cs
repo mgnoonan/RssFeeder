@@ -2,9 +2,10 @@
 
 public record ArticleRouteTemplate
 {
-    public string Name { get; set; }
-    public string Parser { get; set; }
-    public string Template { get; set; }
-    public string ArticleSelector { get; set; }
-    public string ParagraphSelector { get; set; }
+    public string Name { get; init; }
+    public string Parser { get; init; }
+    public string Template { get; init; }
+    public string ArticleSelector { get; init; }
+    public string ParagraphSelector { get; init; }
+    public string EmbeddedArticleUrlSelector { get; init; }
 }

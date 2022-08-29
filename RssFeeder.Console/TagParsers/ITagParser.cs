@@ -3,8 +3,7 @@
 public interface ITagParser
 {
     void Initialize(string sourceHtml, RssFeedItem item);
-    string ParseTagsBySelector(SiteArticleDefinition options);
-    string ParseTagsBySelector(string bodySelector, string paragraphSelector);
+    string ParseTagsBySelector(ArticleRouteTemplate template);
     void PreParse();
     void PostParse();
 }

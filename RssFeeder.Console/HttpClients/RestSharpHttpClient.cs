@@ -35,14 +35,14 @@ public class RestSharpHttpClient : IHttpClient
 
         var request = new RestRequest(url);
         var response = _client.GetAsync(request).GetAwaiter().GetResult();
-        Log.Information("Response status code = {intStatusCode} {statusCode}, {uri}", (int)response.StatusCode, response.StatusCode, response.ResponseUri);
+        Log.Information("Response status code = {httpStatusCode} {httpStatusText}, {uri}", (int)response.StatusCode, response.StatusCode, response.ResponseUri);
 
         // Poor man's retry since we can't use Polly here
         if ((int)response.StatusCode == 522)
         {
             Thread.Sleep(3);
             response = _client.GetAsync(request).GetAwaiter().GetResult();
-            Log.Information("Retry status code = {intStatusCode} {statusCode}, {uri}", (int)response.StatusCode, response.StatusCode, response.ResponseUri);
+            Log.Information("Retry status code = {httpStatusCode} {httpStatusText}, {uri}", (int)response.StatusCode, response.StatusCode, response.ResponseUri);
         }
 
         return (response.StatusCode, response.Content, response.ResponseUri);

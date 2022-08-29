@@ -2,31 +2,38 @@
 
 public class GenericTagParser : TagParserBase, ITagParser
 {
-    public string ParseTagsBySelector(SiteArticleDefinition options)
-    {
-        return ParseTagsBySelector(options.ArticleSelector, options.ParagraphSelector);
-    }
-
-    public string ParseTagsBySelector(string bodySelector, string paragraphSelector)
+    public string ParseTagsBySelector(ArticleRouteTemplate template)
     {
         // Load and parse the html from the source file
         var parser = new HtmlParser();
         var document = parser.ParseDocument(_sourceHtml);
 
-        Log.Information("Attempting generic tag parsing using body selector '{bodySelector}' and paragraph selector '{paragraphSelector}'", bodySelector, paragraphSelector);
+        Log.Information("Attempting generic tag parsing using body selector '{bodySelector}' and paragraph selector '{paragraphSelector}'", template.ArticleSelector, template.ParagraphSelector);
 
         // Query the document by CSS selectors to get the article text
-        var container = document.QuerySelector(bodySelector);
+        var container = document.QuerySelector(template.ArticleSelector);
         if (container is null)
         {
-            Log.Warning("Error reading article: '{bodySelector}' article body selector not found.", bodySelector);
-            return $"<p>Error reading article: '{bodySelector}' article body selector not found.</p>";
+            Log.Warning("Error reading article: '{bodySelector}' article body selector not found.", template.ArticleSelector);
+            return $"<p>Error reading article: '{template.ArticleSelector}' article body selector not found.</p>";
+        }
+        
+        var paragraphs = container.QuerySelectorAll(template.ParagraphSelector);
+        Log.Information("Paragraph selector '{paragraphSelector}' returned {count} paragraphs", template.ParagraphSelector, paragraphs.Length);
+
+        string text = BuildArticleText(paragraphs);
+
+        if (!string.IsNullOrEmpty(template.EmbeddedArticleUrlSelector))
+        {
+            var link = container.QuerySelector(template.EmbeddedArticleUrlSelector);
+            if (link is not null)
+            {
+                Log.Information("Detected embedded article url using selector {embeddedArticleUrlSelector}", template.EmbeddedArticleUrlSelector);
+                text += $"<p>{link.OuterHtml}</p>";
+            }
         }
 
-        var paragraphs = container.QuerySelectorAll(paragraphSelector);
-        Log.Information("Paragraph selector '{paragraphSelector}' returned {count} paragraphs", paragraphSelector, paragraphs.Length);
-
-        return BuildArticleText(paragraphs);
+        return text;
     }
 
     protected virtual string BuildArticleText(IHtmlCollection<IElement> paragraphs)
@@ -38,6 +45,11 @@ public class GenericTagParser : TagParserBase, ITagParser
             if (p.TagName.ToLower().StartsWith("h"))
             {
                 description.AppendLine($"<h4>{p.TextContent.Trim()}</h4>");
+            }
+            else if (p.TagName.ToLower() == "ul")
+            {
+                // Unordered list will have all the <li> elements inside
+                description.AppendLine($"<p><ul>{p.InnerHtml}</ul></p>");
             }
             else
             {

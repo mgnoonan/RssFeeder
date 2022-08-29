@@ -158,7 +158,7 @@ public class WebCrawler : IWebCrawler
                         // Handle certain cases with Selenium attempt
                         if (retryWithSelenium)
                         {
-                            (newFilename, trueUri) = _webUtils.WebDriverUrlToDisk(item.FeedAttributes.Url, item.FeedAttributes.UrlHash, filename);
+                            (newFilename, trueUri) = _webUtils.WebDriverUrlToDisk(item.FeedAttributes.Url, filename);
                             item.FeedAttributes.FileName = newFilename;
                             item.HtmlAttributes["Url"] = trueUri.AbsoluteUri;
                         }

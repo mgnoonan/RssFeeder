@@ -5,22 +5,18 @@ namespace RssFeeder.Console.TagParsers;
 
 public class AdaptiveTagParser : TagParserBase, ITagParser
 {
-    public string ParseTagsBySelector(SiteArticleDefinition options)
-    {
-        return ParseTagsBySelector("", "p");
-    }
-
-    public string ParseTagsBySelector(string bodySelector, string paragraphSelector)
+    public string ParseTagsBySelector(ArticleRouteTemplate template)
     {
         // Load and parse the html from the source file
         var parser = new HtmlParser();
         var document = parser.ParseDocument(_sourceHtml);
+        string paragraphSelector = template.ParagraphSelector;
 
         if (string.IsNullOrEmpty(paragraphSelector))
             paragraphSelector = "p";
 
         Log.Debug("Attempting adaptive parsing using paragraph selector '{paragraphSelector}'", paragraphSelector);
-        bodySelector = GetHighestParagraphCountSelector(document, paragraphSelector, true);
+        string bodySelector = GetHighestParagraphCountSelector(document, paragraphSelector, true);
 
         if (string.IsNullOrEmpty(bodySelector))
         {

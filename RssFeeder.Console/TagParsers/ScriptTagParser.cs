@@ -1,17 +1,16 @@
-﻿namespace RssFeeder.Console.TagParsers;
+﻿using Antlr4.StringTemplate;
+
+namespace RssFeeder.Console.TagParsers;
 
 public class ScriptTagParser : TagParserBase, ITagParser
 {
-    public string ParseTagsBySelector(SiteArticleDefinition options)
-    {
-        return ParseTagsBySelector(options.ArticleSelector, options.ParagraphSelector);
-    }
-
-    public string ParseTagsBySelector(string bodySelector, string paragraphSelector)
+    public string ParseTagsBySelector(ArticleRouteTemplate template)
     {
         // Load and parse the html from the source file
         var parser = new HtmlParser();
         var document = parser.ParseDocument(_sourceHtml);
+        string bodySelector = template.ArticleSelector;
+        string paragraphSelector = template.ParagraphSelector;
 
         Log.Information("Attempting script block parsing using body selector '{bodySelector}' and paragraph selector '{paragraphSelector}'", bodySelector, paragraphSelector);
 

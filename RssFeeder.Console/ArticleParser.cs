@@ -1,8 +1,4 @@
-﻿using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Routing.Patterns;
-using Microsoft.AspNetCore.Routing.Template;
-
-namespace RssFeeder.Console;
+﻿namespace RssFeeder.Console;
 
 public class ArticleParser : IArticleParser
 {
@@ -55,25 +51,29 @@ public class ArticleParser : IArticleParser
         using (LogContext.PushProperty("siteName", item.SiteName))
         {
             // Determine the named parser to use along with article and para selectors
-            (string namedParser, string articleSelector, string paragraphSelector) = GetRouteMatchedTagParser(definition, GetRouteOnly(item));
+            var template = GetRouteMatchedTagParser(definition, GetRouteOnly(item));
 
             // Resolve the named parameter using DI
-            var parser = _container.ResolveNamed<ITagParser>(namedParser);
+            var parser = _container.ResolveNamed<ITagParser>(template.Parser);
             parser.Initialize(doc.Text, item);
 
             // Parse the content to get the article text
             parser.PreParse();
-            item.HtmlAttributes.Add("ParserResult", parser.ParseTagsBySelector(articleSelector, paragraphSelector));
+            item.HtmlAttributes.Add("ParserResult", parser.ParseTagsBySelector(template));
             parser.PostParse();
         }
     }
 
-    private (string, string, string) GetRouteMatchedTagParser(SiteArticleDefinition definition, string routeToMatch)
+    private ArticleRouteTemplate GetRouteMatchedTagParser(SiteArticleDefinition definition, string routeToMatch)
     {
         if (definition is null)
         {
             Log.Debug("SiteDefinition is null. Falling back to adaptive parser.");
-            return ("adaptive-parser", "", "");
+            return new ArticleRouteTemplate
+            {
+                Name = "_fallback_no_sitedef",
+                Parser = "adaptive-parser"
+            };
         }
 
         if (definition.RouteTemplates?.Length > 0)
@@ -84,20 +84,29 @@ public class ArticleParser : IArticleParser
                 if (matcher.Match(articleRoute.Template, "/" + routeToMatch) != null)
                 {
                     Log.Information("Matched route {routeName} on template {template}", articleRoute.Name, articleRoute.Template);
-                    return (articleRoute.Parser, articleRoute.ArticleSelector, articleRoute.ParagraphSelector);
+                    return articleRoute;
                 }
             }
 
             // Might have forgotten to create a **catch-all template, fall back to adaptive parser
             Log.Warning("Missing **catch-all template. Falling back to adaptive parser.");
-            return ("adaptive-parser", "", "");
+            return new ArticleRouteTemplate
+            {
+                Name = "_fallback_no_catchall",
+                Parser = "adaptive-parser"
+            };
         }
         else
         {
             // No route templates defined, fall back to older style definition or adpative parser
             Log.Debug("No route templates defined. falling back to {@parser}", definition);
-            return (string.IsNullOrEmpty(definition.Parser) ? "adaptive-parser" : definition.Parser,
-                definition.ArticleSelector, definition.ParagraphSelector);
+            return new ArticleRouteTemplate
+            {
+                Name = "_fallback_no_route",
+                Parser = string.IsNullOrEmpty(definition.Parser) ? "adaptive-parser" : definition.Parser,
+                ArticleSelector = definition.ArticleSelector,
+                ParagraphSelector = definition.ParagraphSelector
+            };
         }
     }
 
@@ -122,21 +131,24 @@ public class ArticleParser : IArticleParser
 
     private string GetHostName(RssFeedItem item)
     {
-        string url = item.OpenGraphAttributes.GetValueOrDefault("og:url") ?? "";
+        return GetHostName(item.OpenGraphAttributes.GetValueOrDefault("og:url"),
+                           item.HtmlAttributes.GetValueOrDefault("Url"),
+                           item.FeedAttributes.Url);
+    }
 
-        // Make sure the Url is complete
-        if (!url.StartsWith("http"))
+    private string GetHostName(params string[] urls)
+    {
+        foreach (string url in urls)
         {
-            url = item.HtmlAttributes.GetValueOrDefault("Url") ?? item.FeedAttributes.Url;
+            if (string.IsNullOrEmpty(url)) continue;
+
+            if (Uri.TryCreate(url.ToLower(), UriKind.Absolute, out var uri))
+            {
+                return uri.GetComponents(UriComponents.Host, UriFormat.Unescaped);
+            }
         }
 
-        if (!url.StartsWith("http"))
-        {
-            url = _webUtils.RepairUrl(url, item.FeedAttributes.Url);
-        }
-
-        Uri uri = new Uri(url);
-        return uri.GetComponents(UriComponents.Host, UriFormat.Unescaped).ToLower();
+        throw new UriFormatException("No valid Url was found");
     }
 
     private string GetSiteName(RssFeedItem item)
