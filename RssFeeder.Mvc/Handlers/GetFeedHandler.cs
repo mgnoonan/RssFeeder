@@ -78,8 +78,8 @@ namespace RssFeeder.Mvc.Handlers
                         var si = new SyndicationItem()
                         {
                             Id = item.Id,
-                            Title = Regex.Replace(item.Title, "[^\u0001-\u001f]", ""),
-                            Description = Regex.Replace(item.ArticleText, "[^\u0001-\u001f]", ""),
+                            Title = Regex.Replace(item.Title, "[\u0001-\u001f]", ""),
+                            Description = Regex.Replace(item.ArticleText, "[\u0001-\u001f]", ""),
                             Published = item.DateAdded,
                             LastUpdated = item.DateAdded
                         };
