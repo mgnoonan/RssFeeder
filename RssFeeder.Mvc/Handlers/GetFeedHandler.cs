@@ -77,8 +77,8 @@ namespace RssFeeder.Mvc.Handlers
                         var si = new SyndicationItem()
                         {
                             Id = item.Id,
-                            Title = item.Title.Replace("\u0008", "").Replace("\u0003", "").Replace("\u0010", "").Replace("\u0012", "").Replace("\u0002", "").Replace("\u001f", ""),
-                            Description = item.ArticleText.Replace("\u0008", "").Replace("\u0003", "").Replace("\u0010", "").Replace("\u0012", "").Replace("\u0002", "").Replace("\u001f", ""),
+                            Title = item.Title.Replace("\u0008", "").Replace("\u0003", "").Replace("\u0010", "").Replace("\u0012", "").Replace("\u0002", "").Replace("\u001f", "").Replace("\u0004", ""),
+                            Description = item.ArticleText.Replace("\u0008", "").Replace("\u0003", "").Replace("\u0010", "").Replace("\u0012", "").Replace("\u0002", "").Replace("\u001f", "").Replace("\u0004", ""),
                             Published = item.DateAdded,
                             LastUpdated = item.DateAdded
                         };
