@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
@@ -77,8 +78,8 @@ namespace RssFeeder.Mvc.Handlers
                         var si = new SyndicationItem()
                         {
                             Id = item.Id,
-                            Title = item.Title.Replace("\u0008", "").Replace("\u0003", "").Replace("\u0010", "").Replace("\u0012", "").Replace("\u0002", "").Replace("\u001f", ""),
-                            Description = item.ArticleText.Replace("\u0008", "").Replace("\u0003", "").Replace("\u0010", "").Replace("\u0012", "").Replace("\u0002", "").Replace("\u001f", ""),
+                            Title = Regex.Replace(item.Title, "[\u0001-\u001f]", ""),
+                            Description = Regex.Replace(item.ArticleText, "[\u0001-\u001f]", ""),
                             Published = item.DateAdded,
                             LastUpdated = item.DateAdded
                         };
