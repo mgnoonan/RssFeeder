@@ -246,7 +246,7 @@ public class WebUtils : IWebUtils
         return sb.ToString();
     }
 
-    public (HttpStatusCode, string, Uri) DownloadString(string url)
+    public (HttpStatusCode, string, Uri, string) DownloadString(string url)
     {
         return _crawler.GetString(url);
     }
