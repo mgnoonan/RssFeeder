@@ -22,12 +22,11 @@ public class TagParserBase
         string iframe = GetYoutubeVideoIFrame(result);
         if (iframe.Length > 0)
         {
-            Log.Information("Embedded video detected");
-
             string url = GetAttributeValue(iframe, "src");
             string type = GetAttributeValue(iframe, "type");
             string width = GetAttributeValue(iframe, "width");
             string height = GetAttributeValue(iframe, "height");
+            Log.Information("Embedded video {type} detected {url}", type, url);
 
             _item.OpenGraphAttributes.Add("og:x:video", url);
             _item.OpenGraphAttributes.Add("og:x:video:type", "text/html");
