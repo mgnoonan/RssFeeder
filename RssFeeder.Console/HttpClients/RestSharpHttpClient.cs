@@ -21,13 +21,9 @@ public class RestSharpHttpClient : IHttpClient
         Log.Information("RestSharpHttpClient GetContentType to {url}", url);
         var request = new RestRequest(url);
         var response = _client.HeadAsync(request).GetAwaiter().GetResult();
-        Log.Information("Response status code = {statusCode}", response.StatusCode);
-        Log.Information("Headers = {@headers}", response.Headers.ToList());
+        Log.Information("Response status code = {httpStatusCode} {httpStatusText}, {uri}", (int)response.StatusCode, response.StatusCode, response.ResponseUri);
 
-        return response.Headers
-                .Where(x => x.Name.ToLower() == "content-type")
-                .Select(x => x.Value.ToString())
-                .FirstOrDefault();
+        return response.ContentType;
     }
 
     public (HttpStatusCode, string, Uri) GetString(string url)
