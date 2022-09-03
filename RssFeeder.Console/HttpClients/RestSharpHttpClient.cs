@@ -22,9 +22,10 @@ public class RestSharpHttpClient : IHttpClient
         var request = new RestRequest(url);
         var response = _client.HeadAsync(request).GetAwaiter().GetResult();
         Log.Information("Response status code = {statusCode}", response.StatusCode);
+        Log.Information("Headers = {@headers}", response.Headers.ToList());
 
         return response.Headers
-                .Where(x => x.Name == "Content-Type")
+                .Where(x => x.Name.ToLower() == "content-type")
                 .Select(x => x.Value.ToString())
                 .FirstOrDefault();
     }
