@@ -246,13 +246,23 @@ public class WebUtils : IWebUtils
         return sb.ToString();
     }
 
-    public (HttpStatusCode, string, Uri, string) DownloadString(string url)
+    public (HttpStatusCode, string, Uri) DownloadString(string url)
     {
         return _crawler.GetString(url);
     }
 
     public string GetContentType(string url)
     {
-        return _crawler.GetContentType(url);
+        Log.Debug("GetContentType for {url}", url);
+
+        try
+        {
+            return _crawler.GetContentType(url);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "ERROR: HEAD request was not successful");
+            return String.Empty;
+        }
     }
 }

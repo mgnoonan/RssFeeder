@@ -147,6 +147,13 @@ public class WebCrawler : IWebCrawler
                     }
                     else
                     {
+                        // Experiment for HEAD requests
+                        if (feed.CollectionName == "drudge-report")
+                        {
+                            string contentType = _webUtils.GetContentType(item.FeedAttributes.Url);
+                            Log.Information("EXPERIMENT: HEAD request returned content type {contentType}", contentType);
+                        }
+
                         // Download the Url contents, first using HttpClient but if that fails use Selenium
                         (bool success, bool retryWithSelenium, string newFilename, Uri trueUri) = _webUtils.TrySaveUrlToDisk(item.FeedAttributes.Url, item.FeedAttributes.UrlHash, filename);
                         if (success)
@@ -185,7 +192,7 @@ public class WebCrawler : IWebCrawler
 
     private List<RssFeedItem> GenerateFeedLinks(RssFeed feed, string workingFolder)
     {
-        (HttpStatusCode statusCode, string html, Uri trueUri, string contentType) = _webUtils.DownloadString(feed.Url);
+        (HttpStatusCode statusCode, string html, Uri trueUri) = _webUtils.DownloadString(feed.Url);
 
         // Build the file stem so we can save the html source and a screenshot of the feed page
         var uri = new Uri(feed.Url);
