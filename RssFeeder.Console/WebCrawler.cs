@@ -132,9 +132,6 @@ public class WebCrawler : IWebCrawler
                     // Construct unique file name
                     var uri = new Uri(item.FeedAttributes.Url);
                     string hostname = uri.Host.ToLower();
-                    string friendlyHostname = hostname.Replace(".", "_");
-                    string extension = GetFileExtension(uri);
-                    string filename = Path.Combine(workingFolder, $"{item.FeedAttributes.UrlHash}_{friendlyHostname}{extension}");
 
                     // Check for crawler exclusions, downloading content is blocked from these sites
                     if (Config.Exclusions.Contains(hostname))
@@ -147,10 +144,13 @@ public class WebCrawler : IWebCrawler
                     }
                     else
                     {
+                        string friendlyHostname = hostname.Replace(".", "_");
+                        string extension = GetFileExtensionByPathQuery(uri);
+                        string filename = Path.Combine(workingFolder, $"{item.FeedAttributes.UrlHash}_{friendlyHostname}{extension}");
+
                         // Experiment for HEAD requests
                         string contentType = _webUtils.GetContentType(item.FeedAttributes.Url);
                         string contentTypeExtension = GetFileExtensionByContentType(contentType);
-                        Log.Information("EXPERIMENT: HEAD request returned content type {contentType} with extension {contentTypeExtension}", contentType, contentTypeExtension);
 
                         // Download the Url contents, first using HttpClient but if that fails use Selenium
                         (bool success, bool retryWithSelenium, string newFilename, Uri trueUri) = _webUtils.TrySaveUrlToDisk(item.FeedAttributes.Url, item.FeedAttributes.UrlHash, filename);
@@ -212,7 +212,7 @@ public class WebCrawler : IWebCrawler
         return list;
     }
 
-    private string GetFileExtension(Uri uri)
+    private string GetFileExtensionByPathQuery(Uri uri)
     {
         try
         {
@@ -221,15 +221,16 @@ public class WebCrawler : IWebCrawler
 
             string extension = path.EndsWith(".png") || query.Contains("format=png") ? ".png" :
                 path.EndsWith(".jpg") || path.EndsWith(".jpeg") || query.Contains("format=jpg") ? ".jpg" :
-                path.EndsWith(".gif") ? ".gif" :
-                path.EndsWith(".pdf") ? ".pdf" :
+                path.EndsWith(".gif") || query.Contains("format=gif") ? ".gif" :
+                path.EndsWith(".pdf") || query.Contains("format=pdf") ? ".pdf" :
                 ".html";
 
+            Log.Information("GetFileExtensionByPathQuery: Detected extension {extension} from path {path}", extension, path);
             return extension;
         }
         catch (UriFormatException ex)
         {
-            Log.Error(ex, "GetComponents for {uri}", uri);
+            Log.Error(ex, "GetFileExtensionByPathQuery: Error for {uri}", uri);
         }
 
         return ".html";
@@ -237,28 +238,37 @@ public class WebCrawler : IWebCrawler
 
     private string GetFileExtensionByContentType(string contentType)
     {
+        string extension = ".html";
+
         switch (contentType.ToLower())
         {
             case "text/html":
-                return ".html";
+                extension = ".html";
+                break;
             case "text/plain":
-                return ".txt";
+                extension = ".txt";
+                break;
             case "image/jpg":
             case "image/jpeg":
             case "application/jpg":
-                return ".jpg";
+                extension = ".jpg";
+                break;
             case "image/gif":
-                return ".gif";
+                extension = ".gif";
+                break;
             case "image/png":
-                return ".png";
+                extension = ".png";
+                break;
             case "application/json":
-                return ".json";
+                extension = ".json";
+                break;
             case "application/pdf":
-                return ".pdf";
-            default:
-                Log.Information("Unknown MIME type {contentType}", contentType);
-                return ".html";
+                extension = ".pdf";
+                break;
         }
+
+        Log.Information("GetFileExtensionByContentType: Detected extension {extension} from content type {contentType}", extension, contentType);
+        return extension;
     }
 
     public void Export(Guid runID, RssFeed feed, DateTime startDate)
