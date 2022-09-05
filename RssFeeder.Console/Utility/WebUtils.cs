@@ -261,8 +261,8 @@ public class WebUtils : IWebUtils
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "ERROR: HEAD request was not successful");
-            return String.Empty;
+            Log.Warning(ex, "GetContentType: Unexpected error '{message}'", ex.Message);
+            return "text/html";
         }
     }
 }

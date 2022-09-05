@@ -148,11 +148,9 @@ public class WebCrawler : IWebCrawler
                     else
                     {
                         // Experiment for HEAD requests
-                        if (feed.CollectionName == "drudge-report")
-                        {
-                            string contentType = _webUtils.GetContentType(item.FeedAttributes.Url);
-                            Log.Information("EXPERIMENT: HEAD request returned content type {contentType}", contentType);
-                        }
+                        string contentType = _webUtils.GetContentType(item.FeedAttributes.Url);
+                        string contentTypeExtension = GetFileExtensionByContentType(contentType);
+                        Log.Information("EXPERIMENT: HEAD request returned content type {contentType} with extension {contentTypeExtension}", contentType, contentTypeExtension);
 
                         // Download the Url contents, first using HttpClient but if that fails use Selenium
                         (bool success, bool retryWithSelenium, string newFilename, Uri trueUri) = _webUtils.TrySaveUrlToDisk(item.FeedAttributes.Url, item.FeedAttributes.UrlHash, filename);
@@ -235,6 +233,32 @@ public class WebCrawler : IWebCrawler
         }
 
         return ".html";
+    }
+
+    private string GetFileExtensionByContentType(string contentType)
+    {
+        switch (contentType.ToLower())
+        {
+            case "text/html":
+                return ".html";
+            case "text/plain":
+                return ".txt";
+            case "image/jpg":
+            case "image/jpeg":
+            case "application/jpg":
+                return ".jpg";
+            case "image/gif":
+                return ".gif";
+            case "image/png":
+                return ".png";
+            case "application/json":
+                return ".json";
+            case "application/pdf":
+                return ".pdf";
+            default:
+                Log.Information("Unknown MIME type {contentType}", contentType);
+                return ".html";
+        }
     }
 
     public void Export(Guid runID, RssFeed feed, DateTime startDate)
