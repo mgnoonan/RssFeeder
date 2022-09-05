@@ -225,7 +225,7 @@ public class WebCrawler : IWebCrawler
                 path.EndsWith(".pdf") || query.Contains("format=pdf") ? ".pdf" :
                 ".html";
 
-            Log.Information("GetFileExtensionByPathQuery: Detected extension {extension} from path {path}", extension, path);
+            Log.Information("GetFileExtensionByPathQuery: Detected extension {extension} from path /{path}?{query}", extension, path, query);
             return extension;
         }
         catch (UriFormatException ex)

@@ -20,8 +20,8 @@ public class WebUtils : IWebUtils
 
     public (bool, bool, string, Uri) TrySaveUrlToDisk(string url, string urlHash, string filename, bool removeScriptElements = true)
     {
-        if (!filename.EndsWith(".html"))
-            return (true, false, SaveImageToDisk(url, urlHash, filename), new Uri(url));
+        if (!filename.EndsWith(".html") && !filename.EndsWith(".json") && !filename.EndsWith(".txt"))
+            return (true, false, SaveBinaryDataToDisk(url, urlHash, filename), new Uri(url));
 
         bool retryWithSelenium = false;
         try
@@ -45,36 +45,44 @@ public class WebUtils : IWebUtils
                     break;
             }
 
-            // Use custom load method to account for compression headers
-            HtmlDocument doc = new HtmlDocument();
-            doc.LoadHtml(content);
-            doc.OptionFixNestedTags = true;
-
-            // List of html tags we really don't care to save
-            var excludeHtmlTags = new List<string> { "style", "link", "svg", "form", "noscript" };
-            if (trueUri.AbsoluteUri.Contains("apnews.com") || trueUri.AbsoluteUri.Contains("rumble.com"))
-            {
-                removeScriptElements = false;
-            }
-            if (removeScriptElements)
-            {
-                excludeHtmlTags.Add("script");
-            }
-
-            doc.DocumentNode
-                .Descendants()
-                .Where(n => excludeHtmlTags.Contains(n.Name))
-                .ToList()
-                .ForEach(n => n.Remove());
-
             // Delete the file if it already exists
             if (File.Exists(filename))
             {
                 File.Delete(filename);
             }
 
-            Log.Information("Saving {bytes:N0} bytes to text file '{fileName}'", doc.DocumentNode.OuterLength, filename);
-            doc.Save(filename);
+            if (filename.EndsWith(".html"))
+            {
+                // Use custom load method to account for compression headers
+                HtmlDocument doc = new();
+                doc.LoadHtml(content);
+                doc.OptionFixNestedTags = true;
+
+                // List of html tags we really don't care to save
+                var excludeHtmlTags = new List<string> { "style", "link", "svg", "form", "noscript" };
+                if (trueUri.AbsoluteUri.Contains("apnews.com") || trueUri.AbsoluteUri.Contains("rumble.com"))
+                {
+                    removeScriptElements = false;
+                }
+                if (removeScriptElements)
+                {
+                    excludeHtmlTags.Add("script");
+                }
+
+                doc.DocumentNode
+                    .Descendants()
+                    .Where(n => excludeHtmlTags.Contains(n.Name))
+                    .ToList()
+                    .ForEach(n => n.Remove());
+
+                Log.Information("Saving {bytes:N0} bytes to text file '{fileName}'", doc.DocumentNode.OuterLength, filename);
+                doc.Save(filename);
+            }
+            else
+            {
+                Log.Information("Saving {bytes:N0} bytes to text file '{fileName}'", content.Length, filename);
+                File.WriteAllText(filename, content);
+            }
 
             return (true, retryWithSelenium, filename, trueUri);
         }
@@ -87,29 +95,29 @@ public class WebUtils : IWebUtils
         return (false, retryWithSelenium, string.Empty, new Uri(url));
     }
 
-    private string SaveImageToDisk(string url, string urlHash, string filename)
+    private string SaveBinaryDataToDisk(string url, string urlHash, string filename)
     {
         try
         {
-            Log.Debug("Loading image URL '{urlHash}':'{url}'", urlHash, url);
+            Log.Debug("Loading binary URL '{urlHash}':'{url}'", urlHash, url);
             var fileBytes = _crawler.DownloadData(url);
 
             // Delete the file if it already exists
             if (File.Exists(filename))
             {
-                Log.Information("Delete existing image file '{fileName}'", filename);
+                Log.Information("Delete existing binary file '{fileName}'", filename);
                 File.Delete(filename);
             }
 
             // if the remote file was found, download it
-            Log.Information("Saving image file '{fileName}' {bytes} bytes", filename, fileBytes.Length);
+            Log.Information("Saving binary file '{fileName}' {bytes} bytes", filename, fileBytes.Length);
             File.WriteAllBytes(filename, fileBytes);
 
             return filename;
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "SaveImageToDisk: Unexpected error '{message}'", ex.Message);
+            Log.Error(ex, "SaveBinaryDataToDisk: Unexpected error '{message}'", ex.Message);
         }
 
         return string.Empty;

@@ -24,6 +24,14 @@ public class ArticleParser : IArticleParser
             return;
         }
 
+        // Text files that are not HTML can't be parsed
+        if (item.FeedAttributes.FileName.EndsWith(".json") ||
+            item.FeedAttributes.FileName.EndsWith(".txt"))
+        {
+            Log.Information("Text file detected, skipping metadata values for '{url}'", item.FeedAttributes.Url);
+            return;
+        }
+
         // Graphics file or PDF won't have og tags
         if (item.FeedAttributes.FileName.EndsWith(".png") ||
             item.FeedAttributes.FileName.EndsWith(".jpg") ||
