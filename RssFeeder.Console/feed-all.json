@@ -160,7 +160,9 @@
     "CollectionName": "conservagator",
     "FileRetentionDays": 7,
     "DatabaseRetentionDays": 180,
-    "Filters": []
+    "Filters": [
+      "6226cff02cfd1a8be63ac0e824fcd5f0"
+    ]
   },
   {
     "Title": "Noah Report",
