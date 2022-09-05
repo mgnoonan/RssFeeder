@@ -129,7 +129,6 @@ public class WebCrawler : IWebCrawler
 
                 try
                 {
-                    // Construct unique file name
                     var uri = new Uri(item.FeedAttributes.Url);
                     string hostname = uri.Host.ToLower();
 
@@ -144,13 +143,14 @@ public class WebCrawler : IWebCrawler
                     }
                     else
                     {
-                        string friendlyHostname = hostname.Replace(".", "_");
-                        string extension = GetFileExtensionByPathQuery(uri);
-                        string filename = Path.Combine(workingFolder, $"{item.FeedAttributes.UrlHash}_{friendlyHostname}{extension}");
-
                         // Experiment for HEAD requests
                         string contentType = _webUtils.GetContentType(item.FeedAttributes.Url);
                         string contentTypeExtension = GetFileExtensionByContentType(contentType);
+
+                        // Construct unique file name
+                        string friendlyHostname = hostname.Replace(".", "_");
+                        string extension = GetFileExtensionByPathQuery(uri);
+                        string filename = Path.Combine(workingFolder, $"{item.FeedAttributes.UrlHash}_{friendlyHostname}{contentTypeExtension}");
 
                         // Download the Url contents, first using HttpClient but if that fails use Selenium
                         (bool success, bool retryWithSelenium, string newFilename, Uri trueUri) = _webUtils.TrySaveUrlToDisk(item.FeedAttributes.Url, item.FeedAttributes.UrlHash, filename);
