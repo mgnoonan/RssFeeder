@@ -55,6 +55,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-
 
+      - name: Show GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+
       - name: Build with dotnet
         run: dotnet build ./RssFeeder.Mvc/RssFeeder.Mvc.csproj --configuration Release
 
