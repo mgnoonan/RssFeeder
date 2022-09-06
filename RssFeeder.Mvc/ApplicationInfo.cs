@@ -11,6 +11,7 @@ public class AppVersionInfo
     private string _buildNumber;
     private string _gitHash;
     private string _gitShortHash;
+    private string _workflow;
 
     public AppVersionInfo(IHostEnvironment hostEnvironment)
     {
@@ -28,14 +29,18 @@ public class AppVersionInfo
                 {
                     var fileContents = File.ReadLines(_buildFilePath).ToList();
 
-                    // First line is build number, second is commit hashs
+                    // First line is build number, second is workflow, third is commit hash
                     if (fileContents.Count > 0)
                     {
                         _buildNumber = fileContents[0];
                     }
                     if (fileContents.Count > 1)
                     {
-                        _gitHash = fileContents[1];
+                        _workflow = fileContents[1];
+                    }
+                    if (fileContents.Count > 2)
+                    {
+                        _gitHash = fileContents[2];
                     }
                 }
 
@@ -66,12 +71,46 @@ public class AppVersionInfo
                     }
                     if (fileContents.Count > 1)
                     {
-                        _gitHash = fileContents[1];
+                        _workflow = fileContents[1];
+                    }
+                    if (fileContents.Count > 2)
+                    {
+                        _gitHash = fileContents[2];
                     }
                 }
             }
 
             return _gitHash;
+        }
+    }
+
+    public string Workflow
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(_workflow))
+            {
+                if (File.Exists(_buildFilePath))
+                {
+                    var fileContents = File.ReadLines(_buildFilePath).ToList();
+
+                    // First line is build number, second is commit hashs
+                    if (fileContents.Count > 0)
+                    {
+                        _buildNumber = fileContents[0];
+                    }
+                    if (fileContents.Count > 1)
+                    {
+                        _workflow = fileContents[1];
+                    }
+                    if (fileContents.Count > 2)
+                    {
+                        _gitHash = fileContents[2];
+                    }
+                }
+            }
+
+            return _workflow;
         }
     }
 
