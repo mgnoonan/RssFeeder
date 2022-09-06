@@ -27,7 +27,7 @@ public class WebUtils : IWebUtils
         try
         {
             Log.Debug("Loading URL '{urlHash}':'{url}'", urlHash, url);
-            (HttpStatusCode status, string content, Uri trueUri) = _crawler.GetString(url);
+            (HttpStatusCode status, string content, Uri trueUri, string contentType) = _crawler.GetString(url);
 
             if (trueUri is null)
             {
@@ -35,14 +35,10 @@ public class WebUtils : IWebUtils
                 return (false, retryWithSelenium, string.Empty, new Uri(url));
             }
 
-            switch (status)
+            int statusCode = (int)status;
+            if (statusCode > 200 || statusCode == 0)
             {
-                case HttpStatusCode.OK:
-                    break;
-                case HttpStatusCode.NotFound:
-                    return (false, retryWithSelenium, string.Empty, new Uri(url));
-                default:
-                    break;
+                return (false, retryWithSelenium, string.Empty, new Uri(url));
             }
 
             // Delete the file if it already exists
@@ -254,7 +250,7 @@ public class WebUtils : IWebUtils
         return sb.ToString();
     }
 
-    public (HttpStatusCode, string, Uri) DownloadString(string url)
+    public (HttpStatusCode, string, Uri, string) DownloadString(string url)
     {
         return _crawler.GetString(url);
     }

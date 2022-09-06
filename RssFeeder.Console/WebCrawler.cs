@@ -190,7 +190,7 @@ public class WebCrawler : IWebCrawler
 
     private List<RssFeedItem> GenerateFeedLinks(RssFeed feed, string workingFolder)
     {
-        (HttpStatusCode statusCode, string html, Uri trueUri) = _webUtils.DownloadString(feed.Url);
+        (_, string html, _, _) = _webUtils.DownloadString(feed.Url);
 
         // Build the file stem so we can save the html source and a screenshot of the feed page
         var uri = new Uri(feed.Url);

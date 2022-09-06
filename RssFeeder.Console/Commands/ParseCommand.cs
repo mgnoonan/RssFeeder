@@ -29,7 +29,7 @@ public class ParseCommand : OaktonCommand<ParseInput>
         };
 
         string urlHash = utils.CreateMD5Hash(input.Url);
-        (HttpStatusCode statusCode, string html, Uri trueUri) = webUtils.DownloadString(input.Url);
+        (_, string html, _, _) = webUtils.DownloadString(input.Url);
 
         var doc = new HtmlDocument();
         doc.Load(new StringReader(html));

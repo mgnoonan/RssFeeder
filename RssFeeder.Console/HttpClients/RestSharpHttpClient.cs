@@ -26,7 +26,7 @@ public class RestSharpHttpClient : IHttpClient
         return response.ContentType;
     }
 
-    public (HttpStatusCode, string, Uri) GetString(string url)
+    public (HttpStatusCode, string, Uri, string) GetString(string url)
     {
         Log.Information("RestSharpHttpClient GetString to {url}", url);
 
@@ -42,6 +42,6 @@ public class RestSharpHttpClient : IHttpClient
             Log.Information("Retry status code = {httpStatusCode} {httpStatusText}, {uri}", (int)response.StatusCode, response.StatusCode, response.ResponseUri);
         }
 
-        return (response.StatusCode, response.Content, response.ResponseUri);
+        return (response.StatusCode, response.Content, response.ResponseUri, response.ContentType);
     }
 }
