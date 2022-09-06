@@ -81,7 +81,7 @@ public class AppVersionInfo
         {
             if (string.IsNullOrEmpty(_gitShortHash))
             {
-                _gitShortHash = GitHash[0..6];
+                _gitShortHash = GitHash[0..7];
             }
 
             return _gitShortHash;
