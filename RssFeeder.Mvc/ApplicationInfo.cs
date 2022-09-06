@@ -79,11 +79,11 @@ public class AppVersionInfo
     {
         get
         {
-            if (!string.IsNullOrEmpty(_gitShortHash))
+            if (string.IsNullOrEmpty(_gitShortHash))
             {
                 _gitShortHash = GitHash.Substring(GitHash.Length - 6, 6);
             }
-            
+
             return _gitShortHash;
         }
     }
