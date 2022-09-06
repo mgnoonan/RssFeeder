@@ -9,7 +9,6 @@ public class AppVersionInfo
     private static readonly string _buildFileName = ".buildinfo.json";
     private string _buildFilePath;
     private string _buildNumber;
-    private string _buildId;
     private string _gitHash;
     private string _gitShortHash;
 
@@ -29,14 +28,14 @@ public class AppVersionInfo
                 {
                     var fileContents = File.ReadLines(_buildFilePath).ToList();
 
-                    // First line is build number, second is build id
+                    // First line is build number, second is commit hashs
                     if (fileContents.Count > 0)
                     {
                         _buildNumber = fileContents[0];
                     }
                     if (fileContents.Count > 1)
                     {
-                        _buildId = fileContents[1];
+                        _gitHash = fileContents[1];
                     }
                 }
 
@@ -44,27 +43,9 @@ public class AppVersionInfo
                 {
                     _buildNumber = DateTime.UtcNow.ToString("yyyyMMdd") + ".0";
                 }
-
-                if (string.IsNullOrEmpty(_buildId))
-                {
-                    _buildId = "123456";
-                }
             }
 
             return _buildNumber;
-        }
-    }
-
-    public string BuildId
-    {
-        get
-        {
-            if (string.IsNullOrEmpty(_buildId))
-            {
-                var _ = BuildNumber;
-            }
-
-            return _buildId;
         }
     }
 
@@ -74,18 +55,20 @@ public class AppVersionInfo
         {
             if (string.IsNullOrEmpty(_gitHash))
             {
-                var version = "1.0.0+LOCALBUILD"; // Dummy version for local dev
-                var appAssembly = typeof(AppVersionInfo).Assembly;
-                var infoVerAttr = (AssemblyInformationalVersionAttribute)appAssembly
-                    .GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute)).FirstOrDefault();
-
-                if (infoVerAttr != null && infoVerAttr.InformationalVersion.Length > 6)
+                if (File.Exists(_buildFilePath))
                 {
-                    // Hash is embedded in the version after a '+' symbol, e.g. 1.0.0+a34a913742f8845d3da5309b7b17242222d41a21
-                    version = infoVerAttr.InformationalVersion;
-                }
-                _gitHash = version.Substring(version.IndexOf('+') + 1);
+                    var fileContents = File.ReadLines(_buildFilePath).ToList();
 
+                    // First line is build number, second is commit hashs
+                    if (fileContents.Count > 0)
+                    {
+                        _buildNumber = fileContents[0];
+                    }
+                    if (fileContents.Count > 1)
+                    {
+                        _gitHash = fileContents[1];
+                    }
+                }
             }
 
             return _gitHash;
@@ -96,10 +79,11 @@ public class AppVersionInfo
     {
         get
         {
-            if (string.IsNullOrEmpty(_gitShortHash))
+            if (!string.IsNullOrEmpty(_gitShortHash))
             {
                 _gitShortHash = GitHash.Substring(GitHash.Length - 6, 6);
             }
+            
             return _gitShortHash;
         }
     }

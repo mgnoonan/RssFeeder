@@ -60,6 +60,12 @@ jobs:
           GITHUB_CONTEXT: ${{ toJson(github) }}
         run: echo "$GITHUB_CONTEXT"
 
+      - name: Output build number
+        run: echo ${{github.run_id}} > ./RssFeeder.Mvc/.buildinfo.json
+
+      - name: Output commit hash
+        run: echo ${{github.sha}} >> ./RssFeeder.Mvc/.buildinfo.json
+
       - name: Build with dotnet
         run: dotnet build ./RssFeeder.Mvc/RssFeeder.Mvc.csproj --configuration Release
 
