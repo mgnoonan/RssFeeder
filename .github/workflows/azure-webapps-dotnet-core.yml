@@ -60,8 +60,11 @@ jobs:
           GITHUB_CONTEXT: ${{ toJson(github) }}
         run: echo "$GITHUB_CONTEXT"
 
-      - name: Output build number
-        run: echo "${{github.run_id}}.${{github.run_number}}" > ./RssFeeder.Mvc/.buildinfo.json
+      - name: Output run number
+        run: echo "${{github.run_number}}" > ./RssFeeder.Mvc/.buildinfo.json
+
+      - name: Output workflow
+        run: echo "${{github.workflow}}" >> ./RssFeeder.Mvc/.buildinfo.json
 
       - name: Output commit hash
         run: echo "${{github.sha}}" >> ./RssFeeder.Mvc/.buildinfo.json
