@@ -239,8 +239,9 @@ public class WebCrawler : IWebCrawler
     private string GetFileExtensionByContentType(string contentType)
     {
         string extension = ".html";
+        string contentTypeLowered = contentType?.ToLower() ?? "text/html";
 
-        switch (contentType.ToLower())
+        switch (contentTypeLowered)
         {
             case "text/html":
                 extension = ".html";
@@ -267,7 +268,7 @@ public class WebCrawler : IWebCrawler
                 break;
         }
 
-        Log.Information("GetFileExtensionByContentType: Detected extension {extension} from content type {contentType}", extension, contentType);
+        Log.Information("GetFileExtensionByContentType: Detected extension {extension} from content type {contentType}", extension, contentTypeLowered);
         return extension;
     }
 
