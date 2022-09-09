@@ -4,5 +4,5 @@ public interface IHttpClient
 {
     (HttpStatusCode, string, Uri, string) GetString(string url);
     byte[] DownloadData(string url);
-    string GetContentType(string url);
+    (HttpStatusCode, Uri, string) GetContentType(string url);
 }

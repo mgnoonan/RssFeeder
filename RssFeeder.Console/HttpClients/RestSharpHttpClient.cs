@@ -16,14 +16,14 @@ public class RestSharpHttpClient : IHttpClient
         return response;
     }
 
-    public string GetContentType(string url)
+    public (HttpStatusCode, Uri, string) GetContentType(string url)
     {
         Log.Information("RestSharpHttpClient GetContentType to {url}", url);
         var request = new RestRequest(url);
         var response = _client.Execute(request, Method.Head);
         Log.Information("Response status code = {httpStatusCode} {httpStatusText}, {uri}", (int)response.StatusCode, response.StatusCode, response.ResponseUri);
 
-        return response.ContentType;
+        return (response.StatusCode, response.ResponseUri, response.ContentType);
     }
 
     public (HttpStatusCode, string, Uri, string) GetString(string url)

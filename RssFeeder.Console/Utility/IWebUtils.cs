@@ -7,5 +7,5 @@ public interface IWebUtils
     (string, Uri) WebDriverUrlToDisk(string url, string filename);
     void SaveThumbnailToDisk(string url, string filename);
     string RepairUrl(string pathAndQuery, string defaultBaseUrl);
-    string GetContentType(string url);
+    (HttpStatusCode, Uri, string) GetContentType(string url);
 }

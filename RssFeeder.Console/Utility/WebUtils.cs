@@ -255,7 +255,7 @@ public class WebUtils : IWebUtils
         return _crawler.GetString(url);
     }
 
-    public string GetContentType(string url)
+    public (HttpStatusCode, Uri, string) GetContentType(string url)
     {
         Log.Debug("GetContentType for {url}", url);
 
@@ -266,7 +266,7 @@ public class WebUtils : IWebUtils
         catch (Exception ex)
         {
             Log.Warning(ex, "GetContentType: Unexpected error '{message}'", ex.Message);
-            return "text/html";
+            return (HttpStatusCode.InternalServerError, default, null);
         }
     }
 }

@@ -132,38 +132,45 @@ public class WebCrawler : IWebCrawler
                     var uri = new Uri(item.FeedAttributes.Url);
                     string hostname = uri.Host.ToLower();
 
-                    // Check for crawler exclusions, downloading content is blocked from these sites
-                    if (Config.Exclusions.Contains(hostname))
+                    // Crawl the given uri
+                    if (CanCrawl(hostname, uri))
                     {
-                        Log.Information("Host '{hostName}' found on the exclusion list, skipping download", hostname);
-                    }
-                    else if (uri.AbsolutePath == "/" && string.IsNullOrEmpty(uri.Query))
-                    {
-                        Log.Information("URI '{uri}' detected as a home page rather than an article, skipping download", uri);
-                    }
-                    else
-                    {
-                        // Experiment for HEAD requests
-                        string contentType = _webUtils.GetContentType(item.FeedAttributes.Url);
-                        string contentTypeExtension = GetFileExtensionByContentType(contentType);
+                        // Issue a HEAD request to determine the link status
+                        (HttpStatusCode statusCode, Uri trueUri, string contentType) = _webUtils.GetContentType(item.FeedAttributes.Url);
 
                         // Construct unique file name
+                        hostname = trueUri?.Host.ToLower() ?? hostname;
                         string friendlyHostname = hostname.Replace(".", "_");
-                        string extension = GetFileExtensionByPathQuery(uri);
+                        string contentTypeExtension = GetFileExtensionByContentType(contentType);
+                        //string queryPathExtension = GetFileExtensionByPathQuery(uri);
                         string filename = Path.Combine(workingFolder, $"{item.FeedAttributes.UrlHash}_{friendlyHostname}{contentTypeExtension}");
 
-                        // Download the Url contents, first using HttpClient but if that fails use Selenium
-                        (bool success, bool retryWithSelenium, string newFilename, Uri trueUri) = _webUtils.TrySaveUrlToDisk(item.FeedAttributes.Url, item.FeedAttributes.UrlHash, filename);
-                        if (success)
+                        bool crawlWithSelenium = (statusCode == HttpStatusCode.MovedPermanently || statusCode == HttpStatusCode.PermanentRedirect ||
+                            statusCode == HttpStatusCode.Redirect);
+
+                        // Re-check now that the true uri and hostname have been unshortened and redirected
+                        // Force the status so the crawler won't retry
+                        if (!CanCrawl(hostname, trueUri))
                         {
-                            item.FeedAttributes.FileName = newFilename;
-                            item.HtmlAttributes.Add("Url", trueUri.AbsoluteUri);
+                            statusCode = HttpStatusCode.Forbidden;
+                            crawlWithSelenium = false;
+                        }
+
+                        if (statusCode == HttpStatusCode.OK)
+                        {
+                            // Download the url contents using RestSharp
+                            (bool success, crawlWithSelenium, string newFilename, trueUri) = _webUtils.TrySaveUrlToDisk(item.FeedAttributes.Url, item.FeedAttributes.UrlHash, filename);
+                            if (success)
+                            {
+                                item.FeedAttributes.FileName = newFilename;
+                                item.HtmlAttributes.Add("Url", trueUri.AbsoluteUri);
+                            }
                         }
 
                         // Handle certain cases with Selenium attempt
-                        if (retryWithSelenium)
+                        if (crawlWithSelenium)
                         {
-                            (newFilename, trueUri) = _webUtils.WebDriverUrlToDisk(item.FeedAttributes.Url, filename);
+                            (string newFilename, trueUri) = _webUtils.WebDriverUrlToDisk(item.FeedAttributes.Url, filename);
                             item.FeedAttributes.FileName = newFilename;
                             item.HtmlAttributes["Url"] = trueUri.AbsoluteUri;
                         }
@@ -186,6 +193,24 @@ public class WebCrawler : IWebCrawler
         }
 
         Log.Information("Downloaded {count} new articles to the {collectionName} collection", articleCount, feed.CollectionName);
+    }
+
+    private bool CanCrawl(string hostname, Uri uri)
+    {
+        // Check for crawler exclusions, downloading content is blocked from these sites
+        if (Config.Exclusions.Contains(hostname))
+        {
+            Log.Information("Host '{hostName}' found on the exclusion list, skipping download", hostname);
+            return false;
+        }
+
+        if (uri.AbsolutePath == "/" && string.IsNullOrEmpty(uri.Query))
+        {
+            Log.Information("URI '{uri}' detected as a home page rather than an article, skipping download", uri);
+            return false;
+        }
+
+        return true;
     }
 
     private List<RssFeedItem> GenerateFeedLinks(RssFeed feed, string workingFolder)
