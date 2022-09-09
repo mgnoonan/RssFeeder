@@ -138,15 +138,14 @@ public class WebCrawler : IWebCrawler
                         // Issue a HEAD request to determine the link status
                         (HttpStatusCode statusCode, Uri trueUri, string contentType) = _webUtils.GetContentType(item.FeedAttributes.Url);
 
+                        bool crawlWithSelenium = (statusCode == HttpStatusCode.MovedPermanently || statusCode == HttpStatusCode.PermanentRedirect ||
+                            statusCode == HttpStatusCode.Redirect || statusCode == HttpStatusCode.NotAcceptable);
+
                         // Construct unique file name
                         hostname = trueUri?.Host.ToLower() ?? hostname;
                         string friendlyHostname = hostname.Replace(".", "_");
-                        string contentTypeExtension = GetFileExtensionByContentType(contentType);
-                        //string queryPathExtension = GetFileExtensionByPathQuery(uri);
+                        string contentTypeExtension = crawlWithSelenium ? GetFileExtensionByPathQuery(trueUri ?? uri) : GetFileExtensionByContentType(contentType);
                         string filename = Path.Combine(workingFolder, $"{item.FeedAttributes.UrlHash}_{friendlyHostname}{contentTypeExtension}");
-
-                        bool crawlWithSelenium = (statusCode == HttpStatusCode.MovedPermanently || statusCode == HttpStatusCode.PermanentRedirect ||
-                            statusCode == HttpStatusCode.Redirect || statusCode == HttpStatusCode.NotAcceptable);
 
                         // Re-check now that the true uri and hostname have been unshortened and redirected
                         // Force the status so the crawler won't retry
