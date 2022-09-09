@@ -146,7 +146,7 @@ public class WebCrawler : IWebCrawler
                         string filename = Path.Combine(workingFolder, $"{item.FeedAttributes.UrlHash}_{friendlyHostname}{contentTypeExtension}");
 
                         bool crawlWithSelenium = (statusCode == HttpStatusCode.MovedPermanently || statusCode == HttpStatusCode.PermanentRedirect ||
-                            statusCode == HttpStatusCode.Redirect);
+                            statusCode == HttpStatusCode.Redirect || statusCode == HttpStatusCode.NotAcceptable);
 
                         // Re-check now that the true uri and hostname have been unshortened and redirected
                         // Force the status so the crawler won't retry
