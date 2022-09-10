@@ -203,6 +203,9 @@ public class WebCrawler : IWebCrawler
             return false;
         }
 
+        if (uri is null)
+            return false;
+
         if (uri.AbsolutePath == "/" && string.IsNullOrEmpty(uri.Query))
         {
             Log.Information("URI '{uri}' detected as a home page rather than an article, skipping download", uri);
