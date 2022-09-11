@@ -1,6 +1,4 @@
-﻿using System;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
