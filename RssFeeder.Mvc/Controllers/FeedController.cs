@@ -1,38 +1,41 @@
+﻿using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RssFeeder.Mvc.Models;
 
-namespace RssFeeder.Mvc.Controllers;
-
-[Authorize]
-public class FeedController : Controller
+namespace RssFeeder.Mvc.Controllers
 {
-    private readonly string _sourceFile = "feeds.json";
-    private readonly List<FeedModel> _feeds;
-
-    public FeedController()
+    [Authorize]
+    public class FeedController : Controller
     {
-        _feeds = System.Text.Json.JsonSerializer.Deserialize<List<FeedModel>>(
-            System.IO.File.ReadAllText(_sourceFile),
-            new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<FeedModel>();
-    }
+        private readonly string _sourceFile = "feeds.json";
+        private readonly List<FeedModel> _feeds;
 
-    // GET: Feed
-    public ActionResult Index()
-    {
-        return View(_feeds.OrderBy(i => i.title).AsEnumerable());
-    }
+        public FeedController()
+        {
+            _feeds = System.Text.Json.JsonSerializer.Deserialize<List<FeedModel>>(
+                System.IO.File.ReadAllText(_sourceFile),
+                new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        }
 
-    [AllowAnonymous]
-    public IActionResult List()
-    {
-        return Json(_feeds);
-    }
+        // GET: Feed
+        public ActionResult Index()
+        {
+            return View(_feeds.OrderBy(i => i.title).AsEnumerable());
+        }
 
-    // GET: Feed/Details/5
-    public ActionResult Details(string id)
-    {
-        var item = _feeds.FirstOrDefault(q => q.id == id);
-        return View(item);
+        [AllowAnonymous]
+        public IActionResult List()
+        {
+            return Json(_feeds);
+        }
+
+        // GET: Feed/Details/5
+        public ActionResult Details(string id)
+        {
+            var item = _feeds.FirstOrDefault(q => q.id == id);
+            return View(item);
+        }
     }
 }

@@ -1,92 +1,42 @@
-using MediatR;
-using Microsoft.ApplicationInsights;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc.Authorization;
-using Microsoft.AspNetCore.Rewrite;
-using Microsoft.Azure.Cosmos;
-using Microsoft.Identity.Web;
-using Microsoft.Identity.Web.UI;
-using RssFeeder.Mvc.Services;
+using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Serilog;
+using Serilog.Events;
 
-var builder = WebApplication.CreateBuilder(args);
-
-// Add Serilog
-builder.Host.UseSerilog((hostingContext, services, loggerConfiguration) =>
+namespace RssFeeder.Mvc
 {
-    var client = services.GetRequiredService<TelemetryClient>();
+    public class Program
+    {
+        public static int Main(string[] args)
+        {
+            CreateHostBuilder(args).Build().Run();
+            return 0;
+        }
 
-    loggerConfiguration
-        .ReadFrom.Configuration(hostingContext.Configuration)
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder
+                        .ConfigureLogging((hostingContext, logging) => logging.ClearProviders())
+                        .UseSerilog((hostingContext, loggerConfiguration) =>
+                        {
+                            var telemetryConfiguration = TelemetryConfiguration.CreateDefault();
+                            telemetryConfiguration.ConnectionString = hostingContext.Configuration["ApplicationInsights:ConnectionString"];
+
+                            loggerConfiguration
+                                .ReadFrom.Configuration(hostingContext.Configuration)
 #if DEBUG
-        .MinimumLevel.Debug()
-        .WriteTo.Console()
-        .WriteTo.Debug()
-        .WriteTo.Seq("http://localhost:5341")       // docker run --rm -it -e ACCEPT_EULA=Y -p 5341:80 datalust/seq:latest
+                                .MinimumLevel.Debug()
+                                .WriteTo.Console()
+                                .WriteTo.Debug()
+                                .WriteTo.Seq("http://localhost:5341")       // docker run --rm -it -e ACCEPT_EULA=Y -p 5341:80 datalust/seq:latest
 #endif
-        .WriteTo.ApplicationInsights(client, TelemetryConverter.Traces)
-        ;
-});
-
-// Add services to the container
-builder.Services.AddMicrosoftIdentityWebAppAuthentication(builder.Configuration);
-builder.Services.AddControllersWithViews(options =>
-            {
-                var policy = new AuthorizationPolicyBuilder()
-                    .RequireAuthenticatedUser()
-                    .Build();
-                options.Filters.Add(new AuthorizeFilter(policy));
-                options.Filters.Add<SerilogMvcLoggingAttribute>();
-            }).AddMicrosoftIdentityUI();
-
-builder.Services.AddSingleton<IDatabaseService>(InitializeCosmosClientInstanceAsync(builder.Configuration.GetSection("CosmosDb")));
-builder.Services.AddSingleton<AppVersionInfo>();
-builder.Services.AddMediatR(typeof(Program));
-builder.Services.AddMemoryCache();
-builder.Services.AddApplicationInsightsTelemetry();
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
-}
-
-
-var options = new RewriteOptions()
-    .AddRewrite(@"^content/rss/drudge\.xml", "api/rss/drudge-report", skipRemainingRules: true);
-app.UseRewriter(options);
-app.UseHttpsRedirection();
-app.UseStaticFiles();
-
-app.UseSerilogRequestLogging(opts => opts.EnrichDiagnosticContext = LogHelper.EnrichFromRequest);
-
-app.UseRouting();
-
-app.UseAuthorization();
-
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
-
-app.Run();
-
-/// <summary>
-/// Creates a Cosmos DB database and a container with the specified partition key. 
-/// </summary>
-/// <returns></returns>
-static CosmosDbService InitializeCosmosClientInstanceAsync(IConfigurationSection configurationSection)
-{
-    string? databaseName = configurationSection.GetSection("DatabaseName").Value;
-    string? containerName = configurationSection.GetSection("ContainerName").Value;
-    string? account = configurationSection.GetSection("Account").Value;
-    string? key = configurationSection.GetSection("Key").Value;
-    CosmosClient client = new CosmosClient(account, key);
-    CosmosDbService cosmosDbService = new CosmosDbService(client, databaseName, containerName);
-    Database database = client.GetDatabase(databaseName);
-
-    return cosmosDbService;
+                                .WriteTo.ApplicationInsights(telemetryConfiguration, TelemetryConverter.Traces);
+                        })
+                    .UseStartup<Startup>();
+                });
+    }
 }
