@@ -1,9 +1,12 @@
-namespace RssFeeder.Mvc.Models;
+﻿using System;
 
-public record Agent
+namespace RssFeeder.Mvc.Models
 {
-    public string? BrowserAgent { get; set; }
-    public string? IpAddress { get; set; }
-    public string? Referrer { get; set; }
-    public DateTime Timestamp { get; set; }
+    public class Agent
+    {
+        public string BrowserAgent { get; set; }
+        public string IpAddress { get; set; }
+        public string Referrer { get; set; }
+        public DateTime Timestamp { get; set; }
+    }
 }

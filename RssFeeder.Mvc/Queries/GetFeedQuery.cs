@@ -1,16 +1,17 @@
-using MediatR;
+﻿using MediatR;
 using RssFeeder.Mvc.Models;
 
-namespace RssFeeder.Mvc.Queries;
-
-public class GetFeedQuery : IRequest<string>
+namespace RssFeeder.Mvc.Queries
 {
-    public string Id { get; init; }
-    public Agent Agent { get; init; }
-
-    public GetFeedQuery(string id, Agent agent)
+    public class GetFeedQuery : IRequest<string>
     {
-        Id = id;
-        Agent = agent;
+        public string Id { get; init; }
+        public Agent Agent { get; init; }
+
+        public GetFeedQuery(string id, Agent agent)
+        {
+            Id = id;
+            Agent = agent;
+        }
     }
 }

@@ -1,11 +1,17 @@
+﻿using System;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using Microsoft.Extensions.Hosting;
+
 public class AppVersionInfo
 {
     private static readonly string _buildFileName = ".buildinfo.json";
-    private string? _buildFilePath;
-    private string? _buildNumber;
-    private string? _gitHash;
-    private string? _gitShortHash;
-    private string? _workflow;
+    private string _buildFilePath;
+    private string _buildNumber;
+    private string _gitHash;
+    private string _gitShortHash;
+    private string _workflow;
 
     public AppVersionInfo(IHostEnvironment hostEnvironment)
     {
@@ -74,7 +80,7 @@ public class AppVersionInfo
                 }
             }
 
-            return _gitHash!;
+            return _gitHash;
         }
     }
 
@@ -104,7 +110,7 @@ public class AppVersionInfo
                 }
             }
 
-            return _workflow!;
+            return _workflow;
         }
     }
 

@@ -1,15 +1,17 @@
-﻿using System.Text;
+﻿using System.IO;
+using System.Text;
 
-namespace RssFeeder.Mvc.Models;
-
-public class StringWriterWithEncoding : StringWriter
+namespace RssFeeder.Mvc.Models
 {
-    public StringWriterWithEncoding(StringBuilder sb, Encoding encoding)
-        : base(sb)
+    public class StringWriterWithEncoding : StringWriter
     {
-        _encoding = encoding;
-    }
+        public StringWriterWithEncoding(StringBuilder sb, Encoding encoding)
+            : base(sb)
+        {
+            _encoding = encoding;
+        }
 
-    private readonly Encoding _encoding;
-    public override Encoding Encoding => _encoding;
+        private readonly Encoding _encoding;
+        public override Encoding Encoding => _encoding;
+    }
 }
