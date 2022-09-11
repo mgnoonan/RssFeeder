@@ -37,21 +37,21 @@ var builder = new ContainerBuilder();
 
 // Setup RavenDb
 // docker run --rm -d -p 8080:8080 -p 38888:38888 ravendb/ravendb:latest
-IDocumentStore store = new DocumentStore
-{
-    Urls = new[] { "http://127.0.0.1:8080/" }
-    // Default database is not set
-}.Initialize();
+// IDocumentStore store = new DocumentStore
+// {
+//     Urls = new[] { "http://127.0.0.1:8080/" }
+//     // Default database is not set
+// }.Initialize();
 
 var crawlerConfig = new CrawlerConfig();
-using (IDocumentSession session = store.OpenSession(database: "site-parsers"))
-{
-    crawlerConfig = session.Advanced.RawQuery<CrawlerConfig>("from CrawlerConfig").First();
-}
-Log.Debug("Crawler config: {@config}", crawlerConfig);
+// using (IDocumentSession session = store.OpenSession(database: "site-parsers"))
+// {
+//     crawlerConfig = session.Advanced.RawQuery<CrawlerConfig>("from CrawlerConfig").First();
+// }
+// Log.Debug("Crawler config: {@config}", crawlerConfig);
 
 builder.RegisterInstance(Log.Logger).As<ILogger>();
-builder.RegisterInstance(store).As<IDocumentStore>();
+// builder.RegisterInstance(store).As<IDocumentStore>();
 #if DEBUG
         builder.RegisterType<RavenDbRepository>().As<IExportRepository>();
 #else
