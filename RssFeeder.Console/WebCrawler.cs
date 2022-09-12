@@ -138,13 +138,19 @@ public class WebCrawler : IWebCrawler
                         // Issue a HEAD request to determine the link status
                         (HttpStatusCode statusCode, Uri trueUri, string contentType) = _webUtils.GetContentType(item.FeedAttributes.Url);
 
-                        bool crawlWithSelenium = (statusCode == HttpStatusCode.MovedPermanently || statusCode == HttpStatusCode.PermanentRedirect ||
-                            statusCode == HttpStatusCode.Redirect || statusCode == HttpStatusCode.NotAcceptable);
+                        // Reset the hostname now that the uri has been unshortened and redirected
+                        hostname = trueUri?.Host.ToLower() ?? hostname;
+
+                        bool crawlWithSelenium =
+                            statusCode == HttpStatusCode.MovedPermanently ||
+                            statusCode == HttpStatusCode.PermanentRedirect ||
+                            statusCode == HttpStatusCode.Redirect ||
+                            statusCode == HttpStatusCode.NotAcceptable ||
+                            Config.WebDriver.Contains(hostname);
 
                         // Construct unique file name
-                        hostname = trueUri?.Host.ToLower() ?? hostname;
                         string friendlyHostname = hostname.Replace(".", "_");
-                        string contentTypeExtension = crawlWithSelenium ? GetFileExtensionByPathQuery(trueUri ?? uri) : GetFileExtensionByContentType(contentType);
+                        string contentTypeExtension = GetFileExtensionByContentType(contentType);
                         string filename = Path.Combine(workingFolder, $"{item.FeedAttributes.UrlHash}_{friendlyHostname}{contentTypeExtension}");
 
                         // Re-check now that the true uri and hostname have been unshortened and redirected
@@ -167,7 +173,7 @@ public class WebCrawler : IWebCrawler
                         }
 
                         // Handle certain cases with Selenium attempt
-                        if (crawlWithSelenium)
+                        if (crawlWithSelenium || Config.WebDriver.Contains(hostname))
                         {
                             (string newFilename, trueUri) = _webUtils.WebDriverUrlToDisk(item.FeedAttributes.Url, filename);
                             item.FeedAttributes.FileName = newFilename;
