@@ -129,11 +129,11 @@ public class WebCrawler : IWebCrawler
 
                 try
                 {
-                    var uri = new Uri(item.FeedAttributes.Url);
-                    string hostname = uri.Host.ToLower();
+                    var sourceUri = new Uri(item.FeedAttributes.Url);
+                    string hostname = sourceUri.Host.ToLower();
 
                     // Crawl the given uri
-                    if (CanCrawl(hostname, uri))
+                    if (CanCrawl(hostname, sourceUri))
                     {
                         // Issue a HEAD request to determine the link status
                         (HttpStatusCode statusCode, Uri trueUri, string contentType) = _webUtils.GetContentType(item.FeedAttributes.Url);
@@ -145,15 +145,14 @@ public class WebCrawler : IWebCrawler
                             statusCode == HttpStatusCode.MovedPermanently ||
                             statusCode == HttpStatusCode.PermanentRedirect ||
                             statusCode == HttpStatusCode.Redirect ||
-                            statusCode == HttpStatusCode.NotAcceptable ||
-                            Config.WebDriver.Contains(hostname);
+                            statusCode == HttpStatusCode.NotAcceptable;
 
                         // Construct unique file name
                         string friendlyHostname = hostname.Replace(".", "_");
                         string contentTypeExtension = GetFileExtensionByContentType(contentType);
                         string filename = Path.Combine(workingFolder, $"{item.FeedAttributes.UrlHash}_{friendlyHostname}{contentTypeExtension}");
 
-                        // Re-check now that the true uri and hostname have been unshortened and redirected
+                        // Re-check now that the true uri is revealed
                         // Force the status so the crawler won't retry
                         if (!CanCrawl(hostname, trueUri))
                         {
@@ -164,21 +163,17 @@ public class WebCrawler : IWebCrawler
                         if (statusCode == HttpStatusCode.OK)
                         {
                             // Download the url contents using RestSharp
-                            (bool success, crawlWithSelenium, string newFilename, trueUri) = _webUtils.TrySaveUrlToDisk(item.FeedAttributes.Url, item.FeedAttributes.UrlHash, filename);
-                            if (success)
-                            {
-                                item.FeedAttributes.FileName = newFilename;
-                                item.HtmlAttributes.Add("Url", trueUri.AbsoluteUri);
-                            }
+                            (crawlWithSelenium, trueUri) = _webUtils.TrySaveUrlToDisk(trueUri?.AbsoluteUri ?? sourceUri.AbsoluteUri, item.FeedAttributes.UrlHash, filename);
                         }
 
                         // Handle certain cases with Selenium attempt
                         if (crawlWithSelenium || Config.WebDriver.Contains(hostname))
                         {
-                            (string newFilename, trueUri) = _webUtils.WebDriverUrlToDisk(item.FeedAttributes.Url, filename);
-                            item.FeedAttributes.FileName = newFilename;
-                            item.HtmlAttributes["Url"] = trueUri.AbsoluteUri;
+                            trueUri = _webUtils.WebDriverUrlToDisk(trueUri?.AbsoluteUri ?? sourceUri.AbsoluteUri, filename);
                         }
+
+                        item.HtmlAttributes.Add("Url", trueUri?.AbsoluteUri ?? sourceUri.AbsoluteUri);
+                        item.FeedAttributes.FileName = filename;
                     }
 
                     // Parse the saved file as dictated by the site definitions

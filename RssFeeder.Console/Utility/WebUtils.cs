@@ -18,12 +18,23 @@ public class WebUtils : IWebUtils
         _crawler = crawler;
     }
 
-    public (bool, bool, string, Uri) TrySaveUrlToDisk(string url, string urlHash, string filename, bool removeScriptElements = true)
+    public (bool, Uri) TrySaveUrlToDisk(string url, string urlHash, string filename, bool removeScriptElements = true)
     {
-        if (!filename.EndsWith(".html") && !filename.EndsWith(".json") && !filename.EndsWith(".txt"))
-            return (true, false, SaveBinaryDataToDisk(url, urlHash, filename), new Uri(url));
+        // Delete the file if it already exists
+        if (File.Exists(filename))
+        {
+            Log.Information("Delete existing file '{fileName}'", filename);
+            File.Delete(filename);
+        }
 
-        bool retryWithSelenium = false;
+        if (!filename.EndsWith(".html") && !filename.EndsWith(".json") && !filename.EndsWith(".txt"))
+        {
+            SaveBinaryDataToDisk(url, urlHash, filename);
+            return (false, new Uri(url));
+        }
+
+        bool retry = false;
+
         try
         {
             Log.Debug("Loading URL '{urlHash}':'{url}'", urlHash, url);
@@ -31,25 +42,13 @@ public class WebUtils : IWebUtils
 
             if (trueUri is null)
             {
-                Log.Warning("Failure to crawl url '{url}'", url);
-                return (false, retryWithSelenium, string.Empty, new Uri(url));
-            }
-
-            int statusCode = (int)status;
-            if (statusCode > 200 || statusCode == 0)
-            {
-                return (false, retryWithSelenium, string.Empty, new Uri(url));
-            }
-
-            // Delete the file if it already exists
-            if (File.Exists(filename))
-            {
-                File.Delete(filename);
+                Log.Warning("TrySaveUrlToDisk: Failure to crawl url '{url}'", url);
+                return (true, new Uri(url));
             }
 
             if (filename.EndsWith(".html"))
             {
-                // Use custom load method to account for compression headers
+                // Load the Html into the DOM parser
                 HtmlDocument doc = new();
                 doc.LoadHtml(content);
                 doc.OptionFixNestedTags = true;
@@ -80,46 +79,35 @@ public class WebUtils : IWebUtils
                 File.WriteAllText(filename, content);
             }
 
-            return (true, retryWithSelenium, filename, trueUri);
+            return (retry, trueUri);
         }
         catch (Exception ex)
         {
             Log.Warning(ex, "SaveUrlToDisk: Unexpected error '{message}'", ex.Message);
-            retryWithSelenium = ex.Message.Contains("Moved") || ex.Message.Contains("Request timed out");
+            retry = ex.Message.Contains("Moved") || ex.Message.Contains("Request timed out");
         }
 
-        return (false, retryWithSelenium, string.Empty, new Uri(url));
+        return (retry, new Uri(url));
     }
 
-    private string SaveBinaryDataToDisk(string url, string urlHash, string filename)
+    private void SaveBinaryDataToDisk(string url, string urlHash, string filename)
     {
         try
         {
             Log.Debug("Loading binary URL '{urlHash}':'{url}'", urlHash, url);
             var fileBytes = _crawler.DownloadData(url);
 
-            // Delete the file if it already exists
-            if (File.Exists(filename))
-            {
-                Log.Information("Delete existing binary file '{fileName}'", filename);
-                File.Delete(filename);
-            }
-
             // if the remote file was found, download it
             Log.Information("Saving binary file '{fileName}' {bytes} bytes", filename, fileBytes.Length);
             File.WriteAllBytes(filename, fileBytes);
-
-            return filename;
         }
         catch (Exception ex)
         {
             Log.Error(ex, "SaveBinaryDataToDisk: Unexpected error '{message}'", ex.Message);
         }
-
-        return string.Empty;
     }
 
-    public (string, Uri) WebDriverUrlToDisk(string url, string filename)
+    public Uri WebDriverUrlToDisk(string url, string filename)
     {
         Log.Information("WebDriverClient GetString to {url}", url);
 
@@ -147,7 +135,7 @@ public class WebUtils : IWebUtils
             Log.Information("Saving {bytes:N0} bytes to text file '{fileName}'", driver.PageSource.Length, filename);
             File.WriteAllText(filename, driver.PageSource);
 
-            return (filename, new Uri(driver.Url));
+            return new Uri(driver.Url);
         }
         catch (Exception ex)
         {
@@ -162,7 +150,7 @@ public class WebUtils : IWebUtils
             }
         }
 
-        return (string.Empty, new Uri(url));
+        return new Uri(url);
     }
 
     public void SaveThumbnailToDisk(string url, string filename)
