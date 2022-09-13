@@ -149,7 +149,7 @@ public class WebCrawler : IWebCrawler
 
                         // Construct unique file name
                         string friendlyHostname = hostname.Replace(".", "_");
-                        string contentTypeExtension = GetFileExtensionByContentType(contentType);
+                        string contentTypeExtension = crawlWithSelenium ? GetFileExtensionByPathQuery(trueUri ?? sourceUri) : GetFileExtensionByContentType(contentType);
                         string filename = Path.Combine(workingFolder, $"{item.FeedAttributes.UrlHash}_{friendlyHostname}{contentTypeExtension}");
 
                         // Re-check now that the true uri is revealed
@@ -160,7 +160,7 @@ public class WebCrawler : IWebCrawler
                             crawlWithSelenium = false;
                         }
 
-                        if (statusCode == HttpStatusCode.OK)
+                        if (statusCode == HttpStatusCode.OK && !Config.WebDriver.Contains(hostname))
                         {
                             // Download the url contents using RestSharp
                             (crawlWithSelenium, trueUri) = _webUtils.TrySaveUrlToDisk(trueUri?.AbsoluteUri ?? sourceUri.AbsoluteUri, item.FeedAttributes.UrlHash, filename);
