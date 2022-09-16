@@ -18,104 +18,96 @@ public class WebUtils : IWebUtils
         _crawler = crawler;
     }
 
-    public (bool, bool, string, Uri) TrySaveUrlToDisk(string url, string urlHash, string filename, bool removeScriptElements = true)
+    public (bool, Uri) TrySaveUrlToDisk(string url, string urlHash, string filename, bool removeScriptElements = true)
     {
-        if (!filename.EndsWith(".html"))
-            return (true, false, SaveImageToDisk(url, urlHash, filename), new Uri(url));
+        // Delete the file if it already exists
+        if (File.Exists(filename))
+        {
+            Log.Information("Delete existing file '{fileName}'", filename);
+            File.Delete(filename);
+        }
 
-        bool retryWithSelenium = false;
+        if (!filename.EndsWith(".html") && !filename.EndsWith(".json") && !filename.EndsWith(".txt"))
+        {
+            SaveBinaryDataToDisk(url, urlHash, filename);
+            return (false, new Uri(url));
+        }
+
+        bool retry = false;
+
         try
         {
             Log.Debug("Loading URL '{urlHash}':'{url}'", urlHash, url);
-            (HttpStatusCode status, string content, Uri trueUri) = _crawler.GetString(url);
+            (HttpStatusCode status, string content, Uri trueUri, string contentType) = _crawler.GetString(url);
 
             if (trueUri is null)
             {
-                Log.Warning("Failure to crawl url '{url}'", url);
-                return (false, retryWithSelenium, string.Empty, new Uri(url));
+                Log.Warning("TrySaveUrlToDisk: Failure to crawl url '{url}'", url);
+                return (true, new Uri(url));
             }
 
-            switch (status)
+            if (filename.EndsWith(".html"))
             {
-                case HttpStatusCode.OK:
-                    break;
-                case HttpStatusCode.NotFound:
-                    return (false, retryWithSelenium, string.Empty, new Uri(url));
-                default:
-                    break;
+                // Load the Html into the DOM parser
+                HtmlDocument doc = new();
+                doc.LoadHtml(content);
+                doc.OptionFixNestedTags = true;
+
+                // List of html tags we really don't care to save
+                var excludeHtmlTags = new List<string> { "style", "link", "svg", "form", "noscript" };
+                if (trueUri.AbsoluteUri.Contains("apnews.com") || trueUri.AbsoluteUri.Contains("rumble.com"))
+                {
+                    removeScriptElements = false;
+                }
+                if (removeScriptElements)
+                {
+                    excludeHtmlTags.Add("script");
+                }
+
+                doc.DocumentNode
+                    .Descendants()
+                    .Where(n => excludeHtmlTags.Contains(n.Name))
+                    .ToList()
+                    .ForEach(n => n.Remove());
+
+                Log.Information("Saving {bytes:N0} bytes to text file '{fileName}'", doc.DocumentNode.OuterLength, filename);
+                doc.Save(filename);
             }
-
-            // Use custom load method to account for compression headers
-            HtmlDocument doc = new HtmlDocument();
-            doc.LoadHtml(content);
-            doc.OptionFixNestedTags = true;
-
-            // List of html tags we really don't care to save
-            var excludeHtmlTags = new List<string> { "style", "link", "svg", "form", "noscript" };
-            if (trueUri.AbsoluteUri.Contains("apnews.com") || trueUri.AbsoluteUri.Contains("rumble.com"))
+            else
             {
-                removeScriptElements = false;
-            }
-            if (removeScriptElements)
-            {
-                excludeHtmlTags.Add("script");
+                Log.Information("Saving {bytes:N0} bytes to text file '{fileName}'", content.Length, filename);
+                File.WriteAllText(filename, content);
             }
 
-            doc.DocumentNode
-                .Descendants()
-                .Where(n => excludeHtmlTags.Contains(n.Name))
-                .ToList()
-                .ForEach(n => n.Remove());
-
-            // Delete the file if it already exists
-            if (File.Exists(filename))
-            {
-                File.Delete(filename);
-            }
-
-            Log.Information("Saving {bytes:N0} bytes to text file '{fileName}'", doc.DocumentNode.OuterLength, filename);
-            doc.Save(filename);
-
-            return (true, retryWithSelenium, filename, trueUri);
+            return (retry, trueUri);
         }
         catch (Exception ex)
         {
             Log.Warning(ex, "SaveUrlToDisk: Unexpected error '{message}'", ex.Message);
-            retryWithSelenium = ex.Message.Contains("Moved") || ex.Message.Contains("Request timed out");
+            retry = ex.Message.Contains("Moved") || ex.Message.Contains("Request timed out");
         }
 
-        return (false, retryWithSelenium, string.Empty, new Uri(url));
+        return (retry, new Uri(url));
     }
 
-    private string SaveImageToDisk(string url, string urlHash, string filename)
+    private void SaveBinaryDataToDisk(string url, string urlHash, string filename)
     {
         try
         {
-            Log.Debug("Loading image URL '{urlHash}':'{url}'", urlHash, url);
+            Log.Debug("Loading binary URL '{urlHash}':'{url}'", urlHash, url);
             var fileBytes = _crawler.DownloadData(url);
 
-            // Delete the file if it already exists
-            if (File.Exists(filename))
-            {
-                Log.Information("Delete existing image file '{fileName}'", filename);
-                File.Delete(filename);
-            }
-
             // if the remote file was found, download it
-            Log.Information("Saving image file '{fileName}' {bytes} bytes", filename, fileBytes.Length);
+            Log.Information("Saving binary file '{fileName}' {bytes} bytes", filename, fileBytes.Length);
             File.WriteAllBytes(filename, fileBytes);
-
-            return filename;
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "SaveImageToDisk: Unexpected error '{message}'", ex.Message);
+            Log.Error(ex, "SaveBinaryDataToDisk: Unexpected error '{message}'", ex.Message);
         }
-
-        return string.Empty;
     }
 
-    public (string, Uri) WebDriverUrlToDisk(string url, string filename)
+    public Uri WebDriverUrlToDisk(string url, string filename)
     {
         Log.Information("WebDriverClient GetString to {url}", url);
 
@@ -143,7 +135,7 @@ public class WebUtils : IWebUtils
             Log.Information("Saving {bytes:N0} bytes to text file '{fileName}'", driver.PageSource.Length, filename);
             File.WriteAllText(filename, driver.PageSource);
 
-            return (filename, new Uri(driver.Url));
+            return new Uri(driver.Url);
         }
         catch (Exception ex)
         {
@@ -158,7 +150,7 @@ public class WebUtils : IWebUtils
             }
         }
 
-        return (string.Empty, new Uri(url));
+        return new Uri(url);
     }
 
     public void SaveThumbnailToDisk(string url, string filename)
@@ -246,13 +238,23 @@ public class WebUtils : IWebUtils
         return sb.ToString();
     }
 
-    public (HttpStatusCode, string, Uri) DownloadString(string url)
+    public (HttpStatusCode, string, Uri, string) DownloadString(string url)
     {
         return _crawler.GetString(url);
     }
 
-    public string GetContentType(string url)
+    public (HttpStatusCode, Uri, string) GetContentType(string url)
     {
-        return _crawler.GetContentType(url);
+        Log.Debug("GetContentType for {url}", url);
+
+        try
+        {
+            return _crawler.GetContentType(url);
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "GetContentType: Unexpected error '{message}'", ex.Message);
+            return (HttpStatusCode.InternalServerError, default, null);
+        }
     }
 }

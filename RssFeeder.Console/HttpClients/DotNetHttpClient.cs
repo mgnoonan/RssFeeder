@@ -29,9 +29,9 @@ public class DotNetHttpClient : IHttpClient
         }
     }
 
-    public (HttpStatusCode, string, Uri) GetString(string url)
+    public (HttpStatusCode, string, Uri, string) GetString(string url)
     {
-        return (HttpStatusCode.OK, GetStringAsync(url).GetAwaiter().GetResult(), default);
+        return (HttpStatusCode.OK, GetStringAsync(url).GetAwaiter().GetResult(), default, "text/html");
     }
 
     private Task<string> GetStringAsync(string url)
@@ -66,13 +66,13 @@ public class DotNetHttpClient : IHttpClient
         return _client.GetAsync(url);
     }
 
-    public string GetContentType(string url)
+    public (HttpStatusCode, Uri, string) GetContentType(string url)
     {
         Log.Information("Crawler GetContentType to {url}", url);
         HttpResponseMessage response = _client.Send(new HttpRequestMessage(HttpMethod.Head, url));
         Log.Information("Response status code = {statusCode}", response.StatusCode);
         response.EnsureSuccessStatusCode();
 
-        return response.Content.Headers.ContentType.ToString();
+        return (HttpStatusCode.OK, default, response.Content.Headers.ContentType.ToString());
     }
 }

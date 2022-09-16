@@ -24,7 +24,6 @@
       "6627bcec15fb00b21be89ac5f2452e59",
       "da1eddfe8b735338e0d8b62dcdc29c72",
       "60306a36caf8451098e8e9518f9189e2",
-      "05a84c37048fe22a1b897a2b11e31c84",
       "caf4e88953540b46b5c438af9648c9da"
     ]
   },
@@ -160,7 +159,9 @@
     "CollectionName": "conservagator",
     "FileRetentionDays": 7,
     "DatabaseRetentionDays": 180,
-    "Filters": []
+    "Filters": [
+      "6226cff02cfd1a8be63ac0e824fcd5f0"
+    ]
   },
   {
     "Title": "Noah Report",

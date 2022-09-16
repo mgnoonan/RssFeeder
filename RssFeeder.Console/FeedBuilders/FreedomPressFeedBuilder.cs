@@ -71,9 +71,9 @@ internal class FreedomPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 
         // Stories section
         containers = document.QuerySelectorAll("#home-section > div.columns");
-        string[] sectionName = new string[] { "first", "previous banner", "second", "third" };
+        string[] sectionName = new string[] { "first", "blend", "previous banner", "second" };
         int sectionCounter = 0;
-        foreach (var element in containers.Take(1))
+        foreach (var element in containers.Take(2))
         {
             nodes = element.QuerySelectorAll("a");
             if (nodes != null)

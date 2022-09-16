@@ -5,7 +5,7 @@ namespace RssFeeder.Console.HttpClients;
 
 public class RestSharpHttpClient : IHttpClient
 {
-    private readonly RestClient _client = new RestClient();
+    private readonly RestClient _client = new();
 
     public byte[] DownloadData(string url)
     {
@@ -16,35 +16,32 @@ public class RestSharpHttpClient : IHttpClient
         return response;
     }
 
-    public string GetContentType(string url)
+    public (HttpStatusCode, Uri, string) GetContentType(string url)
     {
         Log.Information("RestSharpHttpClient GetContentType to {url}", url);
         var request = new RestRequest(url);
-        var response = _client.HeadAsync(request).GetAwaiter().GetResult();
-        Log.Information("Response status code = {statusCode}", response.StatusCode);
+        var response = _client.Execute(request, Method.Head);
+        Log.Information("Response status code = {httpStatusCode} {httpStatusText}, {uri}", (int)response.StatusCode, response.StatusCode, response.ResponseUri);
 
-        return response.Headers
-                .Where(x => x.Name == "Content-Type")
-                .Select(x => x.Value.ToString())
-                .FirstOrDefault();
+        return (response.StatusCode, response.ResponseUri, response.ContentType);
     }
 
-    public (HttpStatusCode, string, Uri) GetString(string url)
+    public (HttpStatusCode, string, Uri, string) GetString(string url)
     {
         Log.Information("RestSharpHttpClient GetString to {url}", url);
 
         var request = new RestRequest(url);
-        var response = _client.GetAsync(request).GetAwaiter().GetResult();
+        var response = _client.Execute(request, Method.Get);
         Log.Information("Response status code = {httpStatusCode} {httpStatusText}, {uri}", (int)response.StatusCode, response.StatusCode, response.ResponseUri);
 
         // Poor man's retry since we can't use Polly here
         if ((int)response.StatusCode == 522)
         {
             Thread.Sleep(3);
-            response = _client.GetAsync(request).GetAwaiter().GetResult();
+            response = _client.Execute(request, Method.Get);
             Log.Information("Retry status code = {httpStatusCode} {httpStatusText}, {uri}", (int)response.StatusCode, response.StatusCode, response.ResponseUri);
         }
 
-        return (response.StatusCode, response.Content, response.ResponseUri);
+        return (response.StatusCode, response.Content, response.ResponseUri, response.ContentType);
     }
 }
