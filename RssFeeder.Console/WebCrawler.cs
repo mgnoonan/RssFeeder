@@ -140,17 +140,14 @@ public class WebCrawler : IWebCrawler
 
                         // Reset the hostname now that the uri has been unshortened and redirected
                         hostname = trueUri?.Host.ToLower() ?? hostname;
+                        string friendlyHostname = hostname.Replace(".", "_");
+                        string filename = "";
 
                         bool crawlWithSelenium =
                             statusCode == HttpStatusCode.MovedPermanently ||
                             statusCode == HttpStatusCode.PermanentRedirect ||
                             statusCode == HttpStatusCode.Redirect ||
                             statusCode == HttpStatusCode.NotAcceptable;
-
-                        // Construct unique file name
-                        string friendlyHostname = hostname.Replace(".", "_");
-                        string contentTypeExtension = crawlWithSelenium ? GetFileExtensionByPathQuery(trueUri ?? sourceUri) : GetFileExtensionByContentType(contentType);
-                        string filename = Path.Combine(workingFolder, $"{item.FeedAttributes.UrlHash}_{friendlyHostname}{contentTypeExtension}");
 
                         // Re-check now that the true uri is revealed
                         // Force the status so the crawler won't retry
@@ -162,13 +159,22 @@ public class WebCrawler : IWebCrawler
 
                         if (statusCode == HttpStatusCode.OK && !Config.WebDriver.Contains(hostname))
                         {
+                            // Construct unique file name
+                            string contentTypeExtension = GetFileExtensionByContentType(contentType);
+                            filename = Path.Combine(workingFolder, $"{item.FeedAttributes.UrlHash}_{friendlyHostname}{contentTypeExtension}");
+
                             // Download the url contents using RestSharp
                             (crawlWithSelenium, trueUri) = _webUtils.TrySaveUrlToDisk(trueUri?.AbsoluteUri ?? sourceUri.AbsoluteUri, item.FeedAttributes.UrlHash, filename);
                         }
 
                         // Handle certain cases with Selenium attempt
+                        // Reset the content type and filename because sometimes the previous detection is inaccurate
                         if (crawlWithSelenium || Config.WebDriver.Contains(hostname))
                         {
+                            // Construct unique file name
+                            string contentTypeExtension = GetFileExtensionByPathQuery(trueUri ?? sourceUri);
+                            filename = Path.Combine(workingFolder, $"{item.FeedAttributes.UrlHash}_{friendlyHostname}{contentTypeExtension}");
+
                             trueUri = _webUtils.WebDriverUrlToDisk(trueUri?.AbsoluteUri ?? sourceUri.AbsoluteUri, filename);
                         }
 
