@@ -100,7 +100,7 @@ public class WebCrawler : IWebCrawler
 
     private void DownloadList(Guid runID, RssFeed feed, string workingFolder, List<RssFeedItem> list)
     {
-        _articleParser.Initialize(_container, _definitions, _webUtils);
+        _articleParser.Initialize(_container, _definitions, _webUtils, _log);
 
         // Crawl any new articles and add them to the database
         _log.Information("Downloading new articles to the {collectionName} collection", feed.CollectionName);
@@ -146,7 +146,8 @@ public class WebCrawler : IWebCrawler
                             statusCode == HttpStatusCode.MovedPermanently ||
                             statusCode == HttpStatusCode.PermanentRedirect ||
                             statusCode == HttpStatusCode.Redirect ||
-                            statusCode == HttpStatusCode.NotAcceptable;
+                            statusCode == HttpStatusCode.NotAcceptable ||
+                            (int)statusCode == 0;
 
                         // Re-check now that the true uri is revealed
                         // Force the status so the crawler won't retry

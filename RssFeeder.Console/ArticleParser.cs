@@ -5,12 +5,14 @@ public class ArticleParser : IArticleParser
     private IContainer _container;
     private IArticleDefinitionFactory _definitionFactory;
     private IWebUtils _webUtils;
+    private ILogger _log;
 
-    public void Initialize(IContainer container, IArticleDefinitionFactory definitionFactory, IWebUtils webUtils)
+    public void Initialize(IContainer container, IArticleDefinitionFactory definitionFactory, IWebUtils webUtils, ILogger log)
     {
         _container = container;
         _definitionFactory = definitionFactory;
         _webUtils = webUtils;
+        _log = log;
     }
 
     public void Parse(RssFeedItem item)
@@ -18,7 +20,7 @@ public class ArticleParser : IArticleParser
         // Article failed to download for some reason, skip over meta data processing
         if (!File.Exists(item.FeedAttributes.FileName))
         {
-            Log.Debug("No file to parse, skipping metadata values for '{url}'", item.FeedAttributes.Url);
+            _log.Debug("No file to parse, skipping metadata values for '{url}'", item.FeedAttributes.Url);
             return;
         }
 
@@ -26,7 +28,7 @@ public class ArticleParser : IArticleParser
         if (item.FeedAttributes.FileName.EndsWith(".json") ||
             item.FeedAttributes.FileName.EndsWith(".txt"))
         {
-            Log.Information("Text file detected, skipping metadata values for '{url}'", item.FeedAttributes.Url);
+            _log.Information("Text file detected, skipping metadata values for '{url}'", item.FeedAttributes.Url);
             return;
         }
 
@@ -36,11 +38,11 @@ public class ArticleParser : IArticleParser
             item.FeedAttributes.FileName.EndsWith(".gif") ||
             item.FeedAttributes.FileName.EndsWith(".pdf"))
         {
-            Log.Information("Binary file detected, skipping metadata values for '{url}'", item.FeedAttributes.Url);
+            _log.Information("Binary file detected, skipping metadata values for '{url}'", item.FeedAttributes.Url);
             return;
         }
 
-        Log.Debug("Parsing meta tags from file '{fileName}'", item.FeedAttributes.FileName);
+        _log.Debug("Parsing meta tags from file '{fileName}'", item.FeedAttributes.FileName);
 
         var doc = new HtmlDocument();
         doc.Load(item.FeedAttributes.FileName);
@@ -74,7 +76,7 @@ public class ArticleParser : IArticleParser
     {
         if (definition is null)
         {
-            Log.Debug("SiteDefinition is null. Falling back to adaptive parser.");
+            _log.Debug("SiteDefinition is null. Falling back to adaptive parser.");
             return new ArticleRouteTemplate
             {
                 Name = "_fallback_no_sitedef",
@@ -89,13 +91,13 @@ public class ArticleParser : IArticleParser
             {
                 if (matcher.Match(articleRoute.Template, "/" + routeToMatch) != null)
                 {
-                    Log.Information("Matched route {routeName} on template {template}", articleRoute.Name, articleRoute.Template);
+                    _log.Information("Matched route {routeName} on template {template}", articleRoute.Name, articleRoute.Template);
                     return articleRoute;
                 }
             }
 
             // Might have forgotten to create a **catch-all template, fall back to adaptive parser
-            Log.Warning("Missing **catch-all template. Falling back to adaptive parser.");
+            _log.Warning("Missing **catch-all template. Falling back to adaptive parser.");
             return new ArticleRouteTemplate
             {
                 Name = "_fallback_no_catchall",
@@ -105,7 +107,7 @@ public class ArticleParser : IArticleParser
         else
         {
             // No route templates defined, fall back to older style definition or adpative parser
-            Log.Debug("No route templates defined. falling back to {@parser}", definition);
+            _log.Debug("No route templates defined. falling back to {@parser}", definition);
             return new ArticleRouteTemplate
             {
                 Name = "_fallback_no_route",
@@ -185,9 +187,9 @@ public class ArticleParser : IArticleParser
                 while (contentValue.Contains("&#x"))
                 {
                     contentValue = System.Web.HttpUtility.HtmlDecode(contentValue);
-                    Log.Debug("Decoded content value '{contentValue}'", contentValue);
+                    _log.Debug("Decoded content value '{contentValue}'", contentValue);
                 }
-                Log.Debug("Found open graph attribute '{propertyValue}':'{contentValue}'", propertyValue, contentValue);
+                _log.Debug("Found open graph attribute '{propertyValue}':'{contentValue}'", propertyValue, contentValue);
 
                 if (!attributes.ContainsKey(propertyValue))
                 {
@@ -242,7 +244,7 @@ public class ArticleParser : IArticleParser
 
         if (string.IsNullOrWhiteSpace(sourceAttributeValue))
         {
-            Log.Debug("Attribute '{attribute}' from meta tag '{property}' not found", targetAttributeName, targetAttributeValue);
+            _log.Debug("Attribute '{attribute}' from meta tag '{property}' not found", targetAttributeName, targetAttributeValue);
         }
         else
         {
@@ -252,7 +254,7 @@ public class ArticleParser : IArticleParser
                 sourceAttributeValue = System.Web.HttpUtility.HtmlDecode(sourceAttributeValue);
             }
 
-            Log.Debug("Meta attribute '{attribute}':'{property}' has a decoded value of '{value}'", targetAttributeName, targetAttributeValue, sourceAttributeValue);
+            _log.Debug("Meta attribute '{attribute}':'{property}' has a decoded value of '{value}'", targetAttributeName, targetAttributeValue, sourceAttributeValue);
 
         }
 
