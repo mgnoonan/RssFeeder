@@ -1,4 +1,6 @@
-﻿namespace RssFeeder.Console.Database;
+﻿using Microsoft.Extensions.Configuration;
+
+namespace RssFeeder.Console.Database;
 
 public class CosmosDbRepository : IRepository, IExportRepository
 {
@@ -6,12 +8,18 @@ public class CosmosDbRepository : IRepository, IExportRepository
     ILogger _log;
     CosmosClient _client = null;
 
-    public CosmosDbRepository(string databaseName, string endpointUrl, string authKey, ILogger log)
+    public CrawlerConfig Config => new CrawlerConfig();
+
+    public CosmosDbRepository(IConfigurationRoot configuration, ILogger log)
     {
-        _databaseName = databaseName;
+        _databaseName = "rssfeeder";
         _log = log;
 
-        _client = new CosmosClient(endpointUrl, authKey);
+        var config = new CosmosDbConfig();
+        configuration.GetSection("CosmosDB").Bind(config);
+        _log.Information("Loaded CosmosDB from config. Endpoint='{endpointUri}', authKey='{authKeyPartial}*****'", config.endpoint, config.authKey.Substring(0, 5));
+
+        _client = new CosmosClient(config.endpoint, config.authKey);
     }
 
     public List<T> GetDocuments<T>(string collectionName, string sqlQueryText, Dictionary<string, object> parameters = default, bool addWait = false)

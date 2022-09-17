@@ -35,32 +35,16 @@ log.Information("Loaded CosmosDB from config. Endpoint='{endpointUri}', authKey=
 // Setup dependency injection
 var builder = new ContainerBuilder();
 
-// Setup RavenDb
-// docker run --rm -d -p 8080:8080 -p 38888:38888 ravendb/ravendb:latest
-IDocumentStore store = new DocumentStore
-{
-    Urls = new[] { "http://127.0.0.1:8080/" }
-    // Default database is not set
-}.Initialize();
-
-var crawlerConfig = new CrawlerConfig();
-using (IDocumentSession session = store.OpenSession(database: "site-parsers"))
-{
-    crawlerConfig = session.Advanced.RawQuery<CrawlerConfig>("from CrawlerConfig").First();
-}
-Log.Debug("Crawler config: {@config}", crawlerConfig);
-
 builder.RegisterInstance(Log.Logger).As<ILogger>();
-builder.RegisterInstance(store).As<IDocumentStore>();
 #if DEBUG
-        builder.RegisterType<RavenDbRepository>().As<IExportRepository>();
+builder.RegisterType<RavenDbRepository>().As<IExportRepository>();
 #else
 builder.Register(c => new CosmosDbRepository("rssfeeder", config.endpoint, config.authKey, Log.Logger)).As<IExportRepository>();
 #endif
 builder.RegisterType<RavenDbRepository>().As<IRepository>();
-builder.RegisterType<ArticleExporter>().As<IArticleExporter>().WithProperty("Config", crawlerConfig);
-builder.RegisterType<ArticleParser>().As<IArticleParser>().WithProperty("Config", crawlerConfig);
-builder.RegisterType<WebCrawler>().As<IWebCrawler>().WithProperty("Config", crawlerConfig);
+builder.RegisterType<ArticleExporter>().As<IArticleExporter>();
+builder.RegisterType<ArticleParser>().As<IArticleParser>();
+builder.RegisterType<WebCrawler>().As<IWebCrawler>();
 builder.RegisterType<DrudgeReportFeedBuilder>().Named<IRssFeedBuilder>("drudge-report");
 builder.RegisterType<LibertyDailyFeedBuilder>().Named<IRssFeedBuilder>("liberty-daily");
 builder.RegisterType<BonginoReportFeedBuilder>().Named<IRssFeedBuilder>("bongino-report");
@@ -86,7 +70,7 @@ builder.RegisterType<RestSharpHttpClient>().As<IHttpClient>().SingleInstance();
 builder.RegisterType<WebUtils>().As<IWebUtils>().SingleInstance();
 builder.RegisterType<Utils>().As<IUtils>().SingleInstance();
 builder.RegisterType<ArticleDefinitionFactory>().As<IArticleDefinitionFactory>().SingleInstance();
-builder.RegisterType<TestCommand>().SingleInstance().WithProperty("Config", crawlerConfig);
+builder.RegisterType<TestCommand>().SingleInstance();
 builder.RegisterType<TestInput>().SingleInstance();
 builder.RegisterType<BuildCommand>().SingleInstance();
 builder.RegisterType<BuildInput>().SingleInstance();
@@ -104,8 +88,8 @@ ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProt
 
 var executor = CommandExecutor.For(_ =>
 {
-            // Find and apply all command classes discovered
-            // in this assembly
-            _.RegisterCommands(typeof(Program).GetTypeInfo().Assembly);
+    // Find and apply all command classes discovered
+    // in this assembly
+    _.RegisterCommands(typeof(Program).GetTypeInfo().Assembly);
 }, new AutofacCommandCreator(container));
 executor.Execute(args);

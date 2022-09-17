@@ -5,8 +5,6 @@ public class TestCommand : OaktonCommand<TestInput>
 {
     private readonly IContainer _container;
 
-    public CrawlerConfig CrawlerConfig { get; set; }
-
     public TestCommand(IContainer container)
     {
         _container = container;

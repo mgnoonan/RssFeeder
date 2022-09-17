@@ -1,16 +1,31 @@
-using System.IO;
-using RssFeeder.Models;
-using Sparrow;
-
 namespace RssFeeder.Console.Database;
 
 public class RavenDbRepository : IRepository, IExportRepository
 {
     readonly ILogger _log;
     readonly IDocumentStore _store;
+    readonly CrawlerConfig _crawlerConfig;
 
-    public RavenDbRepository(IDocumentStore store, ILogger log)
+    public CrawlerConfig Config => _crawlerConfig;
+
+    public RavenDbRepository(ILogger log)
     {
+        // Setup RavenDb
+        // docker run --rm -d -p 8080:8080 -p 38888:38888 ravendb/ravendb:latest
+        IDocumentStore store = new DocumentStore
+        {
+            Urls = new[] { "http://127.0.0.1:8080/" }
+            // Default database is not set
+        }.Initialize();
+
+        var crawlerConfig = new CrawlerConfig();
+        using (IDocumentSession session = store.OpenSession(database: "site-parsers"))
+        {
+            crawlerConfig = session.Advanced.RawQuery<CrawlerConfig>("from CrawlerConfig").First();
+        }
+        Log.Debug("Crawler config: {@config}", crawlerConfig);
+
+        _crawlerConfig = crawlerConfig;
         _store = store;
         _log = log;
     }

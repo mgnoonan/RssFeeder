@@ -2,8 +2,6 @@
 
 public class BaseArticleExporter
 {
-    public CrawlerConfig Config { get; set; }
-
     protected virtual string ApplyTemplateToDescription(ExportFeedItem item, RssFeed feed, string template)
     {
         switch (item.SiteName.ToLower())

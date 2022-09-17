@@ -14,8 +14,6 @@ public class WebCrawler : IWebCrawler
     private string _exportCollectionName = "drudge-report";
     private string _crawlerCollectionName = "feed-items";
 
-    public CrawlerConfig Config { get; set; }
-
     public WebCrawler(IRepository crawlerRepository, IExportRepository exportRepository, IArticleDefinitionFactory definitions,
         IWebUtils webUtils, IUtils utils, IArticleParser articleParser, IArticleExporter exporter)
     {
@@ -31,7 +29,6 @@ public class WebCrawler : IWebCrawler
     public void Initialize(IContainer container, string crawlerCollectionName, string exportCollectionName)
     {
         Log.Information($"{nameof(WebCrawler)} initializing");
-        Log.Debug("Crawler exclusion list: {@exclusions}", Config.Exclusions);
 
         _container = container;
         _crawlerCollectionName = crawlerCollectionName;
@@ -157,7 +154,7 @@ public class WebCrawler : IWebCrawler
                             crawlWithSelenium = false;
                         }
 
-                        if (statusCode == HttpStatusCode.OK && !Config.WebDriver.Contains(hostname))
+                        if (statusCode == HttpStatusCode.OK && !_crawlerRepository.Config.WebDriver.Contains(hostname))
                         {
                             // Construct unique file name
                             string contentTypeExtension = GetFileExtensionByContentType(contentType);
@@ -169,7 +166,7 @@ public class WebCrawler : IWebCrawler
 
                         // Handle certain cases with Selenium attempt
                         // Reset the content type and filename because sometimes the previous detection is inaccurate
-                        if (crawlWithSelenium || Config.WebDriver.Contains(hostname))
+                        if (crawlWithSelenium || _crawlerRepository.Config.WebDriver.Contains(hostname))
                         {
                             // Construct unique file name
                             string contentTypeExtension = GetFileExtensionByPathQuery(trueUri ?? sourceUri);
@@ -204,7 +201,7 @@ public class WebCrawler : IWebCrawler
     private bool CanCrawl(string hostname, Uri uri)
     {
         // Check for crawler exclusions, downloading content is blocked from these sites
-        if (Config.Exclusions.Contains(hostname))
+        if (_crawlerRepository.Config.Exclusions.Contains(hostname))
         {
             Log.Information("Host '{hostName}' found on the exclusion list, skipping download", hostname);
             return false;

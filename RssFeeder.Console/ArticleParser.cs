@@ -6,8 +6,6 @@ public class ArticleParser : IArticleParser
     private IArticleDefinitionFactory _definitionFactory;
     private IWebUtils _webUtils;
 
-    public CrawlerConfig Config { get; set; }
-
     public void Initialize(IContainer container, IArticleDefinitionFactory definitionFactory, IWebUtils webUtils)
     {
         _container = container;
