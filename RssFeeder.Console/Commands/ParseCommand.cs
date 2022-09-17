@@ -4,10 +4,12 @@
 public class ParseCommand : OaktonCommand<ParseInput>
 {
     private readonly IContainer _container;
+    private readonly ILogger _log;
 
-    public ParseCommand(IContainer container)
+    public ParseCommand(IContainer container, ILogger log)
     {
         _container = container;
+        _log = log;
 
         // The usage pattern definition here is completely
         // optional
@@ -18,6 +20,8 @@ public class ParseCommand : OaktonCommand<ParseInput>
 
     public override bool Execute(ParseInput input)
     {
+        _log.Information("PARSE_START: Machine: {machineName}", Environment.MachineName);
+
         var utils = _container.Resolve<IUtils>();
         var webUtils = _container.Resolve<IWebUtils>();
         var parser = _container.ResolveNamed<ITagParser>(input.Parser);
@@ -34,16 +38,17 @@ public class ParseCommand : OaktonCommand<ParseInput>
         var doc = new HtmlDocument();
         doc.Load(new StringReader(html));
 
-        Log.Information("MD5 Hash = '{UrlHash}'", urlHash);
-        Log.Information("og:site_name = '{SiteName}'", ParseMetaTagAttributes(doc, "og:site_name", "content").ToLower());
-        Log.Information("og:title = '{Title}'", ParseMetaTagAttributes(doc, "og:title", "content"));
-        Log.Information("og:description = '{Description}'", ParseMetaTagAttributes(doc, "og:description", "content"));
-        Log.Information("og:image = '{Image}'", ParseMetaTagAttributes(doc, "og:image", "content"));
+        _log.Information("MD5 Hash = '{UrlHash}'", urlHash);
+        _log.Information("og:site_name = '{SiteName}'", ParseMetaTagAttributes(doc, "og:site_name", "content").ToLower());
+        _log.Information("og:title = '{Title}'", ParseMetaTagAttributes(doc, "og:title", "content"));
+        _log.Information("og:description = '{Description}'", ParseMetaTagAttributes(doc, "og:description", "content"));
+        _log.Information("og:image = '{Image}'", ParseMetaTagAttributes(doc, "og:image", "content"));
 
         parser.Initialize(doc.Text, null);
         string articleText = parser.ParseTagsBySelector(template);
-        Log.Information("Article text = '{ArticleText}'", articleText);
-        Log.CloseAndFlush();
+        _log.Information("Article text = '{ArticleText}'", articleText);
+
+        _log.Information("PARSE_END: Completed successfully");
 
         // Just telling the OS that the command
         // finished up okay

@@ -23,11 +23,12 @@ public class RavenDbRepository : IRepository, IExportRepository
         {
             crawlerConfig = session.Advanced.RawQuery<CrawlerConfig>("from CrawlerConfig").First();
         }
-        Log.Debug("Crawler config: {@config}", crawlerConfig);
 
         _crawlerConfig = crawlerConfig;
         _store = store;
         _log = log;
+
+        _log.Debug("Crawler config: {@config}", crawlerConfig);
     }
 
     public void EnsureDatabaseExists(string database = null, bool createDatabaseIfNotExists = true)
@@ -118,7 +119,7 @@ public class RavenDbRepository : IRepository, IExportRepository
 
     public List<T> GetDocuments<T>(string collectionName, string sqlQueryText, Dictionary<string, object> parameters = default, bool addWait = false)
     {
-        Log.Debug("Query: {sqlQueryText} Parameters: {@parameters}", sqlQueryText, parameters);
+        _log.Debug("Query: {sqlQueryText} Parameters: {@parameters}", sqlQueryText, parameters);
 
         using (IDocumentSession session = _store.OpenSession(database: collectionName))
         {
@@ -133,14 +134,14 @@ public class RavenDbRepository : IRepository, IExportRepository
             }
 
             var list = query.ToList();
-            Log.Debug("Query: ({count}) documents returned", list.Count);
+            _log.Debug("Query: ({count}) documents returned", list.Count);
             return list;
         }
     }
 
     public List<T> GetAllDocuments<T>(string collectionName)
     {
-        Log.Debug("Query: Retrieving all documents for type {type}", typeof(T).Name);
+        _log.Debug("Query: Retrieving all documents for type {type}", typeof(T).Name);
         string sqlQueryText = "from SiteArticleDefinition";
 
         return GetDocuments<T>(collectionName, sqlQueryText);

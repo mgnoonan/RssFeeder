@@ -9,13 +9,14 @@ public class WebCrawler : IWebCrawler
     private readonly IArticleExporter _exporter;
     private readonly IWebUtils _webUtils;
     private readonly IUtils _utils;
+    private readonly ILogger _log;
     private IContainer _container;
 
     private string _exportCollectionName = "drudge-report";
     private string _crawlerCollectionName = "feed-items";
 
     public WebCrawler(IRepository crawlerRepository, IExportRepository exportRepository, IArticleDefinitionFactory definitions,
-        IWebUtils webUtils, IUtils utils, IArticleParser articleParser, IArticleExporter exporter)
+        IWebUtils webUtils, IUtils utils, IArticleParser articleParser, IArticleExporter exporter, ILogger log)
     {
         _crawlerRepository = crawlerRepository;
         _exportRepository = exportRepository;
@@ -24,11 +25,12 @@ public class WebCrawler : IWebCrawler
         _definitions = definitions;
         _articleParser = articleParser;
         _exporter = exporter;
+        _log = log;
     }
 
     public void Initialize(IContainer container, string crawlerCollectionName, string exportCollectionName)
     {
-        Log.Information($"{nameof(WebCrawler)} initializing");
+        _log.Information($"{nameof(WebCrawler)} initializing");
 
         _container = container;
         _crawlerCollectionName = crawlerCollectionName;
@@ -54,7 +56,7 @@ public class WebCrawler : IWebCrawler
         string workingFolder = Path.Combine(_utils.GetAssemblyDirectory(), feed.CollectionName);
         if (!Directory.Exists(workingFolder))
         {
-            Log.Information("Creating folder '{workingFolder}'", workingFolder);
+            _log.Information("Creating folder '{workingFolder}'", workingFolder);
             Directory.CreateDirectory(workingFolder);
         }
 
@@ -66,7 +68,7 @@ public class WebCrawler : IWebCrawler
         var uri = new Uri(item.HtmlAttributes.GetValueOrDefault("Url") ?? item.FeedAttributes.Url);
         if (uri.AbsolutePath == "/" && string.IsNullOrEmpty(uri.Query))
         {
-            Log.Information("URI '{uri}' detected as a home page rather than an article, skipping parse operation", uri);
+            _log.Information("URI '{uri}' detected as a home page rather than an article, skipping parse operation", uri);
             return false;
         }
 
@@ -77,7 +79,7 @@ public class WebCrawler : IWebCrawler
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "PARSE_ERROR: UrlHash '{urlHash}':'{url}'", item.FeedAttributes.UrlHash, item.FeedAttributes.Url);
+            _log.Error(ex, "PARSE_ERROR: UrlHash '{urlHash}':'{url}'", item.FeedAttributes.UrlHash, item.FeedAttributes.Url);
             return false;
         }
 
@@ -90,7 +92,7 @@ public class WebCrawler : IWebCrawler
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "SAVE_ERROR: UrlHash '{urlHash}':'{url}'", item.FeedAttributes.UrlHash, item.FeedAttributes.Url);
+            _log.Error(ex, "SAVE_ERROR: UrlHash '{urlHash}':'{url}'", item.FeedAttributes.UrlHash, item.FeedAttributes.Url);
         }
 
         return false;
@@ -101,7 +103,7 @@ public class WebCrawler : IWebCrawler
         _articleParser.Initialize(_container, _definitions, _webUtils);
 
         // Crawl any new articles and add them to the database
-        Log.Information("Downloading new articles to the {collectionName} collection", feed.CollectionName);
+        _log.Information("Downloading new articles to the {collectionName} collection", feed.CollectionName);
         int articleCount = 0;
         foreach (var item in list)
         {
@@ -111,18 +113,18 @@ public class WebCrawler : IWebCrawler
                 // Throttle any articles beyond the headlines
                 if (articleCount >= 25 && !item.FeedAttributes.IsHeadline)
                 {
-                    Log.Debug("Throttling engaged");
+                    _log.Debug("Throttling engaged");
                     break;
                 }
 
                 // No need to continue if we already crawled the article
                 if (_crawlerRepository.DocumentExists<RssFeedItem>(_crawlerCollectionName, feed.CollectionName, item.FeedAttributes.UrlHash))
                 {
-                    Log.Debug("UrlHash '{urlHash}' already exists in collection '{collectionName}'", item.FeedAttributes.UrlHash, feed.CollectionName);
+                    _log.Debug("UrlHash '{urlHash}' already exists in collection '{collectionName}'", item.FeedAttributes.UrlHash, feed.CollectionName);
                     continue;
                 }
 
-                Log.Information("BEGIN: UrlHash {urlHash}|{linkLocation}|{title}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title);
+                _log.Information("BEGIN: UrlHash {urlHash}|{linkLocation}|{title}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title);
 
                 try
                 {
@@ -188,14 +190,14 @@ public class WebCrawler : IWebCrawler
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(ex, "DOWNLOAD_ERROR: UrlHash '{urlHash}':'{url}'", item.FeedAttributes.UrlHash, item.FeedAttributes.Url);
+                    _log.Error(ex, "DOWNLOAD_ERROR: UrlHash '{urlHash}':'{url}'", item.FeedAttributes.UrlHash, item.FeedAttributes.Url);
                 }
 
-                Log.Information("END: UrlHash {urlHash}", item.FeedAttributes.UrlHash);
+                _log.Information("END: UrlHash {urlHash}", item.FeedAttributes.UrlHash);
             }
         }
 
-        Log.Information("Downloaded {count} new articles to the {collectionName} collection", articleCount, feed.CollectionName);
+        _log.Information("Downloaded {count} new articles to the {collectionName} collection", articleCount, feed.CollectionName);
     }
 
     private bool CanCrawl(string hostname, Uri uri)
@@ -203,7 +205,7 @@ public class WebCrawler : IWebCrawler
         // Check for crawler exclusions, downloading content is blocked from these sites
         if (_crawlerRepository.Config.Exclusions.Contains(hostname))
         {
-            Log.Information("Host '{hostName}' found on the exclusion list, skipping download", hostname);
+            _log.Information("Host '{hostName}' found on the exclusion list, skipping download", hostname);
             return false;
         }
 
@@ -212,7 +214,7 @@ public class WebCrawler : IWebCrawler
 
         if (uri.AbsolutePath == "/" && string.IsNullOrEmpty(uri.Query))
         {
-            Log.Information("URI '{uri}' detected as a home page rather than an article, skipping download", uri);
+            _log.Information("URI '{uri}' detected as a home page rather than an article, skipping download", uri);
             return false;
         }
 
@@ -256,12 +258,12 @@ public class WebCrawler : IWebCrawler
                 path.EndsWith(".pdf") || query.Contains("format=pdf") ? ".pdf" :
                 ".html";
 
-            Log.Information("GetFileExtensionByPathQuery: Detected extension {extension} from path /{path}?{query}", extension, path, query);
+            _log.Information("GetFileExtensionByPathQuery: Detected extension {extension} from path /{path}?{query}", extension, path, query);
             return extension;
         }
         catch (UriFormatException ex)
         {
-            Log.Error(ex, "GetFileExtensionByPathQuery: Error for {uri}", uri);
+            _log.Error(ex, "GetFileExtensionByPathQuery: Error for {uri}", uri);
         }
 
         return ".html";
@@ -299,7 +301,7 @@ public class WebCrawler : IWebCrawler
                 break;
         }
 
-        Log.Information("GetFileExtensionByContentType: Detected extension {extension} from content type {contentType}", extension, contentTypeLowered);
+        _log.Information("GetFileExtensionByContentType: Detected extension {extension} from content type {contentType}", extension, contentTypeLowered);
         return extension;
     }
 
@@ -307,7 +309,7 @@ public class WebCrawler : IWebCrawler
     {
         if (!feed.Exportable)
         {
-            Log.Information("Feed {feedId} is not marked as exportable", feed.CollectionName);
+            _log.Information("Feed {feedId} is not marked as exportable", feed.CollectionName);
             return;
         }
 
@@ -321,15 +323,15 @@ public class WebCrawler : IWebCrawler
             using (LogContext.PushProperty("url", item.FeedAttributes.Url))
             using (LogContext.PushProperty("urlHash", item.FeedAttributes.UrlHash))
             {
-                Log.Debug("Preparing '{urlHash}' for export", item.FeedAttributes.UrlHash);
+                _log.Debug("Preparing '{urlHash}' for export", item.FeedAttributes.UrlHash);
                 var exportFeedItem = _exporter.FormatItem(item, feed);
 
-                Log.Information("EXPORT: UrlHash '{urlHash}' from {collectionName}", item.FeedAttributes.UrlHash, feed.CollectionName);
+                _log.Information("EXPORT: UrlHash '{urlHash}' from {collectionName}", item.FeedAttributes.UrlHash, feed.CollectionName);
                 _exportRepository.UpsertDocument<ExportFeedItem>(_exportCollectionName, exportFeedItem);
             }
         }
 
-        Log.Information("Exported {count} new articles to the {collectionName} collection", list.Count, feed.CollectionName);
+        _log.Information("Exported {count} new articles to the {collectionName} collection", list.Count, feed.CollectionName);
     }
 
     public void Purge(RssFeed feed)
@@ -338,7 +340,7 @@ public class WebCrawler : IWebCrawler
         string workingFolder = Path.Combine(_utils.GetAssemblyDirectory(), feed.CollectionName);
         if (!Directory.Exists(workingFolder))
         {
-            Log.Warning("Folder '{workingFolder}' does not exist", workingFolder);
+            _log.Warning("Folder '{workingFolder}' does not exist", workingFolder);
             return;
         }
 
@@ -346,11 +348,11 @@ public class WebCrawler : IWebCrawler
 
         // Purge stale documents from the database collection
         var list = _crawlerRepository.GetStaleDocuments<RssFeedItem>(_crawlerCollectionName, feed.CollectionName, 7);
-        Log.Information("Stripped {count} documents older than 7 days from {collectionName}", list.Count, feed.CollectionName);
+        _log.Information("Stripped {count} documents older than 7 days from {collectionName}", list.Count, feed.CollectionName);
 
         foreach (var item in list)
         {
-            Log.Debug("Stripping UrlHash '{urlHash}' from {collectionName}", item.FeedAttributes.UrlHash, feed.CollectionName);
+            _log.Debug("Stripping UrlHash '{urlHash}' from {collectionName}", item.FeedAttributes.UrlHash, feed.CollectionName);
             item.OpenGraphAttributes = default;
             item.HtmlAttributes = default;
             _crawlerRepository.SaveDocument<RssFeedItem>(_crawlerCollectionName, item, feed.DatabaseRetentionDays);

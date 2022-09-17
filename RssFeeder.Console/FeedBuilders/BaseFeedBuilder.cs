@@ -107,7 +107,7 @@ class BaseFeedBuilder
         string hash = utils.CreateMD5Hash(uri.AbsoluteUri.ToLower());
         if (filters.Contains(hash))
         {
-            log.Information("Hash '{hash}':'{uri}' found in filter list", hash, uri);
+            log.Information("Hash '{urlHash}':'{url}' found in filter list", hash, uri.AbsoluteUri.ToLower());
             return null;
         }
 

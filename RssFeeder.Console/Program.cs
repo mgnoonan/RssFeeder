@@ -22,16 +22,6 @@ var log = new LoggerConfiguration()
     .CreateLogger();
 Log.Logger = log;
 
-// Grab the current assembly name
-var assemblyName = Assembly.GetExecutingAssembly().Location;
-log.Information("START: Machine: {machineName} Assembly: {assembly}", Environment.MachineName, assemblyName);
-
-#if !DEBUG
-var config = new CosmosDbConfig();
-configuration.GetSection("CosmosDB").Bind(config);
-log.Information("Loaded CosmosDB from config. Endpoint='{endpointUri}', authKey='{authKeyPartial}*****'", config.endpoint, config.authKey.Substring(0, 5));
-#endif
-
 // Setup dependency injection
 var builder = new ContainerBuilder();
 
@@ -39,7 +29,7 @@ builder.RegisterInstance(Log.Logger).As<ILogger>();
 #if DEBUG
 builder.RegisterType<RavenDbRepository>().As<IExportRepository>();
 #else
-builder.Register(c => new CosmosDbRepository("rssfeeder", config.endpoint, config.authKey, Log.Logger)).As<IExportRepository>();
+builder.RegisterType<CosmosDbRepository>.As<IExportRepository>();
 #endif
 builder.RegisterType<RavenDbRepository>().As<IRepository>();
 builder.RegisterType<ArticleExporter>().As<IArticleExporter>();
@@ -93,3 +83,5 @@ var executor = CommandExecutor.For(_ =>
     _.RegisterCommands(typeof(Program).GetTypeInfo().Assembly);
 }, new AutofacCommandCreator(container));
 executor.Execute(args);
+
+Log.CloseAndFlush();

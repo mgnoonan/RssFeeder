@@ -3,10 +3,12 @@
 public class DownloadCommand : OaktonCommand<DownloadInput>
 {
     private readonly IContainer _container;
+    private readonly ILogger _log;
 
-    public DownloadCommand(IContainer container)
+    public DownloadCommand(IContainer container, ILogger log)
     {
         _container = container;
+        _log = log;
 
         // The usage pattern definition here is completely
         // optional
@@ -15,6 +17,8 @@ public class DownloadCommand : OaktonCommand<DownloadInput>
 
     public override bool Execute(DownloadInput input)
     {
+        _log.Information("DOWNLOAD_START: Machine: {machineName}", Environment.MachineName);
+
         var utils = _container.Resolve<IUtils>();
         var webUtils = _container.Resolve<IWebUtils>();
 
@@ -36,6 +40,8 @@ public class DownloadCommand : OaktonCommand<DownloadInput>
         // Optionally capture a screenshot to the target filename
         if (input.CaptureFlag)
             webUtils.SaveThumbnailToDisk(input.Url, filename + ".png");
+
+        _log.Information("DOWNLOAD_END: Completed successfully");
 
         // Just telling the OS that the command
         // finished up okay
