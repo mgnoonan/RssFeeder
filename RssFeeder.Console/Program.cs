@@ -26,10 +26,11 @@ Log.Logger = log;
 var builder = new ContainerBuilder();
 
 builder.RegisterInstance(Log.Logger).As<ILogger>();
+builder.RegisterInstance(configuration).As<IConfigurationRoot>();
 #if DEBUG
 builder.RegisterType<RavenDbRepository>().As<IExportRepository>();
 #else
-builder.RegisterType<CosmosDbRepository>.As<IExportRepository>();
+builder.RegisterType<CosmosDbRepository>().As<IExportRepository>();
 #endif
 builder.RegisterType<RavenDbRepository>().As<IRepository>();
 builder.RegisterType<ArticleExporter>().As<IArticleExporter>();
