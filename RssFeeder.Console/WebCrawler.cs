@@ -151,7 +151,7 @@ public class WebCrawler : IWebCrawler
 
                         // Re-check now that the true uri is revealed
                         // Force the status so the crawler won't retry
-                        if (!CanCrawl(hostname, trueUri))
+                        if (!CanCrawl(hostname, trueUri ?? sourceUri))
                         {
                             statusCode = HttpStatusCode.Forbidden;
                             crawlWithSelenium = false;
