@@ -2,6 +2,13 @@
 
 public class ArticleExporter : BaseArticleExporter, IArticleExporter
 {
+    private readonly ILogger _log;
+
+    public ArticleExporter(ILogger log) : base(log)
+    {
+        _log = log;
+    }
+
     public ExportFeedItem FormatItem(RssFeedItem item, RssFeed feed)
     {
         // The UrlHash is a hash of the feed source, not the ultimate target URL. This is to avoid
@@ -39,15 +46,15 @@ public class ArticleExporter : BaseArticleExporter, IArticleExporter
         // Some sites do not provide OpenGraph video tags so watch for those specifically
         string videoType = item.OpenGraphAttributes.GetValueOrDefault("og:video:type") ??
             item.OpenGraphAttributes.GetValueOrDefault("og:x:video:type") ??
-            (videoUrl.EndsWith(".mp4") || item.SiteName == "bitchute" ? "video/mp4" : 
+            (videoUrl.EndsWith(".mp4") || item.SiteName == "bitchute" ? "video/mp4" :
             videoUrl.Contains("youtube.com") || item.SiteName == "rumble" ? "text/html" : "");
 
-        bool hasSupportedVideoFormat = (videoUrl.Length > 0 || item.SiteName == "rumble" || item.SiteName == "bitchute") && 
+        bool hasSupportedVideoFormat = (videoUrl.Length > 0 || item.SiteName == "rumble" || item.SiteName == "bitchute") &&
             (videoType == "text/html" || videoType == "video/mp4" || videoType == "application/x-mpegURL");
 
         if (hasSupportedVideoFormat)
         {
-            Log.Debug("Applying video metadata values for '{hostname}'", hostName);
+            _log.Debug("Applying video metadata values for '{hostname}'", hostName);
             SetVideoMetaData(exportFeedItem, item, hostName);
             if (exportFeedItem.VideoHeight > 0)
             {
@@ -70,7 +77,7 @@ public class ArticleExporter : BaseArticleExporter, IArticleExporter
             var result = item.HtmlAttributes.GetValueOrDefault("ParserResult") ?? "";
             if (string.IsNullOrEmpty(result))
             {
-                Log.Debug("No parsed result, applying basic metadata values for '{hostname}'", hostName);
+                _log.Debug("No parsed result, applying basic metadata values for '{hostname}'", hostName);
 
                 // Article failed to download, display minimal basic meta data
                 SetBasicArticleMetaData(exportFeedItem, item, hostName);
@@ -78,7 +85,7 @@ public class ArticleExporter : BaseArticleExporter, IArticleExporter
             }
             else
             {
-                Log.Debug("Applying extended metadata values for '{hostname}'", hostName);
+                _log.Debug("Applying extended metadata values for '{hostname}'", hostName);
 
                 SetExtendedArticleMetaData(exportFeedItem, item, hostName);
                 exportFeedItem.ArticleText = ApplyTemplateToDescription(exportFeedItem, feed, ExportTemplates.ExtendedTemplate);
