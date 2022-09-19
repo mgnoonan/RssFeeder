@@ -62,14 +62,11 @@ class DrudgeReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             {
                 string title = WebUtility.HtmlDecode(node.InnerText.Trim());
 
-                if (title.EndsWith("...") || title.EndsWith("?") || title.EndsWith("!"))
+                var item = CreateNodeLinks(filters, node, "above the fold", count++, feedUrl, true);
+                if (item != null)
                 {
-                    var item = CreateNodeLinks(filters, node, "above the fold", count++, feedUrl, true);
-                    if (item != null)
-                    {
-                        log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                        list.Add(item);
-                    }
+                    log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+                    list.Add(item);
                 }
             }
         }
@@ -85,14 +82,16 @@ class DrudgeReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             {
                 string title = WebUtility.HtmlDecode(node.InnerText.Trim());
 
-                if (title.EndsWith("...") || title.EndsWith("?") || title.EndsWith("!"))
+                if (title == "FRONT PAGES UK" || title == "BOXOFFICE")
                 {
-                    var item = CreateNodeLinks(filters, node, "left column", count++, feedUrl, false);
-                    if (item != null)
-                    {
-                        log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                        list.Add(item);
-                    }
+                    break;
+                }
+
+                var item = CreateNodeLinks(filters, node, "left column", count++, feedUrl, false);
+                if (item != null)
+                {
+                    log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+                    list.Add(item);
                 }
             }
         }
@@ -108,14 +107,16 @@ class DrudgeReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             {
                 string title = WebUtility.HtmlDecode(node.InnerText.Trim());
 
-                if (title.EndsWith("...") || title.EndsWith("?") || title.EndsWith("!"))
+                if (title == "WORLD SICK MAP..." || title == "3 AM GIRLS")
                 {
-                    var item = CreateNodeLinks(filters, node, "middle column", count++, feedUrl, false);
-                    if (item != null)
-                    {
-                        log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                        list.Add(item);
-                    }
+                    break;
+                }
+
+                var item = CreateNodeLinks(filters, node, "middle column", count++, feedUrl, false);
+                if (item != null)
+                {
+                    log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+                    list.Add(item);
                 }
             }
         }
@@ -131,14 +132,16 @@ class DrudgeReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             {
                 string title = WebUtility.HtmlDecode(node.InnerText.Trim());
 
-                if (title.EndsWith("...") || title.EndsWith("?") || title.EndsWith("!"))
+                if (title == "UPDATE:  DRUDGE APP IPHONE, IPAD..." || title == "ANDROID...")
                 {
-                    var item = CreateNodeLinks(filters, node, "right column", count++, feedUrl, false);
-                    if (item != null)
-                    {
-                        log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                        list.Add(item);
-                    }
+                    break;
+                }
+
+                var item = CreateNodeLinks(filters, node, "right column", count++, feedUrl, false);
+                if (item != null)
+                {
+                    log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+                    list.Add(item);
                 }
             }
         }
