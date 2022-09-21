@@ -1,4 +1,4 @@
 # RssFeeder
-[![Build status](https://mgnoonan.visualstudio.com/RssFeeder/_apis/build/status/RssFeederMvc%20-%20CI)](https://mgnoonan.visualstudio.com/RssFeeder/_build/latest?definitionId=7)
+[![Build and deploy RssFeeder.Mvc to Azure Web App](https://github.com/mgnoonan/RssFeeder/actions/workflows/azure-webapps-dotnet-core.yml/badge.svg)](https://github.com/mgnoonan/RssFeeder/actions/workflows/azure-webapps-dotnet-core.yml)
 
-A simple crawler for parsing links contained in an RSS feed
+A simple crawler for parsing links from content aggregator sites that don't offer an RSS feed
