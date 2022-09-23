@@ -17,7 +17,7 @@ public class RestSharpHttpClient : IHttpClient
     {
         _log.Information("RestSharpHttpClient DownloadData to {url}", url);
         var request = new RestRequest(url);
-        var response = _client.DownloadDataAsync(request).GetAwaiter().GetResult();
+        var response = _client.DownloadData(request);
 
         return response;
     }
