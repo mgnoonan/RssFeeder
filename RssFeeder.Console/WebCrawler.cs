@@ -170,6 +170,9 @@ public class WebCrawler : IWebCrawler
                                 (statusCode, content, trueUri, contentType) = _webUtils.DriverGetString(trueUri?.AbsoluteUri ?? sourceUri.AbsoluteUri);
                             }
 
+                            // Last chance to reset the hostname from the true uri
+                            hostname = trueUri?.Host.ToLower() ?? hostname;
+
                             // Construct unique file name
                             string contentTypeExtension = crawlWithSelenium ? GetFileExtensionByPathQuery(trueUri ?? sourceUri) : GetFileExtensionByContentType(contentType);
                             string friendlyHostname = hostname.Replace(".", "_");
