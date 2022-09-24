@@ -41,8 +41,7 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; Copyright @DateTime.Now.Year, Powered by @System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription<br />
-            <strong>@appInfo.Workflow</strong> #@appInfo.BuildNumber: Commit <a href="https://github.com/mgnoonan/RssFeeder/commit/@appInfo.GitHash">@appInfo.ShortGitHash</a>
+            <small><strong>@appInfo.Workflow</strong> #@appInfo.BuildNumber: Commit <a href="https://github.com/mgnoonan/RssFeeder/commit/@appInfo.GitHash">@appInfo.ShortGitHash</a> | &copy; Copyright @DateTime.Now.Year, Powered by @System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription</small>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
