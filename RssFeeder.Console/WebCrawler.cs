@@ -192,9 +192,13 @@ public class WebCrawler : IWebCrawler
                             {
                                 _webUtils.SaveContentToDisk(filename, !_crawlerRepository.Config.IncludeScripts.Contains(hostname), (string)content);
                             }
-                            else
+                            else if (content is byte[])
                             {
                                 _webUtils.SaveContentToDisk(filename, (byte[])content);
+                            }
+                            else
+                            {
+                                _log.Debug("No content downloaded");
                             }
                         }
 
