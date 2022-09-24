@@ -152,7 +152,14 @@ public class WebCrawler : IWebCrawler
                             if (statusCode == HttpStatusCode.OK && !_crawlerRepository.Config.WebDriver.Contains(hostname))
                             {
                                 // Download the url contents using RestSharp
-                                (statusCode, content, trueUri, contentType) = _webUtils.ClientGetString(trueUri?.AbsoluteUri ?? sourceUri.AbsoluteUri);
+                                if (IsBinary(contentType))
+                                {
+                                    content = _webUtils.ClientGetBytes(trueUri?.AbsoluteUri ?? sourceUri.AbsoluteUri);
+                                }
+                                else
+                                {
+                                    (statusCode, content, trueUri, contentType) = _webUtils.ClientGetString(trueUri?.AbsoluteUri ?? sourceUri.AbsoluteUri);
+                                }
                             }
 
                             // Switch to Selenium web driver based on certain failed responses from RestSharp
@@ -280,6 +287,29 @@ public class WebCrawler : IWebCrawler
         }
 
         _log.Information("Downloaded {count} new articles to the {collectionName} collection", articleCount, feed.CollectionName);
+    }
+
+    private bool IsBinary(string contentType)
+    {
+        string contentTypeLowered = contentType?.ToLower() ?? "text/html";
+
+        switch (contentTypeLowered)
+        {
+            case "text/html":
+            case "text/plain":
+            case "application/json":
+                return false;
+            case "image/jpg":
+            case "image/jpeg":
+            case "application/jpg":
+            case "image/gif":
+            case "image/png":
+            case "application/pdf":
+                return true;
+            default:
+                _log.Warning("Unexpected content type {contentType}", contentTypeLowered);
+                return false;
+        }
     }
 
     private bool CanCrawl(string hostname, Uri uri)
