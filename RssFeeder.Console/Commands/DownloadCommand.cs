@@ -4,10 +4,14 @@ public class DownloadCommand : OaktonCommand<DownloadInput>
 {
     private readonly IContainer _container;
     private readonly ILogger _log;
+    private readonly IWebUtils _webUtils;
+    private readonly IUtils _utils;
 
-    public DownloadCommand(IContainer container, ILogger log)
+    public DownloadCommand(IContainer container, IWebUtils webUtils, IUtils utils, ILogger log)
     {
         _container = container;
+        _webUtils = webUtils;
+        _utils = utils;
         _log = log;
 
         // The usage pattern definition here is completely
@@ -19,11 +23,8 @@ public class DownloadCommand : OaktonCommand<DownloadInput>
     {
         _log.Information("DOWNLOAD_START: Machine: {machineName}", Environment.MachineName);
 
-        var utils = _container.Resolve<IUtils>();
-        var webUtils = _container.Resolve<IWebUtils>();
-
         // Create the working folder for the collection if it doesn't exist
-        string workingFolder = Path.Combine(utils.GetAssemblyDirectory(), "test-download");
+        string workingFolder = Path.Combine(_utils.GetAssemblyDirectory(), "test-download");
         if (!Directory.Exists(workingFolder))
         {
             Log.Information("Creating folder '{workingFolder}'", workingFolder);
@@ -31,15 +32,19 @@ public class DownloadCommand : OaktonCommand<DownloadInput>
         }
 
         // Create the target filename
-        string hash = utils.CreateMD5Hash(input.Url.ToLower());
+        string hash = _utils.CreateMD5Hash(input.Url.ToLower());
         string filename = $"{workingFolder}\\{DateTime.Now:yyyyMMddhhmmss}_{hash}";
 
         // Download the URL contents using the web driver to the target filename
-        webUtils.WebDriverUrlToDisk(input.Url, filename + ".html");
+        (HttpStatusCode statusCode, string content, Uri trueUri, string contentType) = 
+            _webUtils.DriverGetString(input.Url);
+
+        if (statusCode == HttpStatusCode.OK)
+            _webUtils.SaveContentToDisk(filename + ".html", false, content);
 
         // Optionally capture a screenshot to the target filename
         if (input.CaptureFlag)
-            webUtils.SaveThumbnailToDisk(input.Url, filename + ".png");
+            _webUtils.SaveThumbnailToDisk(input.Url, filename + ".png");
 
         _log.Information("DOWNLOAD_END: Completed successfully");
 

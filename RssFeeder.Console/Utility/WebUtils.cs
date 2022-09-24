@@ -31,7 +31,7 @@ public class WebUtils : IWebUtils
         }
         catch (Exception ex)
         {
-            _log.Warning(ex, "SaveContentToDisk: Unexpected error '{message}'", ex.Message);
+            _log.Warning(ex, "ClientGetString: Unexpected error '{message}'", ex.Message);
             retry = ex.Message.Contains("Moved") || ex.Message.Contains("Request timed out");
         }
 
@@ -47,7 +47,7 @@ public class WebUtils : IWebUtils
 
     public (HttpStatusCode status, string content, Uri trueUri, string contentType) DriverGetString(string url)
     {
-        _log.Debug("DriverGetString: Loading URL '{url}'", url);
+        _log.Information("DriverGetString: Loading URL '{url}'", url);
 
         var options = new EdgeOptions();
         options.AddArgument("headless");//Comment if we want to see the window. 
