@@ -46,7 +46,7 @@ public class AppVersionInfo
 
                 if (string.IsNullOrEmpty(_buildNumber))
                 {
-                    _buildNumber = DateTime.UtcNow.ToString("yyyyMMdd") + ".0";
+                    _buildNumber = "1";
                 }
             }
 
@@ -78,6 +78,10 @@ public class AppVersionInfo
                         _gitHash = fileContents[2];
                     }
                 }
+                else
+                {
+                    _gitHash = "1bdc1de1a75b3a378e4cd1ee8a83da2256c52b69";
+                }
             }
 
             return _gitHash;
@@ -107,6 +111,10 @@ public class AppVersionInfo
                     {
                         _gitHash = fileContents[2];
                     }
+                }
+                else
+                {
+                    _workflow = "RssFeederMvc App Service CI/CD";
                 }
             }
 
