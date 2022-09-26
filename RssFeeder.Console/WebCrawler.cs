@@ -269,22 +269,22 @@ public class WebCrawler : IWebCrawler
         hostname = trueUri?.Host.ToLower() ?? hostname;
         if (string.IsNullOrEmpty(item.HostName)) item.HostName = hostname;
         if (string.IsNullOrEmpty(item.SiteName)) item.SiteName = hostname;
+        item.HtmlAttributes.Add("Url", trueUri?.AbsoluteUri ?? sourceUri.AbsoluteUri);
 
         // Construct unique file name
         string contentTypeExtension = crawlWithSelenium ? GetFileExtensionByPathQuery(trueUri ?? sourceUri) : GetFileExtensionByContentType(contentType);
         string friendlyHostname = hostname.Replace(".", "_");
         string filename = Path.Combine(_workingFolder, $"{item.FeedAttributes.UrlHash}_{friendlyHostname}{contentTypeExtension}");
 
-        item.HtmlAttributes.Add("Url", trueUri?.AbsoluteUri ?? sourceUri.AbsoluteUri);
-        item.FeedAttributes.FileName = filename;
-
         switch (content)
         {
             case string:
                 _webUtils.SaveContentToDisk(filename, !_crawlerRepository.Config.IncludeScripts.Contains(hostname), (string)content);
+                item.FeedAttributes.FileName = filename;
                 break;
             case byte[]:
                 _webUtils.SaveContentToDisk(filename, (byte[])content);
+                item.FeedAttributes.FileName = filename;
                 break;
             default:
                 _log.Debug("No content downloaded");
