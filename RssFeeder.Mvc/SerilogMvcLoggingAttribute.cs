@@ -1,7 +1,4 @@
-﻿using System;
-using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.Extensions.DependencyInjection;
-using Serilog;
+﻿using Microsoft.AspNetCore.Mvc.Filters;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public class SerilogMvcLoggingAttribute : ActionFilterAttribute
