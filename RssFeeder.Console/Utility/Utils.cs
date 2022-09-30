@@ -8,6 +8,13 @@ namespace RssFeeder.Console.Utility;
 /// </summary>
 public class Utils : IUtils
 {
+    private readonly ILogger _log;
+
+    public Utils(ILogger log)
+    {
+        _log = log;
+    }
+
     public void SaveTextToDisk(string text, string filepath, bool deleteIfExists)
     {
         try
@@ -17,7 +24,7 @@ public class Utils : IUtils
                 File.Delete(filepath);
             }
 
-            Log.Logger.Information("Saving {bytes:N0} bytes to text file '{fileName}'", text.Length, filepath);
+            _log.Information("Saving {bytes:N0} bytes to text file '{fileName}'", text.Length, filepath);
 
             // WriteAllText creates a file, writes the specified string to the file,
             // and then closes the file.    You do NOT need to call Flush() or Close().
@@ -44,7 +51,7 @@ public class Utils : IUtils
             }
         }
 
-        Log.Logger.Information("Removed {count} files older than {maximumAgeInDays} days from {folderPath}", count, maximumAgeInDays, folderPath);
+        _log.Information("Removed {count} files older than {maximumAgeInDays} days from {folderPath}", count, maximumAgeInDays, folderPath);
     }
 
     private bool DeleteFileIfOlderThan(string path, DateTime date)
@@ -84,8 +91,7 @@ public class Utils : IUtils
 
     public string GetAssemblyDirectory()
     {
-        var type = new Utils();
-        var assembly = Assembly.GetAssembly(type.GetType());
+        var assembly = Assembly.GetAssembly(this.GetType());
         string location = assembly.Location;
         var uri = new UriBuilder(location);
         string path = Uri.UnescapeDataString(uri.Path);

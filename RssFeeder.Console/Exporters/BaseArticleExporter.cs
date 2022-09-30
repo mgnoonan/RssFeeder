@@ -2,7 +2,12 @@
 
 public class BaseArticleExporter
 {
-    public CrawlerConfig Config { get; set; }
+    private readonly ILogger _log;
+
+    public BaseArticleExporter(ILogger log)
+    {
+        _log = log;
+    }
 
     protected virtual string ApplyTemplateToDescription(ExportFeedItem item, RssFeed feed, string template)
     {
@@ -112,10 +117,19 @@ public class BaseArticleExporter
             var text = item.HtmlAttributes.GetValueOrDefault("ParserResult") ?? "";
             if (!text.StartsWith("<"))
             {
-                Log.Debug("EXPORT: Processing rumble.com ld+json metadata");
+                _log.Debug("EXPORT: Processing rumble.com ld+json metadata");
 
                 // application/ld+json parser result
-                var list = JsonConvert.DeserializeObject<List<JsonLdRumbleValues>>(text);
+                List<JsonLdRumbleValues> list = default;
+                try
+                {
+                    list = JsonConvert.DeserializeObject<List<JsonLdRumbleValues>>(text);
+                }
+                catch (Exception ex)
+                {
+                    _log.Error(ex, "Error deserialzing json+ld values");
+                }
+
                 foreach (var value in list)
                 {
                     if (string.IsNullOrWhiteSpace(value.embedUrl))
@@ -130,7 +144,7 @@ public class BaseArticleExporter
         }
         else if (item.SiteName == "bitchute")
         {
-            Log.Information("EXPORT: Processing bitchute.com metadata");
+            _log.Information("EXPORT: Processing bitchute.com metadata");
 
             // Bitchute logic is a little convoluted, they don't provide much metadata
             var result = item.HtmlAttributes.GetValueOrDefault("ParserResult") ?? "";
@@ -144,7 +158,7 @@ public class BaseArticleExporter
         }
         else
         {
-            Log.Debug("EXPORT: Processing open graph video metadata");
+            _log.Debug("EXPORT: Processing open graph video metadata");
 
             // Sites that provide video metadata via open graph tags
             exportFeedItem.VideoUrl = item.OpenGraphAttributes.GetValueOrDefault("og:video:secure_url") ??
@@ -166,7 +180,7 @@ public class BaseArticleExporter
 
         using (LogContext.PushProperty("hostName", hostName))
         {
-            Log.Information("Video URL: '{url}' ({height}x{width})", exportFeedItem.VideoUrl, exportFeedItem.VideoHeight, exportFeedItem.VideoWidth);
+            _log.Information("Video URL: '{url}' ({height}x{width})", exportFeedItem.VideoUrl, exportFeedItem.VideoHeight, exportFeedItem.VideoWidth);
         }
 
         // There's no article text for most video sites, so just use the meta description
@@ -228,7 +242,7 @@ public class BaseArticleExporter
 
         if (string.IsNullOrWhiteSpace(sourceAttributeValue))
         {
-            Log.Warning("Error reading attribute '{attribute}' from meta tag '{property}'", targetAttributeName, targetAttributeValue);
+            _log.Warning("Error reading attribute '{attribute}' from meta tag '{property}'", targetAttributeName, targetAttributeValue);
         }
         else
         {
@@ -238,7 +252,7 @@ public class BaseArticleExporter
                 sourceAttributeValue = System.Web.HttpUtility.HtmlDecode(sourceAttributeValue);
             }
 
-            Log.Debug("Meta attribute '{attribute}':'{property}' has a decoded value of '{value}'", targetAttributeName, targetAttributeValue, sourceAttributeValue);
+            _log.Debug("Meta attribute '{attribute}':'{property}' has a decoded value of '{value}'", targetAttributeName, targetAttributeValue, sourceAttributeValue);
 
         }
 

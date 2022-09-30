@@ -12,10 +12,133 @@ namespace RssFeeder.Console.Utility;
 public class WebUtils : IWebUtils
 {
     private readonly IHttpClient _crawler;
+    private readonly ILogger _log;
 
-    public WebUtils(IHttpClient crawler)
+    public WebUtils(IHttpClient crawler, ILogger log)
     {
         _crawler = crawler;
+        _log = log;
+    }
+
+    public (HttpStatusCode status, string content, Uri trueUri, string contentType) ClientGetString(string url)
+    {
+        bool retry;
+
+        try
+        {
+            _log.Debug("ClientGetString: Loading URL '{url}'", url);
+            return _crawler.GetString(url);
+        }
+        catch (Exception ex)
+        {
+            _log.Warning(ex, "ClientGetString: Unexpected error '{message}'", ex.Message);
+            retry = ex.Message.Contains("Moved") || ex.Message.Contains("Request timed out");
+        }
+
+        // Detect a retry situation where we will eventually crawl using the web driver
+        return (retry ? HttpStatusCode.Found : HttpStatusCode.Forbidden, null, new Uri(url), null);
+    }
+
+    public byte[] ClientGetBytes(string url)
+    {
+        _log.Debug("ClientGetBytes: Loading URL '{url}'", url);
+        return _crawler.DownloadData(url);
+    }
+
+    public (HttpStatusCode status, string content, Uri trueUri, string contentType) DriverGetString(string url)
+    {
+        _log.Information("DriverGetString: Loading URL '{url}'", url);
+
+        var options = new EdgeOptions();
+        options.AddArgument("headless");//Comment if we want to see the window. 
+
+        string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        EdgeDriver driver = null;
+
+        try
+        {
+            driver = new EdgeDriver(path, options);
+            driver.Navigate().GoToUrl(url);
+
+            // Web Driver does not support returning the response code, but if
+            // we got to here then it is most likely a 200 OK result
+            _log.Information("Response status code = {httpStatusCode} {httpStatusText}, {uri}", 200, "OK", driver.Url);
+
+            return (HttpStatusCode.OK, driver.PageSource, new Uri(driver.Url), "text/html");
+        }
+        catch (Exception ex)
+        {
+            _log.Error(ex, "DriverGetString: Unexpected error '{message}'", ex.Message);
+        }
+        finally
+        {
+            if (driver != null)
+            {
+                driver.Close();
+                driver.Quit();
+            }
+        }
+
+        return (HttpStatusCode.InternalServerError, null, new Uri(url), "text/html");
+    }
+
+    public void SaveContentToDisk(string filename, bool removeScriptElements, string content)
+    {
+        // Delete the file if it already exists
+        if (File.Exists(filename))
+        {
+            _log.Information("Delete existing file '{fileName}'", filename);
+            File.Delete(filename);
+        }
+
+        if (filename.EndsWith(".html"))
+        {
+            // Load the Html into the DOM parser
+            HtmlDocument doc = new();
+            doc.LoadHtml(content);
+            doc.OptionFixNestedTags = true;
+
+            // List of html tags we really don't care to save
+            var excludeHtmlTags = new List<string> { "style", "link", "svg", "form", "noscript" };
+            if (removeScriptElements)
+            {
+                excludeHtmlTags.Add("script");
+            }
+
+            doc.DocumentNode
+                .Descendants()
+                .Where(n => excludeHtmlTags.Contains(n.Name))
+                .ToList()
+                .ForEach(n => n.Remove());
+
+            _log.Information("Saving {bytes:N0} bytes to text file '{fileName}'", doc.DocumentNode.OuterLength, filename);
+            doc.Save(filename);
+        }
+        else
+        {
+            _log.Information("Saving {bytes:N0} bytes to text file '{fileName}'", content.Length, filename);
+            File.WriteAllText(filename, content);
+        }
+    }
+
+    public void SaveContentToDisk(string filename, byte[] content)
+    {
+        // Delete the file if it already exists
+        if (File.Exists(filename))
+        {
+            _log.Information("Delete existing file '{fileName}'", filename);
+            File.Delete(filename);
+        }
+
+        try
+        {
+            _log.Information("SaveContentToDisk: Saving binary file '{fileName}' {bytes} bytes", filename, content.Length);
+            File.WriteAllBytes(filename, content);
+        }
+        catch (Exception ex)
+        {
+            _log.Error(ex, "SaveContentToDisk: Unexpected error '{message}'", ex.Message);
+        }
     }
 
     public (bool, Uri) TrySaveUrlToDisk(string url, string urlHash, string filename, bool removeScriptElements = true)
@@ -23,7 +146,7 @@ public class WebUtils : IWebUtils
         // Delete the file if it already exists
         if (File.Exists(filename))
         {
-            Log.Information("Delete existing file '{fileName}'", filename);
+            _log.Information("Delete existing file '{fileName}'", filename);
             File.Delete(filename);
         }
 
@@ -37,12 +160,12 @@ public class WebUtils : IWebUtils
 
         try
         {
-            Log.Debug("Loading URL '{urlHash}':'{url}'", urlHash, url);
+            _log.Debug("Loading URL '{urlHash}':'{url}'", urlHash, url);
             (HttpStatusCode status, string content, Uri trueUri, string contentType) = _crawler.GetString(url);
 
             if (trueUri is null)
             {
-                Log.Warning("TrySaveUrlToDisk: Failure to crawl url '{url}'", url);
+                _log.Warning("TrySaveUrlToDisk: Failure to crawl url '{url}'", url);
                 return (true, new Uri(url));
             }
 
@@ -70,12 +193,12 @@ public class WebUtils : IWebUtils
                     .ToList()
                     .ForEach(n => n.Remove());
 
-                Log.Information("Saving {bytes:N0} bytes to text file '{fileName}'", doc.DocumentNode.OuterLength, filename);
+                _log.Information("Saving {bytes:N0} bytes to text file '{fileName}'", doc.DocumentNode.OuterLength, filename);
                 doc.Save(filename);
             }
             else
             {
-                Log.Information("Saving {bytes:N0} bytes to text file '{fileName}'", content.Length, filename);
+                _log.Information("Saving {bytes:N0} bytes to text file '{fileName}'", content.Length, filename);
                 File.WriteAllText(filename, content);
             }
 
@@ -83,7 +206,7 @@ public class WebUtils : IWebUtils
         }
         catch (Exception ex)
         {
-            Log.Warning(ex, "SaveUrlToDisk: Unexpected error '{message}'", ex.Message);
+            _log.Warning(ex, "SaveUrlToDisk: Unexpected error '{message}'", ex.Message);
             retry = ex.Message.Contains("Moved") || ex.Message.Contains("Request timed out");
         }
 
@@ -94,22 +217,22 @@ public class WebUtils : IWebUtils
     {
         try
         {
-            Log.Debug("Loading binary URL '{urlHash}':'{url}'", urlHash, url);
+            _log.Debug("Loading binary URL '{urlHash}':'{url}'", urlHash, url);
             var fileBytes = _crawler.DownloadData(url);
 
             // if the remote file was found, download it
-            Log.Information("Saving binary file '{fileName}' {bytes} bytes", filename, fileBytes.Length);
+            _log.Information("Saving binary file '{fileName}' {bytes} bytes", filename, fileBytes.Length);
             File.WriteAllBytes(filename, fileBytes);
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "SaveBinaryDataToDisk: Unexpected error '{message}'", ex.Message);
+            _log.Error(ex, "SaveBinaryDataToDisk: Unexpected error '{message}'", ex.Message);
         }
     }
 
     public Uri WebDriverUrlToDisk(string url, string filename)
     {
-        Log.Information("WebDriverClient GetString to {url}", url);
+        _log.Information("WebDriverClient GetString to {url}", url);
 
         var options = new EdgeOptions();
         options.AddArgument("headless");//Comment if we want to see the window. 
@@ -124,7 +247,7 @@ public class WebUtils : IWebUtils
 
             // Web Driver does not support returning the response code, but if
             // we got to here then it is most likely a 200 OK result
-            Log.Information("Response status code = {httpStatusCode} {httpStatusText}, {uri}", 200, "OK", driver.Url);
+            _log.Information("Response status code = {httpStatusCode} {httpStatusText}, {uri}", 200, "OK", driver.Url);
 
             // Delete the file if it already exists
             if (File.Exists(filename))
@@ -132,14 +255,14 @@ public class WebUtils : IWebUtils
                 File.Delete(filename);
             }
 
-            Log.Information("Saving {bytes:N0} bytes to text file '{fileName}'", driver.PageSource.Length, filename);
+            _log.Information("Saving {bytes:N0} bytes to text file '{fileName}'", driver.PageSource.Length, filename);
             File.WriteAllText(filename, driver.PageSource);
 
             return new Uri(driver.Url);
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "WebDriverClient: Unexpected error '{message}'", ex.Message);
+            _log.Error(ex, "WebDriverClient: Unexpected error '{message}'", ex.Message);
         }
         finally
         {
@@ -169,12 +292,12 @@ public class WebUtils : IWebUtils
             Thread.Sleep(5000);
             var screenshot = (driver as ITakesScreenshot).GetScreenshot();
 
-            Log.Information("Saving thumbnail file '{filename}'", filename);
+            _log.Information("Saving thumbnail file '{filename}'", filename);
             screenshot.SaveAsFile(filename);
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "ERROR: Unable to save webpage thumbnail");
+            _log.Error(ex, "ERROR: Unable to save webpage thumbnail");
         }
         finally
         {
@@ -196,7 +319,7 @@ public class WebUtils : IWebUtils
     /// </returns>
     public string RepairUrl(string pathAndQuery, string defaultBaseUrl)
     {
-        Log.Debug("Attempting to repair link '{url}'", pathAndQuery);
+        _log.Debug("Attempting to repair link '{url}'", pathAndQuery);
         StringBuilder sb = new StringBuilder();
 
         if (pathAndQuery.StartsWith("//"))
@@ -234,7 +357,7 @@ public class WebUtils : IWebUtils
             }
         }
 
-        Log.Information("Repaired link '{pathAndQuery}' to '{url}'", pathAndQuery, sb.ToString());
+        _log.Information("Repaired link '{pathAndQuery}' to '{url}'", pathAndQuery, sb.ToString());
         return sb.ToString();
     }
 
@@ -245,7 +368,7 @@ public class WebUtils : IWebUtils
 
     public (HttpStatusCode, Uri, string) GetContentType(string url)
     {
-        Log.Debug("GetContentType for {url}", url);
+        _log.Debug("GetContentType for {url}", url);
 
         try
         {
@@ -253,7 +376,7 @@ public class WebUtils : IWebUtils
         }
         catch (Exception ex)
         {
-            Log.Warning(ex, "GetContentType: Unexpected error '{message}'", ex.Message);
+            _log.Warning(ex, "GetContentType: Unexpected error '{message}'", ex.Message);
             return (HttpStatusCode.InternalServerError, default, null);
         }
     }

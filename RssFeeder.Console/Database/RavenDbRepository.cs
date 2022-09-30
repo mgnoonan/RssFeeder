@@ -1,18 +1,34 @@
-using System.IO;
-using RssFeeder.Models;
-using Sparrow;
-
 namespace RssFeeder.Console.Database;
 
 public class RavenDbRepository : IRepository, IExportRepository
 {
     readonly ILogger _log;
     readonly IDocumentStore _store;
+    readonly CrawlerConfig _crawlerConfig;
 
-    public RavenDbRepository(IDocumentStore store, ILogger log)
+    public CrawlerConfig Config => _crawlerConfig;
+
+    public RavenDbRepository(ILogger log)
     {
+        // Setup RavenDb
+        // docker run --rm -d -p 8080:8080 -p 38888:38888 ravendb/ravendb:latest
+        IDocumentStore store = new DocumentStore
+        {
+            Urls = new[] { "http://127.0.0.1:8080/" }
+            // Default database is not set
+        }.Initialize();
+
+        var crawlerConfig = new CrawlerConfig();
+        using (IDocumentSession session = store.OpenSession(database: "site-parsers"))
+        {
+            crawlerConfig = session.Advanced.RawQuery<CrawlerConfig>("from CrawlerConfig").First();
+        }
+
+        _crawlerConfig = crawlerConfig;
         _store = store;
         _log = log;
+
+        _log.Debug("Crawler config: {@config}", crawlerConfig);
     }
 
     public void EnsureDatabaseExists(string database = null, bool createDatabaseIfNotExists = true)
@@ -103,7 +119,7 @@ public class RavenDbRepository : IRepository, IExportRepository
 
     public List<T> GetDocuments<T>(string collectionName, string sqlQueryText, Dictionary<string, object> parameters = default, bool addWait = false)
     {
-        Log.Debug("Query: {sqlQueryText} Parameters: {@parameters}", sqlQueryText, parameters);
+        _log.Debug("Query: {sqlQueryText} Parameters: {@parameters}", sqlQueryText, parameters);
 
         using (IDocumentSession session = _store.OpenSession(database: collectionName))
         {
@@ -118,14 +134,14 @@ public class RavenDbRepository : IRepository, IExportRepository
             }
 
             var list = query.ToList();
-            Log.Debug("Query: ({count}) documents returned", list.Count);
+            _log.Debug("Query: ({count}) documents returned", list.Count);
             return list;
         }
     }
 
     public List<T> GetAllDocuments<T>(string collectionName)
     {
-        Log.Debug("Query: Retrieving all documents for type {type}", typeof(T).Name);
+        _log.Debug("Query: Retrieving all documents for type {type}", typeof(T).Name);
         string sqlQueryText = "from SiteArticleDefinition";
 
         return GetDocuments<T>(collectionName, sqlQueryText);

@@ -2,6 +2,7 @@
 
 public interface IRepository
 {
+    CrawlerConfig Config { get; }
     List<T> GetDocuments<T>(string collectionName, string sqlQueryText, Dictionary<string, object> parameters, bool addWait);
     List<T> GetExportDocuments<T>(string collectionName, string feedId, Guid runID);
     List<T> GetAllDocuments<T>(string collectionName);

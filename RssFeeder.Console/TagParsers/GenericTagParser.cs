@@ -17,7 +17,7 @@ public class GenericTagParser : TagParserBase, ITagParser
             Log.Warning("Error reading article: '{bodySelector}' article body selector not found.", template.ArticleSelector);
             return $"<p>Error reading article: '{template.ArticleSelector}' article body selector not found.</p>";
         }
-        
+
         var paragraphs = container.QuerySelectorAll(template.ParagraphSelector);
         Log.Information("Paragraph selector '{paragraphSelector}' returned {count} paragraphs", template.ParagraphSelector, paragraphs.Length);
 
@@ -50,6 +50,11 @@ public class GenericTagParser : TagParserBase, ITagParser
             {
                 // Unordered list will have all the <li> elements inside
                 description.AppendLine($"<p><ul>{p.InnerHtml}</ul></p>");
+            }
+            else if (p.TagName.ToLower() == "pre")
+            {
+                // Pre tag is for formatted monospaced text
+                description.AppendLine($"<html><body><div style=\"width: 960px; overflow: visible; margin-right: auto; margin-left: auto; padding: 5px; display: block;\"><pre style=\"padding-left: 20px; font-size: 14px; display: block; font-family: monospace; white-space: pre; margin: 1em 0px;\">{p.TextContent.Trim()}</pre><hr></div></body></html>");
             }
             else
             {

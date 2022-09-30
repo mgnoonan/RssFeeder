@@ -9,15 +9,16 @@ public class WebCrawler : IWebCrawler
     private readonly IArticleExporter _exporter;
     private readonly IWebUtils _webUtils;
     private readonly IUtils _utils;
+    private readonly ILogger _log;
+    private readonly IUnlaunchClient _client;
+    private string _workingFolder;
     private IContainer _container;
 
     private string _exportCollectionName = "drudge-report";
     private string _crawlerCollectionName = "feed-items";
 
-    public CrawlerConfig Config { get; set; }
-
     public WebCrawler(IRepository crawlerRepository, IExportRepository exportRepository, IArticleDefinitionFactory definitions,
-        IWebUtils webUtils, IUtils utils, IArticleParser articleParser, IArticleExporter exporter)
+        IWebUtils webUtils, IUtils utils, IArticleParser articleParser, IArticleExporter exporter, ILogger log, IUnlaunchClient client)
     {
         _crawlerRepository = crawlerRepository;
         _exportRepository = exportRepository;
@@ -26,12 +27,13 @@ public class WebCrawler : IWebCrawler
         _definitions = definitions;
         _articleParser = articleParser;
         _exporter = exporter;
+        _log = log;
+        _client = client;
     }
 
     public void Initialize(IContainer container, string crawlerCollectionName, string exportCollectionName)
     {
-        Log.Information($"{nameof(WebCrawler)} initializing");
-        Log.Debug("Crawler exclusion list: {@exclusions}", Config.Exclusions);
+        _log.Information($"{nameof(WebCrawler)} initializing");
 
         _container = container;
         _crawlerCollectionName = crawlerCollectionName;
@@ -45,10 +47,9 @@ public class WebCrawler : IWebCrawler
 
     public void Crawl(Guid runID, RssFeed feed)
     {
-        string workingFolder = PrepareWorkspace(feed);
-        var list = GenerateFeedLinks(feed, workingFolder);
-        DownloadList(runID, feed, workingFolder, list);
-        //ParseAndSave(feed, list);
+        _workingFolder = PrepareWorkspace(feed);
+        var list = GenerateFeedLinks(feed);
+        DownloadList(runID, feed, list);
     }
 
     private string PrepareWorkspace(RssFeed feed)
@@ -57,7 +58,7 @@ public class WebCrawler : IWebCrawler
         string workingFolder = Path.Combine(_utils.GetAssemblyDirectory(), feed.CollectionName);
         if (!Directory.Exists(workingFolder))
         {
-            Log.Information("Creating folder '{workingFolder}'", workingFolder);
+            _log.Information("Creating folder '{workingFolder}'", workingFolder);
             Directory.CreateDirectory(workingFolder);
         }
 
@@ -69,7 +70,7 @@ public class WebCrawler : IWebCrawler
         var uri = new Uri(item.HtmlAttributes.GetValueOrDefault("Url") ?? item.FeedAttributes.Url);
         if (uri.AbsolutePath == "/" && string.IsNullOrEmpty(uri.Query))
         {
-            Log.Information("URI '{uri}' detected as a home page rather than an article, skipping parse operation", uri);
+            _log.Information("URI '{uri}' detected as a home page rather than an article, skipping parse operation", uri);
             return false;
         }
 
@@ -80,7 +81,7 @@ public class WebCrawler : IWebCrawler
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "PARSE_ERROR: UrlHash '{urlHash}':'{url}'", item.FeedAttributes.UrlHash, item.FeedAttributes.Url);
+            _log.Error(ex, "PARSE_ERROR: UrlHash '{urlHash}':'{url}'", item.FeedAttributes.UrlHash, item.FeedAttributes.Url);
             return false;
         }
 
@@ -93,120 +94,234 @@ public class WebCrawler : IWebCrawler
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "SAVE_ERROR: UrlHash '{urlHash}':'{url}'", item.FeedAttributes.UrlHash, item.FeedAttributes.Url);
+            _log.Error(ex, "SAVE_ERROR: UrlHash '{urlHash}':'{url}'", item.FeedAttributes.UrlHash, item.FeedAttributes.Url);
         }
 
         return false;
     }
 
-    private void DownloadList(Guid runID, RssFeed feed, string workingFolder, List<RssFeedItem> list)
+    private void DownloadList(Guid runID, RssFeed feed, List<RssFeedItem> list)
     {
-        _articleParser.Initialize(_container, _definitions, _webUtils);
+        _articleParser.Initialize(_container, _definitions, _webUtils, _log);
+
+        // Find out which feature flag variation we are using to crawl articles
+        string key = "crawler-logic";
+        string identity = feed.CollectionName;
+        string variation = _client.GetVariation(key, identity);
+        _log.Information("Unlaunch {key} returned variation {variation} for identity {identity}", key, variation, identity);
 
         // Crawl any new articles and add them to the database
-        Log.Information("Downloading new articles to the {collectionName} collection", feed.CollectionName);
+        _log.Information("Downloading new articles to the {collectionName} collection", feed.CollectionName);
         int articleCount = 0;
         foreach (var item in list)
         {
+            using (LogContext.PushProperty("variation", variation))
             using (LogContext.PushProperty("url", item.FeedAttributes.Url))
             using (LogContext.PushProperty("urlHash", item.FeedAttributes.UrlHash))
             {
                 // Throttle any articles beyond the headlines
                 if (articleCount >= 25 && !item.FeedAttributes.IsHeadline)
                 {
-                    Log.Debug("Throttling engaged");
+                    _log.Debug("Throttling engaged");
                     break;
                 }
 
                 // No need to continue if we already crawled the article
                 if (_crawlerRepository.DocumentExists<RssFeedItem>(_crawlerCollectionName, feed.CollectionName, item.FeedAttributes.UrlHash))
                 {
-                    Log.Debug("UrlHash '{urlHash}' already exists in collection '{collectionName}'", item.FeedAttributes.UrlHash, feed.CollectionName);
+                    _log.Debug("UrlHash '{urlHash}' already exists in collection '{collectionName}'", item.FeedAttributes.UrlHash, feed.CollectionName);
                     continue;
                 }
 
-                Log.Information("BEGIN: UrlHash {urlHash}|{linkLocation}|{title}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title);
+                item.RunId = runID;
+                _log.Information("BEGIN: UrlHash {urlHash}|{linkLocation}|{title}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title);
 
                 try
                 {
-                    var sourceUri = new Uri(item.FeedAttributes.Url);
-                    string hostname = sourceUri.Host.ToLower();
-
-                    // Crawl the given uri
-                    if (CanCrawl(hostname, sourceUri))
+                    if (variation == "new")
                     {
-                        // Issue a HEAD request to determine the link status
-                        (HttpStatusCode statusCode, Uri trueUri, string contentType) = _webUtils.GetContentType(item.FeedAttributes.Url);
-
-                        // Reset the hostname now that the uri has been unshortened and redirected
-                        hostname = trueUri?.Host.ToLower() ?? hostname;
-                        string friendlyHostname = hostname.Replace(".", "_");
-                        string filename = "";
-
-                        bool crawlWithSelenium =
-                            statusCode == HttpStatusCode.MovedPermanently ||
-                            statusCode == HttpStatusCode.PermanentRedirect ||
-                            statusCode == HttpStatusCode.Redirect ||
-                            statusCode == HttpStatusCode.NotAcceptable;
-
-                        // Re-check now that the true uri is revealed
-                        // Force the status so the crawler won't retry
-                        if (!CanCrawl(hostname, trueUri))
-                        {
-                            statusCode = HttpStatusCode.Forbidden;
-                            crawlWithSelenium = false;
-                        }
-
-                        if (statusCode == HttpStatusCode.OK && !Config.WebDriver.Contains(hostname))
-                        {
-                            // Construct unique file name
-                            string contentTypeExtension = GetFileExtensionByContentType(contentType);
-                            filename = Path.Combine(workingFolder, $"{item.FeedAttributes.UrlHash}_{friendlyHostname}{contentTypeExtension}");
-
-                            // Download the url contents using RestSharp
-                            (crawlWithSelenium, trueUri) = _webUtils.TrySaveUrlToDisk(trueUri?.AbsoluteUri ?? sourceUri.AbsoluteUri, item.FeedAttributes.UrlHash, filename);
-                        }
-
-                        // Handle certain cases with Selenium attempt
-                        // Reset the content type and filename because sometimes the previous detection is inaccurate
-                        if (crawlWithSelenium || Config.WebDriver.Contains(hostname))
-                        {
-                            // Construct unique file name
-                            string contentTypeExtension = GetFileExtensionByPathQuery(trueUri ?? sourceUri);
-                            filename = Path.Combine(workingFolder, $"{item.FeedAttributes.UrlHash}_{friendlyHostname}{contentTypeExtension}");
-
-                            trueUri = _webUtils.WebDriverUrlToDisk(trueUri?.AbsoluteUri ?? sourceUri.AbsoluteUri, filename);
-                        }
-
-                        item.HtmlAttributes.Add("Url", trueUri?.AbsoluteUri ?? sourceUri.AbsoluteUri);
-                        item.FeedAttributes.FileName = filename;
+                        crawler_logic_new(item);
+                    }
+                    else
+                    {
+                        crawler_logic_original(item);
                     }
 
-                    // Parse the saved file as dictated by the site definitions
-                    item.RunId = runID;
-                    if (string.IsNullOrEmpty(item.HostName)) item.HostName = hostname;
-                    if (string.IsNullOrEmpty(item.SiteName)) item.SiteName = hostname;
                     if (TryParseAndSave(feed, item))
                         articleCount++;
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(ex, "DOWNLOAD_ERROR: UrlHash '{urlHash}':'{url}'", item.FeedAttributes.UrlHash, item.FeedAttributes.Url);
+                    _log.Error(ex, "DOWNLOAD_ERROR: UrlHash '{urlHash}':'{url}'", item.FeedAttributes.UrlHash, item.FeedAttributes.Url);
                 }
 
-                Log.Information("END: UrlHash {urlHash}", item.FeedAttributes.UrlHash);
+                _log.Information("END: UrlHash {urlHash}", item.FeedAttributes.UrlHash);
             }
         }
 
-        Log.Information("Downloaded {count} new articles to the {collectionName} collection", articleCount, feed.CollectionName);
+        _log.Information("Downloaded {count} new articles to the {collectionName} collection", articleCount, feed.CollectionName);
+    }
+
+    private void crawler_logic_original(RssFeedItem item)
+    {
+        var sourceUri = new Uri(item.FeedAttributes.Url);
+        string hostname = sourceUri.Host.ToLower();
+
+        // Crawl the given uri
+        if (CanCrawl(hostname, sourceUri))
+        {
+            // Issue a HEAD request to determine the link status
+            (HttpStatusCode statusCode, Uri trueUri, string contentType) = _webUtils.GetContentType(item.FeedAttributes.Url);
+
+            // Reset the hostname now that the uri has been unshortened and redirected
+            hostname = trueUri?.Host.ToLower() ?? hostname;
+            string friendlyHostname = hostname.Replace(".", "_");
+            string filename = "";
+
+            bool crawlWithSelenium =
+                statusCode == HttpStatusCode.Found ||
+                statusCode == HttpStatusCode.MovedPermanently ||
+                statusCode == HttpStatusCode.PermanentRedirect ||
+                statusCode == HttpStatusCode.Redirect ||
+                statusCode == HttpStatusCode.NotAcceptable ||
+                (int)statusCode == 0;
+
+            // Re-check now that the true uri is revealed
+            // Force the status so the crawler won't retry
+            if (!CanCrawl(hostname, trueUri ?? sourceUri))
+            {
+                statusCode = HttpStatusCode.Forbidden;
+                crawlWithSelenium = false;
+            }
+
+            if (statusCode == HttpStatusCode.OK && !_crawlerRepository.Config.WebDriver.Contains(hostname))
+            {
+                // Construct unique file name
+                string contentTypeExtension = GetFileExtensionByContentType(contentType);
+                filename = Path.Combine(_workingFolder, $"{item.FeedAttributes.UrlHash}_{friendlyHostname}{contentTypeExtension}");
+
+                // Download the url contents using RestSharp
+                (crawlWithSelenium, trueUri) = _webUtils.TrySaveUrlToDisk(trueUri?.AbsoluteUri ?? sourceUri.AbsoluteUri, item.FeedAttributes.UrlHash, filename);
+            }
+
+            // Handle certain cases with Selenium attempt
+            // Reset the content type and filename because sometimes the previous detection is inaccurate
+            if (crawlWithSelenium || _crawlerRepository.Config.WebDriver.Contains(hostname))
+            {
+                // Construct unique file name
+                string contentTypeExtension = GetFileExtensionByPathQuery(trueUri ?? sourceUri);
+                filename = Path.Combine(_workingFolder, $"{item.FeedAttributes.UrlHash}_{friendlyHostname}{contentTypeExtension}");
+
+                trueUri = _webUtils.WebDriverUrlToDisk(trueUri?.AbsoluteUri ?? sourceUri.AbsoluteUri, filename);
+            }
+
+            item.HtmlAttributes.Add("Url", trueUri?.AbsoluteUri ?? sourceUri.AbsoluteUri);
+            item.FeedAttributes.FileName = filename;
+        }
+
+        if (string.IsNullOrEmpty(item.HostName)) item.HostName = hostname;
+        if (string.IsNullOrEmpty(item.SiteName)) item.SiteName = hostname;
+    }
+
+    private void crawler_logic_new(RssFeedItem item)
+    {
+        var sourceUri = new Uri(item.FeedAttributes.Url);
+        string hostname = sourceUri.Host.ToLower();
+        object content = default;
+
+        // Crawl the given uri
+        if (!CanCrawl(hostname, sourceUri))
+            return;
+
+        // Issue a HEAD request to determine the content type and unshortened Uri
+        (HttpStatusCode statusCode, Uri trueUri, string contentType) = _webUtils.GetContentType(item.FeedAttributes.Url);
+
+        // First chance to reset the hostname from the true uri
+        hostname = trueUri?.Host.ToLower() ?? hostname;
+
+        if (IsBinary(contentType))
+        {
+            content = _webUtils.ClientGetBytes(trueUri?.AbsoluteUri ?? sourceUri.AbsoluteUri);
+            statusCode = HttpStatusCode.OK;
+        }
+        else if ((statusCode == HttpStatusCode.OK || statusCode == HttpStatusCode.MethodNotAllowed) && !_crawlerRepository.Config.WebDriver.Contains(hostname))
+        {
+            // Download the url contents using RestSharp
+            (statusCode, content, trueUri, contentType) = _webUtils.ClientGetString(trueUri?.AbsoluteUri ?? sourceUri.AbsoluteUri);
+        }
+
+        // Switch to Selenium web driver based on certain failed responses from RestSharp
+        bool crawlWithSelenium =
+            (statusCode == HttpStatusCode.Found ||
+            statusCode == HttpStatusCode.MovedPermanently ||
+            statusCode == HttpStatusCode.PermanentRedirect ||
+            statusCode == HttpStatusCode.Redirect ||
+            statusCode == HttpStatusCode.NotAcceptable ||
+            (int)statusCode == 0) && CanCrawl(hostname, trueUri ?? sourceUri) && !IsBinary(contentType);
+
+        // Attempt crawl with Selenium web driver (only works on text content)
+        if (crawlWithSelenium || _crawlerRepository.Config.WebDriver.Contains(hostname))
+        {
+            (_, content, trueUri, contentType) = _webUtils.DriverGetString(trueUri?.AbsoluteUri ?? sourceUri.AbsoluteUri);
+        }
+
+        // Last chance to reset the hostname from the true uri
+        hostname = trueUri?.Host.ToLower() ?? hostname;
+        if (string.IsNullOrEmpty(item.HostName)) item.HostName = hostname;
+        if (string.IsNullOrEmpty(item.SiteName)) item.SiteName = hostname;
+        item.HtmlAttributes.Add("Url", trueUri?.AbsoluteUri ?? sourceUri.AbsoluteUri);
+
+        // Construct unique file name
+        string contentTypeExtension = crawlWithSelenium ? GetFileExtensionByPathQuery(trueUri ?? sourceUri) : GetFileExtensionByContentType(contentType);
+        string friendlyHostname = hostname.Replace(".", "_");
+        string filename = Path.Combine(_workingFolder, $"{item.FeedAttributes.UrlHash}_{friendlyHostname}{contentTypeExtension}");
+
+        switch (content)
+        {
+            case string:
+                _webUtils.SaveContentToDisk(filename, !_crawlerRepository.Config.IncludeScripts.Contains(hostname), (string)content);
+                item.FeedAttributes.FileName = filename;
+                break;
+            case byte[]:
+                _webUtils.SaveContentToDisk(filename, (byte[])content);
+                item.FeedAttributes.FileName = filename;
+                break;
+            default:
+                _log.Debug("No content downloaded");
+                break;
+        }
+    }
+
+    private bool IsBinary(string contentType)
+    {
+        string contentTypeLowered = contentType?.ToLower() ?? "text/html";
+
+        switch (contentTypeLowered)
+        {
+            case "text/html":
+            case "text/plain":
+            case "application/json":
+            case "application/xhtml+xml":
+                return false;
+            case "image/jpg":
+            case "image/jpeg":
+            case "application/jpg":
+            case "image/gif":
+            case "image/png":
+            case "application/pdf":
+                return true;
+            default:
+                _log.Warning("Unexpected content type {contentType}", contentTypeLowered);
+                return false;
+        }
     }
 
     private bool CanCrawl(string hostname, Uri uri)
     {
         // Check for crawler exclusions, downloading content is blocked from these sites
-        if (Config.Exclusions.Contains(hostname))
+        if (_crawlerRepository.Config.Exclusions.Contains(hostname))
         {
-            Log.Information("Host '{hostName}' found on the exclusion list, skipping download", hostname);
+            _log.Information("Host '{hostName}' found on the exclusion list, skipping download", hostname);
             return false;
         }
 
@@ -215,14 +330,14 @@ public class WebCrawler : IWebCrawler
 
         if (uri.AbsolutePath == "/" && string.IsNullOrEmpty(uri.Query))
         {
-            Log.Information("URI '{uri}' detected as a home page rather than an article, skipping download", uri);
+            _log.Information("URI '{uri}' detected as a home page rather than an article, skipping download", uri);
             return false;
         }
 
         return true;
     }
 
-    private List<RssFeedItem> GenerateFeedLinks(RssFeed feed, string workingFolder)
+    private List<RssFeedItem> GenerateFeedLinks(RssFeed feed)
     {
         (_, string html, _, _) = _webUtils.DownloadString(feed.Url);
 
@@ -230,7 +345,7 @@ public class WebCrawler : IWebCrawler
         var uri = new Uri(feed.Url);
         string hostname = uri.Host.ToLower();
         string friendlyHostname = hostname.Replace(".", "_");
-        string fileStem = Path.Combine(workingFolder, $"{DateTime.Now.ToUniversalTime():yyyyMMddhhmmss}_{friendlyHostname}");
+        string fileStem = Path.Combine(_workingFolder, $"{DateTime.Now.ToUniversalTime():yyyyMMddhhmmss}_{friendlyHostname}");
 
         // Save the feed html source for posterity
         _utils.SaveTextToDisk(html, fileStem + ".html", false);
@@ -259,12 +374,12 @@ public class WebCrawler : IWebCrawler
                 path.EndsWith(".pdf") || query.Contains("format=pdf") ? ".pdf" :
                 ".html";
 
-            Log.Information("GetFileExtensionByPathQuery: Detected extension {extension} from path /{path}?{query}", extension, path, query);
+            _log.Information("GetFileExtensionByPathQuery: Detected extension {extension} from path /{path}?{query}", extension, path, query);
             return extension;
         }
         catch (UriFormatException ex)
         {
-            Log.Error(ex, "GetFileExtensionByPathQuery: Error for {uri}", uri);
+            _log.Error(ex, "GetFileExtensionByPathQuery: Error for {uri}", uri);
         }
 
         return ".html";
@@ -302,7 +417,7 @@ public class WebCrawler : IWebCrawler
                 break;
         }
 
-        Log.Information("GetFileExtensionByContentType: Detected extension {extension} from content type {contentType}", extension, contentTypeLowered);
+        _log.Information("GetFileExtensionByContentType: Detected extension {extension} from content type {contentType}", extension, contentTypeLowered);
         return extension;
     }
 
@@ -310,7 +425,7 @@ public class WebCrawler : IWebCrawler
     {
         if (!feed.Exportable)
         {
-            Log.Information("Feed {feedId} is not marked as exportable", feed.CollectionName);
+            _log.Information("Feed {feedId} is not marked as exportable", feed.CollectionName);
             return;
         }
 
@@ -324,15 +439,15 @@ public class WebCrawler : IWebCrawler
             using (LogContext.PushProperty("url", item.FeedAttributes.Url))
             using (LogContext.PushProperty("urlHash", item.FeedAttributes.UrlHash))
             {
-                Log.Debug("Preparing '{urlHash}' for export", item.FeedAttributes.UrlHash);
+                _log.Debug("Preparing '{urlHash}' for export", item.FeedAttributes.UrlHash);
                 var exportFeedItem = _exporter.FormatItem(item, feed);
 
-                Log.Information("EXPORT: UrlHash '{urlHash}' from {collectionName}", item.FeedAttributes.UrlHash, feed.CollectionName);
+                _log.Information("EXPORT: UrlHash '{urlHash}' from {collectionName}", item.FeedAttributes.UrlHash, feed.CollectionName);
                 _exportRepository.UpsertDocument<ExportFeedItem>(_exportCollectionName, exportFeedItem);
             }
         }
 
-        Log.Information("Exported {count} new articles to the {collectionName} collection", list.Count, feed.CollectionName);
+        _log.Information("Exported {count} new articles to the {collectionName} collection", list.Count, feed.CollectionName);
     }
 
     public void Purge(RssFeed feed)
@@ -341,7 +456,7 @@ public class WebCrawler : IWebCrawler
         string workingFolder = Path.Combine(_utils.GetAssemblyDirectory(), feed.CollectionName);
         if (!Directory.Exists(workingFolder))
         {
-            Log.Warning("Folder '{workingFolder}' does not exist", workingFolder);
+            _log.Warning("Folder '{workingFolder}' does not exist", workingFolder);
             return;
         }
 
@@ -349,11 +464,11 @@ public class WebCrawler : IWebCrawler
 
         // Purge stale documents from the database collection
         var list = _crawlerRepository.GetStaleDocuments<RssFeedItem>(_crawlerCollectionName, feed.CollectionName, 7);
-        Log.Information("Stripped {count} documents older than 7 days from {collectionName}", list.Count, feed.CollectionName);
+        _log.Information("Stripped {count} documents older than 7 days from {collectionName}", list.Count, feed.CollectionName);
 
         foreach (var item in list)
         {
-            Log.Debug("Stripping UrlHash '{urlHash}' from {collectionName}", item.FeedAttributes.UrlHash, feed.CollectionName);
+            _log.Debug("Stripping UrlHash '{urlHash}' from {collectionName}", item.FeedAttributes.UrlHash, feed.CollectionName);
             item.OpenGraphAttributes = default;
             item.HtmlAttributes = default;
             _crawlerRepository.SaveDocument<RssFeedItem>(_crawlerCollectionName, item, feed.DatabaseRetentionDays);
