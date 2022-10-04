@@ -22,7 +22,7 @@ name: RssFeederMvc App Service CI/CD
 env:
   AZURE_WEBAPP_NAME: RssFeederMvc    # set this to the name of your Azure Web App
   AZURE_WEBAPP_PACKAGE_PATH: '.'      # set this to the path to your web app project, defaults to the repository root
-  DOTNET_VERSION: '6.*'                 # set this to the .NET Core version to use
+  DOTNET_VERSION: '7.0.x'                 # set this to the .NET Core version to use
 
 on:
   push:
@@ -46,6 +46,7 @@ jobs:
         uses: actions/setup-dotnet@v2
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
+          include-prerelease: true
       
       - name: Set up dependency caching for faster builds
         uses: actions/cache@v3
@@ -73,7 +74,7 @@ jobs:
         run: dotnet build ./RssFeeder.Mvc/RssFeeder.Mvc.csproj --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish ./RssFeeder.Mvc/RssFeeder.Mvc.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp
+        run: dotnet publish ./RssFeeder.Mvc/RssFeeder.Mvc.csproj -c Release -r win-x86 --self-contained -o ${{env.DOTNET_ROOT}}/myapp
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v3
