@@ -76,14 +76,11 @@ try
     app.UseAuthentication();
     app.UseAuthorization();
 #endif
-    app.UseEndpoints(endpoints =>
-    {
-        endpoints.MapHealthChecks("/health");
-        endpoints.MapControllerRoute(
-            name: "default",
-            pattern: "{controller=Home}/{action=Index}/{id?}");
-        endpoints.MapRazorPages();
-    });
+    app.MapHealthChecks("/health");
+    app.MapControllerRoute(
+        name: "default",
+        pattern: "{controller=Home}/{action=Index}/{id?}");
+    app.MapRazorPages();
 
     app.Run();
 }
