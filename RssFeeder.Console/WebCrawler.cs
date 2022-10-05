@@ -339,7 +339,7 @@ public class WebCrawler : IWebCrawler
 
     private List<RssFeedItem> GenerateFeedLinks(RssFeed feed)
     {
-        (_, string html, _, _) = _webUtils.DownloadString(feed.Url);
+        (_, string html, _, _) = feed.RequiresJavascript ? _webUtils.DriverGetString(feed.Url) : _webUtils.DownloadString(feed.Url);
 
         // Build the file stem so we can save the html source and a screenshot of the feed page
         var uri = new Uri(feed.Url);

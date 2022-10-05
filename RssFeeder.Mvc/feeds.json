@@ -180,5 +180,18 @@
     "FeedlyUrl": "",
     "RssUrl": "/api/rss/rubin-report",
     "Filters": []
+  },
+  {
+    "id": "",
+    "Title": "Whatfinger News",
+    "Url": "https://www.whatfinger.com/",
+    "Description": "Thumbs Up or Thumbs Down on Breaking News & Commentary",
+    "Language": "en-US",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.WhatFingerFeedBuilder",
+    "CollectionName": "whatfinger",
+    "authoremail": "editor@whatfinger.com",
+    "FeedlyUrl": "",
+    "RssUrl": "/api/rss/whatfinger",
+    "Filters": []
   }
 ]
