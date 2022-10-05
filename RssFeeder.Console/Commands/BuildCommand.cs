@@ -29,7 +29,6 @@ public class BuildCommand : OaktonCommand<BuildInput>
 
         try
         {
-            List<RssFeed> feedList;
             var repository = _container.Resolve<IRepository>();
             var crawler = _container.Resolve<IWebCrawler>();
             var utils = _container.Resolve<IUtils>();
@@ -54,7 +53,7 @@ public class BuildCommand : OaktonCommand<BuildInput>
             _log.Debug("Options: {@options}", json);
 
             // Deserialize into our options class
-            feedList = JsonConvert.DeserializeObject<List<RssFeed>>(json);
+            var feedList = JsonConvert.DeserializeObject<List<RssFeed>>(json);
             var startDate = DateTime.UtcNow;
 
             var runID = Guid.NewGuid();

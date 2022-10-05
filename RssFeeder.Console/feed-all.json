@@ -219,5 +219,23 @@
     "FileRetentionDays": 7,
     "DatabaseRetentionDays": 180,
     "Filters": []
+  },
+  {
+    "Title": "Whatfinger News",
+    "Enabled": "true",
+    "EnableThumbnail": "false",
+    "Exportable": "true",
+    "Description": "Whatfinger News",
+    "RequiresJavascript": true,
+    "Language": "en-US",
+    "Url": "https://www.whatfinger.com/home2/",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.WhatFingerFeedBuilder",
+    "CollectionName": "whatfinger",
+    "FileRetentionDays": 7,
+    "DatabaseRetentionDays": 180,
+    "Filters": [
+      "1954ceefa0f85a89de6c34109de7ff44",
+      "f474e4c0861b2de36e3421e0dd701db0"
+    ]
   }
 ]

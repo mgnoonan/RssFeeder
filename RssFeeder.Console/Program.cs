@@ -1,6 +1,5 @@
 using System.Reflection;
 using Autofac.Extensions.DependencyInjection;
-using io.unlaunch;
 using Microsoft.Extensions.Configuration;
 using Oakton.Help;
 using RssFeeder.Console;
@@ -53,6 +52,7 @@ builder.RegisterType<NoahReportFeedBuilder>().Named<IRssFeedBuilder>("noah-repor
 builder.RegisterType<ProTrumpNewsFeedBuilder>().Named<IRssFeedBuilder>("protrump-news");
 builder.RegisterType<OffThePressFeedBuilder>().Named<IRssFeedBuilder>("off-the-press");
 builder.RegisterType<RubinReportFeedBuilder>().Named<IRssFeedBuilder>("rubin-report");
+builder.RegisterType<WhatFingerFeedBuilder>().Named<IRssFeedBuilder>("whatfinger");
 builder.RegisterType<GenericTagParser>().Named<ITagParser>("generic-parser");
 builder.RegisterType<AdaptiveTagParser>().Named<ITagParser>("adaptive-parser");
 builder.RegisterType<AllTagsParser>().Named<ITagParser>("alltags-parser");

@@ -17,4 +17,5 @@ public record RssFeed
     public short FileRetentionDays { get; set; }
     public short DatabaseRetentionDays { get; set; }
     public List<string> Filters { get; set; }
+    public bool RequiresJavascript { get; set; }
 }
