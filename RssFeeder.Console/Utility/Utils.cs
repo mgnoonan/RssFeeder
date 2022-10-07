@@ -17,6 +17,12 @@ public class Utils : IUtils
 
     public void SaveTextToDisk(string text, string filepath, bool deleteIfExists)
     {
+        if (string.IsNullOrEmpty(text))
+        {
+            _log.Warning("No text sent to save");
+            return;
+        }
+
         try
         {
             if (deleteIfExists && File.Exists(filepath))
