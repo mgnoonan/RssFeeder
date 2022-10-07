@@ -40,7 +40,7 @@ internal class WhatFingerFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                 if (nodes?.Length > 0)
                 {
                     count = 1;
-                    foreach (var node in nodes)
+                    foreach (var node in nodes.Take(50))
                     {
                         var item = CreateNodeLinks(filters, node, "main headlines", count++, feedUrl, false);
                         if (item != null)
