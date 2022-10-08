@@ -2,37 +2,32 @@
 
 class BaseFeedBuilder
 {
-    protected readonly ILogger log;
-    readonly IWebUtils webUtils;
-    readonly IUtils utils;
+    protected readonly ILogger _log;
+    readonly IWebUtils _webUtils;
+    readonly IUtils _utils;
 
     public BaseFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities)
     {
-        log = logger;
-        webUtils = webUtilities;
-        utils = utilities;
+        _log = logger;
+        _webUtils = webUtilities;
+        _utils = utilities;
     }
 
     protected void PostProcessing(string feedCollectionName, string feedUrl, List<RssFeedItem> items)
     {
         if (items.Count > 0)
         {
-            log.Information("FOUND {count} articles in {url}", items.Count, feedUrl);
+            _log.Information("FOUND {count} articles in {url}", items.Count, feedUrl);
         }
         else
         {
-            log.Error("FOUND {count} articles in {url}", items.Count, feedUrl);
+            _log.Error("FOUND {count} articles in {url}", items.Count, feedUrl);
         }
 
         // Replace any relative paths and add the feed id
         foreach (var item in items)
         {
             item.FeedAttributes.FeedId = feedCollectionName;
-
-            // if (item.FeedAttributes.Url.StartsWith("/"))
-            // {
-            //     item.FeedAttributes.Url = feedUrl + item.FeedAttributes.Url;
-            // }
         }
     }
 
@@ -73,11 +68,11 @@ class BaseFeedBuilder
         }
         catch (NullReferenceException)
         {
-            log.Warning("Unable to resolve reference for location '{location}':'{title}'", location, title);
+            _log.Warning("Unable to resolve reference for location '{location}':'{title}'", location, title);
         }
         catch (Exception ex)
         {
-            log.Error(ex, "Error encountered reading location '{location}':{count}", location, count);
+            _log.Error(ex, "Error encountered reading location '{location}':{count}", location, count);
         }
 
         return null;
@@ -94,20 +89,20 @@ class BaseFeedBuilder
         // Repair any protocol typos if possible
         if (!linkUrl.ToLower().StartsWith("http"))
         {
-            linkUrl = webUtils.RepairUrl(linkUrl, feedUrl);
+            linkUrl = _webUtils.RepairUrl(linkUrl, feedUrl);
         }
 
         if (!Uri.TryCreate(linkUrl, UriKind.Absolute, out Uri uri))
         {
-            log.Warning("Unable to parse Uri {linkUrl}", linkUrl);
+            _log.Warning("Unable to parse Uri {linkUrl}", linkUrl);
             return null;
         }
 
         // Calculate the MD5 hash for the link so we can be sure of uniqueness
-        string hash = utils.CreateMD5Hash(uri.AbsoluteUri.ToLower());
+        string hash = _utils.CreateMD5Hash(uri.AbsoluteUri.ToLower());
         if (filters.Contains(hash))
         {
-            log.Information("Hash '{urlHash}':'{url}' found in filter list", hash, uri.AbsoluteUri.ToLower());
+            _log.Information("Hash '{urlHash}':'{url}' found in filter list", hash, uri.AbsoluteUri.ToLower());
             return null;
         }
 

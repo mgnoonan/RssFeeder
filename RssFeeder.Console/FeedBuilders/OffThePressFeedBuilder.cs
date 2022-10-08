@@ -30,7 +30,7 @@ internal class OffThePressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         // Main Headlines section
         // body > div.elementor.elementor-14507.elementor-location-single.post-24.page.type-page.status-publish.has-post-thumbnail.hentry > div > section.elementor-section.elementor-top-section.elementor-element.elementor-element-2322729e.elementor-section-stretched.elementor-section-boxed.elementor-section-height-default.elementor-section-height-default
         var containers = document.QuerySelectorAll("section");
-        log.Information("FOUND: {count} sections", containers.Count());
+        _log.Information("FOUND: {count} sections", containers.Count());
 
         if (containers != null)
         {
@@ -45,7 +45,7 @@ internal class OffThePressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                         var item = CreateNodeLinks(filters, node, "main headlines", count++, feedUrl, true);
                         if (item != null)
                         {
-                            log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+                            _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                             list.Add(item);
                         }
                     }
@@ -66,7 +66,7 @@ internal class OffThePressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                 var item = CreateNodeLinks(filters, node, "column 1", count++, feedUrl, false);
                 if (item != null)
                 {
-                    log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+                    _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                     list.Add(item);
                 }
             }
