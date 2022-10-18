@@ -1,6 +1,6 @@
 ﻿namespace RssFeeder.Console.TagParsers;
 
-public class GenericTagParser : TagParserBase, ITagParser
+public partial class GenericTagParser : TagParserBase, ITagParser
 {
     public string ParseTagsBySelector(ArticleRouteTemplate template)
     {
@@ -72,6 +72,6 @@ public class GenericTagParser : TagParserBase, ITagParser
             }
         }
 
-        return description.ToString();
+        return EmptyParagraphRegex().Replace(description.ToString(), "");
     }
 }

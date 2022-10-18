@@ -65,6 +65,6 @@ public class AllTagsParser : TagParserBase, ITagParser
             }
         }
 
-        return description.ToString();
+        return EmptyParagraphRegex().Replace(description.ToString(), "");
     }
 }

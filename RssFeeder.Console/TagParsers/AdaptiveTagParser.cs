@@ -1,9 +1,8 @@
-﻿using System.Text.RegularExpressions;
-using AngleSharp.Html.Dom;
+﻿using AngleSharp.Html.Dom;
 
 namespace RssFeeder.Console.TagParsers;
 
-public class AdaptiveTagParser : TagParserBase, ITagParser
+public partial class AdaptiveTagParser : TagParserBase, ITagParser
 {
     public string ParseTagsBySelector(ArticleRouteTemplate template)
     {
@@ -128,11 +127,11 @@ public class AdaptiveTagParser : TagParserBase, ITagParser
             }
         }
 
-        return description.ToString();
+        return EmptyParagraphRegex().Replace(description.ToString(), "");
     }
 
     protected virtual string BuildArticleText(string innerHtml)
     {
-        return String.Concat("<p>", Regex.Replace(innerHtml, "<br\\s?\\/?>", "</p><p>"), "</p>");
+        return string.Concat("<p>", LineBreakRegex().Replace(innerHtml, "</p><p>"), "</p>");
     }
 }

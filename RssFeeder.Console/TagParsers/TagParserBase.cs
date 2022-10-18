@@ -1,9 +1,17 @@
-﻿namespace RssFeeder.Console.TagParsers;
+﻿using System.Text.RegularExpressions;
 
-public class TagParserBase
+namespace RssFeeder.Console.TagParsers;
+
+public partial class TagParserBase
 {
     protected string _sourceHtml;
     protected RssFeedItem _item;
+
+    [GeneratedRegex("<br\\s?\\/?>")]
+    protected static partial Regex LineBreakRegex();
+
+    [GeneratedRegex("<p>(&nbsp;)?<\\/p>")]
+    protected static partial Regex EmptyParagraphRegex();
 
     public void Initialize(string sourceHtml, RssFeedItem item)
     {
