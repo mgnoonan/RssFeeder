@@ -27,6 +27,7 @@ internal class RevolverNewsFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             "unlimited" => 1000,
             _ => throw new ArgumentException("Unexpected variation")
         };
+        _log.Information("Processing a maximum of {articleMaxCount} articles", _articleMaxCount);
 
         return GenerateRssFeedItemList(feed.CollectionName, feed.Url, feed.Filters, html);
     }

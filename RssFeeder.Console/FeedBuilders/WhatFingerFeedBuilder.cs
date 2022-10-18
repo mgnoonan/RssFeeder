@@ -20,12 +20,13 @@ internal class WhatFingerFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 
         _articleMaxCount = variation switch
         {
-            "high" => 100,
-            "medium" => 75,
-            "low" => 50,
+            "high" => 125,
+            "medium" => 115,
+            "low" => 100,
             "unlimited" => 1000,
             _ => throw new ArgumentException("Unexpected variation")
         };
+        _log.Information("Processing a maximum of {articleMaxCount} articles", _articleMaxCount);
 
         return GenerateRssFeedItemList(feed.CollectionName, feed.Url, feed.Filters, html);
     }

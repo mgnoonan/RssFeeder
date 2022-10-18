@@ -3,13 +3,11 @@ namespace RssFeeder.Console.FeedBuilders;
 class BadBlueFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
     private readonly IUnlaunchClient _client;
-    protected readonly ILogger _log;
     private int _articleMaxCount;
 
     public BadBlueFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient client) : base(log, webUtilities, utilities)
     {
         _client = client;
-        _log = log;
     }
 
     public List<RssFeedItem> GenerateRssFeedItemList(RssFeed feed, string html)
@@ -22,12 +20,13 @@ class BadBlueFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 
         _articleMaxCount = variation switch
         {
-            "high" => 100,
-            "medium" => 75,
-            "low" => 50,
+            "high" => 40,
+            "medium" => 25,
+            "low" => 15,
             "unlimited" => 1000,
             _ => throw new ArgumentException("Unexpected variation")
         };
+        _log.Information("Processing a maximum of {articleMaxCount} articles", _articleMaxCount);
 
         return GenerateRssFeedItemList(feed.CollectionName, feed.Url, feed.Filters, html);
     }
