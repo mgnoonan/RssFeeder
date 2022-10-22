@@ -44,9 +44,12 @@ public class ParseCommand : OaktonCommand<ParseInput>
         _log.Information("og:description = '{Description}'", ParseMetaTagAttributes(doc, "og:description", "content"));
         _log.Information("og:image = '{Image}'", ParseMetaTagAttributes(doc, "og:image", "content"));
 
-        parser.Initialize(doc.Text, null);
-        string articleText = parser.ParseTagsBySelector(template);
-        _log.Information("Article text = '{ArticleText}'", articleText);
+        var item = new RssFeedItem();
+        parser.Initialize(doc.Text, item);
+        parser.PreParse();
+        item.HtmlAttributes.Add("ParserResult", parser.ParseTagsBySelector(template));
+        parser.PostParse();
+        _log.Information("Parser result = '{parserResult}'", item.HtmlAttributes["ParserResult"]);
 
         _log.Information("PARSE_END: Completed successfully");
 
