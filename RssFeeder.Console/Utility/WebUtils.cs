@@ -99,7 +99,7 @@ public class WebUtils : IWebUtils
             doc.OptionFixNestedTags = true;
 
             // List of html tags we really don't care to save
-            var excludeHtmlTags = new List<string> { "style", "link", "svg", "form", "noscript" };
+            var excludeHtmlTags = new List<string> { "style", "link", "svg", "form", "noscript", "button" };
             if (removeScriptElements)
             {
                 excludeHtmlTags.Add("script");
