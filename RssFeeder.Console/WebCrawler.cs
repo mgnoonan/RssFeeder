@@ -302,6 +302,7 @@ public class WebCrawler : IWebCrawler
             case "text/plain":
             case "application/json":
             case "application/xhtml+xml":
+            case "application/xml":
                 return false;
             case "image/jpg":
             case "image/jpeg":
@@ -393,6 +394,7 @@ public class WebCrawler : IWebCrawler
         switch (contentTypeLowered)
         {
             case "text/html":
+            case "application/xhtml+xml":
                 extension = ".html";
                 break;
             case "text/plain":
@@ -414,6 +416,9 @@ public class WebCrawler : IWebCrawler
                 break;
             case "application/pdf":
                 extension = ".pdf";
+                break;
+            case "application/xml":
+                extension = ".xml";
                 break;
         }
 
