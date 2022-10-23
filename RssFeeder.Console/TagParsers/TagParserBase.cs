@@ -43,8 +43,8 @@ public partial class TagParserBase
             {
                 string url = iframeElement.Attributes["src"].Value;
                 string type = iframeElement.HasAttribute("type") ? iframeElement.Attributes["type"].Value : "text/html";
-                string width = iframeElement.Attributes["width"].Value;
-                string height = iframeElement.Attributes["height"].Value;
+                string width = iframeElement.HasAttribute("width") ? iframeElement.Attributes["width"].Value : "640";
+                string height = iframeElement.HasAttribute("height") ? iframeElement.Attributes["height"].Value : "480";
                 _log.Information("Embedded video {type} detected {url}", type, url);
 
                 _item.OpenGraphAttributes.Add("og:x:video", url);
@@ -58,8 +58,8 @@ public partial class TagParserBase
             {
                 string url = iframeElement.Attributes["src"].Value;
                 string type = iframeElement.HasAttribute("type") ? iframeElement.Attributes["type"].Value : "text/html";
-                string width = iframeElement.Attributes["width"].Value;
-                string height = iframeElement.Attributes["height"].Value;
+                string width = iframeElement.HasAttribute("width") ? iframeElement.Attributes["width"].Value : "640";
+                string height = iframeElement.HasAttribute("height") ? iframeElement.Attributes["height"].Value : "480";
                 _log.Information("Embedded video {type} detected {url}", type, url);
 
                 _item.OpenGraphAttributes.Add("og:x:video", url);
