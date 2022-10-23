@@ -22,12 +22,12 @@ public partial class TagParserBase
     public void Initialize(string sourceHtml, RssFeedItem item)
     {
         _sourceHtml = sourceHtml;
-        _item = item ?? new RssFeedItem();
+        _item = item;
     }
 
     public virtual void PostParse()
     {
-        var result = _item.HtmlAttributes.GetValueOrDefault("ParserResult") ?? "";
+        var result = _item.HtmlAttributes?.GetValueOrDefault("ParserResult") ?? "";
         var imgUrl = _item.OpenGraphAttributes.GetValueOrDefault("og:image") ?? "";
 
         if (imgUrl.Length > 0)
