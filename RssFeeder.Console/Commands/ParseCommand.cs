@@ -38,13 +38,18 @@ public class ParseCommand : OaktonCommand<ParseInput>
         var doc = new HtmlDocument();
         doc.Load(new StringReader(html));
 
+        var ogImage = ParseMetaTagAttributes(doc, "og:image", "content");
+        var siteName = ParseMetaTagAttributes(doc, "og:site_name", "content").ToLower();
+
         _log.Information("MD5 Hash = '{UrlHash}'", urlHash);
-        _log.Information("og:site_name = '{SiteName}'", ParseMetaTagAttributes(doc, "og:site_name", "content").ToLower());
+        _log.Information("og:site_name = '{SiteName}'", siteName);
         _log.Information("og:title = '{Title}'", ParseMetaTagAttributes(doc, "og:title", "content"));
         _log.Information("og:description = '{Description}'", ParseMetaTagAttributes(doc, "og:description", "content"));
-        _log.Information("og:image = '{Image}'", ParseMetaTagAttributes(doc, "og:image", "content"));
+        _log.Information("og:image = '{Image}'", ogImage);
 
         var item = new RssFeedItem();
+        item.OpenGraphAttributes.Add("og:image", ogImage);
+
         parser.Initialize(doc.Text, item);
         parser.PreParse();
         item.HtmlAttributes.Add("ParserResult", parser.ParseTagsBySelector(template));

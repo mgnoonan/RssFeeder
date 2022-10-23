@@ -4,8 +4,14 @@ namespace RssFeeder.Console.TagParsers;
 
 public partial class TagParserBase
 {
+    private readonly ILogger _log;
     protected string _sourceHtml;
     protected RssFeedItem _item;
+
+    public TagParserBase(ILogger log)
+    {
+        _log = log;
+    }
 
     [GeneratedRegex("<br\\s?\\/?>")]
     protected static partial Regex LineBreakRegex();
@@ -21,10 +27,17 @@ public partial class TagParserBase
 
     public virtual void PostParse()
     {
-        if (_item.SiteName == "youtube")
-            return;
-
         var result = _item.HtmlAttributes.GetValueOrDefault("ParserResult") ?? "";
+        var imgUrl = _item.OpenGraphAttributes.GetValueOrDefault("og:image") ?? "";
+
+        if (imgUrl.Length > 0)
+        {
+            _log.Debug("Attempting removal of image {url}", imgUrl);
+            RemoveHtmlTag(result, "img", "src", imgUrl);
+        }
+
+        if (_item.SiteName == "youtube" || _item.SiteName == "rumble")
+            return;
 
         // Check for embedded youtube videos
         if (TryGetVideoIFrame(result, "youtube.com/embed", out IElement iframeElement))
@@ -33,14 +46,14 @@ public partial class TagParserBase
             string type = iframeElement.HasAttribute("type") ? iframeElement.Attributes["type"].Value : "text/html";
             string width = iframeElement.Attributes["width"].Value;
             string height = iframeElement.Attributes["height"].Value;
-            Log.Information("Embedded video {type} detected {url}", type, url);
+            _log.Information("Embedded video {type} detected {url}", type, url);
 
             _item.OpenGraphAttributes.Add("og:x:video", url);
             _item.OpenGraphAttributes.Add("og:x:video:type", type);
             _item.OpenGraphAttributes.Add("og:x:video:width", width);
             _item.OpenGraphAttributes.Add("og:x:video:height", height);
 
-            _item.HtmlAttributes["ParserResult"] = RemoveVideoIFrame(result, url);
+            _item.HtmlAttributes["ParserResult"] = RemoveHtmlTag(result, "iframe", "src", url);
             return;
         }
 
@@ -51,14 +64,14 @@ public partial class TagParserBase
             string type = iframeElement.HasAttribute("type") ? iframeElement.Attributes["type"].Value : "text/html";
             string width = iframeElement.Attributes["width"].Value;
             string height = iframeElement.Attributes["height"].Value;
-            Log.Information("Embedded video {type} detected {url}", type, url);
+            _log.Information("Embedded video {type} detected {url}", type, url);
 
             _item.OpenGraphAttributes.Add("og:x:video", url);
             _item.OpenGraphAttributes.Add("og:x:video:type", type);
             _item.OpenGraphAttributes.Add("og:x:video:width", width);
             _item.OpenGraphAttributes.Add("og:x:video:height", height);
 
-            _item.HtmlAttributes["ParserResult"] = RemoveVideoIFrame(result, url);
+            _item.HtmlAttributes["ParserResult"] = RemoveHtmlTag(result, "iframe", "src", url);
             return;
         }
     }
@@ -66,16 +79,24 @@ public partial class TagParserBase
     public virtual void PreParse()
     { }
 
-    private string RemoveVideoIFrame(string html, string pattern)
+    private string RemoveHtmlTag(string html, string tagName, string attributeName, string pattern)
     {
-        var pos = html.IndexOf($"src=\"{pattern}\"");
-        pos = html[..pos].LastIndexOf("<iframe ");
+        var posStart = html.IndexOf($"{attributeName}=\"{pattern}\"");
+        posStart = html[..posStart].LastIndexOf($"<{tagName} ");
 
-        if (pos > 0)
+        if (posStart > 0)
         {
-            string end = "</iframe>";
-            var len = html.IndexOf(end, pos) - pos + end.Length;
-            return html.Remove(pos, len);
+            string endTag = $"</{tagName}>";
+            int posEnd = html.IndexOf(endTag, posStart);
+            if (posEnd == -1)
+            {
+                endTag = ">";
+                posEnd = html.IndexOf(endTag, posStart);
+            }
+
+            var length = posEnd - posStart + endTag.Length;
+            _log.Information("Removed tag {tagName} from {start} with length {length}", tagName, posStart, length);
+            return html.Remove(posStart, length);
         }
 
         return html;
@@ -91,7 +112,7 @@ public partial class TagParserBase
 
         foreach (var element in elements)
         {
-            if (element.Attributes["src"].Value.Contains(pattern))
+            if (element.HasAttribute("src") && element.Attributes["src"].Value.Contains(pattern))
             {
                 iframe = element;
                 return true;

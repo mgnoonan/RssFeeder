@@ -2,6 +2,13 @@
 
 public class HtmlTagParser : TagParserBase, ITagParser
 {
+    private readonly ILogger _log;
+
+    public HtmlTagParser(ILogger log) : base(log)
+    {
+        _log = log;
+    }
+
     public string ParseTagsBySelector(ArticleRouteTemplate template)
     {
         // Load and parse the html from the source file
@@ -10,13 +17,13 @@ public class HtmlTagParser : TagParserBase, ITagParser
         string bodySelector = template.ArticleSelector;
         string paragraphSelector = template.ParagraphSelector;
 
-        Log.Information("Attempting HTML tag parsing using body selector '{bodySelector}' and paragraph selector '{paragraphSelector}'", bodySelector, paragraphSelector);
+        _log.Information("Attempting HTML tag parsing using body selector '{bodySelector}' and paragraph selector '{paragraphSelector}'", bodySelector, paragraphSelector);
 
         // Query the document by CSS selectors to get the article text
         var container = document.QuerySelector(bodySelector);
         if (container is null)
         {
-            Log.Warning("Error reading article: '{bodySelector}' article body selector not found.", bodySelector);
+            _log.Warning("Error reading article: '{bodySelector}' article body selector not found.", bodySelector);
             return $"<p>Error reading article: '{bodySelector}' article body selector not found.</p>";
         }
 

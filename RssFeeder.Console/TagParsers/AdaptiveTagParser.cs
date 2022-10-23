@@ -4,6 +4,13 @@ namespace RssFeeder.Console.TagParsers;
 
 public partial class AdaptiveTagParser : TagParserBase, ITagParser
 {
+    private readonly ILogger _log;
+
+    public AdaptiveTagParser(ILogger log) : base(log)
+    {
+        _log = log;
+    }
+
     public string ParseTagsBySelector(ArticleRouteTemplate template)
     {
         // Load and parse the html from the source file
@@ -14,13 +21,13 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
         if (string.IsNullOrEmpty(paragraphSelector))
             paragraphSelector = "p";
 
-        Log.Debug("Attempting adaptive parsing using paragraph selector '{paragraphSelector}'", paragraphSelector);
+        _log.Debug("Attempting adaptive parsing using paragraph selector '{paragraphSelector}'", paragraphSelector);
         string bodySelector = GetHighestParagraphCountSelector(document, paragraphSelector, true);
 
         if (string.IsNullOrEmpty(bodySelector))
         {
             paragraphSelector = "br";
-            Log.Debug("Attempting adaptive parsing using paragraph selector '{paragraphSelector}'", paragraphSelector);
+            _log.Debug("Attempting adaptive parsing using paragraph selector '{paragraphSelector}'", paragraphSelector);
             bodySelector = GetHighestParagraphCountSelector(document, paragraphSelector, false);
         }
 
@@ -49,19 +56,19 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "Error parsing paragraph selectors '{paragraphSelector}', '{message}'", paragraphSelector, ex.Message);
+            _log.Error(ex, "Error parsing paragraph selectors '{paragraphSelector}', '{message}'", paragraphSelector, ex.Message);
         }
 
         return string.Empty;
     }
 
-    private static string GetHighestParagraphCountSelector(IHtmlDocument document, string paragraphSelector, bool skipIfEmptyContent)
+    private string GetHighestParagraphCountSelector(IHtmlDocument document, string paragraphSelector, bool skipIfEmptyContent)
     {
         // Query the document by CSS selectors to get the article text
         var paragraphs = document.QuerySelectorAll(paragraphSelector);
         if (!paragraphs.Any())
         {
-            Log.Warning("Paragraph selector '{paragraphSelector}' not found", paragraphSelector);
+            _log.Warning("Paragraph selector '{paragraphSelector}' not found", paragraphSelector);
             return string.Empty;
         }
 
@@ -99,12 +106,12 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
             }
         }
 
-        Log.Debug("Found {totalCount} paragraph selectors '{paragraphSelector}' in html body", paragraphs.Count(), paragraphSelector);
-        Log.Information("Parent with the most paragraph selectors is '{bodySelector}':{highCount}", bodySelector, highCount);
+        _log.Debug("Found {totalCount} paragraph selectors '{paragraphSelector}' in html body", paragraphs.Count(), paragraphSelector);
+        _log.Information("Parent with the most paragraph selectors is '{bodySelector}':{highCount}", bodySelector, highCount);
 
         if (highCount <= 1)
         {
-            Log.Warning("Only {highCount} paragraph selector found, that doesn't count", highCount);
+            _log.Warning("Only {highCount} paragraph selector found, that doesn't count", highCount);
             return string.Empty;
         }
 

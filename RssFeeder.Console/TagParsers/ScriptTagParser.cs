@@ -1,9 +1,14 @@
-﻿using Antlr4.StringTemplate;
-
-namespace RssFeeder.Console.TagParsers;
+﻿namespace RssFeeder.Console.TagParsers;
 
 public class ScriptTagParser : TagParserBase, ITagParser
 {
+    private readonly ILogger _log;
+
+    public ScriptTagParser(ILogger log) : base(log)
+    {
+        _log = log;
+    }
+
     public string ParseTagsBySelector(ArticleRouteTemplate template)
     {
         // Load and parse the html from the source file
@@ -12,13 +17,13 @@ public class ScriptTagParser : TagParserBase, ITagParser
         string bodySelector = template.ArticleSelector;
         string paragraphSelector = template.ParagraphSelector;
 
-        Log.Information("Attempting script block parsing using body selector '{bodySelector}' and paragraph selector '{paragraphSelector}'", bodySelector, paragraphSelector);
+        _log.Information("Attempting script block parsing using body selector '{bodySelector}' and paragraph selector '{paragraphSelector}'", bodySelector, paragraphSelector);
 
         // Query the document by CSS selectors to get the article text
         var elements = document.QuerySelectorAll("script");
         if (elements.Count() == 0)
         {
-            Log.Warning("Error reading article: '{bodySelector}' article body selector not found.", bodySelector);
+            _log.Warning("Error reading article: '{bodySelector}' article body selector not found.", bodySelector);
             return $"<p>Error reading article: '{bodySelector}' article body selector not found.</p>";
         }
 
@@ -53,7 +58,7 @@ public class ScriptTagParser : TagParserBase, ITagParser
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "Error parsing paragraph selectors '{paragraphSelector}', '{message}'", paragraphSelector, ex.Message);
+            _log.Error(ex, "Error parsing paragraph selectors '{paragraphSelector}', '{message}'", paragraphSelector, ex.Message);
         }
 
         return string.Empty;
