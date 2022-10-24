@@ -20,9 +20,9 @@ internal class WhatFingerFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 
         _articleMaxCount = variation switch
         {
-            "high" => 125,
-            "medium" => 115,
-            "low" => 100,
+            "high" => 50,
+            "medium" => 40,
+            "low" => 30,
             "unlimited" => 1000,
             _ => throw new ArgumentException("Unexpected variation")
         };
