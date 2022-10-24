@@ -79,7 +79,8 @@ public partial class TagParserBase
 
     private string RemoveHtmlTag(string html, string tagName, string attributeName, string pattern)
     {
-        var startPos = html.IndexOf($"{attributeName}=\"{pattern}\"");
+        var startPos = html.IndexOf(GetHostAndPathOnly(pattern));
+        _log.Information("Removing {pattern}, starting position = {startPos}", pattern, startPos);
 
         if (startPos > 0)
         {
@@ -102,7 +103,18 @@ public partial class TagParserBase
 
         }
 
+        _log.Information("Search pattern not found. Nothing replaced.");
         return html;
+    }
+
+    private string GetHostAndPathOnly(string url)
+    {
+        if (Uri.TryCreate(url, UriKind.Absolute, out var uri))
+        {
+            return uri.GetComponents(UriComponents.Scheme | UriComponents.Host | UriComponents.Path, UriFormat.Unescaped);
+        }
+
+        throw new UriFormatException("No valid Url was found");
     }
 
     private bool TryGetVideoIFrame(string html, string pattern, out IElement iframe)
