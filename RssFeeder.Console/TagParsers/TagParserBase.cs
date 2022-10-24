@@ -33,7 +33,7 @@ public partial class TagParserBase
         if (imgUrl.Length > 0)
         {
             _log.Debug("Attempting removal of image {url}", imgUrl);
-            result = RemoveHtmlTag(result, "img", imgUrl);
+            result = RemoveHtmlTag(result, "img", GetHostAndPathOnly(imgUrl));
         }
 
         // Check for embedded videos
@@ -52,7 +52,7 @@ public partial class TagParserBase
                 _item.OpenGraphAttributes.Add("og:x:video:width", width);
                 _item.OpenGraphAttributes.Add("og:x:video:height", height);
 
-                result = RemoveHtmlTag(result, "iframe", url);
+                result = RemoveHtmlTag(result, "iframe", GetHostAndPathOnly(url));
             }
             else if (TryGetVideoIFrame(result, "youtube.com/embed", out iframeElement))
             {
@@ -67,7 +67,7 @@ public partial class TagParserBase
                 _item.OpenGraphAttributes.Add("og:x:video:width", width);
                 _item.OpenGraphAttributes.Add("og:x:video:height", height);
 
-                result = RemoveHtmlTag(result, "iframe", url);
+                result = RemoveHtmlTag(result, "iframe", GetHostAndPathOnly(url));
             }
         }
 
@@ -77,11 +77,10 @@ public partial class TagParserBase
     public virtual void PreParse()
     { }
 
-    private string RemoveHtmlTag(string html, string tagName, string url)
+    private string RemoveHtmlTag(string html, string tagName, string pattern)
     {
-        string pattern = GetHostAndPathOnly(url);
         var startPos = html.IndexOf(pattern);
-        _log.Debug("Removing {pattern}, starting position = {startPos}", url, startPos);
+        _log.Debug("Removing {pattern}, starting position = {startPos}", pattern, startPos);
 
         if (startPos > 0)
         {
