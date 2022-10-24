@@ -33,7 +33,7 @@ public partial class TagParserBase
         if (imgUrl.Length > 0)
         {
             _log.Debug("Attempting removal of image {url}", imgUrl);
-            result = RemoveHtmlTag(result, "img", "src", imgUrl);
+            result = RemoveHtmlTag(result, "img", imgUrl);
         }
 
         // Check for embedded videos
@@ -52,7 +52,7 @@ public partial class TagParserBase
                 _item.OpenGraphAttributes.Add("og:x:video:width", width);
                 _item.OpenGraphAttributes.Add("og:x:video:height", height);
 
-                result = RemoveHtmlTag(result, "iframe", "src", url);
+                result = RemoveHtmlTag(result, "iframe", url);
             }
             else if (TryGetVideoIFrame(result, "youtube.com/embed", out iframeElement))
             {
@@ -67,7 +67,7 @@ public partial class TagParserBase
                 _item.OpenGraphAttributes.Add("og:x:video:width", width);
                 _item.OpenGraphAttributes.Add("og:x:video:height", height);
 
-                result = RemoveHtmlTag(result, "iframe", "src", url);
+                result = RemoveHtmlTag(result, "iframe", url);
             }
         }
 
@@ -77,10 +77,11 @@ public partial class TagParserBase
     public virtual void PreParse()
     { }
 
-    private string RemoveHtmlTag(string html, string tagName, string attributeName, string pattern)
+    private string RemoveHtmlTag(string html, string tagName, string url)
     {
-        var startPos = html.IndexOf(GetHostAndPathOnly(pattern));
-        _log.Information("Removing {pattern}, starting position = {startPos}", pattern, startPos);
+        string pattern = GetHostAndPathOnly(url);
+        var startPos = html.IndexOf(pattern);
+        _log.Debug("Removing {pattern}, starting position = {startPos}", url, startPos);
 
         if (startPos > 0)
         {
@@ -97,13 +98,13 @@ public partial class TagParserBase
                 }
 
                 var length = endPos - startPos + endTag.Length;
-                _log.Information("Removed tag {tagName} with {attributeName}={pattern} starting from {start} for length {length}", tagName, attributeName, pattern, startPos, length);
+                _log.Information("Removed tag {tagName} by {pattern} starting from {start} for length {length}", tagName, pattern, startPos, length);
                 return html.Remove(startPos, length);
             }
 
         }
 
-        _log.Information("Search pattern not found. Nothing replaced.");
+        _log.Debug("Search pattern not found. Nothing replaced.");
         return html;
     }
 
