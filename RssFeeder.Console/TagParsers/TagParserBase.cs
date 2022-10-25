@@ -76,32 +76,43 @@ public partial class TagParserBase
 
     public virtual void PreParse()
     { }
+	
+	private List<int> GetCountSubstring(string source, string pattern)
+	{
+		List<int> positions = new List<int>();
+		int pos = 0;
+		
+		while ((pos < source.Length) && (pos = source.IndexOf(pattern, pos)) != -1)
+		{
+			positions.Add(pos);
+			pos += pattern.Length;
+		}
+		
+		return positions;
+	}
 
     private string RemoveHtmlTag(string html, string tagName, string pattern)
     {
-        var startPos = html.IndexOf(pattern);
-        _log.Debug("Removing {pattern}, starting position = {startPos}", pattern, startPos);
+		var positions = GetCountSubstring(html, pattern);
 
-        if (startPos > 0)
-        {
-            startPos = html[..startPos].LastIndexOf($"<{tagName} ");
+		foreach (int pos in positions)
+		{
+			int startPos = html[..pos].LastIndexOf($"<{tagName} ");
+			if (startPos == -1) continue;
+			
+        	_log.Debug("Removing {pattern}, starting position = {startPos}", pattern, startPos);
+			string endTag = $"</{tagName}>";
+			int endPos = html.IndexOf(endTag, startPos);
+			if (endPos == -1)
+			{
+				endTag = ">";
+				endPos = html.IndexOf(endTag, startPos);
+			}
 
-            if (startPos > 0)
-            {
-                string endTag = $"</{tagName}>";
-                int endPos = html.IndexOf(endTag, startPos);
-                if (endPos == -1)
-                {
-                    endTag = ">";
-                    endPos = html.IndexOf(endTag, startPos);
-                }
-
-                var length = endPos - startPos + endTag.Length;
-                _log.Information("Removed tag {tagName} by {pattern} starting from {start} for length {length}", tagName, pattern, startPos, length);
-                return html.Remove(startPos, length);
-            }
-
-        }
+			var length = endPos - startPos + endTag.Length;
+            _log.Information("Removed tag {tagName} by {pattern} starting from {start} for length {length}", tagName, pattern, startPos, length);
+			return html.Remove(startPos, length);
+		}
 
         _log.Debug("Search pattern not found. Nothing replaced.");
         return html;
