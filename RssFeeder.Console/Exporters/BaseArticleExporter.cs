@@ -22,6 +22,10 @@ public class BaseArticleExporter
                 template = template.Replace("{class}", "rumble");
                 template = template.Replace("{allow}", "");
                 break;
+            case "bitchute":
+                template = template.Replace("{class}", "bitchute");
+                template = template.Replace("{allow}", "");
+                break;
             case "gab tv":
                 template = template.Replace("{class}", "studio-video");
                 template = template.Replace("{allow}", "");
