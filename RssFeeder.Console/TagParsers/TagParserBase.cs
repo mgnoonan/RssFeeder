@@ -34,6 +34,9 @@ public partial class TagParserBase
         {
             _log.Debug("Attempting removal of image {url}", imgUrl);
             result = RemoveHtmlTag(result, "img", GetHostAndPathOnly(imgUrl));
+
+            // CFP also wraps the image with an anchor tag
+            result = RemoveHtmlTag(result, "a", GetHostAndPathOnly(imgUrl));
         }
 
         // Check for embedded videos
@@ -91,43 +94,45 @@ public partial class TagParserBase
 
     public virtual void PreParse()
     { }
-	
-	private List<int> GetCountSubstring(string source, string pattern)
-	{
-		List<int> positions = new List<int>();
-		int pos = 0;
-		
-		while ((pos < source.Length) && (pos = source.IndexOf(pattern, pos)) != -1)
-		{
-			positions.Add(pos);
-			pos += pattern.Length;
-		}
-		
-		return positions;
-	}
+
+    private List<int> GetCountSubstring(string source, string pattern)
+    {
+        List<int> positions = new();
+        int pos = 0;
+
+        while ((pos < source.Length) && (pos = source.IndexOf(pattern, pos)) != -1)
+        {
+            positions.Add(pos);
+            pos += pattern.Length;
+        }
+
+        return positions;
+    }
 
     private string RemoveHtmlTag(string html, string tagName, string pattern)
     {
-		var positions = GetCountSubstring(html, pattern);
+        if (string.IsNullOrEmpty(pattern)) return html;
 
-		foreach (int pos in positions)
-		{
-			int startPos = html[..pos].LastIndexOf($"<{tagName} ");
-			if (startPos == -1) continue;
-			
-        	_log.Debug("Removing {pattern}, starting position = {startPos}", pattern, startPos);
-			string endTag = $"</{tagName}>";
-			int endPos = html.IndexOf(endTag, startPos);
-			if (endPos == -1)
-			{
-				endTag = ">";
-				endPos = html.IndexOf(endTag, startPos);
-			}
+        var positions = GetCountSubstring(html, pattern);
 
-			var length = endPos - startPos + endTag.Length;
+        foreach (int pos in positions)
+        {
+            int startPos = html[..pos].LastIndexOf($"<{tagName} ");
+            if (startPos == -1) continue;
+
+            _log.Debug("Removing {pattern}, starting position = {startPos}", pattern, startPos);
+            string endTag = $"</{tagName}>";
+            int endPos = html.IndexOf(endTag, startPos);
+            if (endPos == -1)
+            {
+                endTag = ">";
+                endPos = html.IndexOf(endTag, startPos);
+            }
+
+            var length = endPos - startPos + endTag.Length;
             _log.Information("Removed tag {tagName} by {pattern} starting from {start} for length {length}", tagName, pattern, startPos, length);
-			return html.Remove(startPos, length);
-		}
+            return html.Remove(startPos, length);
+        }
 
         _log.Debug("Search pattern not found. Nothing replaced.");
         return html;
@@ -135,12 +140,15 @@ public partial class TagParserBase
 
     private string GetHostAndPathOnly(string url)
     {
+        if (string.IsNullOrEmpty(url)) return string.Empty;
+
         if (Uri.TryCreate(url, UriKind.Absolute, out var uri))
         {
             return uri.GetComponents(UriComponents.Scheme | UriComponents.Host | UriComponents.Path, UriFormat.Unescaped);
         }
 
-        throw new UriFormatException("No valid Url was found");
+        _log.Warning("Unable to parse url {url}", url);
+        return string.Empty;
     }
 
     private bool TryGetVideoIFrame(string html, string pattern, out IElement iframe)
