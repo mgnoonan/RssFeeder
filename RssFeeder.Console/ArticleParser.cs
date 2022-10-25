@@ -182,7 +182,7 @@ public class ArticleParser : IArticleParser
 
             if (propertyValue.StartsWith("og:"))
             {
-                string contentValue = node.Attributes["content"]?.Value ?? "unspecified";
+                string contentValue = node.Attributes["content"]?.Value ?? "";
 
                 while (contentValue.Contains("&#x"))
                 {
