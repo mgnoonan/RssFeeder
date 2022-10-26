@@ -138,7 +138,10 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
             }
             else
             {
-                description.AppendLine($"<p>{p.InnerHtml}</p>");
+                if (p.ParentElement?.TagName.ToLower() != "blockquote")
+                {
+                    description.AppendLine($"<p>{p.InnerHtml}</p>");
+                }
             }
         }
 
