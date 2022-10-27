@@ -1,9 +1,23 @@
-﻿namespace RssFeeder.Console.TagParsers;
+﻿using System.Text.RegularExpressions;
 
-public class TagParserBase
+namespace RssFeeder.Console.TagParsers;
+
+public partial class TagParserBase
 {
+    private readonly ILogger _log;
     protected string _sourceHtml;
     protected RssFeedItem _item;
+
+    public TagParserBase(ILogger log)
+    {
+        _log = log;
+    }
+
+    [GeneratedRegex("<br\\s?\\/?>")]
+    protected static partial Regex LineBreakRegex();
+
+    [GeneratedRegex("<p>(&nbsp;)?<\\/p>")]
+    protected static partial Regex EmptyParagraphRegex();
 
     public void Initialize(string sourceHtml, RssFeedItem item)
     {
@@ -13,60 +27,148 @@ public class TagParserBase
 
     public virtual void PostParse()
     {
-        if (_item.SiteName == "youtube")
-            return;
+        var result = _item.HtmlAttributes?.GetValueOrDefault("ParserResult") ?? "";
+        var imgUrl = _item.OpenGraphAttributes.GetValueOrDefault("og:image") ?? "";
 
-        var result = _item.HtmlAttributes.GetValueOrDefault("ParserResult") ?? "";
-
-        // Check for embedded youtube videos
-        string iframe = GetYoutubeVideoIFrame(result);
-        if (iframe.Length > 0)
+        if (imgUrl.Length > 0)
         {
-            string url = GetAttributeValue(iframe, "src");
-            string type = GetAttributeValue(iframe, "type");
-            string width = GetAttributeValue(iframe, "width");
-            string height = GetAttributeValue(iframe, "height");
-            Log.Information("Embedded video {type} detected {url}", type, url);
+            _log.Debug("Attempting removal of image {url}", imgUrl);
+            result = RemoveHtmlTag(result, "img", GetHostAndPathOnly(imgUrl));
 
-            _item.OpenGraphAttributes.Add("og:x:video", url);
-            _item.OpenGraphAttributes.Add("og:x:video:type", "text/html");
-            _item.OpenGraphAttributes.Add("og:x:video:width", width);
-            _item.OpenGraphAttributes.Add("og:x:video:height", height);
-
-            _item.HtmlAttributes["ParserResult"] = result.Replace(iframe, "");
+            // CFP also wraps the image with an anchor tag
+            result = RemoveHtmlTag(result, "a", GetHostAndPathOnly(imgUrl));
         }
+
+        // Check for embedded videos
+        if (_item.SiteName != "youtube" || _item.SiteName != "rumble")
+        {
+            if (TryGetVideoIFrame(result, "rumble.com/embed", out IElement iframeElement))
+            {
+                string url = iframeElement.Attributes["src"].Value;
+                string type = iframeElement.HasAttribute("type") ? iframeElement.Attributes["type"].Value : "text/html";
+                string width = iframeElement.HasAttribute("width") ? iframeElement.Attributes["width"].Value : "640";
+                string height = iframeElement.HasAttribute("height") ? iframeElement.Attributes["height"].Value : "480";
+                _log.Information("Embedded video {type} detected {url}", type, url);
+
+                _item.OpenGraphAttributes.Add("og:x:video", url);
+                _item.OpenGraphAttributes.Add("og:x:video:type", type);
+                _item.OpenGraphAttributes.Add("og:x:video:width", width);
+                _item.OpenGraphAttributes.Add("og:x:video:height", height);
+
+                result = RemoveHtmlTag(result, "iframe", GetHostAndPathOnly(url));
+            }
+            else if (TryGetVideoIFrame(result, "bitchute.com/embed", out iframeElement))
+            {
+                string url = iframeElement.Attributes["src"].Value;
+                string type = iframeElement.HasAttribute("type") ? iframeElement.Attributes["type"].Value : "text/html";
+                string width = iframeElement.HasAttribute("width") ? iframeElement.Attributes["width"].Value : "640";
+                string height = iframeElement.HasAttribute("height") ? iframeElement.Attributes["height"].Value : "480";
+                _log.Information("Embedded video {type} detected {url}", type, url);
+
+                _item.OpenGraphAttributes.Add("og:x:video", url);
+                _item.OpenGraphAttributes.Add("og:x:video:type", type);
+                _item.OpenGraphAttributes.Add("og:x:video:width", width);
+                _item.OpenGraphAttributes.Add("og:x:video:height", height);
+
+                result = RemoveHtmlTag(result, "iframe", GetHostAndPathOnly(url));
+            }
+            else if (TryGetVideoIFrame(result, "youtube.com/embed", out iframeElement))
+            {
+                string url = iframeElement.Attributes["src"].Value;
+                string type = iframeElement.HasAttribute("type") ? iframeElement.Attributes["type"].Value : "text/html";
+                string width = iframeElement.HasAttribute("width") ? iframeElement.Attributes["width"].Value : "640";
+                string height = iframeElement.HasAttribute("height") ? iframeElement.Attributes["height"].Value : "480";
+                _log.Information("Embedded video {type} detected {url}", type, url);
+
+                _item.OpenGraphAttributes.Add("og:x:video", url);
+                _item.OpenGraphAttributes.Add("og:x:video:type", type);
+                _item.OpenGraphAttributes.Add("og:x:video:width", width);
+                _item.OpenGraphAttributes.Add("og:x:video:height", height);
+
+                result = RemoveHtmlTag(result, "iframe", GetHostAndPathOnly(url));
+            }
+        }
+
+        _item.HtmlAttributes["ParserResult"] = result;
     }
 
     public virtual void PreParse()
-    {
-    }
+    { }
 
-    private string GetAttributeValue(string html, string attributeName)
+    private List<int> GetCountSubstring(string source, string pattern)
     {
-        string format = attributeName + "=\"";
-        var pos = html.ToLowerInvariant().IndexOf(format) + format.Length;
+        List<int> positions = new();
+        int pos = 0;
 
-        if (pos > format.Length)
+        while ((pos < source.Length) && (pos = source.IndexOf(pattern, pos)) != -1)
         {
-            var len = html.IndexOf("\"", pos) - pos;
-            return html.Substring(pos, len);
+            positions.Add(pos);
+            pos += pattern.Length;
         }
 
-        return "";
+        return positions;
     }
 
-    private string GetYoutubeVideoIFrame(string html)
+    private string RemoveHtmlTag(string html, string tagName, string pattern)
     {
-        bool hasVideo = html.ToLowerInvariant().Contains("youtube.com/embed");
-        var pos = html.ToLowerInvariant().IndexOf("<iframe ");
+        if (string.IsNullOrEmpty(pattern)) return html;
 
-        if (hasVideo && pos > 0)
+        var positions = GetCountSubstring(html, pattern);
+
+        foreach (int pos in positions)
         {
-            string end = "</iframe>";
-            var len = html.IndexOf(end, pos) - pos + end.Length;
-            return html.Substring(pos, len);
+            int startPos = html[..pos].LastIndexOf($"<{tagName} ");
+            if (startPos == -1) continue;
+
+            _log.Debug("Removing {pattern}, starting position = {startPos}", pattern, startPos);
+            string endTag = $"</{tagName}>";
+            int endPos = html.IndexOf(endTag, startPos);
+            if (endPos == -1)
+            {
+                endTag = ">";
+                endPos = html.IndexOf(endTag, startPos);
+            }
+
+            var length = endPos - startPos + endTag.Length;
+            _log.Information("Removed tag {tagName} by {pattern} starting from {start} for length {length}", tagName, pattern, startPos, length);
+            return html.Remove(startPos, length);
         }
 
-        return "";
+        _log.Debug("Search pattern not found. Nothing replaced.");
+        return html;
+    }
+
+    private string GetHostAndPathOnly(string url)
+    {
+        if (string.IsNullOrEmpty(url)) return string.Empty;
+
+        if (Uri.TryCreate(url, UriKind.Absolute, out var uri))
+        {
+            return uri.GetComponents(UriComponents.Scheme | UriComponents.Host | UriComponents.Path, UriFormat.Unescaped);
+        }
+
+        _log.Warning("Unable to parse url {url}", url);
+        return string.Empty;
+    }
+
+    private bool TryGetVideoIFrame(string html, string pattern, out IElement iframe)
+    {
+        // Load and parse the html from the source file
+        var parser = new HtmlParser();
+        var document = parser.ParseDocument(html);
+
+        var elements = document.QuerySelectorAll("iframe");
+
+        foreach (var element in elements)
+        {
+            if (element.HasAttribute("src") && element.Attributes["src"].Value.Contains(pattern))
+            {
+                iframe = element;
+                return true;
+            }
+        }
+
+        iframe = null;
+        return false;
     }
 }

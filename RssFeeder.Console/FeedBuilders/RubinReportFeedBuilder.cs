@@ -38,7 +38,7 @@ internal class RubinReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                 var item = CreateNodeLinks(filters, node, "main headlines", count++, feedUrl, true);
                 if (item != null)
                 {
-                    log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+                    _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                     list.Add(item);
                 }
             }

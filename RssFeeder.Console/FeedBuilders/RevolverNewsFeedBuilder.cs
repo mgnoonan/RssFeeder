@@ -2,12 +2,33 @@
 
 internal class RevolverNewsFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    public RevolverNewsFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities) :
+    private readonly IUnlaunchClient _client;
+    private int _articleMaxCount;
+
+    public RevolverNewsFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient client) :
         base(logger, webUtilities, utilities)
-    { }
+    {
+        _client = client;
+    }
 
     public List<RssFeedItem> GenerateRssFeedItemList(RssFeed feed, string html)
     {
+        // Find out which feature flag variation we are using to crawl articles
+        string key = "article-count-limit";
+        string identity = feed.CollectionName;
+        string variation = _client.GetVariation(key, identity);
+        _log.Information("Unlaunch {key} returned variation {variation} for identity {identity}", key, variation, identity);
+
+        _articleMaxCount = variation switch
+        {
+            "high" => 100,
+            "medium" => 50,
+            "low" => 25,
+            "unlimited" => 1000,
+            _ => throw new ArgumentException("Unexpected variation")
+        };
+        _log.Information("Processing a maximum of {articleMaxCount} articles", _articleMaxCount);
+
         return GenerateRssFeedItemList(feed.CollectionName, feed.Url, feed.Filters, html);
     }
 
@@ -53,14 +74,14 @@ internal class RevolverNewsFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         if (nodes != null)
         {
             count = 1;
-            foreach (var node in nodes)
+            foreach (var node in nodes.Take(_articleMaxCount))
             {
                 string title = WebUtility.HtmlDecode(node.Text().Trim());
 
                 var item = CreateNodeLinks(filters, node, "news feed", count++, feedUrl, false);
                 if (item != null)
                 {
-                    log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+                    _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                     list.Add(item);
                 }
             }

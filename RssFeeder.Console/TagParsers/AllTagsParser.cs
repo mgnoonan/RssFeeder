@@ -2,6 +2,13 @@
 
 public class AllTagsParser : TagParserBase, ITagParser
 {
+    private readonly ILogger _log;
+
+    public AllTagsParser(ILogger log) : base(log)
+    {
+        _log = log;
+    }
+
     public string ParseTagsBySelector(ArticleRouteTemplate template)
     {
         // Load and parse the html from the source file
@@ -9,13 +16,13 @@ public class AllTagsParser : TagParserBase, ITagParser
         var document = parser.ParseDocument(_sourceHtml);
         string paragraphSelector = template.ParagraphSelector;
 
-        Log.Information("Attempting alltags parsing using paragraph selector '{paragraphSelector}'", paragraphSelector);
+        _log.Information("Attempting alltags parsing using paragraph selector '{paragraphSelector}'", paragraphSelector);
 
         // Query the document by CSS selectors to get the article text
         var paragraphs = document.QuerySelectorAll(paragraphSelector);
         if (!paragraphs.Any())
         {
-            Log.Warning("Paragraph selector '{paragraphSelector}' not found", paragraphSelector);
+            _log.Warning("Paragraph selector '{paragraphSelector}' not found", paragraphSelector);
             return string.Empty;
         }
 
@@ -35,7 +42,7 @@ public class AllTagsParser : TagParserBase, ITagParser
             }
         }
 
-        Log.Information("Found {totalCount} paragraph selectors '{paragraphSelector}' in html body", paragraphs.Count(), paragraphSelector);
+        _log.Information("Found {totalCount} paragraph selectors '{paragraphSelector}' in html body", paragraphs.Count(), paragraphSelector);
 
         try
         {
@@ -43,7 +50,7 @@ public class AllTagsParser : TagParserBase, ITagParser
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "Error parsing paragraph selectors '{paragraphSelector}', '{message}'", paragraphSelector, ex.Message);
+            _log.Error(ex, "Error parsing paragraph selectors '{paragraphSelector}', '{message}'", paragraphSelector, ex.Message);
         }
 
         return string.Empty;
@@ -65,6 +72,6 @@ public class AllTagsParser : TagParserBase, ITagParser
             }
         }
 
-        return description.ToString();
+        return EmptyParagraphRegex().Replace(description.ToString(), "");
     }
 }

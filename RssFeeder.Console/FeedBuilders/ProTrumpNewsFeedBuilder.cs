@@ -39,7 +39,7 @@ internal class ProTrumpNewsFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                 var item = CreateNodeLinks(filters, node, "above the fold", count++, feedUrl, true);
                 if (item != null)
                 {
-                    log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+                    _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                     list.Add(item);
                 }
             }
@@ -57,7 +57,7 @@ internal class ProTrumpNewsFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                 var item = CreateNodeLinks(filters, node, "main headlines", count++, feedUrl, true);
                 if (item != null)
                 {
-                    log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+                    _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                     list.Add(item);
                 }
             }
@@ -75,7 +75,7 @@ internal class ProTrumpNewsFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                 var item = CreateNodeLinks(filters, node, "column 1", count++, feedUrl, false);
                 if (item != null)
                 {
-                    log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+                    _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                     list.Add(item);
                 }
             }
@@ -93,7 +93,7 @@ internal class ProTrumpNewsFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                 var item = CreateNodeLinks(filters, node, "column 2", count++, feedUrl, false);
                 if (item != null)
                 {
-                    log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+                    _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                     list.Add(item);
                 }
             }
@@ -111,7 +111,7 @@ internal class ProTrumpNewsFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                 var item = CreateNodeLinks(filters, node, "column 3", count++, feedUrl, false);
                 if (item != null)
                 {
-                    log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+                    _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                     list.Add(item);
                 }
             }

@@ -2,11 +2,32 @@ namespace RssFeeder.Console.FeedBuilders;
 
 class BadBlueFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    public BadBlueFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities) : base(log, webUtilities, utilities)
-    { }
+    private readonly IUnlaunchClient _client;
+    private int _articleMaxCount;
+
+    public BadBlueFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient client) : base(log, webUtilities, utilities)
+    {
+        _client = client;
+    }
 
     public List<RssFeedItem> GenerateRssFeedItemList(RssFeed feed, string html)
     {
+        // Find out which feature flag variation we are using to crawl articles
+        string key = "article-count-limit";
+        string identity = feed.CollectionName;
+        string variation = _client.GetVariation(key, identity);
+        _log.Information("Unlaunch {key} returned variation {variation} for identity {identity}", key, variation, identity);
+
+        _articleMaxCount = variation switch
+        {
+            "high" => 40,
+            "medium" => 25,
+            "low" => 15,
+            "unlimited" => 1000,
+            _ => throw new ArgumentException("Unexpected variation")
+        };
+        _log.Information("Processing a maximum of {articleMaxCount} articles", _articleMaxCount);
+
         return GenerateRssFeedItemList(feed.CollectionName, feed.Url, feed.Filters, html);
     }
 
@@ -40,7 +61,7 @@ class BadBlueFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                 var item = CreateNodeLinks(filters, node, "main headlines", count++, feedUrl, true);
                 if (item != null)
                 {
-                    log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+                    _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                     list.Add(item);
                 }
             }
@@ -52,14 +73,14 @@ class BadBlueFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         if (nodes != null)
         {
             count = 1;
-            foreach (var node in nodes)
+            foreach (var node in nodes.Take(_articleMaxCount))
             {
                 string title = WebUtility.HtmlDecode(node.Text().Trim());
 
                 var item = CreateNodeLinks(filters, node, "all stories", count++, feedUrl, false);
                 if (item != null)
                 {
-                    log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+                    _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                     list.Add(item);
                 }
             }
