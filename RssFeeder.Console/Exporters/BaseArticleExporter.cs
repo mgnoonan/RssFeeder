@@ -99,6 +99,7 @@ public class BaseArticleExporter
     {
         exportFeedItem.HostName = hostName;
         exportFeedItem.SiteName = hostName;
+        exportFeedItem.ImageUrl = item.OpenGraphAttributes.GetValueOrDefault("og:image") ?? "";
         exportFeedItem.ArticleText = $"<p>Unable to crawl article content. Click the link below to view in your browser.</p>";
     }
 
