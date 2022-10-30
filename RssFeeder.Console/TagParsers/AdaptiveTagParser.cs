@@ -131,8 +131,12 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
             else if (p.TagName.ToLower().StartsWith("ul"))
             {
                 if (p.Text().Trim().Length > 0 &&
+                    p.Id != "post_meta" &&
                     !p.Text().Contains("Share This Story", StringComparison.InvariantCultureIgnoreCase) &&
-                    !p.Text().Contains("Click to Share", StringComparison.InvariantCultureIgnoreCase))
+                    !p.Text().Contains("Click to Share", StringComparison.InvariantCultureIgnoreCase) &&
+                    !p.ClassList.Contains("rotator-panels") &&
+                    !p.ClassList.Contains("rotator-pages") &&
+                    !p.ClassList.Contains("essb_links_list"))
                 {
                     description.AppendLine($"<p><ul>{p.InnerHtml}</ul></p>");
                 }
