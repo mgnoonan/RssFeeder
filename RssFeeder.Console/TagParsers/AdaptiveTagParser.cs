@@ -130,7 +130,10 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
             }
             else if (p.TagName.ToLower().StartsWith("ul"))
             {
-                description.AppendLine($"<p><ul>{p.InnerHtml}</ul></p>");
+                if (p.Text().Length > 0)
+                {
+                    description.AppendLine($"<p><ul>{p.InnerHtml}</ul></p>");
+                }
             }
             else if (p.TagName.ToLower().StartsWith("blockquote"))
             {
