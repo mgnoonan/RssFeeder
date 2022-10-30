@@ -130,7 +130,9 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
             }
             else if (p.TagName.ToLower().StartsWith("ul"))
             {
-                if (p.Text().Length > 0)
+                if (p.Text().Trim().Length > 0 &&
+                    !p.Text().Contains("Share This Story", StringComparison.InvariantCultureIgnoreCase) &&
+                    !p.Text().Contains("Click to Share", StringComparison.InvariantCultureIgnoreCase))
                 {
                     description.AppendLine($"<p><ul>{p.InnerHtml}</ul></p>");
                 }
@@ -147,7 +149,10 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
                     continue;
                 }
 
-                description.AppendLine($"<p>{p.InnerHtml}</p>");
+                if (p.Text().Trim().Length > 0)
+                {
+                    description.AppendLine($"<p>{p.InnerHtml}</p>");
+                }
             }
         }
 
