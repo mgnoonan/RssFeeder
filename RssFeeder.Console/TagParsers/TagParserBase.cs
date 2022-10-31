@@ -28,7 +28,10 @@ public partial class TagParserBase
     public virtual void PostParse()
     {
         var result = _item.HtmlAttributes?.GetValueOrDefault("ParserResult") ?? "";
-        var imgUrl = _item.OpenGraphAttributes.GetValueOrDefault("og:image") ?? "";
+        var imgUrl = _item.OpenGraphAttributes.GetValueOrDefault("og:image:secure_url") ??
+            _item.OpenGraphAttributes.GetValueOrDefault("og:image:url") ??
+            _item.OpenGraphAttributes.GetValueOrDefault("og:image") ??
+            "";
 
         if (imgUrl.Length > 0)
         {
