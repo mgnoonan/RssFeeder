@@ -74,14 +74,15 @@ public class ArticleExporter : BaseArticleExporter, IArticleExporter
         }
         else
         {
-            var result = item.HtmlAttributes.GetValueOrDefault("ParserResult") ?? "";
+            string result = item.HtmlAttributes.GetValueOrDefault("ParserResult") ?? "";
+            string imageUrl = item.OpenGraphAttributes.GetValueOrDefault("og:image") ?? null;
             if (string.IsNullOrEmpty(result))
             {
                 _log.Debug("No parsed result, applying basic metadata values for '{hostname}'", hostName);
 
                 // Article failed to download, display minimal basic meta data
                 SetBasicArticleMetaData(exportFeedItem, item, hostName);
-                exportFeedItem.ArticleText = ApplyTemplateToDescription(exportFeedItem, feed, ExportTemplates.BasicTemplate);
+                exportFeedItem.ArticleText = ApplyTemplateToDescription(exportFeedItem, feed, string.IsNullOrEmpty(imageUrl) ? ExportTemplates.BasicTemplate : ExportTemplates.BasicPlusTemplate);
             }
             else
             {

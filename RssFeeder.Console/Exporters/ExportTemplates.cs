@@ -42,4 +42,9 @@ $ArticleText$
     public const string BasicTemplate = @"<h3>$item.Title$</h3>
 <p><a href=""$item.Url$"">Click here to read the full article</a></p>
 " + MetaDataTemplate;
+
+    public const string BasicPlusTemplate = @"<img src=""$item.ImageUrl$"" />
+<h3>$item.Title$</h3>
+<p><a href=""$item.Url$"">Click here to read the full article</a></p>
+" + MetaDataTemplate;
 }

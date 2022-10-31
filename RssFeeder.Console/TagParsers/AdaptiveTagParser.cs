@@ -130,11 +130,20 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
             }
             else if (p.TagName.ToLower().StartsWith("ul"))
             {
-                description.AppendLine($"<p><ul>{p.InnerHtml}</ul></p>");
+                if (p.Text().Trim().Length > 0 &&
+                    p.Id != "post_meta" &&
+                    !p.Text().Contains("Share This Story", StringComparison.InvariantCultureIgnoreCase) &&
+                    !p.Text().Contains("Click to Share", StringComparison.InvariantCultureIgnoreCase) &&
+                    !p.ClassList.Contains("rotator-panels") &&
+                    !p.ClassList.Contains("rotator-pages") &&
+                    !p.ClassList.Contains("essb_links_list"))
+                {
+                    description.AppendLine($"<p><ul>{p.InnerHtml}</ul></p>");
+                }
             }
             else if (p.TagName.ToLower().StartsWith("blockquote"))
             {
-                description.AppendLine($"<blockquote>{p.InnerHtml}</blockquote>");
+                description.AppendLine($"<blockquote style=\"border-left: 7px solid lightgray; padding-left: 10px;\">{p.InnerHtml}</blockquote>");
             }
             else
             {
@@ -144,7 +153,10 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
                     continue;
                 }
 
-                description.AppendLine($"<p>{p.InnerHtml}</p>");
+                if (p.Text().Trim().Length > 0)
+                {
+                    description.AppendLine($"<p>{p.InnerHtml}</p>");
+                }
             }
         }
 
