@@ -61,10 +61,20 @@ public partial class GenericTagParser : TagParserBase, ITagParser
             else if (p.TagName.ToLower() == "pre")
             {
                 // Pre tag is for formatted monospaced text
-                description.AppendLine($"<html><body><div style=\"width: 960px; overflow: visible; margin-right: auto; margin-left: auto; padding: 5px; display: block;\"><pre style=\"padding-left: 20px; font-size: 14px; display: block; font-family: monospace; white-space: pre; margin: 1em 0px;\">{p.TextContent.Trim()}</pre><hr></div></body></html>");
+                description.AppendLine($"<pre style=\"padding-left: 20px; font-size: 14px; display: block; font-family: monospace; white-space: pre; margin: 1em 0px;\">{p.TextContent.Trim()}</pre>");
+            }
+            else if (p.TagName.ToLower().StartsWith("blockquote"))
+            {
+                description.AppendLine($"<blockquote style=\"border-left: 7px solid lightgray; padding-left: 10px;\">{p.InnerHtml}</blockquote>");
             }
             else
             {
+                if (p.ParentElement?.TagName.ToLower() == "blockquote")
+                {
+                    _log.Debug("Skipping paragraph contained in blockquote");
+                    continue;
+                }
+
                 // Watch for the older style line breaks and convert to proper paragraphs
                 if (p.InnerHtml.Contains("<br>"))
                 {

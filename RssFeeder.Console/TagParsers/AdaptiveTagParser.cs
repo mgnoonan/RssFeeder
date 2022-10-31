@@ -82,6 +82,9 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
             }
 
             var parent = p.ParentElement;
+            if (parent.TagName.ToLower() == "blockquote")
+                parent = parent.ParentElement;
+
             var key = parent.GetSelector();
 
             if (dict.ContainsKey(key))
