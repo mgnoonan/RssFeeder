@@ -123,7 +123,7 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
 
     protected virtual string BuildArticleText(IHtmlCollection<IElement> paragraphs)
     {
-        StringBuilder description = new StringBuilder();
+        var description = new StringBuilder();
 
         foreach (var p in paragraphs)
         {
@@ -135,10 +135,16 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
             {
                 if (p.Text().Trim().Length > 0 &&
                     p.Id != "post_meta" &&
+                    !(p.Id?.StartsWith("sharebar") ?? false) &&
                     !p.Text().Contains("Share This Story", StringComparison.InvariantCultureIgnoreCase) &&
                     !p.Text().Contains("Click to Share", StringComparison.InvariantCultureIgnoreCase) &&
                     !p.ClassList.Contains("rotator-panels") &&
                     !p.ClassList.Contains("rotator-pages") &&
+                    !p.ClassList.Contains("playlist") &&
+                    !p.ClassList.Contains("article-social") &&
+                    !p.ClassList.Contains("xwv-rotator") &&
+                    !p.ClassList.Contains("a-social-share-spacing") &&
+                    !p.ClassList.Contains("socialShare") &&
                     !p.ClassList.Contains("essb_links_list"))
                 {
                     description.AppendLine($"<p><ul>{p.InnerHtml}</ul></p>");
@@ -155,11 +161,18 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
                     _log.Debug("Skipping paragraph contained in blockquote");
                     continue;
                 }
-
-                if (p.Text().Trim().Length > 0)
+                if (p.GetSelector().Contains(">li"))
                 {
-                    description.AppendLine($"<p>{p.InnerHtml}</p>");
+                    _log.Debug("Skipping paragraph contained in unordered list");
+                    continue;
                 }
+                if (p.Text().Trim().Length == 0)
+                {
+                    _log.Debug("Skipping empty paragraph");
+                    continue;
+                }
+
+                description.AppendLine($"<p>{p.InnerHtml}</p>");
             }
         }
 

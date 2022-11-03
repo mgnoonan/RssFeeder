@@ -15,7 +15,12 @@ public partial class GenericTagParser : TagParserBase, ITagParser
         var parser = new HtmlParser();
         var document = parser.ParseDocument(_sourceHtml);
 
-        _log.Information("Attempting generic tag parsing using body selector '{bodySelector}' and paragraph selector '{paragraphSelector}'", template.ArticleSelector, template.ParagraphSelector);
+        string paragraphSelector = template.ParagraphSelector;
+        if (paragraphSelector == "p")
+        {
+            paragraphSelector = "p,ul,blockquote";
+        }
+        _log.Information("Attempting generic tag parsing using body selector '{bodySelector}' and paragraph selector '{paragraphSelector}'", template.ArticleSelector, paragraphSelector);
 
         // Query the document by CSS selectors to get the article text
         var container = document.QuerySelector(template.ArticleSelector);
@@ -25,8 +30,8 @@ public partial class GenericTagParser : TagParserBase, ITagParser
             return $"<p>Error reading article: '{template.ArticleSelector}' article body selector not found.</p>";
         }
 
-        var paragraphs = container.QuerySelectorAll(template.ParagraphSelector);
-        _log.Information("Paragraph selector '{paragraphSelector}' returned {count} paragraphs", template.ParagraphSelector, paragraphs.Length);
+        var paragraphs = container.QuerySelectorAll(paragraphSelector);
+        _log.Information("Paragraph selector '{paragraphSelector}' returned {count} paragraphs", paragraphSelector, paragraphs.Length);
 
         string text = BuildArticleText(paragraphs);
 
