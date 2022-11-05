@@ -225,15 +225,7 @@ public partial class TagParserBase
         }
 
         // Watch for the older style line breaks and convert to proper paragraphs
-        if (p.InnerHtml.Contains("<br>"))
-        {
-            _log.Information("Replacing old style line breaks with paragraph tags");
-            string value = p.InnerHtml.Replace("<br>", "</p><p>");
-            description.AppendLine($"<p>{value}</p>");
-        }
-        else
-        {
-            description.AppendLine($"<p>{p.InnerHtml}</p>");
-        }
+        string innerHtml = LineBreakRegex().Replace(p.InnerHtml, "</p><p>");
+        description.AppendLine($"<p>{innerHtml}</p>");
     }
 }
