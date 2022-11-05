@@ -68,7 +68,7 @@ public class AllTagsParser : TagParserBase, ITagParser
             }
             else
             {
-                description.AppendLine($"<p>{p.InnerHtml}</p>");
+                TryAddParagraph(description, p);
             }
         }
 
