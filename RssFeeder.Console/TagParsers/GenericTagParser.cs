@@ -60,8 +60,7 @@ public partial class GenericTagParser : TagParserBase, ITagParser
             }
             else if (p.TagName.ToLower() == "ul")
             {
-                // Unordered list will have all the <li> elements inside
-                description.AppendLine($"<p><ul>{p.InnerHtml}</ul></p>");
+                TryAddUlParagraph(description, p);
             }
             else if (p.TagName.ToLower() == "pre")
             {
@@ -74,23 +73,7 @@ public partial class GenericTagParser : TagParserBase, ITagParser
             }
             else
             {
-                if (p.ParentElement?.TagName.ToLower() == "blockquote")
-                {
-                    _log.Debug("Skipping paragraph contained in blockquote");
-                    continue;
-                }
-
-                // Watch for the older style line breaks and convert to proper paragraphs
-                if (p.InnerHtml.Contains("<br>"))
-                {
-                    _log.Information("Replacing old style line breaks with paragraph tags");
-                    string value = p.InnerHtml.Replace("<br>", "</p><p>");
-                    description.AppendLine($"<p>{value}</p>");
-                }
-                else
-                {
-                    description.AppendLine($"<p>{p.InnerHtml}</p>");
-                }
+                TryAddParagraph(description, p);
             }
         }
 

@@ -1,5 +1,4 @@
-﻿using AngleSharp;
-using AngleSharp.Html.Dom;
+﻿using AngleSharp.Html.Dom;
 
 namespace RssFeeder.Console.TagParsers;
 
@@ -134,32 +133,7 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
             }
             else if (p.TagName.ToLower().StartsWith("ul"))
             {
-                if (p.Text().Trim().Length == 0)
-                {
-                    _log.Information("Skipped empty ul tag");
-                }
-                else if (
-                    p.Text().Contains("Bookmark") ||
-                    p.Id == "post_meta" ||
-                    (p.Id?.StartsWith("sharebar") ?? false) ||
-                    p.Text().Contains("Share This Story", StringComparison.InvariantCultureIgnoreCase) ||
-                    p.Text().Contains("Click to Share", StringComparison.InvariantCultureIgnoreCase) ||
-                    p.ClassList.Contains("rotator-panels") ||
-                    p.ClassList.Contains("rotator-pages") ||
-                    p.ClassList.Contains("playlist") ||
-                    p.ClassList.Contains("article-social") ||
-                    p.ClassList.Contains("xwv-rotator") ||
-                    p.ClassList.Contains("a-social-share-spacing") ||
-                    p.ClassList.Contains("socialShare") ||
-                    p.ClassList.Contains("heateor_sssp_sharing_ul") ||
-                    p.ClassList.Contains("list-none") ||
-                    p.ClassList.Contains("essb_links_list")
-                    )
-                {
-                    _log.Information("Skipped ul tag: {ul}", p.ToHtml());
-                }
-
-                description.AppendLine($"<p><ul>{p.InnerHtml}</ul></p>");
+                TryAddUlParagraph(description, p);
             }
             else if (p.TagName.ToLower().StartsWith("blockquote"))
             {
@@ -167,23 +141,7 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
             }
             else
             {
-                if (p.ParentElement?.TagName.ToLower() == "blockquote")
-                {
-                    _log.Debug("Skipping paragraph contained in blockquote");
-                    continue;
-                }
-                if (p.GetSelector().Contains(">li"))
-                {
-                    _log.Debug("Skipping paragraph contained in unordered list");
-                    continue;
-                }
-                if (p.Text().Trim().Length == 0)
-                {
-                    _log.Debug("Skipping empty paragraph");
-                    continue;
-                }
-
-                description.AppendLine($"<p>{p.InnerHtml}</p>");
+                TryAddParagraph(description, p);
             }
         }
 

@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using AngleSharp;
 
 namespace RssFeeder.Console.TagParsers;
 
@@ -173,5 +174,66 @@ public partial class TagParserBase
 
         iframe = null;
         return false;
+    }
+
+    protected void TryAddUlParagraph(StringBuilder description, IElement p)
+    {
+        if (p.Text().Trim().Length == 0)
+        {
+            _log.Information("Skipped ul tag: {html} Reason: {reason}", p.ToHtml(), "Empty");
+            return;
+        }
+        if (p.Text().Contains("Bookmark") ||
+            p.Id == "post_meta" ||
+            (p.Id?.StartsWith("sharebar") ?? false) ||
+            p.Text().Contains("Share This Story", StringComparison.InvariantCultureIgnoreCase) ||
+            p.Text().Contains("Click to Share", StringComparison.InvariantCultureIgnoreCase) ||
+            p.ClassList.Contains("rotator-panels") ||
+            p.ClassList.Contains("rotator-pages") ||
+            p.ClassList.Contains("playlist") ||
+            p.ClassList.Contains("article-social") ||
+            p.ClassList.Contains("xwv-rotator") ||
+            p.ClassList.Contains("a-social-share-spacing") ||
+            p.ClassList.Contains("socialShare") ||
+            p.ClassList.Contains("heateor_sssp_sharing_ul") ||
+            p.ClassList.Contains("list-none") ||
+            p.ClassList.Contains("essb_links_list"))
+        {
+            _log.Information("Skipped ul tag: {html} Reason: {reason}", p.ToHtml(), "Excluded");
+            return;
+        }
+
+        description.AppendLine($"<p><ul>{p.InnerHtml}</ul></p>");
+    }
+
+    protected void TryAddParagraph(StringBuilder description, IElement p)
+    {
+        if (p.ParentElement?.TagName.ToLower() == "blockquote" || p.GetSelector().Contains(">blockquote"))
+        {
+            _log.Debug("Skipping paragraph contained in blockquote");
+            return;
+        }
+        if (p.ParentElement?.TagName.ToLower() == "li" || p.GetSelector().Contains(">li"))
+        {
+            _log.Debug("Skipping paragraph contained in unordered list");
+            return;
+        }
+        if (p.Text().Trim().Length == 0)
+        {
+            _log.Debug("Skipping empty paragraph");
+            return;
+        }
+
+        // Watch for the older style line breaks and convert to proper paragraphs
+        if (p.InnerHtml.Contains("<br>"))
+        {
+            _log.Information("Replacing old style line breaks with paragraph tags");
+            string value = p.InnerHtml.Replace("<br>", "</p><p>");
+            description.AppendLine($"<p>{value}</p>");
+        }
+        else
+        {
+            description.AppendLine($"<p>{p.InnerHtml}</p>");
+        }
     }
 }
