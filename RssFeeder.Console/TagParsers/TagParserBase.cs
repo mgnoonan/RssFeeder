@@ -1,5 +1,4 @@
 ﻿using System.Text.RegularExpressions;
-using AngleSharp;
 
 namespace RssFeeder.Console.TagParsers;
 
@@ -180,12 +179,17 @@ public partial class TagParserBase
     {
         if (p.Text().Trim().Length == 0)
         {
-            _log.Information("Skipped ul tag: {html} Reason: {reason}", p.ToHtml(), "Empty");
+            _log.Information("Skipped tag: {tag} Reason: {reason}", p.TagName, "Empty");
             return;
         }
         if (p.ParentElement?.TagName.ToLower() == "blockquote" || p.GetSelector().Contains(">blockquote"))
         {
-            _log.Debug("Skipping paragraph contained in blockquote");
+            _log.Information("Skipped tag: {tag} Reason: {reason}", p.TagName, "Embedded blockquote");
+            return;
+        }
+        if (p.ParentElement?.TagName.ToLower() == "li" || p.GetSelector().Contains(">li"))
+        {
+            _log.Information("Skipped tag: {tag} Reason: {reason}", p.TagName, "Embedded listitem");
             return;
         }
         if (p.Text().Contains("Bookmark") ||
@@ -203,9 +207,11 @@ public partial class TagParserBase
             p.ClassList.Contains("socialShare") ||
             p.ClassList.Contains("heateor_sssp_sharing_ul") ||
             p.ClassList.Contains("list-none") ||
-            p.ClassList.Contains("essb_links_list"))
+            p.ClassList.Contains("essb_links_list") ||
+            p.ClassList.Contains("simple-list") ||
+            p.ClassList.Contains("td-category"))
         {
-            _log.Information("Skipped ul tag: {html} Reason: {reason}", p.ToHtml(), "Excluded");
+            _log.Information("Skipped tag: {tag} Reason: {reason}", p.TagName, "Excluded");
             return;
         }
 
@@ -216,17 +222,17 @@ public partial class TagParserBase
     {
         if (p.ParentElement?.TagName.ToLower() == "blockquote" || p.GetSelector().Contains(">blockquote"))
         {
-            _log.Debug("Skipping paragraph contained in blockquote");
+            _log.Debug("Skipped tag: {tag} Reason: {reason}", p.TagName, "Embedded blockquote");
             return;
         }
         if (p.ParentElement?.TagName.ToLower() == "li" || p.GetSelector().Contains(">li"))
         {
-            _log.Debug("Skipping paragraph contained in unordered list");
+            _log.Debug("Skipped tag: {tag} Reason: {reason}", p.TagName, "Embedded listitem");
             return;
         }
         if (p.Text().Trim().Length == 0)
         {
-            _log.Debug("Skipping empty paragraph");
+            _log.Debug("Skipped tag: {tag} Reason: {reason}", p.TagName, "Empty");
             return;
         }
 
