@@ -48,7 +48,7 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
             switch (paragraphSelector)
             {
                 case "p":
-                    var paragraphs = container.QuerySelectorAll("p,ul,blockquote");
+                    var paragraphs = container.QuerySelectorAll("p,ol,ul,blockquote");
                     return BuildArticleText(paragraphs);
                 case "br":
                     return BuildArticleText(container.InnerHtml);
@@ -131,11 +131,11 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
             {
                 description.AppendLine($"<h4>{p.TextContent.Trim()}</h4>");
             }
-            else if (p.TagName.ToLower().StartsWith("ul"))
+            else if (p.TagName.ToLower() == "ul" || p.TagName.ToLower() == "ol")
             {
                 TryAddUlParagraph(description, p);
             }
-            else if (p.TagName.ToLower().StartsWith("blockquote"))
+            else if (p.TagName.ToLower() == "blockquote")
             {
                 description.AppendLine($"<blockquote style=\"border-left: 7px solid lightgray; padding-left: 10px;\">{p.InnerHtml}</blockquote>");
             }

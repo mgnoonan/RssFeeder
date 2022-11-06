@@ -194,6 +194,7 @@ public partial class TagParserBase
         }
         if (p.Text().Contains("Bookmark") ||
             p.Text().Contains("Share on") ||
+            p.Text().Contains("Share Article") ||
             p.Id == "post_meta" ||
             (p.Id?.StartsWith("sharebar") ?? false) ||
             p.Text().Contains("Share This Story", StringComparison.InvariantCultureIgnoreCase) ||
@@ -215,7 +216,7 @@ public partial class TagParserBase
             return;
         }
 
-        description.AppendLine($"<p><ul>{p.InnerHtml}</ul></p>");
+        description.AppendLine($"<p><{p.TagName.ToLower()}>{p.InnerHtml}</{p.TagName.ToLower()}></p>");
     }
 
     protected void TryAddParagraph(StringBuilder description, IElement p)

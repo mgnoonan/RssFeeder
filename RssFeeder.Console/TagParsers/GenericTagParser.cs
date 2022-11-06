@@ -18,7 +18,7 @@ public partial class GenericTagParser : TagParserBase, ITagParser
         string paragraphSelector = template.ParagraphSelector;
         if (paragraphSelector == "p")
         {
-            paragraphSelector = "p,ul,blockquote";
+            paragraphSelector = "p,ol,ul,blockquote";
         }
         _log.Information("Attempting generic tag parsing using body selector '{bodySelector}' and paragraph selector '{paragraphSelector}'", template.ArticleSelector, paragraphSelector);
 
@@ -58,7 +58,7 @@ public partial class GenericTagParser : TagParserBase, ITagParser
             {
                 description.AppendLine($"<h4>{p.TextContent.Trim()}</h4>");
             }
-            else if (p.TagName.ToLower() == "ul")
+            else if (p.TagName.ToLower() == "ul" || p.TagName.ToLower() == "ol")
             {
                 TryAddUlParagraph(description, p);
             }
