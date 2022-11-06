@@ -183,7 +183,13 @@ public partial class TagParserBase
             _log.Information("Skipped ul tag: {html} Reason: {reason}", p.ToHtml(), "Empty");
             return;
         }
+        if (p.ParentElement?.TagName.ToLower() == "blockquote" || p.GetSelector().Contains(">blockquote"))
+        {
+            _log.Debug("Skipping paragraph contained in blockquote");
+            return;
+        }
         if (p.Text().Contains("Bookmark") ||
+            p.Text().Contains("Share on") ||
             p.Id == "post_meta" ||
             (p.Id?.StartsWith("sharebar") ?? false) ||
             p.Text().Contains("Share This Story", StringComparison.InvariantCultureIgnoreCase) ||
