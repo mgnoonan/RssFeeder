@@ -70,7 +70,6 @@ public partial class GenericTagParser : TagParserBase, ITagParser
                 foreach (var line in lines)
                 {
                     description.Append(line);
-                    //_log.Information("'{line}' as hex {hex}", line, line.ToCharArray());
                     description.AppendLine("<br />");
                 }
                 description.AppendLine("</pre>");
