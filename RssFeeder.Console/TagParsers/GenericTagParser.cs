@@ -65,7 +65,15 @@ public partial class GenericTagParser : TagParserBase, ITagParser
             else if (p.TagName.ToLower() == "pre")
             {
                 // Pre tag is for formatted monospaced text
-                description.AppendLine($"<pre style=\"padding-left: 20px; font-size: 14px; display: block; font-family: monospace; white-space: pre; margin: 1em 0px;\">{p.TextContent.Trim()}</pre>");
+                var lines = p.TextContent.Split('\n', StringSplitOptions.TrimEntries);
+                description.AppendLine($"<pre style=\"padding-left: 20px; font-size: 14px; display: block; font-family: monospace; white-space: pre; margin: 1em 0px;\">");
+                foreach (var line in lines)
+                {
+                    description.Append(line);
+                    //_log.Information("'{line}' as hex {hex}", line, line.ToCharArray());
+                    description.AppendLine("<br />");
+                }
+                description.AppendLine("</pre>");
             }
             else if (p.TagName.ToLower().StartsWith("blockquote"))
             {
