@@ -4,7 +4,7 @@ public class HtmlTagParser : TagParserBase, ITagParser
 {
     private readonly ILogger _log;
 
-    public HtmlTagParser(ILogger log) : base(log)
+    public HtmlTagParser(ILogger log, IUnlaunchClient client) : base(log, client)
     {
         _log = log;
     }

@@ -4,7 +4,7 @@ public partial class GenericTagParser : TagParserBase, ITagParser
 {
     private readonly ILogger _log;
 
-    public GenericTagParser(ILogger log) : base(log)
+    public GenericTagParser(ILogger log, IUnlaunchClient client) : base(log, client)
     {
         _log = log;
     }

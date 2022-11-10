@@ -5,12 +5,14 @@ namespace RssFeeder.Console.TagParsers;
 public partial class TagParserBase
 {
     private readonly ILogger _log;
+    private readonly IUnlaunchClient _client;
     protected string _sourceHtml;
     protected RssFeedItem _item;
 
-    public TagParserBase(ILogger log)
+    public TagParserBase(ILogger log, IUnlaunchClient client)
     {
         _log = log;
+        _client = client;
     }
 
     [GeneratedRegex("<br\\s?\\/?>")]
@@ -27,20 +29,19 @@ public partial class TagParserBase
 
     public virtual void PostParse()
     {
+        // Find out which feature flag variation we are using to crawl articles
+        string key = "article-fixup-urls";
+        string identity = _item.FeedAttributes.FeedId;
+        string variation = _client.GetVariation(key, identity);
+        _log.Information("Unlaunch {key} returned variation {variation} for identity {identity}", key, variation, identity);
+
         var result = _item.HtmlAttributes?.GetValueOrDefault("ParserResult") ?? "";
-        var imgUrl = _item.OpenGraphAttributes.GetValueOrDefault("og:image:secure_url") ??
-            _item.OpenGraphAttributes.GetValueOrDefault("og:image:url") ??
-            _item.OpenGraphAttributes.GetValueOrDefault("og:image") ??
-            "";
-
-        if (imgUrl.Length > 0)
+        if (variation == "on")
         {
-            _log.Debug("Attempting removal of image {url}", imgUrl);
-            result = RemoveHtmlTag(result, "img", GetHostAndPathOnly(imgUrl));
-
-            // CFP also wraps the image with an anchor tag
-            result = RemoveHtmlTag(result, "a", GetHostAndPathOnly(imgUrl));
+            result = FixupRelativeUrls(result);
         }
+
+        result = RemoveImgTag(result);
 
         // Check for embedded videos
         if (_item.SiteName != "youtube" || _item.SiteName != "rumble")
@@ -95,6 +96,49 @@ public partial class TagParserBase
         _item.HtmlAttributes["ParserResult"] = result;
     }
 
+    private string FixupRelativeUrls(string result)
+    {
+        var baseUrl = _item.OpenGraphAttributes.GetValueOrDefault("og:url") ??
+            _item.FeedAttributes.Url ??
+            "";
+
+        var baseUri = new Uri(new Uri(baseUrl).GetLeftPart(UriPartial.Authority));
+        var parser = new HtmlParser();
+        var document = parser.ParseDocument(result);
+
+        var elements = document.QuerySelectorAll("a");
+        foreach (var element in elements)
+        {
+            var attributeValue = element.GetAttribute("href");
+            if (!attributeValue.StartsWith("http"))
+            {
+                var url = new Uri(baseUri, attributeValue).AbsoluteUri;
+                ReplaceHtmlTagAttribute(result, "a", attributeValue, url);
+            }
+        }
+
+        return result;
+    }
+
+    private string RemoveImgTag(string result)
+    {
+        var imgUrl = _item.OpenGraphAttributes.GetValueOrDefault("og:image:secure_url") ??
+            _item.OpenGraphAttributes.GetValueOrDefault("og:image:url") ??
+            _item.OpenGraphAttributes.GetValueOrDefault("og:image") ??
+            "";
+
+        if (imgUrl.Length > 0)
+        {
+            _log.Debug("Attempting removal of image {url}", imgUrl);
+            result = RemoveHtmlTag(result, "img", GetHostAndPathOnly(imgUrl));
+
+            // CFP also wraps the image with an anchor tag
+            result = RemoveHtmlTag(result, "a", GetHostAndPathOnly(imgUrl));
+        }
+
+        return result;
+    }
+
     public virtual void PreParse()
     { }
 
@@ -135,6 +179,25 @@ public partial class TagParserBase
             var length = endPos - startPos + endTag.Length;
             _log.Information("Removed tag {tagName} by {pattern} starting from {start} for length {length}", tagName, pattern, startPos, length);
             return html.Remove(startPos, length);
+        }
+
+        _log.Debug("Search pattern not found. Nothing replaced.");
+        return html;
+    }
+
+    private string ReplaceHtmlTagAttribute(string html, string tagName, string pattern, string newValue)
+    {
+        if (string.IsNullOrEmpty(pattern)) return html;
+
+        var positions = GetCountSubstring(html, pattern);
+
+        foreach (int pos in positions)
+        {
+            int startPos = html[..pos].LastIndexOf($"<{tagName} ");
+            if (startPos == -1) continue;
+
+            _log.Information("Replaced tag {tagName} by {pattern} starting from {start} for length {length}", tagName, pattern, pos, pattern.Length);
+            return html.Remove(pos, pattern.Length).Insert(pos, newValue);
         }
 
         _log.Debug("Search pattern not found. Nothing replaced.");
@@ -210,7 +273,8 @@ public partial class TagParserBase
             p.ClassList.Contains("list-none") ||
             p.ClassList.Contains("essb_links_list") ||
             p.ClassList.Contains("simple-list") ||
-            p.ClassList.Contains("td-category"))
+            p.ClassList.Contains("td-category") ||
+            p.ClassList.Contains("social-icons__list"))
         {
             _log.Information("Skipped tag: {tag} Reason: {reason}", p.TagName, "Excluded");
             return;

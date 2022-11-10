@@ -4,7 +4,7 @@ public class AllTagsParser : TagParserBase, ITagParser
 {
     private readonly ILogger _log;
 
-    public AllTagsParser(ILogger log) : base(log)
+    public AllTagsParser(ILogger log, IUnlaunchClient client) : base(log, client)
     {
         _log = log;
     }
