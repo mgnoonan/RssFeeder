@@ -121,7 +121,8 @@ public partial class TagParserBase
         foreach (var element in elements)
         {
             var attributeValue = element.GetAttribute(attributeName);
-            if (!attributeValue.StartsWith("http"))
+            var pos = attributeValue.IndexOf(':');
+            if (pos == -1 || pos > attributeValue.IndexOf('/'))
             {
                 var url = new Uri(baseUri, attributeValue).AbsoluteUri;
                 _log.Information("Replacing relative url in {tagName} with {attributeName}={attributeValue}", tagName, attributeName, url);
