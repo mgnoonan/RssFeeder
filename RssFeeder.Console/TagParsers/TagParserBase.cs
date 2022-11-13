@@ -103,7 +103,12 @@ public partial class TagParserBase
 
     private string FixupRelativeUrls(string result, string baseUrl)
     {
-        var baseUri = new Uri(baseUrl);
+        if (!Uri.TryCreate(baseUrl, UriKind.Absolute, out Uri baseUri))
+        {
+            _log.Information("Invalid base url {baseUrl}, aborting relative Url fixup", baseUrl);
+            return result;
+        }
+
         var parser = new HtmlParser();
         var document = parser.ParseDocument(result);
 
@@ -115,8 +120,11 @@ public partial class TagParserBase
 
     private string ReplaceTagAttribute(string result, Uri baseUri, IHtmlCollection<IElement> elements, string tagName, string attributeName)
     {
-        if (elements.Length == 0)
+        if (elements is null || elements.Length == 0)
+        {
+            _log.Information("Empty element collection {tagName}. Aborted.");
             return result;
+        }
 
         foreach (var element in elements)
         {
