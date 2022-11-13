@@ -8,7 +8,6 @@ global using AngleSharp.Dom;
 global using AngleSharp.Html.Parser;
 global using Antlr4.StringTemplate;
 global using Autofac;
-global using Baseline.ImTools;
 global using HtmlAgilityPack;
 global using io.unlaunch;
 global using Microsoft.Azure.Cosmos;
