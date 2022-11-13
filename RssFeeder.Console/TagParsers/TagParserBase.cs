@@ -36,9 +36,14 @@ public partial class TagParserBase
         _log.Information("Unlaunch {key} returned variation {variation} for identity {identity}", key, variation, identity);
 
         var result = _item.HtmlAttributes?.GetValueOrDefault("ParserResult") ?? "";
+        var baseUrl = _item.OpenGraphAttributes.GetValueOrDefault("og:url") ??
+            _item.FeedAttributes.Url ??
+            "";
+
         if (variation == "on")
         {
-            result = FixupRelativeUrls(result);
+            _log.Information("Base url = {baseUrl}", baseUrl);
+            result = FixupRelativeUrls(result, baseUrl);
         }
 
         result = RemoveImgTag(result);
@@ -96,24 +101,31 @@ public partial class TagParserBase
         _item.HtmlAttributes["ParserResult"] = result;
     }
 
-    private string FixupRelativeUrls(string result)
+    private string FixupRelativeUrls(string result, string baseUrl)
     {
-        var baseUrl = _item.OpenGraphAttributes.GetValueOrDefault("og:url") ??
-            _item.FeedAttributes.Url ??
-            "";
-
         var baseUri = new Uri(new Uri(baseUrl).GetLeftPart(UriPartial.Authority));
         var parser = new HtmlParser();
         var document = parser.ParseDocument(result);
 
-        var elements = document.QuerySelectorAll("a");
+        result = ReplaceTagAttribute(result, baseUri, document.QuerySelectorAll("a"), "a", "href");
+        result = ReplaceTagAttribute(result, baseUri, document.QuerySelectorAll("img"), "img", "src");
+
+        return result;
+    }
+
+    private string ReplaceTagAttribute(string result, Uri baseUri, IHtmlCollection<IElement> elements, string tagName, string attributeName)
+    {
+        if (elements.Length == 0)
+            return result;
+
         foreach (var element in elements)
         {
-            var attributeValue = element.GetAttribute("href");
+            var attributeValue = element.GetAttribute(attributeName);
             if (!attributeValue.StartsWith("http"))
             {
                 var url = new Uri(baseUri, attributeValue).AbsoluteUri;
-                ReplaceHtmlTagAttribute(result, "a", attributeValue, url);
+                _log.Information("Replacing relative url in {tagName} with {attributeName}={attributeValue}", tagName, attributeName, url);
+                result = result.Replace($"{attributeName}=\"{attributeValue}\"", $"{attributeName}=\"{url}\"");
             }
         }
 
