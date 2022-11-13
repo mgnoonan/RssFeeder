@@ -122,7 +122,7 @@ public partial class TagParserBase
     {
         if (elements is null || elements.Length == 0)
         {
-            _log.Information("Empty element collection {tagName}. Aborted.");
+            _log.Information("Empty element collection {tagName}. Aborted.", tagName);
             return result;
         }
 
