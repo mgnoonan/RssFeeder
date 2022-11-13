@@ -103,7 +103,7 @@ public partial class TagParserBase
 
     private string FixupRelativeUrls(string result, string baseUrl)
     {
-        var baseUri = new Uri(new Uri(baseUrl).GetLeftPart(UriPartial.Authority));
+        var baseUri = new Uri(baseUrl);
         var parser = new HtmlParser();
         var document = parser.ParseDocument(result);
 
@@ -122,7 +122,7 @@ public partial class TagParserBase
         {
             var attributeValue = element.GetAttribute(attributeName);
             var pos = attributeValue.IndexOf(':');
-            if (pos == -1 || pos > attributeValue.IndexOf('/'))
+            if (pos == -1 || attributeValue.StartsWith("#"))
             {
                 var url = new Uri(baseUri, attributeValue).AbsoluteUri;
                 _log.Information("Replacing relative url in {tagName} with {attributeName}={attributeValue}", tagName, attributeName, url);
@@ -192,25 +192,6 @@ public partial class TagParserBase
             var length = endPos - startPos + endTag.Length;
             _log.Information("Removed tag {tagName} by {pattern} starting from {start} for length {length}", tagName, pattern, startPos, length);
             return html.Remove(startPos, length);
-        }
-
-        _log.Debug("Search pattern not found. Nothing replaced.");
-        return html;
-    }
-
-    private string ReplaceHtmlTagAttribute(string html, string tagName, string pattern, string newValue)
-    {
-        if (string.IsNullOrEmpty(pattern)) return html;
-
-        var positions = GetCountSubstring(html, pattern);
-
-        foreach (int pos in positions)
-        {
-            int startPos = html[..pos].LastIndexOf($"<{tagName} ");
-            if (startPos == -1) continue;
-
-            _log.Information("Replaced tag {tagName} by {pattern} starting from {start} for length {length}", tagName, pattern, pos, pattern.Length);
-            return html.Remove(pos, pattern.Length).Insert(pos, newValue);
         }
 
         _log.Debug("Search pattern not found. Nothing replaced.");
