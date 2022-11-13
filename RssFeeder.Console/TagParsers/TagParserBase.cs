@@ -129,7 +129,10 @@ public partial class TagParserBase
         foreach (var element in elements)
         {
             var attributeValue = element.GetAttribute(attributeName);
-            var pos = attributeValue.IndexOf(':');
+            if (string.IsNullOrEmpty(attributeValue))
+                continue;
+
+            var pos = attributeValue?.IndexOf(':');
             if (pos == -1 || attributeValue.StartsWith("#"))
             {
                 var url = new Uri(baseUri, attributeValue).AbsoluteUri;
