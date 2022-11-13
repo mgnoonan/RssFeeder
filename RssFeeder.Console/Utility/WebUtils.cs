@@ -343,6 +343,8 @@ public class WebUtils : IWebUtils
             {
                 // Relative path specified, or they goofed the url beyond repair so this is the best we can do
                 // Start with the defaultBaseUrl and add a trailing forward slash
+                var uri = new Uri(defaultBaseUrl);
+                defaultBaseUrl = uri.GetLeftPart(UriPartial.Authority);
                 sb.AppendFormat("{0}{1}", defaultBaseUrl.Trim(), defaultBaseUrl.EndsWith("/") ? "" : "/");
 
                 // Account for any starting forward slash
