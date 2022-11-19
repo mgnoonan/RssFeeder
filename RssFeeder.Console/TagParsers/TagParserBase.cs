@@ -279,7 +279,10 @@ public partial class TagParserBase
             p.ClassList.Contains("essb_links_list") ||
             p.ClassList.Contains("simple-list") ||
             p.ClassList.Contains("td-category") ||
-            p.ClassList.Contains("social-icons__list"))
+            p.ClassList.Contains("social-icons__list") ||
+            p.ClassList.Contains("authors") ||
+            p.ParentElement.ClassList.Contains("sd-content") ||
+            p.ParentElement.ClassList.Contains("editorial"))
         {
             _log.Information("Skipped tag: {tag} Reason: {reason}", p.TagName, "Excluded");
             return;
