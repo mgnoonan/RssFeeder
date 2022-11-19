@@ -42,7 +42,7 @@ public partial class TagParserBase
 
         if (variation == "on")
         {
-            _log.Information("Base url = {baseUrl}", baseUrl);
+            _log.Debug("Base url = {baseUrl}", baseUrl);
             result = FixupRelativeUrls(result, baseUrl);
         }
 
@@ -105,7 +105,7 @@ public partial class TagParserBase
     {
         if (!Uri.TryCreate(baseUrl, UriKind.Absolute, out Uri baseUri))
         {
-            _log.Information("Invalid base url {baseUrl}, aborting relative Url fixup", baseUrl);
+            _log.Warning("Invalid base url {baseUrl}, aborting relative Url fixup", baseUrl);
             return result;
         }
 
@@ -122,22 +122,22 @@ public partial class TagParserBase
     {
         if (elements is null || elements.Length == 0)
         {
-            _log.Information("Empty element collection {tagName}. Aborted.", tagName);
+            _log.Debug("Empty element collection {tagName}. Aborted.", tagName);
             return result;
         }
 
         foreach (var element in elements)
         {
-            var attributeValue = element.GetAttribute(attributeName);
-            if (string.IsNullOrEmpty(attributeValue))
+            var relativeUri = element.GetAttribute(attributeName);
+            if (string.IsNullOrEmpty(relativeUri))
                 continue;
 
-            var pos = attributeValue?.IndexOf(':');
-            if (pos == -1 || attributeValue.StartsWith("#"))
+            var pos = relativeUri?.IndexOf(':');
+            if (pos == -1 || relativeUri.StartsWith("#"))
             {
-                var url = new Uri(baseUri, attributeValue).AbsoluteUri;
-                _log.Information("Replacing relative url in {tagName} with {attributeName}={attributeValue}", tagName, attributeName, url);
-                result = result.Replace($"{attributeName}=\"{attributeValue}\"", $"{attributeName}=\"{url}\"");
+                var absoluteUri = new Uri(baseUri, relativeUri).AbsoluteUri;
+                _log.Information("Replacing relative url {relativeUri} in {tagName} with {attributeName}={absoluteUri}", relativeUri, tagName, attributeName, absoluteUri);
+                result = result.Replace($"{attributeName}=\"{relativeUri}\"", $"{attributeName}=\"{absoluteUri}\"");
             }
         }
 
