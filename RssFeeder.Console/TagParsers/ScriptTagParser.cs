@@ -4,7 +4,7 @@ public class ScriptTagParser : TagParserBase, ITagParser
 {
     private readonly ILogger _log;
 
-    public ScriptTagParser(ILogger log) : base(log)
+    public ScriptTagParser(ILogger log, IUnlaunchClient client) : base(log, client)
     {
         _log = log;
     }

@@ -4,7 +4,7 @@ public partial class GenericTagParser : TagParserBase, ITagParser
 {
     private readonly ILogger _log;
 
-    public GenericTagParser(ILogger log) : base(log)
+    public GenericTagParser(ILogger log, IUnlaunchClient client) : base(log, client)
     {
         _log = log;
     }
@@ -15,7 +15,12 @@ public partial class GenericTagParser : TagParserBase, ITagParser
         var parser = new HtmlParser();
         var document = parser.ParseDocument(_sourceHtml);
 
-        _log.Information("Attempting generic tag parsing using body selector '{bodySelector}' and paragraph selector '{paragraphSelector}'", template.ArticleSelector, template.ParagraphSelector);
+        string paragraphSelector = template.ParagraphSelector;
+        if (paragraphSelector == "p")
+        {
+            paragraphSelector = "p,ol,ul,blockquote";
+        }
+        _log.Information("Attempting generic tag parsing using body selector '{bodySelector}' and paragraph selector '{paragraphSelector}'", template.ArticleSelector, paragraphSelector);
 
         // Query the document by CSS selectors to get the article text
         var container = document.QuerySelector(template.ArticleSelector);
@@ -25,8 +30,8 @@ public partial class GenericTagParser : TagParserBase, ITagParser
             return $"<p>Error reading article: '{template.ArticleSelector}' article body selector not found.</p>";
         }
 
-        var paragraphs = container.QuerySelectorAll(template.ParagraphSelector);
-        _log.Information("Paragraph selector '{paragraphSelector}' returned {count} paragraphs", template.ParagraphSelector, paragraphs.Length);
+        var paragraphs = container.QuerySelectorAll(paragraphSelector);
+        _log.Information("Paragraph selector '{paragraphSelector}' returned {count} paragraphs", paragraphSelector, paragraphs.Length);
 
         string text = BuildArticleText(paragraphs);
 
@@ -53,29 +58,29 @@ public partial class GenericTagParser : TagParserBase, ITagParser
             {
                 description.AppendLine($"<h4>{p.TextContent.Trim()}</h4>");
             }
-            else if (p.TagName.ToLower() == "ul")
+            else if (p.TagName.ToLower() == "ul" || p.TagName.ToLower() == "ol")
             {
-                // Unordered list will have all the <li> elements inside
-                description.AppendLine($"<p><ul>{p.InnerHtml}</ul></p>");
+                TryAddUlParagraph(description, p);
             }
             else if (p.TagName.ToLower() == "pre")
             {
                 // Pre tag is for formatted monospaced text
-                description.AppendLine($"<html><body><div style=\"width: 960px; overflow: visible; margin-right: auto; margin-left: auto; padding: 5px; display: block;\"><pre style=\"padding-left: 20px; font-size: 14px; display: block; font-family: monospace; white-space: pre; margin: 1em 0px;\">{p.TextContent.Trim()}</pre><hr></div></body></html>");
+                var lines = p.TextContent.Split('\n', StringSplitOptions.TrimEntries);
+                description.AppendLine($"<pre style=\"padding-left: 20px; font-size: 14px; display: block; font-family: monospace; white-space: pre; margin: 1em 0px;\">");
+                foreach (var line in lines)
+                {
+                    description.Append(line);
+                    description.AppendLine("<br />");
+                }
+                description.AppendLine("</pre>");
+            }
+            else if (p.TagName.ToLower().StartsWith("blockquote"))
+            {
+                description.AppendLine($"<blockquote style=\"border-left: 7px solid lightgray; padding-left: 10px;\">{p.InnerHtml}</blockquote>");
             }
             else
             {
-                // Watch for the older style line breaks and convert to proper paragraphs
-                if (p.InnerHtml.Contains("<br>"))
-                {
-                    _log.Information("Replacing old style line breaks with paragraph tags");
-                    string value = p.InnerHtml.Replace("<br>", "</p><p>");
-                    description.AppendLine($"<p>{value}</p>");
-                }
-                else
-                {
-                    description.AppendLine($"<p>{p.InnerHtml}</p>");
-                }
+                TryAddParagraph(description, p);
             }
         }
 

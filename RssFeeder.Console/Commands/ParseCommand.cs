@@ -48,6 +48,8 @@ public class ParseCommand : OaktonCommand<ParseInput>
         _log.Information("og:image = '{Image}'", ogImage);
 
         var item = new RssFeedItem();
+        item.FeedAttributes.Url = input.Url;
+        item.FeedAttributes.UrlHash = urlHash;
         item.OpenGraphAttributes.Add("og:image", ogImage);
 
         parser.Initialize(doc.Text, item);

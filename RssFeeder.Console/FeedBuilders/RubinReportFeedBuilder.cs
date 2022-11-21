@@ -28,10 +28,10 @@ internal class RubinReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         var document = parser.ParseDocument(html);
 
         // Main Headlines section
-        var container = document.QuerySelector("div.elementor-container");
+        var container = document.QuerySelector("div.elementor-widget-container");
         if (container != null)
         {
-            var nodes = container.QuerySelectorAll("h3.elementor-post__title > a");
+            var nodes = container.QuerySelectorAll("h1.elementor-post__title > a");
             count = 1;
             foreach (var node in nodes)
             {

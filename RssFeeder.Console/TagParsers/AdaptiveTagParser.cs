@@ -6,7 +6,7 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
 {
     private readonly ILogger _log;
 
-    public AdaptiveTagParser(ILogger log) : base(log)
+    public AdaptiveTagParser(ILogger log, IUnlaunchClient client) : base(log, client)
     {
         _log = log;
     }
@@ -48,7 +48,7 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
             switch (paragraphSelector)
             {
                 case "p":
-                    var paragraphs = container.QuerySelectorAll("p,ul,blockquote");
+                    var paragraphs = container.QuerySelectorAll("p,ol,ul,blockquote");
                     return BuildArticleText(paragraphs);
                 case "br":
                     return BuildArticleText(container.InnerHtml);
@@ -82,6 +82,9 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
             }
 
             var parent = p.ParentElement;
+            if (parent.TagName.ToLower() == "blockquote")
+                parent = parent.ParentElement;
+
             var key = parent.GetSelector();
 
             if (dict.ContainsKey(key))
@@ -120,7 +123,7 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
 
     protected virtual string BuildArticleText(IHtmlCollection<IElement> paragraphs)
     {
-        StringBuilder description = new StringBuilder();
+        var description = new StringBuilder();
 
         foreach (var p in paragraphs)
         {
@@ -128,35 +131,17 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
             {
                 description.AppendLine($"<h4>{p.TextContent.Trim()}</h4>");
             }
-            else if (p.TagName.ToLower().StartsWith("ul"))
+            else if (p.TagName.ToLower() == "ul" || p.TagName.ToLower() == "ol")
             {
-                if (p.Text().Trim().Length > 0 &&
-                    p.Id != "post_meta" &&
-                    !p.Text().Contains("Share This Story", StringComparison.InvariantCultureIgnoreCase) &&
-                    !p.Text().Contains("Click to Share", StringComparison.InvariantCultureIgnoreCase) &&
-                    !p.ClassList.Contains("rotator-panels") &&
-                    !p.ClassList.Contains("rotator-pages") &&
-                    !p.ClassList.Contains("essb_links_list"))
-                {
-                    description.AppendLine($"<p><ul>{p.InnerHtml}</ul></p>");
-                }
+                TryAddUlParagraph(description, p);
             }
-            else if (p.TagName.ToLower().StartsWith("blockquote"))
+            else if (p.TagName.ToLower() == "blockquote")
             {
                 description.AppendLine($"<blockquote style=\"border-left: 7px solid lightgray; padding-left: 10px;\">{p.InnerHtml}</blockquote>");
             }
             else
             {
-                if (p.ParentElement?.TagName.ToLower() == "blockquote")
-                {
-                    _log.Debug("Skipping paragraph contained in blockquote");
-                    continue;
-                }
-
-                if (p.Text().Trim().Length > 0)
-                {
-                    description.AppendLine($"<p>{p.InnerHtml}</p>");
-                }
+                TryAddParagraph(description, p);
             }
         }
 

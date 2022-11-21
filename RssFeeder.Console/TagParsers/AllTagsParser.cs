@@ -4,7 +4,7 @@ public class AllTagsParser : TagParserBase, ITagParser
 {
     private readonly ILogger _log;
 
-    public AllTagsParser(ILogger log) : base(log)
+    public AllTagsParser(ILogger log, IUnlaunchClient client) : base(log, client)
     {
         _log = log;
     }
@@ -68,7 +68,7 @@ public class AllTagsParser : TagParserBase, ITagParser
             }
             else
             {
-                description.AppendLine($"<p>{p.InnerHtml}</p>");
+                TryAddParagraph(description, p);
             }
         }
 
