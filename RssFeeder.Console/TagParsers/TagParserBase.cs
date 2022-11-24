@@ -6,13 +6,15 @@ public partial class TagParserBase
 {
     private readonly ILogger _log;
     private readonly IUnlaunchClient _client;
+    private readonly IWebUtils _webUtils;
     protected string _sourceHtml;
     protected RssFeedItem _item;
 
-    public TagParserBase(ILogger log, IUnlaunchClient client)
+    public TagParserBase(ILogger log, IUnlaunchClient client, IWebUtils webUtils)
     {
         _log = log;
         _client = client;
+        _webUtils = webUtils;
     }
 
     [GeneratedRegex("<br\\s?\\/?>")]
@@ -103,22 +105,16 @@ public partial class TagParserBase
 
     private string FixupRelativeUrls(string result, string baseUrl)
     {
-        if (!Uri.TryCreate(baseUrl, UriKind.Absolute, out Uri baseUri))
-        {
-            _log.Warning("Invalid base url {baseUrl}, aborting relative Url fixup", baseUrl);
-            return result;
-        }
-
         var parser = new HtmlParser();
         var document = parser.ParseDocument(result);
 
-        result = ReplaceTagAttribute(result, baseUri, document.QuerySelectorAll("a"), "a", "href");
-        result = ReplaceTagAttribute(result, baseUri, document.QuerySelectorAll("img"), "img", "src");
+        result = ReplaceTagAttribute(result, baseUrl, document.QuerySelectorAll("a"), "a", "href");
+        result = ReplaceTagAttribute(result, baseUrl, document.QuerySelectorAll("img"), "img", "src");
 
         return result;
     }
 
-    private string ReplaceTagAttribute(string result, Uri baseUri, IHtmlCollection<IElement> elements, string tagName, string attributeName)
+    private string ReplaceTagAttribute(string result, string baseUrl, IHtmlCollection<IElement> elements, string tagName, string attributeName)
     {
         if (elements is null || elements.Length == 0)
         {
@@ -135,7 +131,7 @@ public partial class TagParserBase
             var pos = relativeUri?.IndexOf(':');
             if (pos == -1 || relativeUri.StartsWith("#"))
             {
-                var absoluteUri = new Uri(baseUri, relativeUri).AbsoluteUri;
+                var absoluteUri = _webUtils.RepairUrl(relativeUri, baseUrl);
                 _log.Information("Replacing relative url {relativeUri} in {tagName} with {attributeName}={absoluteUri}", relativeUri, tagName, attributeName, absoluteUri);
                 result = result.Replace($"{attributeName}=\"{relativeUri}\"", $"{attributeName}=\"{absoluteUri}\"");
             }

@@ -12,5 +12,6 @@ public interface IWebUtils
     Uri WebDriverUrlToDisk(string url, string filename);
     void SaveThumbnailToDisk(string url, string filename);
     string RepairUrl(string pathAndQuery, string defaultBaseUrl);
+    string RepairUrl(string relativeUrl, Uri baseUri);
     (HttpStatusCode, Uri, string) GetContentType(string url);
 }
