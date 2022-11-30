@@ -125,16 +125,37 @@ public partial class TagParserBase
         foreach (var element in elements)
         {
             var relativeUri = element.GetAttribute(attributeName);
+            string sourceAttributeName = attributeName;
+
+            if (string.IsNullOrEmpty(relativeUri))
+            {
+                sourceAttributeName = string.Concat("data-", attributeName);
+                relativeUri = element.GetAttribute(sourceAttributeName);
+            }
+
             if (string.IsNullOrEmpty(relativeUri))
                 continue;
 
-            var pos = relativeUri?.IndexOf(':');
-            if (pos == -1 || relativeUri.StartsWith("#"))
-            {
-                var absoluteUri = _webUtils.RepairUrl(relativeUri, baseUrl);
-                _log.Information("Replacing relative url {relativeUri} in {tagName} with {attributeName}={absoluteUri}", relativeUri, tagName, attributeName, absoluteUri);
-                result = result.Replace($"{attributeName}=\"{relativeUri}\"", $"{attributeName}=\"{absoluteUri}\"");
-            }
+            result = ReplaceTagAttribute(result, baseUrl, tagName, sourceAttributeName, attributeName, relativeUri);
+        }
+
+        return result;
+    }
+
+    private string ReplaceTagAttribute(string result, string baseUrl, string tagName, string sourceAttributeName, string targetAttributeName, string relativeUri)
+    {
+        var pos = relativeUri?.IndexOf(':');
+        if (pos == -1 || relativeUri.StartsWith("#"))
+        {
+            var absoluteUri = _webUtils.RepairUrl(relativeUri, baseUrl);
+            _log.Information("Replacing relative url {relativeUri} in {tagName} with {attributeName}={absoluteUri}", relativeUri, tagName, targetAttributeName, absoluteUri);
+            result = result.Replace($"{sourceAttributeName}=\"{relativeUri}\"", $"{targetAttributeName}=\"{absoluteUri}\"");
+        }
+        else if (sourceAttributeName != targetAttributeName)
+        {
+            var absoluteUri = _webUtils.RepairUrl(relativeUri, baseUrl);
+            _log.Information("Replacing alternative url attribute {sourceAttributeName} in {tagName} with {targetAttributeName}={absoluteUri}", sourceAttributeName, tagName, targetAttributeName, absoluteUri);
+            result = result.Replace($"{sourceAttributeName}=\"{relativeUri}\"", $"{targetAttributeName}=\"{absoluteUri}\"");
         }
 
         return result;
