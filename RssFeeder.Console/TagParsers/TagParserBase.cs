@@ -48,7 +48,7 @@ public partial class TagParserBase
             result = FixupRelativeUrls(result, baseUrl);
         }
 
-        result = RemoveImgTag(result);
+        result = RemoveImgTag(baseUrl, result);
 
         // Check for embedded videos
         if (_item.SiteName != "youtube" || _item.SiteName != "rumble")
@@ -66,7 +66,7 @@ public partial class TagParserBase
                 _item.OpenGraphAttributes.Add("og:x:video:width", width);
                 _item.OpenGraphAttributes.Add("og:x:video:height", height);
 
-                result = RemoveHtmlTag(result, "iframe", GetHostAndPathOnly(url));
+                result = RemoveHtmlTag(result, "iframe", GetHostAndPathOnly(baseUrl, url));
             }
             else if (TryGetVideoIFrame(result, "bitchute.com/embed", out iframeElement))
             {
@@ -81,7 +81,7 @@ public partial class TagParserBase
                 _item.OpenGraphAttributes.Add("og:x:video:width", width);
                 _item.OpenGraphAttributes.Add("og:x:video:height", height);
 
-                result = RemoveHtmlTag(result, "iframe", GetHostAndPathOnly(url));
+                result = RemoveHtmlTag(result, "iframe", GetHostAndPathOnly(baseUrl, url));
             }
             else if (TryGetVideoIFrame(result, "youtube.com/embed", out iframeElement))
             {
@@ -96,7 +96,7 @@ public partial class TagParserBase
                 _item.OpenGraphAttributes.Add("og:x:video:width", width);
                 _item.OpenGraphAttributes.Add("og:x:video:height", height);
 
-                result = RemoveHtmlTag(result, "iframe", GetHostAndPathOnly(url));
+                result = RemoveHtmlTag(result, "iframe", GetHostAndPathOnly(baseUrl, url));
             }
         }
 
@@ -167,7 +167,7 @@ public partial class TagParserBase
         return result;
     }
 
-    private string RemoveImgTag(string result)
+    private string RemoveImgTag(string baseUrl, string result)
     {
         var imgUrl = _item.OpenGraphAttributes.GetValueOrDefault("og:image:secure_url") ??
             _item.OpenGraphAttributes.GetValueOrDefault("og:image:url") ??
@@ -177,10 +177,10 @@ public partial class TagParserBase
         if (imgUrl.Length > 0)
         {
             _log.Debug("Attempting removal of image {url}", imgUrl);
-            result = RemoveHtmlTag(result, "img", GetHostAndPathOnly(imgUrl));
+            result = RemoveHtmlTag(result, "img", GetHostAndPathOnly(baseUrl, imgUrl));
 
             // CFP also wraps the image with an anchor tag
-            result = RemoveHtmlTag(result, "a", GetHostAndPathOnly(imgUrl));
+            result = RemoveHtmlTag(result, "a", GetHostAndPathOnly(baseUrl, imgUrl));
         }
 
         return result;
@@ -232,9 +232,14 @@ public partial class TagParserBase
         return html;
     }
 
-    private string GetHostAndPathOnly(string url)
+    private string GetHostAndPathOnly(string baseUrl, string url)
     {
         if (string.IsNullOrEmpty(url)) return string.Empty;
+
+        if (!url.StartsWith("http"))
+        {
+            url = _webUtils.RepairUrl(url, baseUrl);
+        }
 
         if (Uri.TryCreate(url, UriKind.Absolute, out var uri))
         {
