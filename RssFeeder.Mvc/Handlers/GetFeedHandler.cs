@@ -70,7 +70,11 @@ public class GetFeedHandler : IRequestHandler<GetFeedQuery, string>
                     };
 
                     si.AddLink(new SyndicationLink(new Uri(item.Url)));
-                    si.AddContributor(new SyndicationPerson(string.IsNullOrWhiteSpace(item.SiteName) ? item.HostName : item.SiteName, feed.authoremail, AtomContributorTypes.Author));
+                    si.AddContributor(
+                        new SyndicationPerson(
+                            string.IsNullOrWhiteSpace(item.SiteName) ? string.IsNullOrWhiteSpace(item.HostName) ? "Name Unavailable" : item.HostName : item.SiteName,
+                            feed.authoremail,
+                            AtomContributorTypes.Author));
 
                     await rssWriter.Write(si);
                 }
