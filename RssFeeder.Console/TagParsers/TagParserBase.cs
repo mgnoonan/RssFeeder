@@ -134,6 +134,12 @@ public partial class TagParserBase
             }
 
             if (string.IsNullOrEmpty(relativeUri))
+            {
+                sourceAttributeName = string.Concat("data-runner-", attributeName);
+                relativeUri = element.GetAttribute(sourceAttributeName);
+            }
+
+            if (string.IsNullOrEmpty(relativeUri))
                 continue;
 
             result = ReplaceTagAttribute(result, baseUrl, tagName, sourceAttributeName, attributeName, relativeUri);
