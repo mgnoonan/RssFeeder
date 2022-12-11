@@ -63,8 +63,8 @@ public class GetFeedHandler : IRequestHandler<GetFeedQuery, string>
                     var si = new SyndicationItem()
                     {
                         Id = item.Id,
-                        Title = Regex.Replace(item.Title, "[\u0001-\u001f]", ""),
-                        Description = Regex.Replace(item.ArticleText, "[\u0001-\u001f]", ""),
+                        Title = Regex.Replace(item.Title, "[\u0001-\u001f\ufffe]", ""),
+                        Description = Regex.Replace(item.ArticleText, "[\u0001-\u001f\ufffe]", ""),
                         Published = item.DateAdded,
                         LastUpdated = item.DateAdded
                     };
