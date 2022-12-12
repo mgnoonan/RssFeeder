@@ -20,9 +20,9 @@ class BadBlueFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 
         _articleMaxCount = variation switch
         {
-            "high" => 35,
-            "medium" => 30,
-            "low" => 25,
+            "high" => 30,
+            "medium" => 25,
+            "low" => 20,
             "unlimited" => 1000,
             _ => throw new ArgumentException("Unexpected variation")
         };
