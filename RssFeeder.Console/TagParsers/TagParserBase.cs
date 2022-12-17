@@ -178,7 +178,7 @@ public partial class TagParserBase
 
             if (!sourceUri.IsNullOrEmptyOrData() || sourceUri.StartsWith("#"))
             {
-                if (sourceUri.StartsWith("http"))
+                if (sourceUri.StartsWith("http") || sourceUri.StartsWith("mailto"))
                     continue;
 
                 sourceUri = _webUtils.RepairUrl(sourceUri, baseUrl);
