@@ -61,10 +61,10 @@ public class BuildCommand : OaktonCommand<BuildInput>
 
             foreach (var feed in feedList)
             {
-                try
+                using (LogContext.PushProperty("collectionName", feed.CollectionName))
+                using (LogContext.PushProperty("runID", runID))
                 {
-                    using (LogContext.PushProperty("collectionName", feed.CollectionName))
-                    using (LogContext.PushProperty("runID", runID))
+                    try
                     {
                         if (feed.Enabled)
                         {
@@ -74,10 +74,10 @@ public class BuildCommand : OaktonCommand<BuildInput>
 
                         crawler.Purge(feed);
                     }
-                }
-                catch (Exception ex)
-                {
-                    _log.Error(ex, "ERROR: Unable to process feed '{feedTitle}' from '{feedUrl}'", feed.Title, feed.Url);
+                    catch (Exception ex)
+                    {
+                        _log.Error(ex, "ERROR: Unable to process feed '{feedTitle}' from '{feedUrl}'", feed.Title, feed.Url);
+                    }
                 }
             }
 
