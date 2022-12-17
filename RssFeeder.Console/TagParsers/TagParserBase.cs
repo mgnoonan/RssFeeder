@@ -42,6 +42,16 @@ public partial class TagParserBase
             _item.FeedAttributes.Url ??
             "";
 
+        // Some sites do not correctly construct their cannonical url for og:url,
+        // so use the feed url as a fallback
+        // NOTE: the original feed URL might be from a different site, i.e. a url shortening site
+        // so using that for the baseUrl may not correctly resolve all relative references
+        if (!baseUrl.StartsWith("http"))
+        {
+            _log.Warning("Base URL {baseUrl} is still relative, falling back to {feedUrl}", baseUrl, _item.FeedAttributes.Url);
+            baseUrl = _item.FeedAttributes.Url;
+        }
+
         if (variation == "on")
         {
             _log.Debug("Base url = {baseUrl}", baseUrl);
@@ -107,66 +117,68 @@ public partial class TagParserBase
     {
         var parser = new HtmlParser();
         var document = parser.ParseDocument(result);
-        
-		ReplaceTagAttribute(document, baseUrl, "img", "src", true);
-		ReplaceTagAttribute(document, baseUrl, "a", "href", false);
 
-		return document.Body.InnerHtml.Trim();
+        ReplaceTagAttribute(document, baseUrl, "img", "src", true);
+        ReplaceTagAttribute(document, baseUrl, "a", "href", false);
+
+        return document.Body.InnerHtml.Trim();
     }
-	
-	private void ReplaceTagAttribute(AngleSharp.Html.Dom.IHtmlDocument document, string baseUrl, string tagName, string attributeName, bool addMissing)
-	{
-		var elements = document.QuerySelectorAll(tagName);
+
+    private void ReplaceTagAttribute(AngleSharp.Html.Dom.IHtmlDocument document, string baseUrl, string tagName, string attributeName, bool addMissing)
+    {
+        var elements = document.QuerySelectorAll(tagName);
         foreach (var element in elements)
         {
-			if (!element.HasAttribute(attributeName) && !addMissing) continue;
-			
-			var sourceUri = element.HasAttribute(attributeName) ? element.GetAttribute(attributeName) : "";
-			
-			if (!sourceUri.IsNullOrEmptyOrData() || sourceUri.StartsWith("#"))
-			{
-				if (sourceUri.IndexOf(':') == -1)
-					sourceUri = _webUtils.RepairUrl(sourceUri, baseUrl);
+            if (!element.HasAttribute(attributeName) && !addMissing) continue;
+
+            var sourceUri = element.HasAttribute(attributeName) ? element.GetAttribute(attributeName) : "";
+
+            if (!sourceUri.IsNullOrEmptyOrData() || sourceUri.StartsWith("#"))
+            {
+                if (sourceUri.StartsWith("http"))
+                    continue;
+
+                sourceUri = _webUtils.RepairUrl(sourceUri, baseUrl);
                 _log.Information("Element {element} set to {attributeName}={sourceUri}", element.GetSelector(), attributeName, sourceUri);
-				element.SetAttribute(attributeName, sourceUri);
-			}
-			else
-			{
-				var alternateAttrName = string.Concat("data-", attributeName);
-				if (element.HasAttribute(alternateAttrName))
-				{
-					sourceUri = element.GetAttribute(alternateAttrName);
-					if (sourceUri.IndexOf(':') == -1)
-						sourceUri = _webUtils.RepairUrl(sourceUri, baseUrl);
-					_log.Information("Element {element} using {alternateAttrName} to set {attributeName}={sourceUri}", element.GetSelector(), alternateAttrName, attributeName, sourceUri);
-					element.SetAttribute(attributeName, sourceUri);
-					continue;
-				}
-				
-				alternateAttrName = string.Concat("data-runner-", attributeName);
-				if (element.HasAttribute(alternateAttrName))
-				{
-					sourceUri = element.GetAttribute(alternateAttrName);
-					if (sourceUri.IndexOf(':') == -1)
-						sourceUri = _webUtils.RepairUrl(sourceUri, baseUrl);
-					_log.Information("Element {element} using {alternateAttrName} to set {attributeName}={sourceUri}", element.GetSelector(), alternateAttrName, attributeName, sourceUri);
-					element.SetAttribute(attributeName, sourceUri);
-					continue;
-				}
-				
-				alternateAttrName = "data-img";
-				if (element.HasAttribute(alternateAttrName))
-				{
-					sourceUri = element.GetAttribute(alternateAttrName);
-					if (sourceUri.IndexOf(':') == -1)
-						sourceUri = _webUtils.RepairUrl(sourceUri, baseUrl);
-					_log.Information("Element {element} using {alternateAttrName} to set {attributeName}={sourceUri}", element.GetSelector(), alternateAttrName, attributeName, sourceUri);
-					element.SetAttribute(attributeName, sourceUri);
-					continue;
-				}
-			}
-		}
-	}
+                element.SetAttribute(attributeName, sourceUri);
+            }
+            else
+            {
+                var alternateAttrName = string.Concat("data-", attributeName);
+                if (element.HasAttribute(alternateAttrName))
+                {
+                    sourceUri = element.GetAttribute(alternateAttrName);
+                    if (sourceUri.IndexOf(':') == -1)
+                        sourceUri = _webUtils.RepairUrl(sourceUri, baseUrl);
+                    _log.Information("Element {element} using {alternateAttrName} to set {attributeName}={sourceUri}", element.GetSelector(), alternateAttrName, attributeName, sourceUri);
+                    element.SetAttribute(attributeName, sourceUri);
+                    continue;
+                }
+
+                alternateAttrName = string.Concat("data-runner-", attributeName);
+                if (element.HasAttribute(alternateAttrName))
+                {
+                    sourceUri = element.GetAttribute(alternateAttrName);
+                    if (sourceUri.IndexOf(':') == -1)
+                        sourceUri = _webUtils.RepairUrl(sourceUri, baseUrl);
+                    _log.Information("Element {element} using {alternateAttrName} to set {attributeName}={sourceUri}", element.GetSelector(), alternateAttrName, attributeName, sourceUri);
+                    element.SetAttribute(attributeName, sourceUri);
+                    continue;
+                }
+
+                alternateAttrName = "data-img";
+                if (element.HasAttribute(alternateAttrName))
+                {
+                    sourceUri = element.GetAttribute(alternateAttrName);
+                    if (sourceUri.IndexOf(':') == -1)
+                        sourceUri = _webUtils.RepairUrl(sourceUri, baseUrl);
+                    _log.Information("Element {element} using {alternateAttrName} to set {attributeName}={sourceUri}", element.GetSelector(), alternateAttrName, attributeName, sourceUri);
+                    element.SetAttribute(attributeName, sourceUri);
+                    continue;
+                }
+            }
+        }
+    }
 
     private string RemoveImgTag(string baseUrl, string result)
     {
