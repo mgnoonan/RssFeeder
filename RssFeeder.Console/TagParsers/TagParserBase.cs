@@ -31,12 +31,6 @@ public partial class TagParserBase
 
     public virtual void PostParse()
     {
-        // Find out which feature flag variation we are using to crawl articles
-        string key = "article-fixup-urls";
-        string identity = _item.FeedAttributes.FeedId;
-        string variation = _client.GetVariation(key, identity);
-        _log.Information("Unlaunch {key} returned variation {variation} for identity {identity}", key, variation, identity);
-
         var result = _item.HtmlAttributes?.GetValueOrDefault("ParserResult") ?? "";
         var baseUrl = _item.OpenGraphAttributes.GetValueOrDefault("og:url") ??
             _item.FeedAttributes.Url ??
@@ -52,10 +46,15 @@ public partial class TagParserBase
             baseUrl = _item.FeedAttributes.Url;
         }
 
-        if (variation == "on")
+        if (GetVariationByKey("article-fixup-urls", _item.FeedAttributes.FeedId) == "on")
         {
             _log.Debug("Base url = {baseUrl}", baseUrl);
             result = FixupRelativeUrls(result, baseUrl);
+        }
+
+        if (GetVariationByKey("image-data-src-override", _item.FeedAttributes.FeedId) == "on")
+        {
+            result = FixupImageSrc(result, baseUrl);
         }
 
         result = RemoveImgTag(baseUrl, result);
@@ -113,6 +112,15 @@ public partial class TagParserBase
         _item.HtmlAttributes["ParserResult"] = result;
     }
 
+    private string GetVariationByKey(string key, string identity)
+    {
+        // Find out which feature flag variation we are using to crawl articles
+        string variation = _client.GetVariation(key, identity);
+        _log.Information("Unlaunch {key} returned variation {variation} for identity {identity}", key, variation, identity);
+
+        return variation;
+    }
+
     private string FixupRelativeUrls(string result, string baseUrl)
     {
         var parser = new HtmlParser();
@@ -120,6 +128,41 @@ public partial class TagParserBase
 
         ReplaceTagAttribute(document, baseUrl, "img", "src", true);
         ReplaceTagAttribute(document, baseUrl, "a", "href", false);
+
+        return document.Body.InnerHtml.Trim();
+    }
+
+    private string FixupImageSrc(string result, string baseUrl)
+    {
+        if (!Uri.TryCreate(baseUrl, UriKind.Absolute, out Uri baseUri))
+        {
+            _log.Warning("Invalid base url {baseUrl}, aborting relative Url fixup", baseUrl);
+            return result;
+        }
+
+        var parser = new HtmlParser();
+        var document = parser.ParseDocument(result);
+
+        foreach (var element in document.QuerySelectorAll("img"))
+        {
+            string src = "";
+            string datasrc = "";
+
+            if (element.HasAttribute("src"))
+            {
+                src = element.GetAttribute("src");
+            }
+            if (element.HasAttribute("data-src"))
+            {
+                datasrc = element.GetAttribute("data-src");
+            }
+
+            if (!string.IsNullOrEmpty(datasrc))
+            {
+                _log.Information("Replacing src={src} with data-src={datasrc}", src, datasrc);
+                element.SetAttribute("src", datasrc);
+            }
+        }
 
         return document.Body.InnerHtml.Trim();
     }
