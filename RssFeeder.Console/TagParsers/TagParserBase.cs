@@ -107,65 +107,66 @@ public partial class TagParserBase
     {
         var parser = new HtmlParser();
         var document = parser.ParseDocument(result);
+        
+		ReplaceTagAttribute(document, baseUrl, "img", "src", true);
+		ReplaceTagAttribute(document, baseUrl, "a", "href", false);
 
-        result = ReplaceTagAttribute(result, baseUrl, document.QuerySelectorAll("a"), "a", "href");
-        result = ReplaceTagAttribute(result, baseUrl, document.QuerySelectorAll("img"), "img", "src");
-
-        return result;
+		return document.Body.InnerHtml.Trim();
     }
-
-    private string ReplaceTagAttribute(string result, string baseUrl, IHtmlCollection<IElement> elements, string tagName, string attributeName)
-    {
-        if (elements is null || elements.Length == 0)
-        {
-            _log.Debug("Empty element collection {tagName}. Aborted.", tagName);
-            return result;
-        }
-
+	
+	private void ReplaceTagAttribute(AngleSharp.Html.Dom.IHtmlDocument document, string baseUrl, string tagName, string attributeName, bool addMissing)
+	{
+		var elements = document.QuerySelectorAll(tagName);
         foreach (var element in elements)
         {
-            var relativeUri = element.GetAttribute(attributeName);
-            string sourceAttributeName = attributeName;
-
-            if (string.IsNullOrEmpty(relativeUri))
-            {
-                sourceAttributeName = string.Concat("data-", attributeName);
-                relativeUri = element.GetAttribute(sourceAttributeName);
-            }
-
-            if (string.IsNullOrEmpty(relativeUri))
-            {
-                sourceAttributeName = string.Concat("data-runner-", attributeName);
-                relativeUri = element.GetAttribute(sourceAttributeName);
-            }
-
-            if (string.IsNullOrEmpty(relativeUri))
-                continue;
-
-            result = ReplaceTagAttribute(result, baseUrl, tagName, sourceAttributeName, attributeName, relativeUri);
-        }
-
-        return result;
-    }
-
-    private string ReplaceTagAttribute(string result, string baseUrl, string tagName, string sourceAttributeName, string targetAttributeName, string relativeUri)
-    {
-        var pos = relativeUri?.IndexOf(':');
-        if (pos == -1 || relativeUri.StartsWith("#"))
-        {
-            var absoluteUri = _webUtils.RepairUrl(relativeUri, baseUrl);
-            _log.Information("Replacing relative url {relativeUri} in {tagName} with {attributeName}={absoluteUri}", relativeUri, tagName, targetAttributeName, absoluteUri);
-            result = result.Replace($"{sourceAttributeName}=\"{relativeUri}\"", $"{targetAttributeName}=\"{absoluteUri}\"");
-        }
-        else if (sourceAttributeName != targetAttributeName)
-        {
-            var absoluteUri = _webUtils.RepairUrl(relativeUri, baseUrl);
-            _log.Information("Replacing alternative url attribute {sourceAttributeName} in {tagName} with {targetAttributeName}={absoluteUri}", sourceAttributeName, tagName, targetAttributeName, absoluteUri);
-            result = result.Replace($"{sourceAttributeName}=\"{relativeUri}\"", $"{targetAttributeName}=\"{absoluteUri}\"");
-        }
-
-        return result;
-    }
+			if (!element.HasAttribute(attributeName) && !addMissing) continue;
+			
+			var sourceUri = element.HasAttribute(attributeName) ? element.GetAttribute(attributeName) : "";
+			
+			if (!sourceUri.IsNullOrEmptyOrData() || sourceUri.StartsWith("#"))
+			{
+				if (sourceUri.IndexOf(':') == -1)
+					sourceUri = _webUtils.RepairUrl(sourceUri, baseUrl);
+                _log.Information("Element {element} set to {attributeName}={sourceUri}", element.GetSelector(), attributeName, sourceUri);
+				element.SetAttribute(attributeName, sourceUri);
+			}
+			else
+			{
+				var alternateAttrName = string.Concat("data-", attributeName);
+				if (element.HasAttribute(alternateAttrName))
+				{
+					sourceUri = element.GetAttribute(alternateAttrName);
+					if (sourceUri.IndexOf(':') == -1)
+						sourceUri = _webUtils.RepairUrl(sourceUri, baseUrl);
+					_log.Information("Element {element} using {alternateAttrName} to set {attributeName}={sourceUri}", element.GetSelector(), alternateAttrName, attributeName, sourceUri);
+					element.SetAttribute(attributeName, sourceUri);
+					continue;
+				}
+				
+				alternateAttrName = string.Concat("data-runner-", attributeName);
+				if (element.HasAttribute(alternateAttrName))
+				{
+					sourceUri = element.GetAttribute(alternateAttrName);
+					if (sourceUri.IndexOf(':') == -1)
+						sourceUri = _webUtils.RepairUrl(sourceUri, baseUrl);
+					_log.Information("Element {element} using {alternateAttrName} to set {attributeName}={sourceUri}", element.GetSelector(), alternateAttrName, attributeName, sourceUri);
+					element.SetAttribute(attributeName, sourceUri);
+					continue;
+				}
+				
+				alternateAttrName = "data-img";
+				if (element.HasAttribute(alternateAttrName))
+				{
+					sourceUri = element.GetAttribute(alternateAttrName);
+					if (sourceUri.IndexOf(':') == -1)
+						sourceUri = _webUtils.RepairUrl(sourceUri, baseUrl);
+					_log.Information("Element {element} using {alternateAttrName} to set {attributeName}={sourceUri}", element.GetSelector(), alternateAttrName, attributeName, sourceUri);
+					element.SetAttribute(attributeName, sourceUri);
+					continue;
+				}
+			}
+		}
+	}
 
     private string RemoveImgTag(string baseUrl, string result)
     {
