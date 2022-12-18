@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using AngleSharp.Html.Dom;
 
 namespace RssFeeder.Console.TagParsers;
 
@@ -36,6 +37,9 @@ public partial class TagParserBase
             _item.FeedAttributes.Url ??
             "";
 
+        var parser = new HtmlParser();
+        var document = parser.ParseDocument(result);
+
         // Some sites do not correctly construct their cannonical url for og:url,
         // so use the feed url as a fallback
         // NOTE: the original feed URL might be from a different site, i.e. a url shortening site
@@ -49,15 +53,16 @@ public partial class TagParserBase
         if (GetVariationByKey("article-fixup-urls", _item.FeedAttributes.FeedId) == "on")
         {
             _log.Debug("Base url = {baseUrl}", baseUrl);
-            result = FixupRelativeUrls(result, baseUrl);
+            FixupRelativeUrls(document, baseUrl);
         }
 
         if (GetVariationByKey("image-data-src-override", _item.FeedAttributes.FeedId) == "on")
         {
-            result = FixupImageSrc(result, baseUrl);
+            FixupImageSrc(document, baseUrl);
         }
 
-        result = RemoveImgTag(baseUrl, result);
+        RemoveDuplicateImgTag(document);
+        result = document.Body.InnerHtml.Trim();
 
         // Check for embedded videos
         if (_item.SiteName != "youtube" || _item.SiteName != "rumble")
@@ -121,27 +126,19 @@ public partial class TagParserBase
         return variation;
     }
 
-    private string FixupRelativeUrls(string result, string baseUrl)
+    private void FixupRelativeUrls(IHtmlDocument document, string baseUrl)
     {
-        var parser = new HtmlParser();
-        var document = parser.ParseDocument(result);
-
         ReplaceTagAttribute(document, baseUrl, "img", "src", true);
         ReplaceTagAttribute(document, baseUrl, "a", "href", false);
-
-        return document.Body.InnerHtml.Trim();
     }
 
-    private string FixupImageSrc(string result, string baseUrl)
+    private void FixupImageSrc(IHtmlDocument document, string baseUrl)
     {
         if (!Uri.TryCreate(baseUrl, UriKind.Absolute, out Uri baseUri))
         {
             _log.Warning("Invalid base url {baseUrl}, aborting relative Url fixup", baseUrl);
-            return result;
+            return;
         }
-
-        var parser = new HtmlParser();
-        var document = parser.ParseDocument(result);
 
         foreach (var element in document.QuerySelectorAll("img"))
         {
@@ -163,11 +160,9 @@ public partial class TagParserBase
                 element.SetAttribute("src", datasrc);
             }
         }
-
-        return document.Body.InnerHtml.Trim();
     }
 
-    private void ReplaceTagAttribute(AngleSharp.Html.Dom.IHtmlDocument document, string baseUrl, string tagName, string attributeName, bool addMissing)
+    private void ReplaceTagAttribute(IHtmlDocument document, string baseUrl, string tagName, string attributeName, bool addMissing)
     {
         var elements = document.QuerySelectorAll(tagName);
         foreach (var element in elements)
@@ -223,7 +218,7 @@ public partial class TagParserBase
         }
     }
 
-    private string RemoveImgTag(string baseUrl, string result)
+    private void RemoveDuplicateImgTag(IHtmlDocument document)
     {
         var imgUrl = _item.OpenGraphAttributes.GetValueOrDefault("og:image:secure_url") ??
             _item.OpenGraphAttributes.GetValueOrDefault("og:image:url") ??
@@ -232,14 +227,19 @@ public partial class TagParserBase
 
         if (imgUrl.Length > 0)
         {
-            _log.Debug("Attempting removal of image {url}", imgUrl);
-            result = RemoveHtmlTag(result, "img", GetHostAndPathOnly(baseUrl, imgUrl));
+            var elements = document.QuerySelectorAll("img");
+            foreach (var element in elements)
+            {
+                var parentElement = element.ParentElement;
 
-            // CFP also wraps the image with an anchor tag
-            result = RemoveHtmlTag(result, "a", GetHostAndPathOnly(baseUrl, imgUrl));
+                if (element.HasAttribute("src") && element.GetAttribute("src") == imgUrl)
+                    element.Remove();
+
+                // CFP also wraps the image with an anchor tag
+                if (parentElement.NodeName.ToLower() == "a")
+                    parentElement.Remove();
+            }
         }
-
-        return result;
     }
 
     public virtual void PreParse()
