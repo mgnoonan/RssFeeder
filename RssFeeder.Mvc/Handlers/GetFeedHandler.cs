@@ -63,14 +63,18 @@ public class GetFeedHandler : IRequestHandler<GetFeedQuery, string>
                     var si = new SyndicationItem()
                     {
                         Id = item.Id,
-                        Title = Regex.Replace(item.Title, "[\u0001-\u001f]", ""),
-                        Description = Regex.Replace(item.ArticleText, "[\u0001-\u001f]", ""),
+                        Title = Regex.Replace(item.Title, "[\u0001-\u001f\ufffe]", ""),
+                        Description = Regex.Replace(item.ArticleText, "[\u0001-\u001f\ufffe]", ""),
                         Published = item.DateAdded,
                         LastUpdated = item.DateAdded
                     };
 
                     si.AddLink(new SyndicationLink(new Uri(item.Url)));
-                    si.AddContributor(new SyndicationPerson(string.IsNullOrWhiteSpace(item.SiteName) ? item.HostName : item.SiteName, feed.authoremail, AtomContributorTypes.Author));
+                    si.AddContributor(
+                        new SyndicationPerson(
+                            string.IsNullOrWhiteSpace(item.SiteName) ? string.IsNullOrWhiteSpace(item.HostName) ? "Name Unavailable" : item.HostName : item.SiteName,
+                            feed.authoremail,
+                            AtomContributorTypes.Author));
 
                     await rssWriter.Write(si);
                 }
