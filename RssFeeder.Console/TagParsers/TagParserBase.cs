@@ -64,7 +64,7 @@ public partial class TagParserBase
         RemoveDuplicateImgTag(document);
 
         // Check for embedded videos
-        if (_item.SiteName != "youtube" || _item.SiteName != "rumble")
+        if (_item.SiteName != "youtube" && _item.SiteName != "rumble")
         {
             if (TryGetVideoIFrame(document, "rumble.com/embed", out IElement iframeElement))
             {
