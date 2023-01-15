@@ -79,7 +79,7 @@ class CitizenFreePressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                 string title = WebUtility.HtmlDecode(node.Text().Trim());
 
                 var item = CreateNodeLinks(filters, node, "column 1", count++, feedUrl, false);
-                if (item != null && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
+                if (item != null && !item.FeedAttributes.Url.Contains("/column-1/") && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
                 {
                     _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                     list.Add(item);
@@ -98,7 +98,7 @@ class CitizenFreePressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                 string title = WebUtility.HtmlDecode(node.Text().Trim());
 
                 var item = CreateNodeLinks(filters, node, "column 2", count++, feedUrl, false);
-                if (item != null && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
+                if (item != null && !item.FeedAttributes.Url.Contains("/column-2/") && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
                 {
                     _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                     list.Add(item);
@@ -117,7 +117,7 @@ class CitizenFreePressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                 string title = WebUtility.HtmlDecode(node.Text().Trim());
 
                 var item = CreateNodeLinks(filters, node, "column 3", count++, feedUrl, false);
-                if (item != null && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
+                if (item != null && !item.FeedAttributes.Url.Contains("/column-3/") && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
                 {
                     _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                     list.Add(item);
