@@ -136,7 +136,7 @@ public partial class TagParserBase
                 datasrc = element.GetAttribute("data-src");
             }
 
-            if (!string.IsNullOrEmpty(datasrc))
+            if (!string.IsNullOrEmpty(datasrc) && datasrc != src)
             {
                 _log.Information("Replacing src={src} with data-src={datasrc}", src, datasrc);
                 element.SetAttribute("src", datasrc);
