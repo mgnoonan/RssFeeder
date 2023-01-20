@@ -330,10 +330,14 @@ public class WebUtils : IWebUtils
 
     public string RepairUrl(string relativeUrl, Uri baseUri)
     {
-        string absoluteUri = new Uri(baseUri, relativeUrl).AbsoluteUri;
+        if (!Uri.TryCreate(baseUri, relativeUrl, out Uri absoluteUri))
+        {
+            _log.Warning("Invalid relative url {relativeUrl}, aborting relative Url fixup", relativeUrl);
+            return relativeUrl;
+        }
 
         _log.Information("Repaired link '{relativeUrl}' to '{absoluteUri}'", relativeUrl, absoluteUri);
-        return absoluteUri;
+        return absoluteUri.AbsoluteUri;
     }
 
     public (HttpStatusCode, string, Uri, string) DownloadString(string url)
