@@ -317,50 +317,27 @@ public class WebUtils : IWebUtils
     /// <returns>
     /// The sanitized and repaired URL, although not all repairs will be successful
     /// </returns>
-    public string RepairUrl(string pathAndQuery, string defaultBaseUrl)
+    public string RepairUrl(string relativeUrl, string defaultBaseUrl)
     {
-        _log.Debug("Attempting to repair link '{url}'", pathAndQuery);
-        StringBuilder sb = new StringBuilder();
-
-        if (pathAndQuery.StartsWith("//"))
+        if (!Uri.TryCreate(defaultBaseUrl, UriKind.Absolute, out Uri baseUri))
         {
-            // They specified a protocol-independent URL, force it to https
-            sb.AppendFormat("https:{0}", pathAndQuery);
-        }
-        else
-        {
-            if (pathAndQuery.Contains("//"))
-            {
-                // They did try to specify a base url, but clearly messed it up because it doesn't start with 'http'
-                // Get the starting position of the double-slash, we'll use everything after that
-                int pos = pathAndQuery.IndexOf("//") + 2;
-
-                // At this point in web history, we should be able to just use SSL/TLS for the protocol
-                // However, this may fail if the destination site doesn't support SSL/TLS so we are taking a risk
-                sb.AppendFormat("https://{0}", pathAndQuery.Substring(pos));
-            }
-            else
-            {
-                // Relative path specified, or they goofed the url beyond repair so this is the best we can do
-                // Start with the defaultBaseUrl and add a trailing forward slash
-                var uri = new Uri(defaultBaseUrl);
-                defaultBaseUrl = uri.GetLeftPart(UriPartial.Authority);
-                sb.AppendFormat("{0}{1}", defaultBaseUrl.Trim(), defaultBaseUrl.EndsWith("/") ? "" : "/");
-
-                // Account for any starting forward slash
-                if (!pathAndQuery.StartsWith("/"))
-                {
-                    sb.Append(pathAndQuery);
-                }
-                else
-                {
-                    sb.Append(pathAndQuery[1..]);
-                }
-            }
+            _log.Warning("Invalid base url {baseUrl}, aborting relative Url fixup", defaultBaseUrl);
+            return relativeUrl;
         }
 
-        _log.Information("Repaired link '{pathAndQuery}' to '{url}'", pathAndQuery, sb.ToString());
-        return sb.ToString();
+        return RepairUrl(relativeUrl, baseUri);
+    }
+
+    public string RepairUrl(string relativeUrl, Uri baseUri)
+    {
+        if (!Uri.TryCreate(baseUri, relativeUrl, out Uri absoluteUri))
+        {
+            _log.Warning("Invalid relative url {relativeUrl}, aborting relative Url fixup", relativeUrl);
+            return relativeUrl;
+        }
+
+        _log.Information("Repaired link '{relativeUrl}' to '{absoluteUri}'", relativeUrl, absoluteUri);
+        return absoluteUri.AbsoluteUri;
     }
 
     public (HttpStatusCode, string, Uri, string) DownloadString(string url)

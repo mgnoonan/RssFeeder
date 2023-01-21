@@ -133,8 +133,16 @@ public class ArticleParser : IArticleParser
             url = _webUtils.RepairUrl(url, item.FeedAttributes.Url);
         }
 
-        Uri uri = new Uri(url);
-        return uri.GetComponents(UriComponents.Path, UriFormat.Unescaped).ToLower();
+        try
+        {
+            Uri uri = new Uri(url);
+            return uri.GetComponents(UriComponents.Path, UriFormat.Unescaped).ToLower();
+        }
+        catch (UriFormatException ex)
+        {
+            _log.Error(ex, "Invalid URL cannot convert {invalidUrl}", url);
+            throw;
+        }
     }
 
     private string GetHostName(RssFeedItem item)
@@ -184,10 +192,15 @@ public class ArticleParser : IArticleParser
             {
                 string contentValue = node.Attributes["content"]?.Value ?? "";
 
-                while (contentValue.Contains("&#x"))
+                if (contentValue.Contains("&#x") || contentValue.Contains("&#32;"))
                 {
                     contentValue = System.Web.HttpUtility.HtmlDecode(contentValue);
-                    _log.Debug("Decoded content value '{contentValue}'", contentValue);
+                    _log.Information("Decoded {propertyValue} content value '{contentValue}'", propertyValue, contentValue);
+                }
+                else if (contentValue.Contains("%3A"))
+                {
+                    contentValue = System.Web.HttpUtility.UrlDecode(contentValue);
+                    _log.Information("Decoded {propertyValue} content value '{contentValue}'", propertyValue, contentValue);
                 }
                 _log.Debug("Found open graph attribute '{propertyValue}':'{contentValue}'", propertyValue, contentValue);
 
@@ -220,11 +233,21 @@ public class ArticleParser : IArticleParser
         // Title tag
         var node = doc.DocumentNode.SelectSingleNode($"//title");
         string contentValue = node?.InnerText.Trim() ?? string.Empty;
+        if (contentValue.Contains("&#x") || contentValue.Contains("&#32;"))
+        {
+            contentValue = System.Web.HttpUtility.HtmlDecode(contentValue);
+            _log.Information("Decoded {propertyValue} content value '{contentValue}'", node.Name, contentValue);
+        }
         attributes.Add("title", contentValue);
 
         // H1 values for possible headline - may not exist
         node = doc.DocumentNode.SelectSingleNode($"//h1");
         contentValue = node?.InnerText.Trim() ?? string.Empty;
+        if (contentValue.Contains("&#x") || contentValue.Contains("&#32;"))
+        {
+            contentValue = System.Web.HttpUtility.HtmlDecode(contentValue);
+            _log.Information("Decoded {propertyValue} content value '{contentValue}'", node.Name, contentValue);
+        }
         attributes.Add("h1", contentValue);
 
         // Description meta tag - may not exist

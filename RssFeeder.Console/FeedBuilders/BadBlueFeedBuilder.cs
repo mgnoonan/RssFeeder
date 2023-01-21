@@ -15,14 +15,17 @@ class BadBlueFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         // Find out which feature flag variation we are using to crawl articles
         string key = "article-count-limit";
         string identity = feed.CollectionName;
-        string variation = _client.GetVariation(key, identity);
+        string variation = _client.GetVariation(key, identity, new List<UnlaunchAttribute>
+        {
+            UnlaunchAttribute.NewBoolean("weekend", DateTime.Now.DayOfWeek == DayOfWeek.Saturday || DateTime.Now.DayOfWeek == DayOfWeek.Sunday)
+        });
         _log.Information("Unlaunch {key} returned variation {variation} for identity {identity}", key, variation, identity);
 
         _articleMaxCount = variation switch
         {
-            "high" => 35,
-            "medium" => 30,
-            "low" => 25,
+            "high" => 30,
+            "medium" => 25,
+            "low" => 20,
             "unlimited" => 1000,
             _ => throw new ArgumentException("Unexpected variation")
         };

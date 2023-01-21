@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using AngleSharp.Html.Dom;
 
 namespace RssFeeder.Console.TagParsers;
 
@@ -6,13 +7,15 @@ public partial class TagParserBase
 {
     private readonly ILogger _log;
     private readonly IUnlaunchClient _client;
+    private readonly IWebUtils _webUtils;
     protected string _sourceHtml;
     protected RssFeedItem _item;
 
-    public TagParserBase(ILogger log, IUnlaunchClient client)
+    public TagParserBase(ILogger log, IUnlaunchClient client, IWebUtils webUtils)
     {
         _log = log;
         _client = client;
+        _webUtils = webUtils;
     }
 
     [GeneratedRegex("<br\\s?\\/?>")]
@@ -29,122 +32,175 @@ public partial class TagParserBase
 
     public virtual void PostParse()
     {
-        // Find out which feature flag variation we are using to crawl articles
-        string key = "article-fixup-urls";
-        string identity = _item.FeedAttributes.FeedId;
-        string variation = _client.GetVariation(key, identity);
-        _log.Information("Unlaunch {key} returned variation {variation} for identity {identity}", key, variation, identity);
-
         var result = _item.HtmlAttributes?.GetValueOrDefault("ParserResult") ?? "";
         var baseUrl = _item.OpenGraphAttributes.GetValueOrDefault("og:url") ??
             _item.FeedAttributes.Url ??
             "";
 
-        if (variation == "on")
+        var parser = new HtmlParser();
+        var document = parser.ParseDocument(result);
+
+        // Some sites do not correctly construct their cannonical url for og:url,
+        // so use the feed url as a fallback
+        // NOTE: the original feed URL might be from a different site, i.e. a url shortening site
+        // so using that for the baseUrl may not correctly resolve all relative references
+        if (!baseUrl.StartsWith("http"))
+        {
+            _log.Warning("Base URL {baseUrl} is still relative, falling back to {feedUrl}", baseUrl, _item.FeedAttributes.Url);
+            baseUrl = _item.FeedAttributes.Url;
+        }
+
+        if (GetVariationByKey("article-fixup-urls", _item.FeedAttributes.FeedId) == "on")
         {
             _log.Debug("Base url = {baseUrl}", baseUrl);
-            result = FixupRelativeUrls(result, baseUrl);
+            FixupRelativeUrls(document, baseUrl);
         }
 
-        result = RemoveImgTag(result);
+        if (GetVariationByKey("image-data-src-override", _item.FeedAttributes.FeedId) == "on")
+        {
+            FixupImageSrc(document, baseUrl);
+        }
+
+        RemoveDuplicateImgTag(document);
 
         // Check for embedded videos
-        if (_item.SiteName != "youtube" || _item.SiteName != "rumble")
+        if (_item.SiteName != "youtube" && _item.SiteName != "rumble")
         {
-            if (TryGetVideoIFrame(result, "rumble.com/embed", out IElement iframeElement))
+            if (TryGetVideoIFrame(document, "rumble.com/embed", out IElement iframeElement))
             {
-                string url = iframeElement.Attributes["src"].Value;
-                string type = iframeElement.HasAttribute("type") ? iframeElement.Attributes["type"].Value : "text/html";
-                string width = iframeElement.HasAttribute("width") ? iframeElement.Attributes["width"].Value : "640";
-                string height = iframeElement.HasAttribute("height") ? iframeElement.Attributes["height"].Value : "480";
-                _log.Information("Embedded video {type} detected {url}", type, url);
-
-                _item.OpenGraphAttributes.Add("og:x:video", url);
-                _item.OpenGraphAttributes.Add("og:x:video:type", type);
-                _item.OpenGraphAttributes.Add("og:x:video:width", width);
-                _item.OpenGraphAttributes.Add("og:x:video:height", height);
-
-                result = RemoveHtmlTag(result, "iframe", GetHostAndPathOnly(url));
+                ExtractIFrameMetadata(iframeElement);
             }
-            else if (TryGetVideoIFrame(result, "bitchute.com/embed", out iframeElement))
+            else if (TryGetVideoIFrame(document, "bitchute.com/embed", out iframeElement))
             {
-                string url = iframeElement.Attributes["src"].Value;
-                string type = iframeElement.HasAttribute("type") ? iframeElement.Attributes["type"].Value : "text/html";
-                string width = iframeElement.HasAttribute("width") ? iframeElement.Attributes["width"].Value : "640";
-                string height = iframeElement.HasAttribute("height") ? iframeElement.Attributes["height"].Value : "480";
-                _log.Information("Embedded video {type} detected {url}", type, url);
-
-                _item.OpenGraphAttributes.Add("og:x:video", url);
-                _item.OpenGraphAttributes.Add("og:x:video:type", type);
-                _item.OpenGraphAttributes.Add("og:x:video:width", width);
-                _item.OpenGraphAttributes.Add("og:x:video:height", height);
-
-                result = RemoveHtmlTag(result, "iframe", GetHostAndPathOnly(url));
+                ExtractIFrameMetadata(iframeElement);
             }
-            else if (TryGetVideoIFrame(result, "youtube.com/embed", out iframeElement))
+            else if (TryGetVideoIFrame(document, "youtube.com/embed", out iframeElement))
             {
-                string url = iframeElement.Attributes["src"].Value;
-                string type = iframeElement.HasAttribute("type") ? iframeElement.Attributes["type"].Value : "text/html";
-                string width = iframeElement.HasAttribute("width") ? iframeElement.Attributes["width"].Value : "640";
-                string height = iframeElement.HasAttribute("height") ? iframeElement.Attributes["height"].Value : "480";
-                _log.Information("Embedded video {type} detected {url}", type, url);
-
-                _item.OpenGraphAttributes.Add("og:x:video", url);
-                _item.OpenGraphAttributes.Add("og:x:video:type", type);
-                _item.OpenGraphAttributes.Add("og:x:video:width", width);
-                _item.OpenGraphAttributes.Add("og:x:video:height", height);
-
-                result = RemoveHtmlTag(result, "iframe", GetHostAndPathOnly(url));
+                ExtractIFrameMetadata(iframeElement);
             }
         }
 
-        _item.HtmlAttributes["ParserResult"] = result;
+        _item.HtmlAttributes["ParserResult"] = document.Body.InnerHtml.Trim();
     }
 
-    private string FixupRelativeUrls(string result, string baseUrl)
+    private void ExtractIFrameMetadata(IElement iframeElement)
+    {
+        string url = iframeElement.GetAttribute("src");
+        string type = iframeElement.HasAttribute("type") ? iframeElement.GetAttribute("type") : "text/html";
+        string width = iframeElement.HasAttribute("width") ? iframeElement.GetAttribute("width") : "640";
+        string height = iframeElement.HasAttribute("height") ? iframeElement.GetAttribute("height") : "480";
+        _log.Information("Embedded video {type} detected {url}", type, url);
+
+        _item.OpenGraphAttributes.Add("og:x:video", url);
+        _item.OpenGraphAttributes.Add("og:x:video:type", type);
+        _item.OpenGraphAttributes.Add("og:x:video:width", width);
+        _item.OpenGraphAttributes.Add("og:x:video:height", height);
+
+        iframeElement.Remove();
+    }
+
+    private string GetVariationByKey(string key, string identity)
+    {
+        // Find out which feature flag variation we are using to crawl articles
+        string variation = _client.GetVariation(key, identity);
+        _log.Information("Unlaunch {key} returned variation {variation} for identity {identity}", key, variation, identity);
+
+        return variation;
+    }
+
+    private void FixupRelativeUrls(IHtmlDocument document, string baseUrl)
+    {
+        ReplaceTagAttribute(document, baseUrl, "img", "src", true);
+        ReplaceTagAttribute(document, baseUrl, "a", "href", false);
+    }
+
+    private void FixupImageSrc(IHtmlDocument document, string baseUrl)
     {
         if (!Uri.TryCreate(baseUrl, UriKind.Absolute, out Uri baseUri))
         {
             _log.Warning("Invalid base url {baseUrl}, aborting relative Url fixup", baseUrl);
-            return result;
+            return;
         }
 
-        var parser = new HtmlParser();
-        var document = parser.ParseDocument(result);
-
-        result = ReplaceTagAttribute(result, baseUri, document.QuerySelectorAll("a"), "a", "href");
-        result = ReplaceTagAttribute(result, baseUri, document.QuerySelectorAll("img"), "img", "src");
-
-        return result;
-    }
-
-    private string ReplaceTagAttribute(string result, Uri baseUri, IHtmlCollection<IElement> elements, string tagName, string attributeName)
-    {
-        if (elements is null || elements.Length == 0)
+        foreach (var element in document.QuerySelectorAll("img"))
         {
-            _log.Debug("Empty element collection {tagName}. Aborted.", tagName);
-            return result;
-        }
+            string src = "";
+            string datasrc = "";
 
-        foreach (var element in elements)
-        {
-            var relativeUri = element.GetAttribute(attributeName);
-            if (string.IsNullOrEmpty(relativeUri))
-                continue;
-
-            var pos = relativeUri?.IndexOf(':');
-            if (pos == -1 || relativeUri.StartsWith("#"))
+            if (element.HasAttribute("src"))
             {
-                var absoluteUri = new Uri(baseUri, relativeUri).AbsoluteUri;
-                _log.Information("Replacing relative url {relativeUri} in {tagName} with {attributeName}={absoluteUri}", relativeUri, tagName, attributeName, absoluteUri);
-                result = result.Replace($"{attributeName}=\"{relativeUri}\"", $"{attributeName}=\"{absoluteUri}\"");
+                src = element.GetAttribute("src");
+            }
+            if (element.HasAttribute("data-src"))
+            {
+                datasrc = element.GetAttribute("data-src");
+            }
+
+            if (!string.IsNullOrEmpty(datasrc) && datasrc != src)
+            {
+                _log.Information("Replacing src={src} with data-src={datasrc}", src, datasrc);
+                element.SetAttribute("src", datasrc);
             }
         }
-
-        return result;
     }
 
-    private string RemoveImgTag(string result)
+    private void ReplaceTagAttribute(IHtmlDocument document, string baseUrl, string tagName, string attributeName, bool addMissing)
+    {
+        var elements = document.QuerySelectorAll(tagName);
+        foreach (var element in elements)
+        {
+            if (!element.HasAttribute(attributeName) && !addMissing) continue;
+
+            var sourceUri = element.HasAttribute(attributeName) ? element.GetAttribute(attributeName) : "";
+
+            if (!sourceUri.IsNullOrEmptyOrData() || sourceUri.StartsWith("#"))
+            {
+                if (sourceUri.StartsWith("http") || sourceUri.StartsWith("mailto"))
+                    continue;
+
+                sourceUri = _webUtils.RepairUrl(sourceUri, baseUrl);
+                _log.Information("Element {element} set to {attributeName}={sourceUri}", element.GetSelector(), attributeName, sourceUri);
+                element.SetAttribute(attributeName, sourceUri);
+            }
+            else
+            {
+                var alternateAttrName = string.Concat("data-", attributeName);
+                if (element.HasAttribute(alternateAttrName))
+                {
+                    sourceUri = element.GetAttribute(alternateAttrName);
+                    if (sourceUri.IndexOf(':') == -1)
+                        sourceUri = _webUtils.RepairUrl(sourceUri, baseUrl);
+                    _log.Information("Element {element} using {alternateAttrName} to set {attributeName}={sourceUri}", element.GetSelector(), alternateAttrName, attributeName, sourceUri);
+                    element.SetAttribute(attributeName, sourceUri);
+                    continue;
+                }
+
+                alternateAttrName = string.Concat("data-runner-", attributeName);
+                if (element.HasAttribute(alternateAttrName))
+                {
+                    sourceUri = element.GetAttribute(alternateAttrName);
+                    if (sourceUri.IndexOf(':') == -1)
+                        sourceUri = _webUtils.RepairUrl(sourceUri, baseUrl);
+                    _log.Information("Element {element} using {alternateAttrName} to set {attributeName}={sourceUri}", element.GetSelector(), alternateAttrName, attributeName, sourceUri);
+                    element.SetAttribute(attributeName, sourceUri);
+                    continue;
+                }
+
+                alternateAttrName = "data-img";
+                if (element.HasAttribute(alternateAttrName))
+                {
+                    sourceUri = element.GetAttribute(alternateAttrName);
+                    if (sourceUri.IndexOf(':') == -1)
+                        sourceUri = _webUtils.RepairUrl(sourceUri, baseUrl);
+                    _log.Information("Element {element} using {alternateAttrName} to set {attributeName}={sourceUri}", element.GetSelector(), alternateAttrName, attributeName, sourceUri);
+                    element.SetAttribute(attributeName, sourceUri);
+                    continue;
+                }
+            }
+        }
+    }
+
+    private void RemoveDuplicateImgTag(IHtmlDocument document)
     {
         var imgUrl = _item.OpenGraphAttributes.GetValueOrDefault("og:image:secure_url") ??
             _item.OpenGraphAttributes.GetValueOrDefault("og:image:url") ??
@@ -153,86 +209,31 @@ public partial class TagParserBase
 
         if (imgUrl.Length > 0)
         {
-            _log.Debug("Attempting removal of image {url}", imgUrl);
-            result = RemoveHtmlTag(result, "img", GetHostAndPathOnly(imgUrl));
+            var elements = document.QuerySelectorAll("img");
+            foreach (var element in elements)
+            {
+                var parentElement = element.ParentElement;
 
-            // CFP also wraps the image with an anchor tag
-            result = RemoveHtmlTag(result, "a", GetHostAndPathOnly(imgUrl));
+                if (element.HasAttribute("src") && element.GetAttribute("src") == imgUrl)
+                    element.Remove();
+
+                // CFP also wraps the image with an anchor tag
+                if (parentElement.NodeName.ToLower() == "a")
+                    parentElement.Remove();
+            }
         }
-
-        return result;
     }
 
     public virtual void PreParse()
     { }
 
-    private List<int> GetCountSubstring(string source, string pattern)
+    private bool TryGetVideoIFrame(IHtmlDocument document, string pattern, out IElement iframe)
     {
-        List<int> positions = new();
-        int pos = 0;
-
-        while ((pos < source.Length) && (pos = source.IndexOf(pattern, pos)) != -1)
-        {
-            positions.Add(pos);
-            pos += pattern.Length;
-        }
-
-        return positions;
-    }
-
-    private string RemoveHtmlTag(string html, string tagName, string pattern)
-    {
-        if (string.IsNullOrEmpty(pattern)) return html;
-
-        var positions = GetCountSubstring(html, pattern);
-
-        foreach (int pos in positions)
-        {
-            int startPos = html[..pos].LastIndexOf($"<{tagName} ");
-            if (startPos == -1) continue;
-
-            _log.Debug("Removing {pattern}, starting position = {startPos}", pattern, startPos);
-            string endTag = $"</{tagName}>";
-            int endPos = html.IndexOf(endTag, startPos);
-            if (endPos == -1)
-            {
-                endTag = ">";
-                endPos = html.IndexOf(endTag, startPos);
-            }
-
-            var length = endPos - startPos + endTag.Length;
-            _log.Information("Removed tag {tagName} by {pattern} starting from {start} for length {length}", tagName, pattern, startPos, length);
-            return html.Remove(startPos, length);
-        }
-
-        _log.Debug("Search pattern not found. Nothing replaced.");
-        return html;
-    }
-
-    private string GetHostAndPathOnly(string url)
-    {
-        if (string.IsNullOrEmpty(url)) return string.Empty;
-
-        if (Uri.TryCreate(url, UriKind.Absolute, out var uri))
-        {
-            return uri.GetComponents(UriComponents.Scheme | UriComponents.Host | UriComponents.Path, UriFormat.Unescaped);
-        }
-
-        _log.Warning("Unable to parse url {url}", url);
-        return string.Empty;
-    }
-
-    private bool TryGetVideoIFrame(string html, string pattern, out IElement iframe)
-    {
-        // Load and parse the html from the source file
-        var parser = new HtmlParser();
-        var document = parser.ParseDocument(html);
-
         var elements = document.QuerySelectorAll("iframe");
 
         foreach (var element in elements)
         {
-            if (element.HasAttribute("src") && element.Attributes["src"].Value.Contains(pattern))
+            if (element.HasAttribute("src") && element.GetAttribute("src").Contains(pattern))
             {
                 iframe = element;
                 return true;

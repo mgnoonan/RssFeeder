@@ -70,7 +70,8 @@
     "Filters": [
       "3fa6dfe31a8d75725aaa5620243838f2",
       "b73f81a2fa4475d68ba7ba39faf9dfb6",
-      "9efbe7b79d607392f56e97f9a2a8441d"
+      "9efbe7b79d607392f56e97f9a2a8441d",
+      "1ab78eb41b5c38192fb6b5eeab468046"
     ]
   },
   {
@@ -232,7 +233,7 @@
     "CustomParser": "RssFeeder.Console.FeedBuilders.WhatFingerFeedBuilder",
     "CollectionName": "whatfinger",
     "FileRetentionDays": 7,
-    "DatabaseRetentionDays": 180,
+    "DatabaseRetentionDays": 366,
     "Filters": [
       "1954ceefa0f85a89de6c34109de7ff44",
       "f474e4c0861b2de36e3421e0dd701db0"

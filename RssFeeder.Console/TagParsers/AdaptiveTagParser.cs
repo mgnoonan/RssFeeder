@@ -6,7 +6,7 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
 {
     private readonly ILogger _log;
 
-    public AdaptiveTagParser(ILogger log, IUnlaunchClient client) : base(log, client)
+    public AdaptiveTagParser(ILogger log, IUnlaunchClient client, IWebUtils webUtils) : base(log, client, webUtils)
     {
         _log = log;
     }
@@ -48,7 +48,7 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
             switch (paragraphSelector)
             {
                 case "p":
-                    var paragraphs = container.QuerySelectorAll("p,ol,ul,blockquote");
+                    var paragraphs = container.QuerySelectorAll("p,ol,ul,blockquote,h2,h3,h4,h5,figure");
                     return BuildArticleText(paragraphs);
                 case "br":
                     return BuildArticleText(container.InnerHtml);
@@ -127,9 +127,9 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
 
         foreach (var p in paragraphs)
         {
-            if (p.TagName.ToLower().StartsWith("h"))
+            if (p.TagName.ToLower().StartsWith("h") && !p.GetSelector().Contains(">li"))
             {
-                description.AppendLine($"<h4>{p.TextContent.Trim()}</h4>");
+                description.AppendLine($"<{p.TagName.ToLower()}>{p.TextContent.Trim()}</{p.TagName.ToLower()}>");
             }
             else if (p.TagName.ToLower() == "ul" || p.TagName.ToLower() == "ol")
             {
