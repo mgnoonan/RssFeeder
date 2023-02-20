@@ -1,5 +1,7 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Dynamic;
+using System.Text.RegularExpressions;
 using AngleSharp.Html.Dom;
+using RulesEngine.Models;
 
 namespace RssFeeder.Console.TagParsers;
 
@@ -8,6 +10,7 @@ public partial class TagParserBase
     private readonly ILogger _log;
     private readonly IUnlaunchClient _client;
     private readonly IWebUtils _webUtils;
+    private RulesEngine.RulesEngine _bre;
     protected string _sourceHtml;
     protected RssFeedItem _item;
 
@@ -28,6 +31,20 @@ public partial class TagParserBase
     {
         _sourceHtml = sourceHtml;
         _item = item;
+
+        InitializeRulesEngine();
+    }
+
+    private void InitializeRulesEngine()
+    {
+        var files = Directory.GetFiles(Directory.GetCurrentDirectory(), "ExcludeUL.json", SearchOption.AllDirectories);
+        if (files == null || files.Length == 0)
+            throw new Exception("Rules not found.");
+
+        var fileData = File.ReadAllText(files[0]);
+        var workflow = JsonConvert.DeserializeObject<List<Workflow>>(fileData) ?? new List<Workflow>();
+
+        _bre = new RulesEngine.RulesEngine(workflow.ToArray(), null);
     }
 
     public virtual void PostParse()
@@ -246,47 +263,25 @@ public partial class TagParserBase
 
     protected void TryAddUlParagraph(StringBuilder description, IElement p)
     {
-        if (p.Text().Trim().Length == 0)
+        dynamic x = new ExpandoObject();
+        x.text = p.Text().Trim();
+        x.id = p.Id ?? "";
+        x.classlist = String.Join(' ', p.ClassList);
+        x.selector = p.GetSelector();
+        x.parentclasslist = String.Join(' ', p.ParentElement.ClassList);
+        x.parenttagname = p.ParentElement?.TagName.ToLower() ?? "";
+        var input = new dynamic[] { x };
+
+        List<RuleResultTree> resultList = _bre.ExecuteAllRulesAsync("ExcludeUL", input).Result;
+
+        //Check success for rule
+        foreach (var result in resultList)
         {
-            _log.Information("Skipped tag: {tag} Reason: {reason}", p.TagName, "Empty");
-            return;
-        }
-        if (p.ParentElement?.TagName.ToLower() == "blockquote" || p.GetSelector().Contains(">blockquote"))
-        {
-            _log.Information("Skipped tag: {tag} Reason: {reason}", p.TagName, "Embedded blockquote");
-            return;
-        }
-        if (p.ParentElement?.TagName.ToLower() == "li" || p.GetSelector().Contains(">li"))
-        {
-            _log.Information("Skipped tag: {tag} Reason: {reason}", p.TagName, "Embedded listitem");
-            return;
-        }
-        if (p.Text().Contains("Bookmark") ||
-            p.Text().Contains("Share on") ||
-            p.Text().Contains("Share Article") ||
-            p.Id == "post_meta" ||
-            (p.Id?.StartsWith("sharebar") ?? false) ||
-            p.Text().Contains("Share This Story", StringComparison.InvariantCultureIgnoreCase) ||
-            p.Text().Contains("Click to Share", StringComparison.InvariantCultureIgnoreCase) ||
-            p.ClassList.Contains("rotator-panels") ||
-            p.ClassList.Contains("rotator-pages") ||
-            p.ClassList.Contains("playlist") ||
-            p.ClassList.Contains("article-social") ||
-            p.ClassList.Contains("xwv-rotator") ||
-            p.ClassList.Contains("a-social-share-spacing") ||
-            p.ClassList.Contains("socialShare") ||
-            p.ClassList.Contains("heateor_sssp_sharing_ul") ||
-            p.ClassList.Contains("list-none") ||
-            p.ClassList.Contains("essb_links_list") ||
-            p.ClassList.Contains("simple-list") ||
-            p.ClassList.Contains("td-category") ||
-            p.ClassList.Contains("social-icons__list") ||
-            p.ClassList.Contains("authors") ||
-            p.ParentElement.ClassList.Contains("sd-content") ||
-            p.ParentElement.ClassList.Contains("editorial"))
-        {
-            _log.Information("Skipped tag: {tag} Reason: {reason}", p.TagName, "Excluded");
-            return;
+            if (result.IsSuccess)
+            {
+                _log.Information("Skipped tag: {tag} Reason: {reason}", p.TagName, result.Rule.RuleName);
+                return;
+            }
         }
 
         description.AppendLine($"<p><{p.TagName.ToLower()}>{p.InnerHtml}</{p.TagName.ToLower()}></p>");
