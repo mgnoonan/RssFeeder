@@ -37,7 +37,7 @@ public partial class TagParserBase
 
     private void InitializeRulesEngine()
     {
-        var files = Directory.GetFiles(Directory.GetCurrentDirectory(), "ExcludeUL.json", SearchOption.AllDirectories);
+        var files = Directory.GetFiles(Directory.GetCurrentDirectory(), "ExcludeContentRules.json", SearchOption.AllDirectories);
         if (files == null || files.Length == 0)
             throw new Exception("Rules not found.");
 
@@ -241,8 +241,7 @@ public partial class TagParserBase
         }
     }
 
-    public virtual void PreParse()
-    { }
+    public virtual void PreParse() { }
 
     private bool TryGetVideoIFrame(IHtmlDocument document, string pattern, out IElement iframe)
     {
@@ -261,9 +260,10 @@ public partial class TagParserBase
         return false;
     }
 
-    protected void TryAddUlParagraph(StringBuilder description, IElement p)
+    protected void TryAddHeaderParagraph(StringBuilder description, IElement p)
     {
         dynamic x = new ExpandoObject();
+        x.name = _item.SiteName;
         x.text = p.Text().Trim();
         x.id = p.Id ?? "";
         x.classlist = String.Join(' ', p.ClassList);
@@ -271,6 +271,39 @@ public partial class TagParserBase
         x.parentclasslist = String.Join(' ', p.ParentElement.ClassList);
         x.parenttagname = p.ParentElement?.TagName.ToLower() ?? "";
         var input = new dynamic[] { x };
+
+        _log.Debug("Input = {@input}", input);
+
+        List<RuleResultTree> resultList = _bre.ExecuteAllRulesAsync("ExcludeHeader", input).Result;
+
+        //Check success for rule
+        foreach (var result in resultList)
+        {
+            if (result.IsSuccess)
+            {
+                _log.Information("Skipped tag: {tag} Reason: {reason}", p.TagName, result.Rule.RuleName);
+                return;
+            }
+        }
+
+        description.AppendLine($"<{p.TagName.ToLower()}>{p.TextContent.Trim()}</{p.TagName.ToLower()}>");
+    }
+
+    protected void TryAddUlParagraph(StringBuilder description, IElement p)
+    {
+        dynamic x = new ExpandoObject();
+        x.name = _item.SiteName;
+        x.text = p.Text().Trim();
+        x.id = p.Id ?? "";
+        x.classlist = String.Join(' ', p.ClassList);
+        x.selector = p.GetSelector();
+        x.parentclasslist = String.Join(' ', p.ParentElement.ClassList);
+        x.parenttagname = p.ParentElement?.TagName.ToLower() ?? "";
+        x.childtagname = p.Children[0].TagName.ToLower() ?? "";
+        x.childclasslist = String.Join(' ', p.Children[0].ClassList);
+        var input = new dynamic[] { x };
+
+        _log.Debug("Input = {@input}", input);
 
         List<RuleResultTree> resultList = _bre.ExecuteAllRulesAsync("ExcludeUL", input).Result;
 
@@ -289,20 +322,28 @@ public partial class TagParserBase
 
     protected void TryAddParagraph(StringBuilder description, IElement p)
     {
-        if (p.ParentElement?.TagName.ToLower() == "blockquote" || p.GetSelector().Contains(">blockquote"))
+        dynamic x = new ExpandoObject();
+        x.name = _item.SiteName;
+        x.text = p.Text().Trim();
+        x.id = p.Id ?? "";
+        x.classlist = String.Join(' ', p.ClassList);
+        x.selector = p.GetSelector();
+        x.parentclasslist = String.Join(' ', p.ParentElement.ClassList);
+        x.parenttagname = p.ParentElement?.TagName.ToLower() ?? "";
+        var input = new dynamic[] { x };
+
+        _log.Debug("Input = {@input}", input);
+
+        List<RuleResultTree> resultList = _bre.ExecuteAllRulesAsync("ExcludeParagraph", input).Result;
+
+        //Check success for rule
+        foreach (var result in resultList)
         {
-            _log.Debug("Skipped tag: {tag} Reason: {reason}", p.TagName, "Embedded blockquote");
-            return;
-        }
-        if (p.ParentElement?.TagName.ToLower() == "li" || p.GetSelector().Contains(">li"))
-        {
-            _log.Debug("Skipped tag: {tag} Reason: {reason}", p.TagName, "Embedded listitem");
-            return;
-        }
-        if (p.Text().Trim().Length == 0)
-        {
-            _log.Debug("Skipped tag: {tag} Reason: {reason}", p.TagName, "Empty");
-            return;
+            if (result.IsSuccess)
+            {
+                _log.Information("Skipped tag: {tag} Reason: {reason}", p.TagName, result.Rule.RuleName);
+                return;
+            }
         }
 
         // Watch for the older style line breaks and convert to proper paragraphs

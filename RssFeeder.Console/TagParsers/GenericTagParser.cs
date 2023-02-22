@@ -54,9 +54,9 @@ public partial class GenericTagParser : TagParserBase, ITagParser
 
         foreach (var p in paragraphs)
         {
-            if (p.TagName.ToLower().StartsWith("h") && !p.GetSelector().Contains(">li"))
+            if (p.TagName.ToLower().StartsWith("h"))
             {
-                description.AppendLine($"<{p.TagName.ToLower()}>{p.TextContent.Trim()}</{p.TagName.ToLower()}>");
+                TryAddHeaderParagraph(description, p);
             }
             else if (p.TagName.ToLower() == "ul" || p.TagName.ToLower() == "ol")
             {
