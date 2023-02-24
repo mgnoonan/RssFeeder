@@ -266,6 +266,7 @@ public partial class TagParserBase
         x.name = _item.SiteName;
         x.text = p.Text().Trim();
         x.id = p.Id ?? "";
+        x.tagname = p.TagName.ToLower();
         x.classlist = String.Join(' ', p.ClassList);
         x.selector = p.GetSelector();
         x.parentclasslist = String.Join(' ', p.ParentElement.ClassList);
@@ -295,6 +296,7 @@ public partial class TagParserBase
         x.name = _item.SiteName;
         x.text = p.Text().Trim();
         x.id = p.Id ?? "";
+        x.tagname = p.TagName.ToLower();
         x.classlist = String.Join(' ', p.ClassList);
         x.selector = p.GetSelector();
         x.parentclasslist = String.Join(' ', p.ParentElement.ClassList);
@@ -326,6 +328,7 @@ public partial class TagParserBase
         x.name = _item.SiteName;
         x.text = p.Text().Trim();
         x.id = p.Id ?? "";
+        x.tagname = p.TagName.ToLower();
         x.classlist = String.Join(' ', p.ClassList);
         x.selector = p.GetSelector();
         x.parentclasslist = String.Join(' ', p.ParentElement.ClassList);

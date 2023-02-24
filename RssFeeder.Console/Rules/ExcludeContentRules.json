@@ -4,63 +4,63 @@
     "Rules": [
       {
         "Enabled": true,
-        "RuleName": "TextEmpty",
+        "RuleName": "UlTextEmpty",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "text.Length == 0",
         "SuccessEvent": "true"
       },
       {
         "Enabled": true,
-        "RuleName": "BlockQuoteEmbedded",
+        "RuleName": "UlBlockQuoteEmbedded",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "parenttagname == \"blockquote\" OR selector.Contains(\">blockquote\")",
         "SuccessEvent": "true"
       },
       {
         "Enabled": true,
-        "RuleName": "LiEmbedded",
+        "RuleName": "UlLiEmbedded",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "parenttagname == \"li\" OR selector.Contains(\">li\")",
         "SuccessEvent": "true"
       },
       {
         "Enabled": true,
-        "RuleName": "ListTextContains",
+        "RuleName": "UlListTextContains",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "text.Contains(\"Bookmark\") OR text.Contains(\"Share on\") OR text.Contains(\"Share Article\") OR text.Contains(\"Share This Story\", StringComparison.InvariantCultureIgnoreCase) OR text.Contains(\"Click to Share\", StringComparison.InvariantCultureIgnoreCase)",
         "SuccessEvent": "true"
       },
       {
         "Enabled": true,
-        "RuleName": "IdContains",
+        "RuleName": "UlIdContains",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "id == \"post_meta\" OR id.StartsWith(\"sharebar\")",
         "SuccessEvent": "true"
       },
       {
         "Enabled": true,
-        "RuleName": "ClassListContains",
+        "RuleName": "UlClassListContains",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "classlist.Contains(\"rotator-panels\") OR classlist.Contains(\"rotator-pages\") OR classlist.Contains(\"playlist\") OR classlist.Contains(\"article-social\") OR classlist.Contains(\"xwv-rotator\") OR classlist.Contains(\"a-social-share-spacing\") OR classlist.Contains(\"socialShare\") OR classlist.Contains(\"heateor_sssp_sharing_ul\") OR classlist.Contains(\"list-none\") OR classlist.Contains(\"essb_links_list\") OR classlist.Contains(\"simple-list\") OR classlist.Contains(\"td-category\") OR classlist.Contains(\"social-icons__list\") OR classlist.Contains(\"authors\")",
         "SuccessEvent": "true"
       },
       {
         "Enabled": true,
-        "RuleName": "ParentClassListContains",
+        "RuleName": "UlParentClassListContains",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "parentclasslist.Contains(\"sd-content\") OR parentclasslist.Contains(\"editorial\")",
         "SuccessEvent": "true"
       },
       {
         "Enabled": true,
-        "RuleName": "NyPostExclude",
+        "RuleName": "UlNyPostExclude",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"new york post\" AND childclasslist.Contains(\"story--list\")",
         "SuccessEvent": "true"
       },
       {
         "Enabled": true,
-        "RuleName": "WsjExclude",
+        "RuleName": "UlWsjExclude",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"wsj\"",
         "SuccessEvent": "true"
@@ -72,35 +72,35 @@
     "Rules": [
       {
         "Enabled": true,
-        "RuleName": "TextEmpty",
+        "RuleName": "HeaderTextEmpty",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "text.Length == 0",
         "SuccessEvent": "true"
       },
       {
         "Enabled": true,
-        "RuleName": "BlockQuoteEmbedded",
+        "RuleName": "HeaderBlockQuoteEmbedded",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "parenttagname == \"blockquote\" OR selector.Contains(\">blockquote\")",
         "SuccessEvent": "true"
       },
       {
         "Enabled": true,
-        "RuleName": "LiEmbedded",
+        "RuleName": "HeaderLiEmbedded",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "parenttagname == \"li\" OR selector.Contains(\">li\")",
         "SuccessEvent": "true"
       },
       {
         "Enabled": true,
-        "RuleName": "NyPostExclude",
+        "RuleName": "HeaderNyPostExclude",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"new york post\" AND (text.StartsWith(\"More On:\") OR text.StartsWith(\"see also\"))",
         "SuccessEvent": "true"
       },
       {
         "Enabled": true,
-        "RuleName": "WsjExclude",
+        "RuleName": "HeaderWsjExclude",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"wsj\" AND text.StartsWith(\"What's News\")",
         "SuccessEvent": "true"
@@ -112,28 +112,28 @@
     "Rules": [
       {
         "Enabled": true,
-        "RuleName": "TextEmpty",
+        "RuleName": "ParagraphTextEmpty",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "text.Length == 0",
+        "Expression": "tagname != \"figure\" AND text.Length == 0",
         "SuccessEvent": "true"
       },
       {
         "Enabled": true,
-        "RuleName": "BlockQuoteEmbedded",
+        "RuleName": "ParagraphBlockQuoteEmbedded",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "parenttagname == \"blockquote\" OR selector.Contains(\">blockquote\")",
         "SuccessEvent": "true"
       },
       {
         "Enabled": true,
-        "RuleName": "LiEmbedded",
+        "RuleName": "ParagraphLiEmbedded",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "parenttagname == \"li\" OR selector.Contains(\">li\")",
         "SuccessEvent": "true"
       },
       {
         "Enabled": true,
-        "RuleName": "TextUseless",
+        "RuleName": "ParagraphTextUseless",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "text == \"Advertisement\"",
         "SuccessEvent": "true"
