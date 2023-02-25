@@ -32,9 +32,9 @@
       },
       {
         "Enabled": true,
-        "RuleName": "UlIdContains",
+        "RuleName": "UlShare",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "id == \"post_meta\" OR id.StartsWith(\"sharebar\")",
+        "Expression": "id == \"post_meta\" OR id.StartsWith(\"sharebar\") OR text.StartsWith(\"Share\")",
         "SuccessEvent": "true"
       },
       {
@@ -60,9 +60,23 @@
       },
       {
         "Enabled": true,
+        "RuleName": "UlOannExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"one america news network\" AND childclasslist.Contains(\"dpsp-network-list-item\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
         "RuleName": "UlWsjExclude",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"wsj\"",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "UlPoliticoExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"politico\" AND tagname == \"ol\"",
         "SuccessEvent": "true"
       }
     ]
@@ -93,6 +107,13 @@
       },
       {
         "Enabled": true,
+        "RuleName": "HeaderTextUseless",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "text == \"Advertisement\" OR text == \"Follow Us\" OR text == \"You may like\" OR text == \"Share\" OR text == \"Conversation\"",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
         "RuleName": "HeaderNyPostExclude",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"new york post\" AND (text.StartsWith(\"More On:\") OR text.StartsWith(\"see also\"))",
@@ -103,6 +124,13 @@
         "RuleName": "HeaderWsjExclude",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"wsj\" AND text.StartsWith(\"What's News\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderPoliticoExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"politico\" AND (text.StartsWith(\"About The Author\") OR text.StartsWith(\"Most Read\"))",
         "SuccessEvent": "true"
       }
     ]
@@ -133,9 +161,16 @@
       },
       {
         "Enabled": true,
+        "RuleName": "ParagraphFigCaptionEmbedded",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "parenttagname == \"figcaption\" OR selector.Contains(\">figcaption\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
         "RuleName": "ParagraphTextUseless",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "text == \"Advertisement\"",
+        "Expression": "text == \"Advertisement\" OR text == \"Follow Us\" OR text == \"Sign In\"",
         "SuccessEvent": "true"
       }
     ]
