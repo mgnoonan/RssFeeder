@@ -146,6 +146,13 @@
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"www.yahoo.com\" AND text == \"Trending\"",
         "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderRevolverNewsExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"revolver news\" AND text == \"Experience Revolver without ads\"",
+        "SuccessEvent": "true"
       }
     ]
   },
@@ -185,6 +192,13 @@
         "RuleName": "ParagraphTextUseless",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "text == \"Advertisement\" OR text == \"Follow Us\" OR text == \"Sign In\"",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "ParagraphRevolverNewsExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"revolver news\" AND text == \"Hide ads now\"",
         "SuccessEvent": "true"
       }
     ]
