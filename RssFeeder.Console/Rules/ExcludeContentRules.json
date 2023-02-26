@@ -34,7 +34,7 @@
         "Enabled": true,
         "RuleName": "UlShare",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "id == \"post_meta\" OR id.StartsWith(\"sharebar\") OR text.StartsWith(\"Share\")",
+        "Expression": "id == \"post_meta\" OR id.StartsWith(\"sharebar\") OR text.StartsWith(\"Share\") OR (text.Contains(\"Facebook\") AND text.Contains(\"Twitter\"))",
         "SuccessEvent": "true"
       },
       {
@@ -205,7 +205,7 @@
         "Enabled": true,
         "RuleName": "ParagraphTextUseless",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "text == \"Advertisement\" OR text == \"Follow Us\" OR text == \"Sign In\"",
+        "Expression": "text == \"Advertisement\" OR text == \"Follow Us\" OR text == \"Sign In\" OR text == \"Share this:\"",
         "SuccessEvent": "true"
       },
       {
