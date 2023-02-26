@@ -174,6 +174,13 @@
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"the us sun\" AND (classlist.Contains(\"read-more-headline\") OR classlist.Contains(\"nk-headline-heading\"))",
         "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderMirrorExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"mirror\" AND classlist.Contains(\"read-more__title\")",
+        "SuccessEvent": "true"
       }
     ]
   },
