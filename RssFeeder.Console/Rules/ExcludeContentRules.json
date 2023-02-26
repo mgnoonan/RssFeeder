@@ -95,7 +95,7 @@
         "Enabled": true,
         "RuleName": "HeaderBlockQuoteEmbedded",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "parenttagname == \"blockquote\" OR selector.Contains(\">blockquote\")",
+        "Expression": "parenttagname == \"blockquote\" OR parenttagname == \"aside\" OR selector.Contains(\">blockquote\") OR selector.Contains(\">aside\")",
         "SuccessEvent": "true"
       },
       {
@@ -167,6 +167,13 @@
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"twitchy.com\" AND (parentclasslist.Contains(\"recent-stories\") OR parentclasslist.Contains(\"small-card-bottom\"))",
         "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderSunExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"the us sun\" AND (classlist.Contains(\"read-more-headline\") OR classlist.Contains(\"nk-headline-heading\"))",
+        "SuccessEvent": "true"
       }
     ]
   },
@@ -184,7 +191,7 @@
         "Enabled": true,
         "RuleName": "ParagraphBlockQuoteEmbedded",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "parenttagname == \"blockquote\" OR selector.Contains(\">blockquote\")",
+        "Expression": "parenttagname == \"blockquote\" OR parenttagname == \"aside\" OR selector.Contains(\">blockquote\") OR selector.Contains(\">aside\")",
         "SuccessEvent": "true"
       },
       {
