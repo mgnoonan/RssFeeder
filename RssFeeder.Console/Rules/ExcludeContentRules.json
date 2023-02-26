@@ -6,7 +6,7 @@
         "Enabled": true,
         "RuleName": "UlTextEmpty",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "text.Length == 0",
+        "Expression": "text.Length == 0 OR childcount == 0",
         "SuccessEvent": "true"
       },
       {

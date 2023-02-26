@@ -67,17 +67,8 @@ public partial class TagParserBase
             baseUrl = _item.FeedAttributes.Url;
         }
 
-        if (GetVariationByKey("article-fixup-urls", _item.FeedAttributes.FeedId) == "on")
-        {
-            _log.Debug("Base url = {baseUrl}", baseUrl);
-            FixupRelativeUrls(document, baseUrl);
-        }
-
-        if (GetVariationByKey("image-data-src-override", _item.FeedAttributes.FeedId) == "on")
-        {
-            FixupImageSrc(document, baseUrl);
-        }
-
+        FixupRelativeUrls(document, baseUrl);
+        FixupImageSrc(document, baseUrl);
         RemoveDuplicateImgTag(document);
 
         // Check for embedded videos
@@ -292,6 +283,8 @@ public partial class TagParserBase
 
     protected void TryAddUlParagraph(StringBuilder description, IElement p)
     {
+        _log.Debug("Child elements = {children}", p.Children.Length);
+
         dynamic x = new ExpandoObject();
         x.name = _item.SiteName;
         x.text = p.Text().Trim();
@@ -301,8 +294,9 @@ public partial class TagParserBase
         x.selector = p.GetSelector();
         x.parentclasslist = String.Join(' ', p.ParentElement.ClassList);
         x.parenttagname = p.ParentElement?.TagName.ToLower() ?? "";
-        x.childtagname = p.Children[0].TagName.ToLower() ?? "";
-        x.childclasslist = String.Join(' ', p.Children[0].ClassList);
+        x.childcount = p.Children.Length;
+        x.childtagname = p.Children.Length == 0 ? "" : p.Children.First().TagName.ToLower();
+        x.childclasslist = p.Children.Length == 0 ? "" : String.Join(' ', p.Children.First().ClassList);
         var input = new dynamic[] { x };
 
         _log.Debug("Input = {@input}", input);
