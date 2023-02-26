@@ -153,6 +153,20 @@
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"revolver news\" AND text == \"Experience Revolver without ads\"",
         "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderNprExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"npr\" AND parentclasslist.Contains(\"bucketblock\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderTwitchyExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"twitchy.com\" AND (parentclasslist.Contains(\"recent-stories\") OR parentclasslist.Contains(\"small-card-bottom\"))",
+        "SuccessEvent": "true"
       }
     ]
   },
