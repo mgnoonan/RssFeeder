@@ -228,6 +228,13 @@
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"revolver news\" AND text == \"Hide ads now\"",
         "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "ParagraphBreitbartExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"breitbart\" AND classlist.Contains(\"rmoreabt\")",
+        "SuccessEvent": "true"
       }
     ]
   }
