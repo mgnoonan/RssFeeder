@@ -165,14 +165,14 @@
         "Enabled": true,
         "RuleName": "HeaderTwitchyExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"twitchy.com\" AND (parentclasslist.Contains(\"recent-stories\") OR parentclasslist.Contains(\"small-card-bottom\"))",
+        "Expression": "name == \"twitchy.com\" AND (parentclasslist.Contains(\"recent-stories\") OR parentclasslist.Contains(\"small-card-bottom\") OR classlist.Contains(\"trending\"))",
         "SuccessEvent": "true"
       },
       {
         "Enabled": true,
         "RuleName": "HeaderSunExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"the us sun\" AND (classlist.Contains(\"read-more-headline\") OR classlist.Contains(\"nk-headline-heading\"))",
+        "Expression": "name == \"the us sun\" AND (classlist.Contains(\"read-more-headline\") OR classlist.Contains(\"nk-headline-heading\") OR text.StartsWith(\"Casino Special\"))",
         "SuccessEvent": "true"
       },
       {
@@ -180,6 +180,13 @@
         "RuleName": "HeaderMirrorExclude",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"mirror\" AND classlist.Contains(\"read-more__title\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderMailOnlineExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"mail online\" AND classlist.Contains(\"mol-factbox-title\")",
         "SuccessEvent": "true"
       }
     ]
@@ -219,7 +226,7 @@
         "Enabled": true,
         "RuleName": "ParagraphTextUseless",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "text == \"Advertisement\" OR text == \"Follow Us\" OR text == \"Sign In\" OR text == \"Share this:\"",
+        "Expression": "text == \"Advertisement\" OR text.StartsWith(\"Advertisement -\") OR text == \"Follow Us\" OR text == \"Sign In\" OR text == \"Share this:\" OR text == \"Read next\"",
         "SuccessEvent": "true"
       },
       {
@@ -234,6 +241,20 @@
         "RuleName": "ParagraphBreitbartExclude",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"breitbart\" AND classlist.Contains(\"rmoreabt\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "ParagraphSunExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"the us sun\" AND tagname == \"figcaption\"",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "ParagraphNprExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"npr\" AND classlist.Contains(\"caption\")",
         "SuccessEvent": "true"
       }
     ]
