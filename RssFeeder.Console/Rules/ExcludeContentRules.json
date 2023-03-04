@@ -34,7 +34,7 @@
         "Enabled": true,
         "RuleName": "UlShare",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "id == \"post_meta\" OR id.StartsWith(\"sharebar\") OR text.StartsWith(\"Share\") OR (text.Contains(\"Facebook\") AND text.Contains(\"Twitter\"))",
+        "Expression": "id == \"post_meta\" OR id.StartsWith(\"sharebar\") OR text.StartsWith(\"Share\") OR (text.Contains(\"Facebook\") AND text.Contains(\"Twitter\")) OR classlist.Contains(\"social-tools__list\")",
         "SuccessEvent": "true"
       },
       {
@@ -109,7 +109,7 @@
         "Enabled": true,
         "RuleName": "HeaderTextUseless",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "text == \"Advertisement\" OR text == \"Follow Us\" OR text == \"You may like\" OR text == \"Share\" OR text == \"Conversation\" OR text == \"Related\" OR text == \"Related Stories\" OR text == \"Share:\"",
+        "Expression": "text == \"Advertisement\" OR text == \"Follow Us\" OR text == \"You may like\" OR text == \"Share\" OR text == \"Conversation\" OR text == \"Related\" OR text == \"Related Stories\" OR text == \"Share:\" OR text == \"Share this:\" OR text == \"Like this:\"",
         "SuccessEvent": "true"
       },
       {
@@ -226,7 +226,7 @@
         "Enabled": true,
         "RuleName": "ParagraphTextUseless",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "text == \"Advertisement\" OR text.StartsWith(\"Advertisement -\") OR text == \"Follow Us\" OR text == \"Sign In\" OR text == \"Share this:\" OR text == \"Read next\"",
+        "Expression": "text == \"Advertisement\" OR text.StartsWith(\"Advertisement -\") OR text == \"Follow Us\" OR text == \"Sign In\" OR text == \"Share this:\" OR text == \"Share\" OR text == \"Leave a comment\" OR text == \"Read next\"",
         "SuccessEvent": "true"
       },
       {
@@ -241,6 +241,13 @@
         "RuleName": "ParagraphBreitbartExclude",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"breitbart\" AND classlist.Contains(\"rmoreabt\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "ParagraphNyPostExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"new york post\" AND tagname == \"figcaption\")",
         "SuccessEvent": "true"
       },
       {
