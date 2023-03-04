@@ -144,7 +144,7 @@
         "Enabled": true,
         "RuleName": "HeaderYahooExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"www.yahoo.com\" AND text == \"Trending\"",
+        "Expression": "name == \"www.yahoo.com\" AND text == \"TRENDING\"",
         "SuccessEvent": "true"
       },
       {
@@ -255,6 +255,13 @@
         "RuleName": "ParagraphNprExclude",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"npr\" AND classlist.Contains(\"caption\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "ParagraphMailOnlineExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"mail online\" AND classlist.Contains(\"border-left\")",
         "SuccessEvent": "true"
       }
     ]
