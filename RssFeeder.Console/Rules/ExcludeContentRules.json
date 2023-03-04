@@ -48,7 +48,7 @@
         "Enabled": true,
         "RuleName": "UlParentClassListContains",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "parentclasslist.Contains(\"sd-content\") OR parentclasslist.Contains(\"editorial\")",
+        "Expression": "parentclasslist.Contains(\"sd-content\") OR parentclasslist.Contains(\"editorial\") OR parentclasslist.Contains(\"navbar-collapse\")",
         "SuccessEvent": "true"
       },
       {
@@ -123,7 +123,7 @@
         "Enabled": true,
         "RuleName": "HeaderNyPostExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"new york post\" AND (text.StartsWith(\"More On:\") OR text.StartsWith(\"see also\") OR classname.Contains(\"inline-module--related-post__headline\") OR classname.Contains(\"widget-heading\") OR tagname == \"figcaption\")",
+        "Expression": "name == \"new york post\" AND (text.StartsWith(\"More On:\") OR text.StartsWith(\"see also\") OR classname.Contains(\"inline-module--related-post__headline\") OR classname.Contains(\"inline-module__heading\") OR classname.Contains(\"widget-heading\") OR tagname == \"figcaption\")",
         "SuccessEvent": "true"
       },
       {
@@ -209,6 +209,13 @@
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"page six\" AND text.Contains(\"you love\")",
         "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderDailyCallerExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"dailycaller.com\" AND selector.StartsWith(\"#highestViewedVideos\")",
+        "SuccessEvent": "true"
       }
     ]
   },
@@ -247,7 +254,7 @@
         "Enabled": true,
         "RuleName": "ParagraphTextUseless",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "text == \"Advertisement\" OR text.StartsWith(\"Advertisement -\") OR text == \"Follow Us\" OR text == \"Sign In\" OR text == \"Share this:\" OR text == \"Share\" OR text == \"Leave a comment\" OR text == \"Read next\"",
+        "Expression": "text == \"Advertisement\" OR text.StartsWith(\"Advertisement -\") OR text == \"Follow Us\" OR text == \"Sign In\" OR text == \"Share this:\" OR text == \"Share\" OR text == \"Leave a comment\" OR text == \"Read next\" OR text == \".\"",
         "SuccessEvent": "true"
       },
       {
