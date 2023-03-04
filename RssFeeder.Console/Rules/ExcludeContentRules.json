@@ -78,6 +78,13 @@
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"politico\" AND (tagname == \"ol\" OR classlist == \"pb-fam\")",
         "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "UlPageSixExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"page six\" AND text.Contains(\"Subscribe\") AND text.Contains(\"Shop\")",
+        "SuccessEvent": "true"
       }
     ]
   },
@@ -194,6 +201,13 @@
         "RuleName": "HeaderHollywoodReporterExclude",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"the hollywood reporter\" AND classlist.Contains(\"c-title\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderPageSixExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"page six\" AND text.Contains(\"you love\")",
         "SuccessEvent": "true"
       }
     ]
