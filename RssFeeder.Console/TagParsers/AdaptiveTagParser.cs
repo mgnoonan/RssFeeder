@@ -135,9 +135,9 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
             {
                 TryAddUlParagraph(description, p);
             }
-            else if (p.TagName.ToLower() == "blockquote")
+            else if (p.TagName.ToLower().StartsWith("blockquote"))
             {
-                description.AppendLine($"<blockquote style=\"border-left: 7px solid lightgray; padding-left: 10px;\">{p.InnerHtml}</blockquote>");
+                TryAddBlockquote(description, p);
             }
             else
             {

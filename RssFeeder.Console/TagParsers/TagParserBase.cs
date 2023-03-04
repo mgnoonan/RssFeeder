@@ -258,6 +258,7 @@ public partial class TagParserBase
         x.text = p.Text().Trim();
         x.id = p.Id ?? "";
         x.tagname = p.TagName.ToLower();
+        x.style = p.Attributes["style"];
         x.classlist = String.Join(' ', p.ClassList);
         x.selector = p.GetSelector();
         x.parentclasslist = String.Join(' ', p.ParentElement.ClassList);
@@ -346,5 +347,36 @@ public partial class TagParserBase
         // Watch for the older style line breaks and convert to proper paragraphs
         string innerHtml = LineBreakRegex().Replace(p.InnerHtml, "</p><p>");
         description.AppendLine($"<p>{innerHtml}</p>");
+    }
+
+    protected void TryAddBlockquote(StringBuilder description, IElement p)
+    {
+        dynamic x = new ExpandoObject();
+        x.name = _item.SiteName;
+        x.text = p.Text().Trim();
+        x.id = p.Id ?? "";
+        x.tagname = p.TagName.ToLower();
+        x.classlist = String.Join(' ', p.ClassList);
+        x.selector = p.GetSelector();
+        x.parentclasslist = String.Join(' ', p.ParentElement.ClassList);
+        x.parenttagname = p.ParentElement?.TagName.ToLower() ?? "";
+        var input = new dynamic[] { x };
+
+        _log.Debug("Input = {@input}", input);
+
+        List<RuleResultTree> resultList = _bre.ExecuteAllRulesAsync("ExcludeBlockquote", input).Result;
+
+        //Check success for rule
+        foreach (var result in resultList)
+        {
+            if (result.IsSuccess)
+            {
+                _log.Information("Skipped tag: {tag} Reason: {reason}", p.TagName, result.Rule.RuleName);
+                return;
+            }
+        }
+
+        // Add blockquote with some padding and a left side border
+        description.AppendLine($"<blockquote style=\"border-left: 7px solid lightgray; padding-left: 10px;\">{p.InnerHtml}</blockquote>");
     }
 }

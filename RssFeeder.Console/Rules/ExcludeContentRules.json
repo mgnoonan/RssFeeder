@@ -293,5 +293,17 @@
         "SuccessEvent": "true"
       }
     ]
+  },
+  {
+    "WorkflowName": "ExcludeBlockquote",
+    "Rules": [
+      {
+        "Enabled": true,
+        "RuleName": "BlockquoteTextInstagram",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "text.Contains(\"View this post on Instagram\")",
+        "SuccessEvent": "true"
+      }
+    ]
   }
 ]
