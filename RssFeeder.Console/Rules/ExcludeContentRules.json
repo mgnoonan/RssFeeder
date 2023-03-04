@@ -55,7 +55,7 @@
         "Enabled": true,
         "RuleName": "UlNyPostExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"new york post\" AND childclasslist.Contains(\"story--list\")",
+        "Expression": "name == \"new york post\" AND (childclasslist.Contains(\"story--list\") OR classlist.Contains(\"inline-module__list\"))",
         "SuccessEvent": "true"
       },
       {
@@ -123,7 +123,7 @@
         "Enabled": true,
         "RuleName": "HeaderNyPostExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"new york post\" AND (text.StartsWith(\"More On:\") OR text.StartsWith(\"see also\") OR classname.Contains(\"inline-module--related-post__headline\") OR tagname == \"figcaption\")",
+        "Expression": "name == \"new york post\" AND (text.StartsWith(\"More On:\") OR text.StartsWith(\"see also\") OR classname.Contains(\"inline-module--related-post__headline\") OR classname.Contains(\"widget-heading\") OR tagname == \"figcaption\")",
         "SuccessEvent": "true"
       },
       {
