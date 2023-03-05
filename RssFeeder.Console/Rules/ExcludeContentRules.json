@@ -92,6 +92,13 @@
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"twitchy.com\" AND parentclasslist.Contains(\"home-trending-widget-article\")",
         "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "UlReutersExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"reuters\" AND (classlist.Contains(\"summary_\") OR classlist.Contains(\"context-widget\"))",
+        "SuccessEvent": "true"
       }
     ]
   },
