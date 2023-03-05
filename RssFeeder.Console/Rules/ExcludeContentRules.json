@@ -83,7 +83,7 @@
         "Enabled": true,
         "RuleName": "UlPageSixExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"page six\" AND text.Contains(\"Subscribe\") AND text.Contains(\"Shop\")",
+        "Expression": "name == \"page six\" AND ((text.Contains(\"Subscribe\") AND text.Contains(\"Shop\")) OR classlist.Contains(\"more-on__list\"))",
         "SuccessEvent": "true"
       }
     ]
@@ -137,7 +137,14 @@
         "Enabled": true,
         "RuleName": "HeaderPoliticoExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"politico\" AND (text.StartsWith(\"About The Author\") OR text.StartsWith(\"Most Read\") OR classlist.Contains(\"pb-fam__headline\"))",
+        "Expression": "name == \"politico\" AND (text.StartsWith(\"About The Author\") OR text.StartsWith(\"Most Read\") OR classlist.Contains(\"pb-fam__headline\") OR classlist.Contains(\"card__title\"))",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderAbcNewsExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"abc news\" AND text.StartsWith(\"More:\")",
         "SuccessEvent": "true"
       },
       {
@@ -207,7 +214,7 @@
         "Enabled": true,
         "RuleName": "HeaderPageSixExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"page six\" AND text.Contains(\"you love\")",
+        "Expression": "name == \"page six\" AND (text.Contains(\"you love\") OR classlist.Contains(\"more-on__heading\"))",
         "SuccessEvent": "true"
       },
       {
@@ -297,6 +304,13 @@
         "RuleName": "ParagraphMailOnlineExclude",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"mail online\" AND classlist.Contains(\"border-left\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "ParagraphPoliticoExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"politico\" AND classlist.Contains(\"polly-\")",
         "SuccessEvent": "true"
       }
     ]
