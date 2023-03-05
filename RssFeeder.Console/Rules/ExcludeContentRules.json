@@ -308,7 +308,7 @@
         "Enabled": true,
         "RuleName": "BlockquoteTextInstagram",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "text.Contains(\"View this post on Instagram\")",
+        "Expression": "text.Contains(\"View this post on Instagram\") OR text.Contains(\"See on Instagram\")",
         "SuccessEvent": "true"
       }
     ]
