@@ -85,6 +85,13 @@
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"page six\" AND ((text.Contains(\"Subscribe\") AND text.Contains(\"Shop\")) OR classlist.Contains(\"more-on__list\"))",
         "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "UlTwitchyExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"twitchy.com\" AND parentclasslist.Contains(\"home-trending-widget-article\")",
+        "SuccessEvent": "true"
       }
     ]
   },
@@ -261,7 +268,7 @@
         "Enabled": true,
         "RuleName": "ParagraphTextUseless",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "text == \"Advertisement\" OR text.StartsWith(\"Advertisement -\") OR text == \"Follow Us\" OR text == \"Sign In\" OR text == \"Share this:\" OR text == \"Share\" OR text == \"Leave a comment\" OR text == \"Read next\" OR text == \".\"",
+        "Expression": "text == \"Advertisement\" OR text.StartsWith(\"Advertisement -\") OR text.StartsWith(\"[Screenshot\") OR text.StartsWith(\"Screenshot/\") OR text == \"Follow Us\" OR text == \"Sign In\" OR text == \"Share this:\" OR text == \"Share\" OR text == \"Leave a comment\" OR text == \"Read next\" OR text == \".\"",
         "SuccessEvent": "true"
       },
       {
@@ -311,6 +318,13 @@
         "RuleName": "ParagraphPoliticoExclude",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"politico\" AND classlist.Contains(\"polly-\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "ParagraphTwitchyExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"twitchy.com\" AND parentclasslist.Contains(\"home-trending-widget-article\")",
         "SuccessEvent": "true"
       }
     ]
