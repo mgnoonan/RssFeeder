@@ -127,17 +127,17 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
 
         foreach (var p in paragraphs)
         {
-            if (p.TagName.ToLower().StartsWith("h") && !p.GetSelector().Contains(">li"))
+            if (p.TagName.ToLower().StartsWith("h"))
             {
-                description.AppendLine($"<{p.TagName.ToLower()}>{p.TextContent.Trim()}</{p.TagName.ToLower()}>");
+                TryAddHeaderParagraph(description, p);
             }
             else if (p.TagName.ToLower() == "ul" || p.TagName.ToLower() == "ol")
             {
                 TryAddUlParagraph(description, p);
             }
-            else if (p.TagName.ToLower() == "blockquote")
+            else if (p.TagName.ToLower().StartsWith("blockquote"))
             {
-                description.AppendLine($"<blockquote style=\"border-left: 7px solid lightgray; padding-left: 10px;\">{p.InnerHtml}</blockquote>");
+                TryAddBlockquote(description, p);
             }
             else
             {

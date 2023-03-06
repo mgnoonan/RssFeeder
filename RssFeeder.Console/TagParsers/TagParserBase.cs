@@ -1,5 +1,7 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Dynamic;
+using System.Text.RegularExpressions;
 using AngleSharp.Html.Dom;
+using RulesEngine.Models;
 
 namespace RssFeeder.Console.TagParsers;
 
@@ -8,6 +10,7 @@ public partial class TagParserBase
     private readonly ILogger _log;
     private readonly IUnlaunchClient _client;
     private readonly IWebUtils _webUtils;
+    private RulesEngine.RulesEngine _bre;
     protected string _sourceHtml;
     protected RssFeedItem _item;
 
@@ -28,6 +31,20 @@ public partial class TagParserBase
     {
         _sourceHtml = sourceHtml;
         _item = item;
+
+        InitializeRulesEngine();
+    }
+
+    private void InitializeRulesEngine()
+    {
+        var files = Directory.GetFiles(Directory.GetCurrentDirectory(), "ExcludeContentRules.json", SearchOption.AllDirectories);
+        if (files == null || files.Length == 0)
+            throw new Exception("Rules not found.");
+
+        var fileData = File.ReadAllText(files[0]);
+        var workflow = JsonConvert.DeserializeObject<List<Workflow>>(fileData) ?? new List<Workflow>();
+
+        _bre = new RulesEngine.RulesEngine(workflow.ToArray(), null);
     }
 
     public virtual void PostParse()
@@ -50,17 +67,8 @@ public partial class TagParserBase
             baseUrl = _item.FeedAttributes.Url;
         }
 
-        if (GetVariationByKey("article-fixup-urls", _item.FeedAttributes.FeedId) == "on")
-        {
-            _log.Debug("Base url = {baseUrl}", baseUrl);
-            FixupRelativeUrls(document, baseUrl);
-        }
-
-        if (GetVariationByKey("image-data-src-override", _item.FeedAttributes.FeedId) == "on")
-        {
-            FixupImageSrc(document, baseUrl);
-        }
-
+        FixupRelativeUrls(document, baseUrl);
+        FixupImageSrc(document, baseUrl);
         RemoveDuplicateImgTag(document);
 
         // Check for embedded videos
@@ -224,8 +232,7 @@ public partial class TagParserBase
         }
     }
 
-    public virtual void PreParse()
-    { }
+    public virtual void PreParse() { }
 
     private bool TryGetVideoIFrame(IHtmlDocument document, string pattern, out IElement iframe)
     {
@@ -244,49 +251,67 @@ public partial class TagParserBase
         return false;
     }
 
+    protected void TryAddHeaderParagraph(StringBuilder description, IElement p)
+    {
+        dynamic x = new ExpandoObject();
+        x.name = _item.SiteName;
+        x.text = p.Text().Trim();
+        x.id = p.Id ?? "";
+        x.tagname = p.TagName.ToLower();
+        x.style = p.Attributes["style"];
+        x.classlist = String.Join(' ', p.ClassList);
+        x.selector = p.GetSelector();
+        x.parentclasslist = String.Join(' ', p.ParentElement.ClassList);
+        x.parenttagname = p.ParentElement?.TagName.ToLower() ?? "";
+        var input = new dynamic[] { x };
+
+        _log.Debug("Input = {@input}", input);
+
+        List<RuleResultTree> resultList = _bre.ExecuteAllRulesAsync("ExcludeHeader", input).Result;
+
+        //Check success for rule
+        foreach (var result in resultList)
+        {
+            if (result.IsSuccess)
+            {
+                _log.Information("Skipped tag: {tag} Reason: {reason}", p.TagName, result.Rule.RuleName);
+                return;
+            }
+        }
+
+        description.AppendLine($"<{p.TagName.ToLower()}>{p.TextContent.Trim()}</{p.TagName.ToLower()}>");
+    }
+
     protected void TryAddUlParagraph(StringBuilder description, IElement p)
     {
-        if (p.Text().Trim().Length == 0)
+        _log.Debug("Child elements = {children}", p.Children.Length);
+
+        dynamic x = new ExpandoObject();
+        x.name = _item.SiteName;
+        x.text = p.Text().Trim();
+        x.id = p.Id ?? "";
+        x.tagname = p.TagName.ToLower();
+        x.classlist = String.Join(' ', p.ClassList);
+        x.selector = p.GetSelector();
+        x.parentclasslist = String.Join(' ', p.ParentElement.ClassList);
+        x.parenttagname = p.ParentElement?.TagName.ToLower() ?? "";
+        x.childcount = p.Children.Length;
+        x.childtagname = p.Children.Length == 0 ? "" : p.Children.First().TagName.ToLower();
+        x.childclasslist = p.Children.Length == 0 ? "" : String.Join(' ', p.Children.First().ClassList);
+        var input = new dynamic[] { x };
+
+        _log.Debug("Input = {@input}", input);
+
+        List<RuleResultTree> resultList = _bre.ExecuteAllRulesAsync("ExcludeUL", input).Result;
+
+        //Check success for rule
+        foreach (var result in resultList)
         {
-            _log.Information("Skipped tag: {tag} Reason: {reason}", p.TagName, "Empty");
-            return;
-        }
-        if (p.ParentElement?.TagName.ToLower() == "blockquote" || p.GetSelector().Contains(">blockquote"))
-        {
-            _log.Information("Skipped tag: {tag} Reason: {reason}", p.TagName, "Embedded blockquote");
-            return;
-        }
-        if (p.ParentElement?.TagName.ToLower() == "li" || p.GetSelector().Contains(">li"))
-        {
-            _log.Information("Skipped tag: {tag} Reason: {reason}", p.TagName, "Embedded listitem");
-            return;
-        }
-        if (p.Text().Contains("Bookmark") ||
-            p.Text().Contains("Share on") ||
-            p.Text().Contains("Share Article") ||
-            p.Id == "post_meta" ||
-            (p.Id?.StartsWith("sharebar") ?? false) ||
-            p.Text().Contains("Share This Story", StringComparison.InvariantCultureIgnoreCase) ||
-            p.Text().Contains("Click to Share", StringComparison.InvariantCultureIgnoreCase) ||
-            p.ClassList.Contains("rotator-panels") ||
-            p.ClassList.Contains("rotator-pages") ||
-            p.ClassList.Contains("playlist") ||
-            p.ClassList.Contains("article-social") ||
-            p.ClassList.Contains("xwv-rotator") ||
-            p.ClassList.Contains("a-social-share-spacing") ||
-            p.ClassList.Contains("socialShare") ||
-            p.ClassList.Contains("heateor_sssp_sharing_ul") ||
-            p.ClassList.Contains("list-none") ||
-            p.ClassList.Contains("essb_links_list") ||
-            p.ClassList.Contains("simple-list") ||
-            p.ClassList.Contains("td-category") ||
-            p.ClassList.Contains("social-icons__list") ||
-            p.ClassList.Contains("authors") ||
-            p.ParentElement.ClassList.Contains("sd-content") ||
-            p.ParentElement.ClassList.Contains("editorial"))
-        {
-            _log.Information("Skipped tag: {tag} Reason: {reason}", p.TagName, "Excluded");
-            return;
+            if (result.IsSuccess)
+            {
+                _log.Information("Skipped tag: {tag} Reason: {reason}", p.TagName, result.Rule.RuleName);
+                return;
+            }
         }
 
         description.AppendLine($"<p><{p.TagName.ToLower()}>{p.InnerHtml}</{p.TagName.ToLower()}></p>");
@@ -294,24 +319,64 @@ public partial class TagParserBase
 
     protected void TryAddParagraph(StringBuilder description, IElement p)
     {
-        if (p.ParentElement?.TagName.ToLower() == "blockquote" || p.GetSelector().Contains(">blockquote"))
+        dynamic x = new ExpandoObject();
+        x.name = _item.SiteName;
+        x.text = p.Text().Trim();
+        x.id = p.Id ?? "";
+        x.tagname = p.TagName.ToLower();
+        x.classlist = String.Join(' ', p.ClassList);
+        x.selector = p.GetSelector();
+        x.parentclasslist = String.Join(' ', p.ParentElement.ClassList);
+        x.parenttagname = p.ParentElement?.TagName.ToLower() ?? "";
+        var input = new dynamic[] { x };
+
+        _log.Debug("Input = {@input}", input);
+
+        List<RuleResultTree> resultList = _bre.ExecuteAllRulesAsync("ExcludeParagraph", input).Result;
+
+        //Check success for rule
+        foreach (var result in resultList)
         {
-            _log.Debug("Skipped tag: {tag} Reason: {reason}", p.TagName, "Embedded blockquote");
-            return;
-        }
-        if (p.ParentElement?.TagName.ToLower() == "li" || p.GetSelector().Contains(">li"))
-        {
-            _log.Debug("Skipped tag: {tag} Reason: {reason}", p.TagName, "Embedded listitem");
-            return;
-        }
-        if (p.Text().Trim().Length == 0)
-        {
-            _log.Debug("Skipped tag: {tag} Reason: {reason}", p.TagName, "Empty");
-            return;
+            if (result.IsSuccess)
+            {
+                _log.Information("Skipped tag: {tag} Reason: {reason}", p.TagName, result.Rule.RuleName);
+                return;
+            }
         }
 
         // Watch for the older style line breaks and convert to proper paragraphs
         string innerHtml = LineBreakRegex().Replace(p.InnerHtml, "</p><p>");
         description.AppendLine($"<p>{innerHtml}</p>");
+    }
+
+    protected void TryAddBlockquote(StringBuilder description, IElement p)
+    {
+        dynamic x = new ExpandoObject();
+        x.name = _item.SiteName;
+        x.text = p.Text().Trim();
+        x.id = p.Id ?? "";
+        x.tagname = p.TagName.ToLower();
+        x.classlist = String.Join(' ', p.ClassList);
+        x.selector = p.GetSelector();
+        x.parentclasslist = String.Join(' ', p.ParentElement.ClassList);
+        x.parenttagname = p.ParentElement?.TagName.ToLower() ?? "";
+        var input = new dynamic[] { x };
+
+        _log.Debug("Input = {@input}", input);
+
+        List<RuleResultTree> resultList = _bre.ExecuteAllRulesAsync("ExcludeBlockquote", input).Result;
+
+        //Check success for rule
+        foreach (var result in resultList)
+        {
+            if (result.IsSuccess)
+            {
+                _log.Information("Skipped tag: {tag} Reason: {reason}", p.TagName, result.Rule.RuleName);
+                return;
+            }
+        }
+
+        // Add blockquote with some padding and a left side border
+        description.AppendLine($"<blockquote style=\"border-left: 7px solid lightgray; padding-left: 10px;\">{p.InnerHtml}</blockquote>");
     }
 }

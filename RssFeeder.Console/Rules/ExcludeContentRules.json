@@ -1,0 +1,351 @@
+[
+  {
+    "WorkflowName": "ExcludeUL",
+    "Rules": [
+      {
+        "Enabled": true,
+        "RuleName": "UlTextEmpty",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "text.Length == 0 OR childcount == 0",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "UlBlockQuoteEmbedded",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "parenttagname == \"blockquote\" OR selector.Contains(\">blockquote\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "UlLiEmbedded",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "parenttagname == \"li\" OR selector.Contains(\">li\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "UlListTextContains",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "text.Contains(\"Bookmark\") OR text.Contains(\"Share on\") OR text.Contains(\"Share Article\") OR text.Contains(\"Share This Story\", StringComparison.InvariantCultureIgnoreCase) OR text.Contains(\"Click to Share\", StringComparison.InvariantCultureIgnoreCase)",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "UlShare",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "id == \"post_meta\" OR id.StartsWith(\"sharebar\") OR text.StartsWith(\"Share\") OR (text.Contains(\"Facebook\") AND text.Contains(\"Twitter\")) OR classlist.Contains(\"social-tools__list\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "UlClassListContains",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "classlist.Contains(\"rotator-panels\") OR classlist.Contains(\"rotator-pages\") OR classlist.Contains(\"playlist\") OR classlist.Contains(\"article-social\") OR classlist.Contains(\"xwv-rotator\") OR classlist.Contains(\"a-social-share-spacing\") OR classlist.Contains(\"socialShare\") OR classlist.Contains(\"heateor_sssp_sharing_ul\") OR classlist.Contains(\"list-none\") OR classlist.Contains(\"essb_links_list\") OR classlist.Contains(\"simple-list\") OR classlist.Contains(\"td-category\") OR classlist.Contains(\"social-icons__list\") OR classlist.Contains(\"authors\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "UlParentClassListContains",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "parentclasslist.Contains(\"sd-content\") OR parentclasslist.Contains(\"editorial\") OR parentclasslist.Contains(\"navbar-collapse\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "UlNyPostExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"new york post\" AND (childclasslist.Contains(\"story--list\") OR classlist.Contains(\"inline-module__list\"))",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "UlOannExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"one america news network\" AND childclasslist.Contains(\"dpsp-network-list-item\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "UlWsjExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"wsj\"",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "UlPoliticoExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"politico\" AND (tagname == \"ol\" OR classlist == \"pb-fam\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "UlPageSixExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"page six\" AND ((text.Contains(\"Subscribe\") AND text.Contains(\"Shop\")) OR classlist.Contains(\"more-on__list\"))",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "UlTwitchyExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"twitchy.com\" AND parentclasslist.Contains(\"home-trending-widget-article\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "UlReutersExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"reuters\" AND (classlist.Contains(\"summary_\") OR classlist.Contains(\"context-widget\"))",
+        "SuccessEvent": "true"
+      }
+    ]
+  },
+  {
+    "WorkflowName": "ExcludeHeader",
+    "Rules": [
+      {
+        "Enabled": true,
+        "RuleName": "HeaderTextEmpty",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "text.Length == 0",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderBlockQuoteEmbedded",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "parenttagname == \"blockquote\" OR parenttagname == \"aside\" OR selector.Contains(\">blockquote\") OR selector.Contains(\">aside\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderLiEmbedded",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "parenttagname == \"li\" OR selector.Contains(\">li\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderTextUseless",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "text == \"Advertisement\" OR text == \"Follow Us\" OR text == \"You may like\" OR text == \"Share\" OR text == \"Conversation\" OR text == \"Related\" OR text == \"Related Stories\" OR text == \"Share:\" OR text == \"Share this:\" OR text == \"Like this:\"",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderNyPostExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"new york post\" AND (text.StartsWith(\"More On:\") OR text.StartsWith(\"see also\") OR classname.Contains(\"inline-module--related-post__headline\") OR classname.Contains(\"inline-module__heading\") OR classname.Contains(\"widget-heading\") OR tagname == \"figcaption\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderWsjExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"wsj\" AND text.StartsWith(\"What's News\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderPoliticoExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"politico\" AND (text.StartsWith(\"About The Author\") OR text.StartsWith(\"Most Read\") OR classlist.Contains(\"pb-fam__headline\") OR classlist.Contains(\"card__title\"))",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderAbcNewsExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"abc news\" AND text.StartsWith(\"More:\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderYahooSportsExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"sports.yahoo.com\" AND tagname == \"h2\"",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderYahooExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"www.yahoo.com\" AND text == \"TRENDING\"",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderRevolverNewsExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"revolver news\" AND text == \"Experience Revolver without ads\"",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderNprExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"npr\" AND parentclasslist.Contains(\"bucketblock\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderTwitchyExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"twitchy.com\" AND (parentclasslist.Contains(\"recent-stories\") OR parentclasslist.Contains(\"small-card-bottom\") OR classlist.Contains(\"trending\"))",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderSunExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"the us sun\" AND (classlist.Contains(\"read-more-headline\") OR classlist.Contains(\"nk-headline-heading\") OR text.StartsWith(\"Casino Special\"))",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderMirrorExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"mirror\" AND classlist.Contains(\"read-more__title\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderMailOnlineExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"mail online\" AND classlist.Contains(\"mol-factbox-title\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderHollywoodReporterExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"the hollywood reporter\" AND classlist.Contains(\"c-title\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderPageSixExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"page six\" AND (text.Contains(\"you love\") OR classlist.Contains(\"more-on__heading\"))",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderDailyCallerExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"dailycaller.com\" AND selector.StartsWith(\"#highestViewedVideos\")",
+        "SuccessEvent": "true"
+      }
+    ]
+  },
+  {
+    "WorkflowName": "ExcludeParagraph",
+    "Rules": [
+      {
+        "Enabled": true,
+        "RuleName": "ParagraphTextEmpty",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "tagname != \"figure\" AND text.Length == 0",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "ParagraphBlockQuoteEmbedded",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "parenttagname == \"blockquote\" OR parenttagname == \"aside\" OR selector.Contains(\">blockquote\") OR selector.Contains(\">aside\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "ParagraphLiEmbedded",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "tagname != \"figure\" AND (parenttagname == \"li\" OR selector.Contains(\">li\"))",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "ParagraphFigCaptionEmbedded",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "parenttagname == \"figcaption\" OR selector.Contains(\">figcaption\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "ParagraphTextUseless",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "text == \"Advertisement\" OR text.StartsWith(\"Advertisement -\") OR text.StartsWith(\"[Screenshot\") OR text.StartsWith(\"Screenshot/\") OR text == \"Follow Us\" OR text == \"Sign In\" OR text == \"Share this:\" OR text == \"Share\" OR text == \"Leave a comment\" OR text == \"Read next\" OR text == \".\"",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "ParagraphRevolverNewsExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"revolver news\" AND text == \"Hide ads now\"",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "ParagraphBreitbartExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"breitbart\" AND classlist.Contains(\"rmoreabt\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "ParagraphNyPostExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"new york post\" AND tagname == \"figcaption\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "ParagraphSunExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"the us sun\" AND tagname == \"figcaption\"",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "ParagraphNprExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"npr\" AND classlist.Contains(\"caption\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "ParagraphMailOnlineExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"mail online\" AND classlist.Contains(\"border-left\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "ParagraphPoliticoExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"politico\" AND classlist.Contains(\"polly-\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "ParagraphTwitchyExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"twitchy.com\" AND parentclasslist.Contains(\"home-trending-widget-article\")",
+        "SuccessEvent": "true"
+      }
+    ]
+  },
+  {
+    "WorkflowName": "ExcludeBlockquote",
+    "Rules": [
+      {
+        "Enabled": true,
+        "RuleName": "BlockquoteTextInstagram",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "text.Contains(\"View this post on Instagram\") OR text.Contains(\"See on Instagram\")",
+        "SuccessEvent": "true"
+      }
+    ]
+  }
+]

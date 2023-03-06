@@ -90,7 +90,7 @@
   },
   {
     "Title": "Populist Press Extra",
-    "Enabled": "true",
+    "Enabled": "false",
     "EnableThumbnail": "false",
     "Exportable": "true",
     "Description": "Populist Press Extra",
