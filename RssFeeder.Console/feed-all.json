@@ -218,7 +218,7 @@
     "CustomParser": "RssFeeder.Console.FeedBuilders.RubinReportFeedBuilder",
     "CollectionName": "rubin-report",
     "FileRetentionDays": 7,
-    "DatabaseRetentionDays": 180,
+    "DatabaseRetentionDays": 366,
     "Filters": []
   },
   {
@@ -233,10 +233,25 @@
     "CustomParser": "RssFeeder.Console.FeedBuilders.WhatFingerFeedBuilder",
     "CollectionName": "whatfinger",
     "FileRetentionDays": 7,
-    "DatabaseRetentionDays": 366,
+    "DatabaseRetentionDays": 180,
     "Filters": [
       "1954ceefa0f85a89de6c34109de7ff44",
       "f474e4c0861b2de36e3421e0dd701db0"
     ]
+  },
+  {
+    "Title": "Political Signal",
+    "Enabled": "true",
+    "EnableThumbnail": "false",
+    "Exportable": "true",
+    "Description": "Political Signal",
+    "RequiresJavascript": false,
+    "Language": "en-US",
+    "Url": "http://politicalsignal.com/",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.PoliticalSignalFeedBuilder",
+    "CollectionName": "political-signal",
+    "FileRetentionDays": 7,
+    "DatabaseRetentionDays": 7,
+    "Filters": []
   }
 ]

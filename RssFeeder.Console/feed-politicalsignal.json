@@ -1,0 +1,17 @@
+[
+  {
+    "Title": "Political Signal",
+    "Enabled": "true",
+    "EnableThumbnail": "false",
+    "Exportable": "true",
+    "Description": "Political Signal",
+    "RequiresJavascript": false,
+    "Language": "en-US",
+    "Url": "http://politicalsignal.com/",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.PoliticalSignalFeedBuilder",
+    "CollectionName": "political-signal",
+    "FileRetentionDays": 7,
+    "DatabaseRetentionDays": 7,
+    "Filters": []
+  }
+]
