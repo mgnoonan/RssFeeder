@@ -19,7 +19,7 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
         string paragraphSelector = template.ParagraphSelector;
 
         if (string.IsNullOrEmpty(paragraphSelector))
-            paragraphSelector = "p";
+            paragraphSelector = "p,ol,ul,blockquote,h2,h3,h4,h5,figure";
 
         _log.Debug("Attempting adaptive parsing using paragraph selector '{paragraphSelector}'", paragraphSelector);
         string bodySelector = GetHighestParagraphCountSelector(document, paragraphSelector, true);
@@ -43,15 +43,20 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
         {
             // Query the document by CSS selectors to get the article text
             var container = document.QuerySelector(bodySelector);
+            if (container is null)
+            {
+                _log.Information("Body selector {bodySelector} not found in content", bodySelector);
+                return string.Empty;
+            }
 
             // Get only the paragraphs under the parent
             switch (paragraphSelector)
             {
-                case "p":
-                    var paragraphs = container.QuerySelectorAll("p,ol,ul,blockquote,h2,h3,h4,h5,figure");
-                    return BuildArticleText(paragraphs);
                 case "br":
                     return BuildArticleText(container.InnerHtml);
+                default:
+                    var paragraphs = container.QuerySelectorAll(paragraphSelector);
+                    return BuildArticleText(paragraphs);
             }
         }
         catch (Exception ex)

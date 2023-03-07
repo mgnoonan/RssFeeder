@@ -33,7 +33,12 @@ public class ParseCommand : OaktonCommand<ParseInput>
         };
 
         string urlHash = utils.CreateMD5Hash(input.Url);
+        string workingFolder = Path.Combine(utils.GetAssemblyDirectory(), "test-download");
+        string filename = $"{workingFolder}\\{DateTime.Now:yyyyMMddhhmmss}_{urlHash}";
+
         (_, string html, _, _) = webUtils.DownloadString(input.Url);
+
+        webUtils.SaveContentToDisk(filename + ".html", false, html);
 
         var doc = new HtmlDocument();
         doc.Load(new StringReader(html));
