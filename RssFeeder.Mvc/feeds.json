@@ -193,5 +193,18 @@
     "FeedlyUrl": "",
     "RssUrl": "/api/rss/whatfinger",
     "Filters": []
+  },
+  {
+    "id": "",
+    "Title": "Political Signal",
+    "Url": "http://politicalsignal.com/",
+    "Description": "Political Signal",
+    "Language": "en-US",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.PoliticalSignalFeedBuilder",
+    "CollectionName": "political-signal",
+    "authoremail": "editor@politicalsignal.com",
+    "FeedlyUrl": "",
+    "RssUrl": "/api/rss/political-signal",
+    "Filters": []
   }
 ]
