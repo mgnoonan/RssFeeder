@@ -99,6 +99,20 @@
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"reuters\" AND (classlist.Contains(\"summary_\") OR classlist.Contains(\"context-widget\"))",
         "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "UlYahooNewsExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"news.yahoo.com\" AND classname.Contains(\"caas-list\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "UlDailyMailExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"mail online\" AND classname.Contains(\"mol-bullets\")",
+        "SuccessEvent": "true"
       }
     ]
   },
@@ -130,14 +144,14 @@
         "Enabled": true,
         "RuleName": "HeaderTextUseless",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "text == \"Advertisement\" OR text == \"Follow Us\" OR text == \"You may like\" OR text == \"Share\" OR text == \"Conversation\" OR text == \"Related\" OR text == \"Related Stories\" OR text == \"Share:\" OR text == \"Share this:\" OR text == \"Like this:\"",
+        "Expression": "text == \"Advertisement\" OR text == \"Follow Us\" OR text == \"You may like\" OR text == \"Share\" OR text == \"Conversation\" OR text == \"Related\" OR text == \"Related Stories\" OR text == \"Share:\" OR text == \"Share this:\" OR text == \"Like this:\" OR text == \"Related Story\" OR text == \"NOW WATCH:\"",
         "SuccessEvent": "true"
       },
       {
         "Enabled": true,
         "RuleName": "HeaderNyPostExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"new york post\" AND (text.StartsWith(\"More On:\") OR text.StartsWith(\"see also\") OR classname.Contains(\"inline-module--related-post__headline\") OR classname.Contains(\"inline-module__heading\") OR classname.Contains(\"widget-heading\") OR tagname == \"figcaption\")",
+        "Expression": "name == \"new york post\" AND (text.StartsWith(\"More On:\") OR text.StartsWith(\"see also\") OR classname.Contains(\"inline-module--related-post__headline\") OR classname.Contains(\"inline-module__heading\") OR classname.Contains(\"widget-heading\") OR tagname == \"figcaption\" OR selector.Contains(\">aside\"))",
         "SuccessEvent": "true"
       },
       {
@@ -237,6 +251,20 @@
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"dailycaller.com\" AND selector.StartsWith(\"#highestViewedVideos\")",
         "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderOutkickExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"outkick\" AND text == \"Videos by OutKick\"",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderTheWrapExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"thewrap\" AND classname.Contains(\"wallkit-paywall-block\")",
+        "SuccessEvent": "true"
       }
     ]
   },
@@ -296,14 +324,14 @@
         "Enabled": true,
         "RuleName": "ParagraphNyPostExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"new york post\" AND tagname == \"figcaption\")",
+        "Expression": "name == \"new york post\" AND tagname == \"figure\")",
         "SuccessEvent": "true"
       },
       {
         "Enabled": true,
         "RuleName": "ParagraphSunExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"the us sun\" AND tagname == \"figcaption\"",
+        "Expression": "name == \"the us sun\" AND tagname == \"figure\"",
         "SuccessEvent": "true"
       },
       {
@@ -332,6 +360,20 @@
         "RuleName": "ParagraphTwitchyExclude",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"twitchy.com\" AND parentclasslist.Contains(\"home-trending-widget-article\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "ParagraphYahooNewsExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"news.yahoo.com\" AND text.StartsWith(\"Most Read from\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "ParagraphTheWrapExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"thewrap\" AND classname.Contains(\"wallkit-paywall-block\")",
         "SuccessEvent": "true"
       }
     ]
