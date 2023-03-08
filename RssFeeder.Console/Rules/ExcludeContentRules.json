@@ -104,14 +104,21 @@
         "Enabled": true,
         "RuleName": "UlYahooNewsExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"news.yahoo.com\" AND classname.Contains(\"caas-list\")",
+        "Expression": "name == \"news.yahoo.com\" AND classlist.Contains(\"caas-list\")",
         "SuccessEvent": "true"
       },
       {
         "Enabled": true,
         "RuleName": "UlDailyMailExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"mail online\" AND classname.Contains(\"mol-bullets\")",
+        "Expression": "name == \"mail online\" AND classlist.Contains(\"mol-bullets\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "UlMsnExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"msn\" AND parentclass.Contains(\"article-list-slot\")",
         "SuccessEvent": "true"
       }
     ]
@@ -144,21 +151,21 @@
         "Enabled": true,
         "RuleName": "HeaderTextUseless",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "text == \"Advertisement\" OR text == \"Follow Us\" OR text == \"You may like\" OR text == \"Share\" OR text == \"Conversation\" OR text == \"Related\" OR text == \"Related Stories\" OR text == \"Share:\" OR text == \"Share this:\" OR text == \"Like this:\" OR text == \"Related Story\" OR text == \"NOW WATCH:\"",
+        "Expression": "text == \"Advertisement\" OR text == \"Follow Us\" OR text == \"You may like\" OR text == \"Share\" OR text == \"Conversation\" OR text == \"Related\" OR text == \"Related Stories\" OR text == \"Share:\" OR text == \"Share this:\" OR text == \"Share This Article\" OR text == \"Newsletter Signup\" OR text == \"Like this:\" OR text == \"Related Story\" OR text == \"NOW WATCH:\"",
         "SuccessEvent": "true"
       },
       {
         "Enabled": true,
         "RuleName": "HeaderNyPostExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"new york post\" AND (text.StartsWith(\"More On:\") OR text.StartsWith(\"see also\") OR classname.Contains(\"inline-module--related-post__headline\") OR classname.Contains(\"inline-module__heading\") OR classname.Contains(\"widget-heading\") OR tagname == \"figcaption\" OR selector.Contains(\">aside\"))",
+        "Expression": "name == \"new york post\" AND (text.StartsWith(\"More On:\") OR text.StartsWith(\"see also\") OR classlist.Contains(\"inline-module--related-post__headline\") OR classlist.Contains(\"inline-module__heading\") OR classlist.Contains(\"widget-heading\") OR tagname == \"figcaption\" OR selector.Contains(\">aside\"))",
         "SuccessEvent": "true"
       },
       {
         "Enabled": true,
         "RuleName": "HeaderWsjExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"wsj\" AND text.StartsWith(\"What's News\")",
+        "Expression": "name == \"wsj\" AND (text.StartsWith(\"What's News\") OR classlist.Contains(\"subhead\") OR classlist.Contains(\"newsletter-signup-title\") OR tagname == \"h5\")",
         "SuccessEvent": "true"
       },
       {
@@ -263,7 +270,14 @@
         "Enabled": true,
         "RuleName": "HeaderTheWrapExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"thewrap\" AND classname.Contains(\"wallkit-paywall-block\")",
+        "Expression": "name == \"thewrap\" AND classlist.Contains(\"wallkit-paywall-block\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderTheInterceptExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"the intercept\" AND parentclasslist.Contains(\"Newsletter-content\")",
         "SuccessEvent": "true"
       }
     ]
@@ -371,9 +385,30 @@
       },
       {
         "Enabled": true,
+        "RuleName": "ParagraphMsnExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"msn\" AND text.StartsWith(\"Most Read from\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
         "RuleName": "ParagraphTheWrapExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"thewrap\" AND classname.Contains(\"wallkit-paywall-block\")",
+        "Expression": "name == \"thewrap\" AND classlist.Contains(\"wallkit-paywall-block\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "ParagraphGuardianExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"the guardian\" AND tagname == \"figure\" AND text.Contains(\"skip past newsletter promotion\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "ParagraphSfGateExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"sfgate\" AND parentclasslist.Contains(\"story-card-content\")",
         "SuccessEvent": "true"
       }
     ]
