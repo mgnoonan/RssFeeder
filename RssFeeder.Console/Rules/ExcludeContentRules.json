@@ -104,7 +104,7 @@
         "Enabled": true,
         "RuleName": "UlYahooNewsExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"news.yahoo.com\" AND classlist.Contains(\"caas-list\")",
+        "Expression": "name == \"yahoo news\" AND classlist.Contains(\"caas-list\")",
         "SuccessEvent": "true"
       },
       {
@@ -279,6 +279,13 @@
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"the intercept\" AND parentclasslist.Contains(\"Newsletter-content\")",
         "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderAbcNewsExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"abc news\" AND text.StartsWith(\"MORE:\")",
+        "SuccessEvent": "true"
       }
     ]
   },
@@ -380,7 +387,7 @@
         "Enabled": true,
         "RuleName": "ParagraphYahooNewsExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"news.yahoo.com\" AND text.StartsWith(\"Most Read from\")",
+        "Expression": "name == \"yahoo news\" AND text.StartsWith(\"Most Read from\")",
         "SuccessEvent": "true"
       },
       {
