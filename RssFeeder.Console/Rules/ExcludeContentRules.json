@@ -104,7 +104,7 @@
         "Enabled": true,
         "RuleName": "UlYahooNewsExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "(name == \"yahoo news\" OR name == \"yahoo finance\") AND classlist.Contains(\"caas-list\")",
+        "Expression": "(name == \"yahoo news\" OR name == \"yahoo finance\" OR name == \"yahoo entertainment\") AND classlist.Contains(\"caas-list\")",
         "SuccessEvent": "true"
       },
       {
@@ -118,7 +118,14 @@
         "Enabled": true,
         "RuleName": "UlMsnExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"msn\" AND parentclass.Contains(\"article-list-slot\")",
+        "Expression": "name == \"msn\" AND parentclasslist.Contains(\"article-list-slot\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "UlSfGateExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"sfgate\" AND parentclasslist.Contains(\"thumbnail-list-wrapper\")",
         "SuccessEvent": "true"
       }
     ]
@@ -408,7 +415,7 @@
         "Enabled": true,
         "RuleName": "ParagraphYahooNewsExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "(name == \"yahoo news\" OR name == \"yahoo finance\") AND text.StartsWith(\"Most Read from\")",
+        "Expression": "(name == \"yahoo news\" OR name == \"yahoo finance\" OR name == \"yahoo entertainment\") AND text.StartsWith(\"Most Read from\")",
         "SuccessEvent": "true"
       },
       {
