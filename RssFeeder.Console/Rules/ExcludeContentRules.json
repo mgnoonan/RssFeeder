@@ -177,13 +177,6 @@
       },
       {
         "Enabled": true,
-        "RuleName": "HeaderAbcNewsExclude",
-        "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"abc news\" AND text.StartsWith(\"More:\")",
-        "SuccessEvent": "true"
-      },
-      {
-        "Enabled": true,
         "RuleName": "HeaderYahooSportsExclude",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"sports.yahoo.com\" AND tagname == \"h2\"",
@@ -291,7 +284,7 @@
         "Enabled": true,
         "RuleName": "HeaderAbcNewsExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"abc news\" AND text.StartsWith(\"MORE:\")",
+        "Expression": "name == \"abc news\" AND text.StartsWith(\"MORE:\", StringComparison.InvariantCultureIgnoreCase)",
         "SuccessEvent": "true"
       },
       {
