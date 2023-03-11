@@ -240,6 +240,9 @@ public partial class TagParserBase
 
         foreach (var element in elements)
         {
+            if (element.TagName.ToLower() == "blockquote")
+                continue;
+
             _log.Information("Replacing {tagName} style attribute {style}", element.TagName, element.GetAttribute("style"));
             element.RemoveAttribute("style");
         }
