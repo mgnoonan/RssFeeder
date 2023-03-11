@@ -55,7 +55,7 @@
         "Enabled": true,
         "RuleName": "UlNyPostExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"new york post\" AND (childclasslist.Contains(\"story--list\") OR classlist.Contains(\"inline-module__list\"))",
+        "Expression": "name == \"new york post\" AND (childclasslist.Contains(\"story--list\") OR classlist.Contains(\"inline-module__list\") OR parentclasslist.Contains(\"widget\"))",
         "SuccessEvent": "true"
       },
       {
@@ -172,7 +172,7 @@
         "Enabled": true,
         "RuleName": "HeaderWsjExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"wsj\" AND (text.StartsWith(\"What's News\") OR classlist.Contains(\"subhead\") OR classlist.Contains(\"newsletter-signup-title\") OR tagname == \"h5\")",
+        "Expression": "name == \"wsj\" AND (text.StartsWith(\"What's News\") OR classlist.Contains(\"subhead\") OR classlist.Contains(\"newsletter-signup-title\") OR classlist.Contains(\"widget-heading\") OR tagname == \"h5\")",
         "SuccessEvent": "true"
       },
       {
@@ -306,6 +306,13 @@
         "RuleName": "HeaderCnbcExclude",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"cnbc\" AND parentclasslist.Contains(\"ExclusiveContentBucket-\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderDeadlineExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"deadline\" AND (parentclasslist.Contains(\"related-story\") OR parentclasslist.Contains(\"a-unstyle-link\"))",
         "SuccessEvent": "true"
       }
     ]
