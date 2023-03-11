@@ -70,6 +70,7 @@ public partial class TagParserBase
         FixupRelativeUrls(document, baseUrl);
         FixupImageSrc(document, baseUrl);
         RemoveDuplicateImgTag(document);
+        RemoveElementPadding(document);
 
         // Check for embedded videos
         if (_item.SiteName != "youtube" && _item.SiteName != "rumble")
@@ -229,6 +230,18 @@ public partial class TagParserBase
                 if (parentElement.NodeName.ToLower() == "a")
                     parentElement.Remove();
             }
+        }
+    }
+
+    private void RemoveElementPadding(IHtmlDocument document)
+    {
+        var elements = document.All.Where(m => m.HasAttribute("style") && m.GetAttribute("style").Contains("padding"));
+        _log.Information("{count} elements with a style attribute", elements.Count());
+
+        foreach (var element in elements)
+        {
+            _log.Information("Replacing {tagName} style attribute {style}", element.TagName, element.GetAttribute("style"));
+            element.RemoveAttribute("style");
         }
     }
 
