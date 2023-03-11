@@ -30,19 +30,22 @@ class BonginoReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         // Top Stories section
         // //section.banner > div > div > div.col-12.col-sm-8 > div > div > div > h5 > a
         var container = document.QuerySelector("section.banner");
-        var nodes = container.QuerySelectorAll("a");
-        if (nodes != null)
+        if (container != null)
         {
-            count = 1;
-            foreach (var node in nodes)
+            var nodes = container.QuerySelectorAll("a");
+            if (nodes != null)
             {
-                string title = WebUtility.HtmlDecode(node.Text().Trim());
-
-                var item = CreateNodeLinks(filters, node, "main headlines", count++, feedUrl, true);
-                if (item != null)
+                count = 1;
+                foreach (var node in nodes)
                 {
-                    _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                    list.Add(item);
+                    string title = WebUtility.HtmlDecode(node.Text().Trim());
+
+                    var item = CreateNodeLinks(filters, node, "main headlines", count++, feedUrl, true);
+                    if (item != null)
+                    {
+                        _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+                        list.Add(item);
+                    }
                 }
             }
         }
@@ -50,19 +53,22 @@ class BonginoReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         // Top Stories section
         // //section.top-stories > div > div > div.col-12.col-sm-8 > div > div > div > h5 > a
         container = document.QuerySelector("section.top-stories");
-        nodes = container.QuerySelectorAll("a");
-        if (nodes != null)
+        if (container != null)
         {
-            count = 1;
-            foreach (var node in nodes)
+            var nodes = container.QuerySelectorAll("a");
+            if (nodes != null)
             {
-                string title = WebUtility.HtmlDecode(node.Text().Trim());
-
-                var item = CreateNodeLinks(filters, node, "top stories", count++, feedUrl, true);
-                if (item != null)
+                count = 1;
+                foreach (var node in nodes)
                 {
-                    _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                    list.Add(item);
+                    string title = WebUtility.HtmlDecode(node.Text().Trim());
+
+                    var item = CreateNodeLinks(filters, node, "top stories", count++, feedUrl, true);
+                    if (item != null)
+                    {
+                        _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+                        list.Add(item);
+                    }
                 }
             }
         }
@@ -70,19 +76,22 @@ class BonginoReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         // All Stories section
         // //section.all-stories > div > div > div.col-12.col-sm-8 > div > div > div > h5 > a
         container = document.QuerySelector("section.all-stories");
-        nodes = container.QuerySelectorAll("a");
-        if (nodes != null)
+        if (container != null)
         {
-            count = 1;
-            foreach (var node in nodes)
+            var nodes = container.QuerySelectorAll("a");
+            if (nodes != null)
             {
-                string title = WebUtility.HtmlDecode(node.Text().Trim());
-
-                var item = CreateNodeLinks(filters, node, "all stories", count++, feedUrl, false);
-                if (item != null)
+                count = 1;
+                foreach (var node in nodes)
                 {
-                    _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                    list.Add(item);
+                    string title = WebUtility.HtmlDecode(node.Text().Trim());
+
+                    var item = CreateNodeLinks(filters, node, "all stories", count++, feedUrl, false);
+                    if (item != null)
+                    {
+                        _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+                        list.Add(item);
+                    }
                 }
             }
         }
@@ -90,19 +99,22 @@ class BonginoReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         // Video Stories section
         // //section.stories-video > div > div > div.col-12.col-sm-8 > div > div > div > h5 > a
         container = document.QuerySelector("section.stories-video");
-        nodes = container.QuerySelectorAll("a");
-        if (nodes != null)
+        if (container != null)
         {
-            count = 1;
-            foreach (var node in nodes)
+            var nodes = container.QuerySelectorAll("a");
+            if (nodes != null)
             {
-                string title = WebUtility.HtmlDecode(node.Text().Trim());
-
-                var item = CreateNodeLinks(filters, node, "video stories", count++, feedUrl, false);
-                if (item != null)
+                count = 1;
+                foreach (var node in nodes)
                 {
-                    _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                    list.Add(item);
+                    string title = WebUtility.HtmlDecode(node.Text().Trim());
+
+                    var item = CreateNodeLinks(filters, node, "video stories", count++, feedUrl, false);
+                    if (item != null)
+                    {
+                        _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+                        list.Add(item);
+                    }
                 }
             }
         }

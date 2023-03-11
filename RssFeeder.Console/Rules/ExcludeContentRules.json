@@ -55,7 +55,7 @@
         "Enabled": true,
         "RuleName": "UlNyPostExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"new york post\" AND (childclasslist.Contains(\"story--list\") OR classlist.Contains(\"inline-module__list\"))",
+        "Expression": "name == \"new york post\" AND (childclasslist.Contains(\"story--list\") OR classlist.Contains(\"inline-module__list\") OR parentclasslist.Contains(\"widget\"))",
         "SuccessEvent": "true"
       },
       {
@@ -99,6 +99,34 @@
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"reuters\" AND (classlist.Contains(\"summary_\") OR classlist.Contains(\"context-widget\"))",
         "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "UlYahooNewsExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "(name == \"yahoo news\" OR name == \"yahoo finance\" OR name == \"yahoo entertainment\") AND classlist.Contains(\"caas-list\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "UlDailyMailExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"mail online\" AND classlist.Contains(\"mol-bullets\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "UlMsnExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"msn\" AND parentclasslist.Contains(\"article-list-slot\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "UlSfGateExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"sfgate\" AND parentclasslist.Contains(\"thumbnail-list-wrapper\")",
+        "SuccessEvent": "true"
       }
     ]
   },
@@ -130,21 +158,21 @@
         "Enabled": true,
         "RuleName": "HeaderTextUseless",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "text == \"Advertisement\" OR text == \"Follow Us\" OR text == \"You may like\" OR text == \"Share\" OR text == \"Conversation\" OR text == \"Related\" OR text == \"Related Stories\" OR text == \"Share:\" OR text == \"Share this:\" OR text == \"Like this:\"",
+        "Expression": "text == \"Advertisement\" OR text == \"Follow Us\" OR text == \"You may like\" OR text == \"Share\" OR text == \"Conversation\" OR text == \"Related\" OR text == \"Related Stories\" OR text == \"Share:\" OR text == \"Share this:\" OR text == \"Share This Article\" OR text == \"Newsletter Signup\" OR text == \"Like this:\" OR text == \"Related Story\" OR text == \"NOW WATCH:\" OR text == \"Email Sign-Up\"",
         "SuccessEvent": "true"
       },
       {
         "Enabled": true,
         "RuleName": "HeaderNyPostExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"new york post\" AND (text.StartsWith(\"More On:\") OR text.StartsWith(\"see also\") OR classname.Contains(\"inline-module--related-post__headline\") OR classname.Contains(\"inline-module__heading\") OR classname.Contains(\"widget-heading\") OR tagname == \"figcaption\")",
+        "Expression": "name == \"new york post\" AND (text.StartsWith(\"More On:\") OR text.StartsWith(\"see also\") OR classlist.Contains(\"inline-module--related-post__headline\") OR classlist.Contains(\"inline-module__heading\") OR classlist.Contains(\"widget-heading\") OR tagname == \"figcaption\" OR selector.Contains(\">aside\"))",
         "SuccessEvent": "true"
       },
       {
         "Enabled": true,
         "RuleName": "HeaderWsjExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"wsj\" AND text.StartsWith(\"What's News\")",
+        "Expression": "name == \"wsj\" AND (text.StartsWith(\"What's News\") OR classlist.Contains(\"subhead\") OR classlist.Contains(\"newsletter-signup-title\") OR classlist.Contains(\"widget-heading\") OR tagname == \"h5\")",
         "SuccessEvent": "true"
       },
       {
@@ -152,13 +180,6 @@
         "RuleName": "HeaderPoliticoExclude",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"politico\" AND (text.StartsWith(\"About The Author\") OR text.StartsWith(\"Most Read\") OR classlist.Contains(\"pb-fam__headline\") OR classlist.Contains(\"card__title\"))",
-        "SuccessEvent": "true"
-      },
-      {
-        "Enabled": true,
-        "RuleName": "HeaderAbcNewsExclude",
-        "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"abc news\" AND text.StartsWith(\"More:\")",
         "SuccessEvent": "true"
       },
       {
@@ -198,9 +219,16 @@
       },
       {
         "Enabled": true,
-        "RuleName": "HeaderSunExclude",
+        "RuleName": "HeaderUsSunExclude",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"the us sun\" AND (classlist.Contains(\"read-more-headline\") OR classlist.Contains(\"nk-headline-heading\") OR text.StartsWith(\"Casino Special\"))",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderSunExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"the sun\" AND (classlist.Contains(\"nk-headline-heading\") OR classlist.Contains(\"read-more-headline\"))",
         "SuccessEvent": "true"
       },
       {
@@ -236,6 +264,55 @@
         "RuleName": "HeaderDailyCallerExclude",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"dailycaller.com\" AND selector.StartsWith(\"#highestViewedVideos\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderOutkickExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"outkick\" AND text == \"Videos by OutKick\"",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderTheWrapExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"thewrap\" AND classlist.Contains(\"wallkit-paywall-block\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderTheInterceptExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"the intercept\" AND parentclasslist.Contains(\"Newsletter-content\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderAbcNewsExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"abc news\" AND text.StartsWith(\"MORE:\", StringComparison.InvariantCultureIgnoreCase)",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderAtlanticExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"the atlantic\" AND parentclasslist.Contains(\"ArticleMagazinePromo_textWrapper\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderCnbcExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"cnbc\" AND parentclasslist.Contains(\"ExclusiveContentBucket-\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderDeadlineExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"deadline\" AND (parentclasslist.Contains(\"related-story\") OR parentclasslist.Contains(\"a-unstyle-link\"))",
         "SuccessEvent": "true"
       }
     ]
@@ -296,14 +373,21 @@
         "Enabled": true,
         "RuleName": "ParagraphNyPostExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"new york post\" AND tagname == \"figcaption\")",
+        "Expression": "name == \"new york post\" AND tagname == \"figure\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "ParagraphUsSunExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"the us sun\" AND tagname == \"figure\"",
         "SuccessEvent": "true"
       },
       {
         "Enabled": true,
         "RuleName": "ParagraphSunExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"the us sun\" AND tagname == \"figcaption\"",
+        "Expression": "name == \"the sun\" AND tagname == \"figure\"",
         "SuccessEvent": "true"
       },
       {
@@ -333,6 +417,48 @@
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"twitchy.com\" AND parentclasslist.Contains(\"home-trending-widget-article\")",
         "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "ParagraphYahooNewsExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "(name == \"yahoo news\" OR name == \"yahoo finance\" OR name == \"yahoo entertainment\") AND text.StartsWith(\"Most Read from\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "ParagraphMsnExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"msn\" AND text.StartsWith(\"Most Read from\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "ParagraphTheWrapExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"thewrap\" AND classlist.Contains(\"wallkit-paywall-block\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "ParagraphGuardianExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"the guardian\" AND tagname == \"figure\" AND text.Contains(\"skip past newsletter promotion\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "ParagraphSfGateExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"sfgate\" AND parentclasslist.Contains(\"story-card-content\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "ParagraphAtlanticExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"the atlantic\" AND parentclasslist.Contains(\"ArticleMagazinePromo_textWrapper\")",
+        "SuccessEvent": "true"
       }
     ]
   },
@@ -343,7 +469,7 @@
         "Enabled": true,
         "RuleName": "BlockquoteTextInstagram",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "text.Contains(\"View this post on Instagram\") OR text.Contains(\"See on Instagram\")",
+        "Expression": "text.Contains(\"View this post on Instagram\") OR text.Contains(\"See on Instagram\") OR classlist.Contains(\"instagram-media\")",
         "SuccessEvent": "true"
       }
     ]

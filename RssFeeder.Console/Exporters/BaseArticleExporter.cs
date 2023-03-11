@@ -89,9 +89,10 @@ public class BaseArticleExporter
         }
 
         // Remove the protocol portion if there is one, i.e. 'https://'
-        if (exportFeedItem.SiteName.IndexOf('/') > 0)
+        if (exportFeedItem.SiteName.StartsWith("http") && exportFeedItem.SiteName.Contains("://"))
         {
-            exportFeedItem.SiteName = exportFeedItem.SiteName.Substring(exportFeedItem.SiteName.LastIndexOf('/') + 1);
+            _log.Information("Replacing site_name {siteName} with {hostName} for protocol violation", exportFeedItem.SiteName, exportFeedItem.HostName);
+            exportFeedItem.SiteName = exportFeedItem.HostName;
         }
     }
 
