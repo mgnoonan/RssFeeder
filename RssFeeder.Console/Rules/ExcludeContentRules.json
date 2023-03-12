@@ -97,7 +97,7 @@
         "Enabled": true,
         "RuleName": "UlReutersExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"reuters\" AND (classlist.Contains(\"summary_\") OR classlist.Contains(\"context-widget\"))",
+        "Expression": "name == \"reuters\" AND (classlist.Contains(\"summary_\") OR classlist.Contains(\"context-widget\") OR classlist.Contains(\"desktop-latest-updates\"))",
         "SuccessEvent": "true"
       },
       {
@@ -126,13 +126,6 @@
         "RuleName": "UlSfGateExclude",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"sfgate\" AND parentclasslist.Contains(\"thumbnail-list-wrapper\")",
-        "SuccessEvent": "true"
-      },
-      {
-        "Enabled": true,
-        "RuleName": "UlReutersExclude",
-        "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"reuters\" AND classlist.Contains(\"desktop-latest-updates\")",
         "SuccessEvent": "true"
       }
     ]
@@ -328,6 +321,13 @@
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"reuters\" AND classlist.Contains(\"desktop-latest-updates\")",
         "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderForbesExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"forbes\" AND classlist.Contains(\"recirc-headline\")",
+        "SuccessEvent": "true"
       }
     ]
   },
@@ -472,6 +472,13 @@
         "RuleName": "ParagraphAtlanticExclude",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"the atlantic\" AND parentclasslist.Contains(\"ArticleMagazinePromo_textWrapper\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "ParagraphForbesExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"forbes\" AND (text.Contains(\"CryptoCodex\") OR text.Contains(\"daily newsletter\", StringComparison.InvariantCultureIgnoreCase)",
         "SuccessEvent": "true"
       }
     ]
