@@ -158,7 +158,7 @@
         "Enabled": true,
         "RuleName": "HeaderTextUseless",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "text == \"Advertisement\" OR text == \"Follow Us\" OR text == \"You may like\" OR text == \"Share\" OR text == \"Conversation\" OR text == \"Related\" OR text == \"Related Stories\" OR text == \"Share:\" OR text == \"Share this:\" OR text == \"Share This Article\" OR text == \"Newsletter Signup\" OR text == \"Like this:\" OR text == \"Related Story\" OR text == \"NOW WATCH:\" OR text == \"Email Sign-Up\"",
+        "Expression": "text == \"Advertisement\" OR text == \"Follow Us\" OR text == \"You may like\" OR text == \"Share\" OR text == \"Conversation\" OR text == \"Related\" OR text == \"Related Stories\" OR text == \"Share:\" OR text == \"Share this:\" OR text == \"Share This Article\" OR text == \"Newsletter Signup\" OR text == \"Like this:\" OR text == \"Related Story\" OR text == \"NOW WATCH:\" OR text == \"Email Sign-Up\" OR text == \"Comments\" OR text.StartsWith(\"Now Watch:\", StringComparison.InvariantCultureIgnoreCase)",
         "SuccessEvent": "true"
       },
       {
