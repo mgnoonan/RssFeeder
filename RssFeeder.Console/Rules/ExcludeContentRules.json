@@ -480,6 +480,13 @@
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"forbes\" AND (text.Contains(\"CryptoCodex\") OR text.Contains(\"daily newsletter\", StringComparison.InvariantCultureIgnoreCase)",
         "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "ParagraphMarketwatchExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"marketwatch\" AND (text.StartsWith(\"Read more:\", StringComparison.InvariantCultureIgnoreCase) OR text.StartsWith(\"Read:\", StringComparison.InvariantCultureIgnoreCase) OR text.StartsWith(\"See:\", StringComparison.InvariantCultureIgnoreCase))",
+        "SuccessEvent": "true"
       }
     ]
   },
