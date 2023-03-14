@@ -76,7 +76,7 @@
         "Enabled": true,
         "RuleName": "UlPoliticoExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"politico\" AND (tagname == \"ol\" OR classlist == \"pb-fam\")",
+        "Expression": "name == \"politico\" AND (tagname == \"ol\" OR classlist == \"pb-fam\" OR parentclasslist.Contains(\"widget-footer\"))",
         "SuccessEvent": "true"
       },
       {
@@ -101,7 +101,7 @@
         "SuccessEvent": "true"
       },
       {
-        "Enabled": true,
+        "Enabled": false,
         "RuleName": "UlYahooNewsExclude",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "(name == \"yahoo news\" OR name == \"yahoo finance\" OR name == \"yahoo entertainment\") AND classlist.Contains(\"caas-list\")",
@@ -126,6 +126,13 @@
         "RuleName": "UlSfGateExclude",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"sfgate\" AND parentclasslist.Contains(\"thumbnail-list-wrapper\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "UlStlTodayExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"stltoday.com\" AND (classlist.Contains(\"list-inline\") OR classlist.Contains(\"social-links\"))",
         "SuccessEvent": "true"
       }
     ]
@@ -158,7 +165,7 @@
         "Enabled": true,
         "RuleName": "HeaderTextUseless",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "text == \"Advertisement\" OR text == \"Follow Us\" OR text == \"You may like\" OR text == \"Share\" OR text == \"Conversation\" OR text == \"Related\" OR text == \"Related Stories\" OR text == \"Share:\" OR text == \"Share this:\" OR text == \"Share This Article\" OR text == \"Newsletter Signup\" OR text == \"Like this:\" OR text == \"Related Story\" OR text == \"NOW WATCH:\" OR text == \"Email Sign-Up\" OR text == \"Comments\" OR text.StartsWith(\"Now Watch:\", StringComparison.InvariantCultureIgnoreCase)",
+        "Expression": "text == \"Advertisement\" OR text == \"Follow Us\" OR text == \"You may like\" OR text == \"Share\" OR text == \"Conversation\" OR text == \"Related\" OR text == \"Related Stories\" OR text == \"Share:\" OR text == \"Share this:\" OR text == \"Share This Article\" OR text == \"Newsletter Signup\" OR text == \"Like this:\" OR text == \"Related Story\" OR text == \"NOW WATCH:\" OR text == \"Email Sign-Up\" OR text == \"Comments\" OR text.StartsWith(\"Now Watch:\", StringComparison.InvariantCultureIgnoreCase) OR text == \"Follow Us\" OR text == \"People are also reading…\"",
         "SuccessEvent": "true"
       },
       {
@@ -179,7 +186,7 @@
         "Enabled": true,
         "RuleName": "HeaderPoliticoExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"politico\" AND (text.StartsWith(\"About The Author\") OR text.StartsWith(\"Most Read\") OR classlist.Contains(\"pb-fam__headline\") OR classlist.Contains(\"card__title\"))",
+        "Expression": "name == \"politico\" AND (text.StartsWith(\"About The Author\") OR text.StartsWith(\"Most Read\") OR classlist.Contains(\"pb-fam__headline\") OR classlist.Contains(\"card__title\") OR parenttagname == \"header\")",
         "SuccessEvent": "true"
       },
       {
@@ -235,7 +242,7 @@
         "Enabled": true,
         "RuleName": "HeaderMirrorExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"mirror\" AND classlist.Contains(\"read-more__title\")",
+        "Expression": "name == \"mirror\" AND (classlist.Contains(\"read-more__title\") OR classlist.Contains(\"factbox__title\"))",
         "SuccessEvent": "true"
       },
       {
@@ -327,6 +334,13 @@
         "RuleName": "HeaderForbesExclude",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"forbes\" AND classlist.Contains(\"recirc-headline\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderStlTodayExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"stltoday.com\" AND classlist.Contains(\"tnt-headline\")",
         "SuccessEvent": "true"
       }
     ]
@@ -433,7 +447,7 @@
         "SuccessEvent": "true"
       },
       {
-        "Enabled": true,
+        "Enabled": false,
         "RuleName": "ParagraphYahooNewsExclude",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "(name == \"yahoo news\" OR name == \"yahoo finance\" OR name == \"yahoo entertainment\") AND text.StartsWith(\"Most Read from\")",
@@ -486,6 +500,13 @@
         "RuleName": "ParagraphMarketwatchExclude",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"marketwatch\" AND (text.StartsWith(\"Read more:\", StringComparison.InvariantCultureIgnoreCase) OR text.StartsWith(\"Read:\", StringComparison.InvariantCultureIgnoreCase) OR text.StartsWith(\"See:\", StringComparison.InvariantCultureIgnoreCase))",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "ParagraphMirrorExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"mirror\" AND (text.StartsWith(\"All the latest news\") OR text.StartsWith(\"Follow the Mirror US News page\"))",
         "SuccessEvent": "true"
       }
     ]
