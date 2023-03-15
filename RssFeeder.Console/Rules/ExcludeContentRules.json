@@ -165,14 +165,14 @@
         "Enabled": true,
         "RuleName": "HeaderTextUseless",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "text == \"Advertisement\" OR text == \"Follow Us\" OR text == \"You may like\" OR text == \"Share\" OR text == \"Conversation\" OR text == \"Related\" OR text == \"Related Stories\" OR text == \"Share:\" OR text == \"Share this:\" OR text == \"Share This Article\" OR text == \"Newsletter Signup\" OR text == \"Like this:\" OR text == \"Related Story\" OR text == \"NOW WATCH:\" OR text == \"Email Sign-Up\" OR text == \"Comments\" OR text.StartsWith(\"Now Watch:\", StringComparison.InvariantCultureIgnoreCase) OR text == \"Follow Us\" OR text == \"People are also reading…\"",
+        "Expression": "text == \"Advertisement\" OR text == \"Follow Us\" OR text == \"You may like\" OR text == \"Share\" OR text == \"Conversation\" OR text == \"Related\" OR text == \"Related Stories\" OR text == \"Share:\" OR text == \"Share this:\" OR text == \"Share This Article\" OR text == \"Newsletter Signup\" OR text == \"Like this:\" OR text == \"Related Story\" OR text == \"NOW WATCH:\" OR text == \"Email Sign-Up\" OR text == \"Comments\" OR text.StartsWith(\"Now Watch:\", StringComparison.InvariantCultureIgnoreCase) OR text == \"Follow Us\" OR text == \"People are also reading…\" OR text == \"Join Our Newsletter\" OR text.StartsWith(\"Original reporting.\") OR text.StartsWith(\"Share and Enjoy\")",
         "SuccessEvent": "true"
       },
       {
         "Enabled": true,
         "RuleName": "HeaderNyPostExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"new york post\" AND (text.StartsWith(\"More On:\") OR text.StartsWith(\"see also\") OR classlist.Contains(\"inline-module--related-post__headline\") OR classlist.Contains(\"inline-module__heading\") OR classlist.Contains(\"widget-heading\") OR tagname == \"figcaption\" OR selector.Contains(\">aside\"))",
+        "Expression": "name == \"new york post\" AND (text.StartsWith(\"More On:\") OR text.StartsWith(\"see also\") OR classlist.Contains(\"inline-module--related-post__headline\") OR classlist.Contains(\"inline-module__heading\") OR classlist.Contains(\"widget-heading\") OR classlist.Contains(\"story__headline\") OR selector.Contains(\">aside\"))",
         "SuccessEvent": "true"
       },
       {
@@ -348,6 +348,20 @@
         "RuleName": "HeaderNewStatesmanExclude",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"new statesman\" AND classlist.Contains(\"c-read-next__article__headline\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderMetroExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"metro\" AND classlist.Contains(\"metro-email-signup-news\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderMsnExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"msn\" AND text.StartsWith(\"Like what you’re reading?\")",
         "SuccessEvent": "true"
       }
     ]
