@@ -41,7 +41,7 @@
         "Enabled": true,
         "RuleName": "UlClassListContains",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "classlist.Contains(\"rotator-panels\") OR classlist.Contains(\"rotator-pages\") OR classlist.Contains(\"playlist\") OR classlist.Contains(\"article-social\") OR classlist.Contains(\"xwv-rotator\") OR classlist.Contains(\"a-social-share-spacing\") OR classlist.Contains(\"socialShare\") OR classlist.Contains(\"heateor_sssp_sharing_ul\") OR classlist.Contains(\"list-none\") OR classlist.Contains(\"essb_links_list\") OR classlist.Contains(\"simple-list\") OR classlist.Contains(\"td-category\") OR classlist.Contains(\"social-icons__list\") OR classlist.Contains(\"authors\")",
+        "Expression": "classlist.Contains(\"rotator-panels\") OR classlist.Contains(\"rotator-pages\") OR classlist.Contains(\"playlist\") OR classlist.Contains(\"article-social\") OR classlist.Contains(\"xwv-rotator\") OR classlist.Contains(\"a-social-share-spacing\") OR classlist.Contains(\"socialShare\") OR classlist.Contains(\"heateor_sssp_sharing_ul\") OR classlist.Contains(\"list-none\") OR classlist.Contains(\"essb_links_list\") OR classlist.Contains(\"simple-list\") OR classlist.Contains(\"td-category\") OR classlist.Contains(\"social-icons__list\") OR classlist.Contains(\"authors\") OR classlist.Contains(\"pagination\")",
         "SuccessEvent": "true"
       },
       {
