@@ -133,26 +133,29 @@ public partial class TagParserBase
 
         foreach (var element in document.QuerySelectorAll("img"))
         {
-            string src = "";
-            string datasrc = "";
+            string attributeValue = "";
+            string dataAttribute = "";
+            string dataAttributeValue = "";
 
             if (element.HasAttribute("src"))
             {
-                src = element.GetAttribute("src");
+                attributeValue = element.GetAttribute("src");
             }
             if (element.HasAttribute("data-src"))
             {
-                datasrc = element.GetAttribute("data-src");
+                dataAttribute = "data-src";
+                dataAttributeValue = element.GetAttribute(dataAttributeValue);
             }
             if (element.HasAttribute("data-lazy-src"))
             {
-                datasrc = element.GetAttribute("data-lazy-src");
+                dataAttribute = "data-lazy-src";
+                dataAttributeValue = element.GetAttribute(dataAttributeValue);
             }
 
-            if (!string.IsNullOrEmpty(datasrc) && datasrc != src)
+            if (!string.IsNullOrEmpty(dataAttributeValue) && dataAttributeValue != attributeValue)
             {
-                _log.Information("Replacing src={src} with data-src={datasrc}", src, datasrc);
-                element.SetAttribute("src", datasrc);
+                _log.Information("Replacing src={attributeValue} with {dataAttribute}={dataAttributeValue}", attributeValue, dataAttribute, dataAttributeValue);
+                element.SetAttribute("src", dataAttributeValue);
             }
         }
     }
