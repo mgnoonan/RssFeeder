@@ -270,7 +270,7 @@
         "Enabled": true,
         "RuleName": "HeaderPageSixExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"page six\" AND (text.Contains(\"you love\") OR classlist.Contains(\"more-on__heading\"))",
+        "Expression": "name == \"page six\" AND (text.Contains(\"you love\") OR classlist.Contains(\"more-on__\"))",
         "SuccessEvent": "true"
       },
       {
