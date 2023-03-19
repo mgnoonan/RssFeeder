@@ -64,14 +64,18 @@ internal class WhatFingerFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                 if (nodes?.Length > 0)
                 {
                     count = 1;
+                    string previousHash = "";
                     foreach (var node in nodes.Take(_articleMaxCount))
                     {
-                        var item = CreateNodeLinks(filters, node, "main headlines", count++, feedUrl, false);
-                        if (item != null)
+                        var item = CreateNodeLinks(filters, node, "main headlines", count, feedUrl, false);
+                        if (item != null && item.FeedAttributes.UrlHash != previousHash)
                         {
                             _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                             list.Add(item);
+                            count++;
                         }
+
+                        previousHash = item?.FeedAttributes.UrlHash ?? "";
                     }
 
                     break;
