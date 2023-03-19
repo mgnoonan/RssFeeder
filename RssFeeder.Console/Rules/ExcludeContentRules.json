@@ -148,6 +148,13 @@
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"france 24\" AND classlist.Contains(\"m-tags-list\"))",
         "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "UlFederalistExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"the federalist\" AND classlist.Contains(\"list-unstyled\"))",
+        "SuccessEvent": "true"
       }
     ]
   },
