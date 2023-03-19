@@ -384,6 +384,13 @@
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"msn\" AND (text.StartsWith(\"Like what you’re reading?\") OR selector.Contains(\"#recentquotes\"))",
         "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderGatewayPunditExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"gateway pundit\" AND (classlist.Contains(\"rc-widget-headline\") OR classlist.Contains(\"rc-headline\")",
+        "SuccessEvent": "true"
       }
     ]
   },
