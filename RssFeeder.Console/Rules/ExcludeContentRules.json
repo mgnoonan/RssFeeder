@@ -399,6 +399,13 @@
       },
       {
         "Enabled": true,
+        "RuleName": "ParagraphFigureEmbedded",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "selector.Contains(\">figure\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
         "RuleName": "ParagraphLiEmbedded",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "tagname != \"figure\" AND (parenttagname == \"li\" OR selector.Contains(\">li\"))",
