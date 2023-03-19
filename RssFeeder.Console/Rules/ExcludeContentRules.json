@@ -375,7 +375,7 @@
         "Enabled": true,
         "RuleName": "HeaderMsnExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"msn\" AND text.StartsWith(\"Like what you’re reading?\")",
+        "Expression": "name == \"msn\" AND (text.StartsWith(\"Like what you’re reading?\") OR selector.Contains(\"#recentquotes\"))",
         "SuccessEvent": "true"
       }
     ]
@@ -492,7 +492,7 @@
         "Enabled": true,
         "RuleName": "ParagraphMsnExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"msn\" AND text.StartsWith(\"Most Read from\")",
+        "Expression": "name == \"msn\" AND (text.StartsWith(\"Most Read from\")  OR selector.Contains(\"#recentquotes\"))",
         "SuccessEvent": "true"
       },
       {
