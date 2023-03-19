@@ -234,7 +234,10 @@ public partial class TagParserBase
                 var parentElement = element.ParentElement;
 
                 if (element.HasAttribute("src") && ImageSourcesAreEqual(element.GetAttribute("src"), imgUrl))
+                {
+                    _log.Information("Removed duplicate image {imageUrl}", imgUrl);
                     element.Remove();
+                }
 
                 // CFP also wraps the image with an anchor tag
                 if (parentElement.NodeName.ToLower() == "a")
