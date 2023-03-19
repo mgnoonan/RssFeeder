@@ -141,6 +141,13 @@
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"wired\" AND classlist.Contains(\"RecircMostPopularItems\"))",
         "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "UlFrance24Exclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"france 24\" AND classlist.Contains(\"m-tags-list\"))",
+        "SuccessEvent": "true"
       }
     ]
   },

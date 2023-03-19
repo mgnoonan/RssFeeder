@@ -14,6 +14,8 @@ public partial class TagParserBase
     protected string _sourceHtml;
     protected RssFeedItem _item;
 
+    private const string _sizePattern = @"\d{3,4}x\d{3,4}";
+
     public TagParserBase(ILogger log, IUnlaunchClient client, IWebUtils webUtils)
     {
         _log = log;
@@ -230,7 +232,7 @@ public partial class TagParserBase
             {
                 var parentElement = element.ParentElement;
 
-                if (element.HasAttribute("src") && element.GetAttribute("src") == imgUrl)
+                if (element.HasAttribute("src") && ImageSourcesAreEqual(element.GetAttribute("src"), imgUrl))
                     element.Remove();
 
                 // CFP also wraps the image with an anchor tag
@@ -239,6 +241,23 @@ public partial class TagParserBase
             }
         }
     }
+
+    private bool ImageSourcesAreEqual(string value1, string value2)
+	{        
+		if (value1.Length == value2.Length)
+		{
+		    bool containsSize = Regex.IsMatch(value1, _sizePattern);
+			if (containsSize)
+			{
+				value1 = Regex.Replace(value1, _sizePattern, "");
+				value2 = Regex.Replace(value2, _sizePattern, "");
+			}
+
+			return value1 == value2;
+		}
+		
+		return false;
+	}
 
     private void RemoveElementPadding(IHtmlDocument document)
     {
