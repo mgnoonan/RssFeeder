@@ -415,7 +415,7 @@
         "Enabled": true,
         "RuleName": "ParagraphFigureEmbedded",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "selector.Contains(\">figure\")",
+        "Expression": "tagname == \"p\" AND selector.Contains(\">figure\")",
         "SuccessEvent": "true"
       },
       {
@@ -570,6 +570,13 @@
         "RuleName": "ParagraphNewStatesmanExclude",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"new statesman\" AND classlist.Contains(\"c-read-next__title\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "ParagraphTheHillExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"the hill\" AND (classlist.Contains(\"thanks\") OR classlist.Contains(\"watch\"))",
         "SuccessEvent": "true"
       }
     ]
