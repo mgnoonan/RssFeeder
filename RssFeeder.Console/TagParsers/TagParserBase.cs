@@ -147,12 +147,12 @@ public partial class TagParserBase
             if (element.HasAttribute("data-src"))
             {
                 dataAttribute = "data-src";
-                dataAttributeValue = element.GetAttribute(dataAttributeValue);
+                dataAttributeValue = element.GetAttribute(dataAttribute);
             }
             if (element.HasAttribute("data-lazy-src"))
             {
                 dataAttribute = "data-lazy-src";
-                dataAttributeValue = element.GetAttribute(dataAttributeValue);
+                dataAttributeValue = element.GetAttribute(dataAttribute);
             }
 
             if (!string.IsNullOrEmpty(dataAttributeValue) && dataAttributeValue != attributeValue)
