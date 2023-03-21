@@ -263,9 +263,9 @@ public partial class TagParserBase
 		value1 = value1.Contains("%3A") ? System.Web.HttpUtility.UrlDecode(value1) : value1;
 		value2 = value2.Contains("%3A") ? System.Web.HttpUtility.UrlDecode(value2) : value2;
 
-		// Strip off the query string
-        value1 = value1.Contains("?") ? value1.Substring(0, value1.IndexOf('?')) : value1;
-		value2 = value2.Contains("?") ? value2.Substring(0, value2.IndexOf('?')) : value2;
+		// Strip off the query string unless it contains a url parameter
+		value1 = value1.Contains("?") ? (value1.Contains("url=") ? value1.Substring(value1.IndexOf("url=") + 4) : value1.Substring(0, value1.IndexOf('?'))) : value1;
+		value2 = value2.Contains("?") ? (value2.Contains("url=") ? value2.Substring(value2.IndexOf("url=") + 4) : value2.Substring(0, value2.IndexOf('?'))) : value2;
 
 		// WSJ has a special route for social media thumbnails
  		value1 = value1.EndsWith("/social") ? value1.Substring(0, value1.IndexOf("/social")) : value1;
