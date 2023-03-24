@@ -391,6 +391,13 @@
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"gateway pundit\" AND (classlist.Contains(\"rc-widget-headline\") OR classlist.Contains(\"rc-headline\")",
         "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderNbcNewYorkExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"nbc new york\" AND (classlist.Contains(\"recirc__heading\") OR classlist.Contains(\"post__title\")",
+        "SuccessEvent": "true"
       }
     ]
   },

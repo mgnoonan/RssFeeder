@@ -154,6 +154,11 @@ public partial class TagParserBase
                 dataAttribute = "data-lazy-src";
                 dataAttributeValue = element.GetAttribute(dataAttribute);
             }
+            if (element.HasAttribute("srcset"))
+            {
+                _log.Information("Removing src={attributeValue}", element.GetAttribute("srcset"));
+                element.RemoveAttribute("srcset");
+            }
 
             if (!string.IsNullOrEmpty(dataAttributeValue) && dataAttributeValue != attributeValue)
             {
