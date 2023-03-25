@@ -159,6 +159,11 @@ public partial class TagParserBase
                 _log.Information("Removing srcset={attributeValue}", element.GetAttribute("srcset"));
                 element.RemoveAttribute("srcset");
             }
+            if (element.HasAttribute("data-srcset"))
+            {
+                _log.Information("Removing data-srcset={attributeValue}", element.GetAttribute("data-srcset"));
+                element.RemoveAttribute("data-srcset");
+            }
 
             if (!string.IsNullOrEmpty(dataAttributeValue) && dataAttributeValue != attributeValue)
             {
