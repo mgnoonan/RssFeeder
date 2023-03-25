@@ -156,7 +156,7 @@ public partial class TagParserBase
             }
             if (element.HasAttribute("srcset"))
             {
-                _log.Information("Removing src={attributeValue}", element.GetAttribute("srcset"));
+                _log.Information("Removing srcset={attributeValue}", element.GetAttribute("srcset"));
                 element.RemoveAttribute("srcset");
             }
 
@@ -252,7 +252,7 @@ public partial class TagParserBase
     }
 
     private bool ImageSourcesAreEqual(string value1, string value2)
-	{        
+    {
         if (Regex.IsMatch(value1, _sizePattern))
         {
             value1 = Regex.Replace(value1, _sizePattern, "");
@@ -265,27 +265,27 @@ public partial class TagParserBase
         }
 
         // Decode any URL encoding sometimes used for CDN references
-		value1 = value1.Contains("%3A") ? System.Web.HttpUtility.UrlDecode(value1) : value1;
-		value2 = value2.Contains("%3A") ? System.Web.HttpUtility.UrlDecode(value2) : value2;
+        value1 = value1.Contains("%3A") ? System.Web.HttpUtility.UrlDecode(value1) : value1;
+        value2 = value2.Contains("%3A") ? System.Web.HttpUtility.UrlDecode(value2) : value2;
 
-		// Strip off the query string unless it contains a url parameter
-		value1 = value1.Contains("?") ? (value1.Contains("url=") ? value1.Substring(value1.IndexOf("url=") + 4) : value1.Substring(0, value1.IndexOf('?'))) : value1;
-		value2 = value2.Contains("?") ? (value2.Contains("url=") ? value2.Substring(value2.IndexOf("url=") + 4) : value2.Substring(0, value2.IndexOf('?'))) : value2;
+        // Strip off the query string unless it contains a url parameter
+        value1 = value1.Contains("?") ? (value1.Contains("url=") ? value1.Substring(value1.IndexOf("url=") + 4) : value1.Substring(0, value1.IndexOf('?'))) : value1;
+        value2 = value2.Contains("?") ? (value2.Contains("url=") ? value2.Substring(value2.IndexOf("url=") + 4) : value2.Substring(0, value2.IndexOf('?'))) : value2;
 
-		// WSJ has a special route for social media thumbnails
- 		value1 = value1.EndsWith("/social") ? value1.Substring(0, value1.IndexOf("/social")) : value1;
-		value2 = value2.EndsWith("/social") ? value2.Substring(0, value2.IndexOf("/social")) : value2;
+        // WSJ has a special route for social media thumbnails
+        value1 = value1.EndsWith("/social") ? value1.Substring(0, value1.IndexOf("/social")) : value1;
+        value2 = value2.EndsWith("/social") ? value2.Substring(0, value2.IndexOf("/social")) : value2;
 
-		// Yahoo CDN route handling
+        // Yahoo CDN route handling
         value1 = value1.Contains("--/") ? value1.Substring(value1.LastIndexOf("--/") + 3) : value1;
-		value2 = value2.Contains("--/") ? value2.Substring(value2.LastIndexOf("--/") + 3) : value2;
-		
-        // Substack CDN route handling
-		value1 = value1.Contains("/https") ? value1.Substring(value1.LastIndexOf("/https") + 1) : value1;
-		value2 = value2.Contains("/https") ? value2.Substring(value2.LastIndexOf("/https") + 1) : value2;
+        value2 = value2.Contains("--/") ? value2.Substring(value2.LastIndexOf("--/") + 3) : value2;
 
-		return value1 == value2;
-	}
+        // Substack CDN route handling
+        value1 = value1.Contains("/https") ? value1.Substring(value1.LastIndexOf("/https") + 1) : value1;
+        value2 = value2.Contains("/https") ? value2.Substring(value2.LastIndexOf("/https") + 1) : value2;
+
+        return value1 == value2;
+    }
 
     private void RemoveElementPadding(IHtmlDocument document)
     {
