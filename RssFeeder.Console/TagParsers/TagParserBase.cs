@@ -164,6 +164,7 @@ public partial class TagParserBase
             {
                 _log.Information("Replacing src={attributeValue} with {dataAttribute}={dataAttributeValue}", attributeValue, dataAttribute, dataAttributeValue);
                 element.SetAttribute("src", dataAttributeValue);
+                element.RemoveAttribute(dataAttribute);
             }
         }
     }
