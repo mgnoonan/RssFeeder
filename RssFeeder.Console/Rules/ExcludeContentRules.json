@@ -155,6 +155,13 @@
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"the federalist\" AND classlist.Contains(\"list-unstyled\"))",
         "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "UlHillExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"the hill\" AND classlist.Contains(\"inline-related-stories\"))",
+        "SuccessEvent": "true"
       }
     ]
   },
@@ -397,6 +404,13 @@
         "RuleName": "HeaderNbcNewYorkExclude",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"nbc new york\" AND (classlist.Contains(\"recirc__heading\") OR classlist.Contains(\"post__title\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderHillExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"the hill\" AND classlist.Contains(\"inline-related-stories\"))",
         "SuccessEvent": "true"
       }
     ]
