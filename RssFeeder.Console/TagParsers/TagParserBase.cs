@@ -17,6 +17,7 @@ public partial class TagParserBase
     private const string _sizePattern = @"-?\d{3,4}x\d{3,4}";
     private const string _sizePattern2 = @"/ALTERNATES/s\d{3,4}";
 	private const string _sizePattern3 = @"\/w:\d{3,4}\/p:\d{2}x\d{1}";
+    private const string _sizePattern4 = @"\/(mobile_thumb__|blog_image_\d{2}_)";
 
     public TagParserBase(ILogger log, IUnlaunchClient client, IWebUtils webUtils)
     {
@@ -274,6 +275,11 @@ public partial class TagParserBase
         {
             value1 = Regex.Replace(value1, _sizePattern3, "");
             value2 = Regex.Replace(value2, _sizePattern3, "");
+        }
+        if (Regex.IsMatch(value1, _sizePattern4) || Regex.IsMatch(value2, _sizePattern4))
+        {
+            value1 = Regex.Replace(value1, _sizePattern4, "");
+            value2 = Regex.Replace(value2, _sizePattern4, "");
         }
 
         // Decode any URL encoding sometimes used for CDN references
