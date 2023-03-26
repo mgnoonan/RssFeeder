@@ -162,6 +162,13 @@
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"the hill\" AND classlist.Contains(\"inline-related-stories\"))",
         "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "UlDeadlineExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"deadline\" AND classlist.Contains(\"o-story-list\"))",
+        "SuccessEvent": "true"
       }
     ]
   },
@@ -193,7 +200,7 @@
         "Enabled": true,
         "RuleName": "HeaderTextUseless",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "text == \"Advertisement\" OR text == \"Sponsored\" OR text == \"Follow Us\" OR text == \"TAGS\" OR text == \"You may like\" OR text == \"Share\" OR text == \"Conversation\" OR text == \"Related\" OR text == \"Related Stories\" OR text == \"Share:\" OR text == \"Share this:\" OR text == \"Share This Article\" OR text == \"Newsletter Signup\" OR text == \"Like this:\" OR text == \"Related Story\" OR text == \"NOW WATCH:\" OR text == \"Email Sign-Up\" OR text == \"Comments\" OR text.StartsWith(\"Now Watch:\", StringComparison.InvariantCultureIgnoreCase) OR text == \"Follow Us\" OR text == \"People are also reading…\" OR text == \"Join Our Newsletter\" OR text.StartsWith(\"Original reporting.\") OR text.StartsWith(\"Share and Enjoy\")",
+        "Expression": "text == \"Advertisement\" OR text == \"Sponsored\" OR text == \"Follow Us\" OR text == \"TAGS\" OR text == \"You may like\" OR text == \"Share\" OR text == \"Conversation\" OR text == \"Related\" OR text == \"Related Stories\" OR text == \"Share:\" OR text == \"Share this:\" OR text == \"Share This Article\" OR text == \"Newsletter Signup\" OR text == \"Like this:\" OR text == \"Related Story\" OR text == \"NOW WATCH:\" OR text == \"Email Sign-Up\" OR text == \"Comments\" OR text.StartsWith(\"Now Watch:\", StringComparison.InvariantCultureIgnoreCase) OR text == \"Follow Us\" OR text == \"People are also reading…\" OR text == \"Join Our Newsletter\" OR text == \"Opinion\" OR text.StartsWith(\"Original reporting.\") OR text.StartsWith(\"Share and Enjoy\")",
         "SuccessEvent": "true"
       },
       {
@@ -347,7 +354,7 @@
         "Enabled": true,
         "RuleName": "HeaderDeadlineExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"deadline\" AND (parentclasslist.Contains(\"related-story\") OR parentclasslist.Contains(\"a-unstyle-link\"))",
+        "Expression": "name == \"deadline\" AND (parentclasslist.Contains(\"related-story\") OR parentclasslist.Contains(\"a-unstyle-link\") OR selector.Contains(\">header\"))",
         "SuccessEvent": "true"
       },
       {
