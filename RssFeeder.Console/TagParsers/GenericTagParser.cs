@@ -78,6 +78,10 @@ public partial class GenericTagParser : TagParserBase, ITagParser
             {
                 TryAddBlockquote(description, p);
             }
+            else if (p.TagName.ToLower() == "a")
+            {
+                description.AppendLine($"<p>{p.OuterHtml}</p>");
+            }
             else
             {
                 TryAddParagraph(description, p);
