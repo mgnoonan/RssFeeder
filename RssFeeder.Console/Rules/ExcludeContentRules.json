@@ -207,7 +207,7 @@
         "Enabled": true,
         "RuleName": "HeaderNyPostExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"new york post\" AND (text.StartsWith(\"More On:\") OR text.StartsWith(\"see also\") OR classlist.Contains(\"inline-module--related-post__headline\") OR classlist.Contains(\"inline-module__heading\") OR classlist.Contains(\"widget-heading\") OR classlist.Contains(\"story__headline\") OR selector.Contains(\">aside\"))",
+        "Expression": "name == \"new york post\" AND (text.StartsWith(\"More On:\") OR text.StartsWith(\"see also\") OR classlist.Contains(\"inline-module\") OR classlist.Contains(\"widget-heading\") OR classlist.Contains(\"story__headline\") OR selector.Contains(\">aside\"))",
         "SuccessEvent": "true"
       },
       {
@@ -485,7 +485,7 @@
         "Enabled": true,
         "RuleName": "ParagraphNyPostExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"new york post\" AND tagname == \"figure\")",
+        "Expression": "name == \"new york post\" AND (tagname == \"figure\") OR classlist.Contains(\"inline-module\"))",
         "SuccessEvent": "true"
       },
       {
