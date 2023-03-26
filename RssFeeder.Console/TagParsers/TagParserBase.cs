@@ -295,7 +295,7 @@ public partial class TagParserBase
 
     private void RemoveElementPadding(IHtmlDocument document)
     {
-        var elements = document.All.Where(m => m.HasAttribute("style") && m.GetAttribute("style").Contains("padding"));
+        var elements = document.All.Where(m => m.HasAttribute("style") && (m.GetAttribute("style").Contains("padding") || m.GetAttribute("style").Contains("height")));
         _log.Debug("{count} elements with a style attribute", elements.Count());
 
         foreach (var element in elements)
