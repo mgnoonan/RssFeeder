@@ -152,6 +152,11 @@ public partial class TagParserBase
                 dataAttribute = "data-src";
                 dataAttributeValue = element.GetAttribute(dataAttribute);
             }
+            if (element.HasAttribute("data-runner-src"))
+            {
+                dataAttribute = "data-runner-src";
+                dataAttributeValue = element.GetAttribute(dataAttribute);
+            }
 
             if (!string.IsNullOrEmpty(dataAttributeValue) && dataAttributeValue != attributeValue)
             {
