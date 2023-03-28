@@ -74,6 +74,7 @@ public partial class TagParserBase
 
         FixupRelativeUrls(document, baseUrl);
         FixupImageSrc(document, baseUrl);
+        FixupIframeSrc(document, baseUrl);
         RemoveDuplicateImgTag(document);
         RemoveElementPadding(document);
 
@@ -126,6 +127,39 @@ public partial class TagParserBase
     {
         ReplaceTagAttribute(document, baseUrl, "img", "src", true);
         ReplaceTagAttribute(document, baseUrl, "a", "href", false);
+    }
+
+    private void FixupIframeSrc(IHtmlDocument document, string baseUrl)
+    {
+        if (!Uri.TryCreate(baseUrl, UriKind.Absolute, out Uri baseUri))
+        {
+            _log.Warning("Invalid base url {baseUrl}, aborting relative Url fixup", baseUrl);
+            return;
+        }
+
+        foreach (var element in document.QuerySelectorAll("iframe"))
+        {
+            string attributeValue = "";
+            string dataAttribute = "";
+            string dataAttributeValue = "";
+
+            if (element.HasAttribute("src"))
+            {
+                attributeValue = element.GetAttribute("src");
+            }
+            if (element.HasAttribute("data-src"))
+            {
+                dataAttribute = "data-src";
+                dataAttributeValue = element.GetAttribute(dataAttribute);
+            }
+
+            if (!string.IsNullOrEmpty(dataAttributeValue) && dataAttributeValue != attributeValue)
+            {
+                _log.Information("Replacing src={attributeValue} with {dataAttribute}={dataAttributeValue}", attributeValue, dataAttribute, dataAttributeValue);
+                element.SetAttribute("src", dataAttributeValue);
+                element.RemoveAttribute(dataAttribute);
+            }
+        }
     }
 
     private void FixupImageSrc(IHtmlDocument document, string baseUrl)
