@@ -176,6 +176,13 @@
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"dailystar.co.uk\" AND selector.Contains(\">aside\"))",
         "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "UlExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"east bay times\" AND selector.Contains(\">aside\"))",
+        "SuccessEvent": "true"
       }
     ]
   },
@@ -207,7 +214,7 @@
         "Enabled": true,
         "RuleName": "HeaderTextUseless",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "text == \"Advertisement\" OR text == \"Sponsored\" OR text == \"Follow Us\" OR text == \"TAGS\" OR text == \"You may like\" OR text == \"Share\" OR text == \"Conversation\" OR text == \"Related\" OR text == \"Related Stories\" OR text == \"Share:\" OR text == \"Share this:\" OR text == \"Share This Article\" OR text == \"Newsletter Signup\" OR text == \"Like this:\" OR text == \"Related Story\" OR text == \"NOW WATCH:\" OR text == \"Email Sign-Up\" OR text == \"Comments\" OR text.StartsWith(\"Now Watch:\", StringComparison.InvariantCultureIgnoreCase) OR text == \"Follow Us\" OR text == \"People are also reading…\" OR text == \"Join Our Newsletter\" OR text == \"Opinion\" OR text == \"Suggest a Correction\" OR text.StartsWith(\"Original reporting.\") OR text.StartsWith(\"Share and Enjoy\")",
+        "Expression": "text == \"Advertisement\" OR text == \"Sponsored\" OR text == \"Follow Us\" OR text == \"TAGS\" OR text == \"You may like\" OR text == \"Share\" OR text == \"Conversation\" OR text == \"Related\" OR text == \"Related Stories\" OR text == \"Share:\" OR text == \"Share this:\" OR text == \"Share This Article\" OR text == \"Newsletter Signup\" OR text == \"Like this:\" OR text == \"Related Story\" OR text == \"NOW WATCH:\" OR text == \"Email Sign-Up\" OR text == \"Comments\" OR text.StartsWith(\"Now Watch:\", StringComparison.InvariantCultureIgnoreCase) OR text == \"Follow Us\" OR text == \"People are also reading…\" OR text == \"Join Our Newsletter\" OR text == \"Opinion\" OR text == \"Suggest a Correction\" OR text == \"Related Articles\" OR text == \"Continue Reading\" OR text.StartsWith(\"Original reporting.\") OR text.StartsWith(\"Share and Enjoy\")",
         "SuccessEvent": "true"
       },
       {
@@ -432,6 +439,13 @@
         "RuleName": "HeaderDailyStarExclude",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"dailystar.co.uk\" AND classlist.Contains(\"related-articles\"))",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "HeaderRasmussenExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"www.rasmussenreports.com\" AND tagname == \"h5\"",
         "SuccessEvent": "true"
       }
     ]
