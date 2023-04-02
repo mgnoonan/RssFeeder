@@ -14,7 +14,7 @@ public partial class TagParserBase
     protected string _sourceHtml;
     protected RssFeedItem _item;
 
-    private const string _sizePattern = @"-?\d{3,4}x\d{3,4}";
+    private const string _sizePattern = @"-?(\d{3,4}x\d{1,4}|rawImage)";
     private const string _sizePattern2 = @"/ALTERNATES/s\d{3,4}";
 	private const string _sizePattern3 = @"\/w:\d{3,4}\/p:\d{2}x\d{1}";
     private const string _sizePattern4 = @"\/(mobile_thumb__|blog_image_\d{2}_)";
