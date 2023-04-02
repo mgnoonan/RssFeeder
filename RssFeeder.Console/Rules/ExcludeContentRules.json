@@ -648,5 +648,17 @@
         "SuccessEvent": "true"
       }
     ]
+  },
+  {
+    "WorkflowName": "ExcludeAnchor",
+    "Rules": [
+      {
+        "Enabled": true,
+        "RuleName": "AnchorOffThePressExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"off the press\" AND !classlist.Contains(\"btn\")",
+        "SuccessEvent": "true"
+      }
+    ]
   }
 ]

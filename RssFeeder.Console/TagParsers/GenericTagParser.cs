@@ -80,7 +80,7 @@ public partial class GenericTagParser : TagParserBase, ITagParser
             }
             else if (p.TagName.ToLower() == "a")
             {
-                description.AppendLine($"<p>{p.OuterHtml}</p>");
+                TryAddAnchor(description, p);
             }
             else
             {
