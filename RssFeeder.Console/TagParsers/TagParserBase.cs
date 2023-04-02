@@ -185,6 +185,11 @@ public partial class TagParserBase
             {
                 attributeValue = element.GetAttribute("src");
             }
+            if (element.HasAttribute("data-mm-src"))
+            {
+                dataAttribute = "data-mm-src";
+                dataAttributeValue = element.GetAttribute(dataAttribute);
+            }
             if (element.HasAttribute("data-src"))
             {
                 dataAttribute = "data-src";
