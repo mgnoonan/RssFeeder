@@ -1,4 +1,5 @@
 ﻿using System.Dynamic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using AngleSharp.Html.Dom;
 using RulesEngine.Models;
@@ -349,6 +350,11 @@ public partial class TagParserBase
         // Substack CDN route handling
         value1 = value1.Contains("/https") ? value1.Substring(value1.LastIndexOf("/https") + 1) : value1;
         value2 = value2.Contains("/https") ? value2.Substring(value2.LastIndexOf("/https") + 1) : value2;
+
+		if (value1.Contains(".jpg") && (value1.Split('/', StringSplitOptions.RemoveEmptyEntries).Last() == value2.Split('/', StringSplitOptions.RemoveEmptyEntries).Last()))
+		{
+			return true;
+		}		
 
         return value1 == value2;
     }
