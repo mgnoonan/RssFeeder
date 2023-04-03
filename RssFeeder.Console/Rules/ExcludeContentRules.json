@@ -368,7 +368,7 @@
         "Enabled": true,
         "RuleName": "HeaderDeadlineExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"deadline\" AND (parentclasslist.Contains(\"related-story\") OR parentclasslist.Contains(\"a-unstyle-link\") OR selector.Contains(\">header\"))",
+        "Expression": "name == \"deadline\" AND (classlist.Contains(\"c-title\") OR classlist.Contains(\"c-figure\") OR parentclasslist.Contains(\"related-story\") OR parentclasslist.Contains(\"a-unstyle-link\") OR selector.Contains(\">header\"))",
         "SuccessEvent": "true"
       },
       {
