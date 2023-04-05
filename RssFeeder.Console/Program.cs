@@ -72,6 +72,8 @@ builder.RegisterType<ParseCommand>().SingleInstance();
 builder.RegisterType<ParseInput>().SingleInstance();
 builder.RegisterType<DownloadCommand>().SingleInstance();
 builder.RegisterType<DownloadInput>().SingleInstance();
+builder.RegisterType<CheckRulesCommand>().SingleInstance();
+builder.RegisterType<CheckRulesInput>().SingleInstance();
 builder.RegisterType<HelpInput>().SingleInstance();
 
 var container = builder.Build();

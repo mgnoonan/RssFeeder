@@ -1,6 +1,4 @@
-﻿using io.unlaunch;
-
-namespace RssFeeder.Console.Commands;
+﻿namespace RssFeeder.Console.Commands;
 
 [Description("Test building the named feed")]
 public class TestCommand : OaktonCommand<TestInput>
