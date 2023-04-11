@@ -19,6 +19,9 @@ public class ExportTemplates
     </ul>
     </small>
 </p>
+<p>
+    <small>Check out other feeds by <a href=""https://rssfeedermvc.azurewebsites.net/"">RssFeeder</a></small>
+</p>
 ";
 
     public const string ExtendedTemplate = @"<img src=""$item.ImageUrl$"" />
