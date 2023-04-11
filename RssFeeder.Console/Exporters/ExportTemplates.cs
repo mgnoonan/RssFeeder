@@ -6,6 +6,9 @@ public class ExportTemplates
 <p>
     The post <a href=""$item.Url$"">$item.Title$</a> captured from <a href=""$feed.Url$"">$feed.Title$</a> $item.LinkLocation$ on $item.DateAdded$ UTC.
 </p>
+<p style=""text-align: center"">
+    <small><a href=""https://rssfeedermvc.azurewebsites.net/"">Check out other feeds by RssFeeder</a></small>
+</p>
 <hr />
 <p>
     <small>
@@ -18,9 +21,6 @@ public class ExportTemplates
         <li><strong>location:</strong> $item.LinkLocation$</li>
     </ul>
     </small>
-</p>
-<p>
-    <small>Check out other feeds by <a href=""https://rssfeedermvc.azurewebsites.net/"">RssFeeder</a></small>
 </p>
 ";
 
