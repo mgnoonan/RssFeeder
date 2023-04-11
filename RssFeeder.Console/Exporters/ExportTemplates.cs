@@ -6,8 +6,23 @@ public class ExportTemplates
 <p>
     The post <a href=""$item.Url$"">$item.Title$</a> captured from <a href=""$feed.Url$"">$feed.Title$</a> $item.LinkLocation$ on $item.DateAdded$ UTC.
 </p>
+<style>
+.button {
+  background-color: #008CBA;
+  border: none;
+  color: white;
+  padding: 8px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 14px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 8px;
+}
+</style>
 <p style=""text-align: center"">
-    <small><a href=""https://rssfeedermvc.azurewebsites.net/"">Check out other feeds by RssFeeder</a></small>
+    <a class=""button"" href=""https://rssfeedermvc.azurewebsites.net/"">Browse other feeds by RssFeeder</a>
 </p>
 <hr />
 <p>
