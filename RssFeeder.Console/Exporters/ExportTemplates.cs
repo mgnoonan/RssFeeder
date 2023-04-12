@@ -7,7 +7,7 @@ public class ExportTemplates
     The post <a href=""$item.Url$"">$item.Title$</a> captured from <a href=""$feed.Url$"">$feed.Title$</a> $item.LinkLocation$ on $item.DateAdded$ UTC.
 </p>
 <p style=""text-align: center"">
-    <a style=""background-color: #008CBA;border: none;color: white;padding: 8px;text-align: center;text-decoration: none;display: inline-block;font-size: 14px;margin: 4px 2px;cursor: pointer;border-radius: 8px;"" href=""https://rssfeedermvc.azurewebsites.net/"">Browse other feeds by RssFeeder</a>
+    <a style=""background-color: #008CBA;border: none;color: white;padding: 8px;text-align: center;text-decoration: none;display: inline-block;font-size: 14px;margin: 4px 2px;cursor: pointer;border-radius: 8px;"" href=""https://rssfeedermvc.azurewebsites.net/"">Browse more feeds by RssFeeder</a>
 </p>
 <hr />
 <p>
