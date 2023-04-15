@@ -50,7 +50,8 @@ public class WebUtils : IWebUtils
         _log.Information("DriverGetString: Loading URL '{url}'", url);
 
         var options = new EdgeOptions();
-        options.AddArgument("headless");//Comment if we want to see the window. 
+        options.AddArgument("--headless");//Comment if we want to see the window. 
+        options.AddArgument("--remote-allow-origins=*");
 
         string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         EdgeDriver driver = null;
