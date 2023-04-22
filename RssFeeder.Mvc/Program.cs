@@ -43,9 +43,13 @@ try
     // Repositories
     builder.Services.AddSingleton<IDatabaseService>(InitializeCosmosClientInstanceAsync(builder.Configuration.GetSection("CosmosDb")).GetAwaiter().GetResult());
     builder.Services.AddSingleton<AppVersionInfo>();
-    builder.Services.AddMediatR(typeof(Program));
+    builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
     builder.Services.AddMemoryCache();
     builder.Services.AddApplicationInsightsTelemetry();
+    builder.Services.AddCacheStack((provider, builder) => builder
+        .AddMemoryCacheLayer()
+        .WithCleanupFrequency(TimeSpan.FromMinutes(15))
+    );
 
     builder.Services.AddMvc().AddXmlDataContractSerializerFormatters();
 
@@ -91,6 +95,7 @@ try
         name: "default",
         pattern: "{controller=Home}/{action=Index}/{id?}");
     app.MapRazorPages();
+    Log.Information("Here");
 
     app.Run();
 }

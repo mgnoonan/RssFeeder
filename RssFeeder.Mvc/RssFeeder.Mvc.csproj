@@ -5,22 +5,24 @@
     <UserSecretsId>0b6a9f11-6718-4b0a-a5d8-d63d761690f3</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
+    <Content Remove="C:\Users\Matthew\.nuget\packages\microsoft.azure.cosmos\3.32.3\contentFiles\any\netstandard2.0\ThirdPartyNotice.txt" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="AspNetCore.HealthChecks.CosmosDb" Version="6.1.0" />
-    <PackageReference Include="MediatR" Version="11.0.0" />
-    <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.0.0" />
+    <PackageReference Include="CacheTower" Version="0.13.0" />
+    <PackageReference Include="MediatR" Version="12.0.1" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.21.0" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.HealthChecks" Version="2.2.0" />
-    <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.31.2" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.3.1" />
-    <PackageReference Include="Microsoft.Identity.Web" Version="1.25.5" />
-    <PackageReference Include="Microsoft.Identity.Web.UI" Version="1.25.5" />
+    <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.32.3" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.5.0" />
+    <PackageReference Include="Microsoft.Identity.Web" Version="2.7.0" />
+    <PackageReference Include="Microsoft.Identity.Web.UI" Version="2.7.0" />
     <PackageReference Include="Microsoft.SyndicationFeed.ReaderWriter" Version="1.0.2" />
-    <PackageReference Include="RavenDB.Client" Version="5.4.4" />
-    <PackageReference Include="Serilog.AspNetCore" Version="6.0.1" />
+    <PackageReference Include="Serilog.AspNetCore" Version="6.1.0" />
     <PackageReference Include="Serilog.Enrichers.Environment" Version="2.2.0" />
     <PackageReference Include="Serilog.Sinks.ApplicationInsights" Version="4.0.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
-    <PackageReference Include="Serilog.Sinks.Seq" Version="5.2.1" />
+    <PackageReference Include="Serilog.Sinks.Seq" Version="5.2.2" />
   </ItemGroup>
   <ProjectExtensions>
     <VisualStudio>

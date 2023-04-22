@@ -3,12 +3,12 @@
 public class GetFeedHandler : IRequestHandler<GetFeedQuery, string>
 {
     private readonly IDatabaseService _repo;
-    private readonly IMemoryCache _cache;
+    private readonly ICacheStack _cache;
     private readonly List<FeedModel> _feeds;
     private readonly ILogger _log;
     private readonly string _sourceFile = "feeds.json";
 
-    public GetFeedHandler(IDatabaseService repo, IMemoryCache cache, ILogger log)
+    public GetFeedHandler(IDatabaseService repo, ICacheStack cache, ILogger log)
     {
         _repo = repo;
         _cache = cache;
@@ -35,12 +35,16 @@ public class GetFeedHandler : IRequestHandler<GetFeedQuery, string>
     private async Task<string> GetSyndicationItems(string id)
     {
         // See if we already have the items in the cache
-        if (_cache.TryGetValue($"{id}_items", out string s))
+        string s = await _cache.GetOrSetAsync<string>($"{id}_items", async (old) =>
         {
-            _log.Information("CACHE HIT: Returning {bytes} bytes", s.Length);
-            return s;
-        }
+            return await GetSyndicationItemsAsXml(id);
+        }, new CacheSettings(TimeSpan.FromMinutes(60), TimeSpan.FromMinutes(30)));
 
+        return s;
+    }
+
+    private async Task<string> GetSyndicationItemsAsXml(string id)
+    {
         _log.Information("CACHE MISS: Loading feed items for {id}", id);
         var sb = new StringBuilder();
         var stringWriter = new StringWriterWithEncoding(sb, Encoding.UTF8);
@@ -88,11 +92,7 @@ public class GetFeedHandler : IRequestHandler<GetFeedQuery, string>
         }
 
         // Add the items to the cache before returning
-        s = stringWriter.ToString();
-        _cache.Set<string>($"{id}_items", s, TimeSpan.FromMinutes(60));
-        _log.Information("CACHE SET: Storing feed items for {id} for {minutes} minutes", id, 60);
-
-        return s;
+        return stringWriter.ToString();
     }
 
     private FeedModel GetFeed(string id)
