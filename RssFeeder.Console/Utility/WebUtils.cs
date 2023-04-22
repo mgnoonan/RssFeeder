@@ -50,7 +50,8 @@ public class WebUtils : IWebUtils
         _log.Information("DriverGetString: Loading URL '{url}'", url);
 
         var options = new EdgeOptions();
-        options.AddArgument("headless");//Comment if we want to see the window. 
+        options.AddArgument("--headless");//Comment if we want to see the window. 
+        options.AddArgument("--remote-allow-origins=*");
 
         string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         EdgeDriver driver = null;
@@ -99,7 +100,7 @@ public class WebUtils : IWebUtils
             doc.OptionFixNestedTags = true;
 
             // List of html tags we really don't care to save
-            var excludeHtmlTags = new List<string> { "style", "link", "svg", "form", "noscript", "button" };
+            var excludeHtmlTags = new List<string> { "style", "link", "svg", "form", "noscript", "button", "amp-ad" };
             if (removeScriptElements)
             {
                 excludeHtmlTags.Add("script");
@@ -177,7 +178,7 @@ public class WebUtils : IWebUtils
                 doc.OptionFixNestedTags = true;
 
                 // List of html tags we really don't care to save
-                var excludeHtmlTags = new List<string> { "style", "link", "svg", "form", "noscript" };
+                var excludeHtmlTags = new List<string> { "style", "link", "svg", "form", "noscript", "amp-ad" };
                 if (trueUri.AbsoluteUri.Contains("apnews.com") || trueUri.AbsoluteUri.Contains("rumble.com"))
                 {
                     removeScriptElements = false;

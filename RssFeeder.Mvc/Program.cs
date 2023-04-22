@@ -43,9 +43,13 @@ try
     // Repositories
     builder.Services.AddSingleton<IDatabaseService>(InitializeCosmosClientInstanceAsync(builder.Configuration.GetSection("CosmosDb")).GetAwaiter().GetResult());
     builder.Services.AddSingleton<AppVersionInfo>();
-    builder.Services.AddMediatR(typeof(Program));
+    builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
     builder.Services.AddMemoryCache();
     builder.Services.AddApplicationInsightsTelemetry();
+    builder.Services.AddCacheStack<IDatabaseService>((provider, builder) => builder
+        .AddMemoryCacheLayer()
+        .WithCleanupFrequency(TimeSpan.FromMinutes(15))
+    );
 
     builder.Services.AddMvc().AddXmlDataContractSerializerFormatters();
 
@@ -75,12 +79,23 @@ try
 #if !DEBUG
     app.UseAuthentication();
     app.UseAuthorization();
+    app.Use(async (context, next) =>
+    {
+        context.Response.Headers.Append("X-Frame-Options", "SAMEORIGIN");
+        context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+        context.Response.Headers.Append("Content-Security-Policy", "script-src 'self'");
+        context.Response.Headers.Append("Referrer-Policy", "same-origin");
+        context.Response.Headers.Append("Strict-Transport-Security", "max-age=2592000");
+
+        await next();
+    });
 #endif
     app.MapHealthChecks("/health");
     app.MapControllerRoute(
         name: "default",
         pattern: "{controller=Home}/{action=Index}/{id?}");
     app.MapRazorPages();
+    Log.Information("Here");
 
     app.Run();
 }

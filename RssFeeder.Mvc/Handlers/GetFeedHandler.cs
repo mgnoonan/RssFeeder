@@ -1,17 +1,17 @@
-﻿namespace RssFeeder.Mvc.Handlers;
+﻿using CacheTower;
+
+namespace RssFeeder.Mvc.Handlers;
 
 public class GetFeedHandler : IRequestHandler<GetFeedQuery, string>
 {
-    private readonly IDatabaseService _repo;
-    private readonly IMemoryCache _cache;
+    private readonly ICacheStack<IDatabaseService> _cacheStack;
     private readonly List<FeedModel> _feeds;
     private readonly ILogger _log;
     private readonly string _sourceFile = "feeds.json";
 
-    public GetFeedHandler(IDatabaseService repo, IMemoryCache cache, ILogger log)
+    public GetFeedHandler(ICacheStack<IDatabaseService> cacheStack, ILogger log)
     {
-        _repo = repo;
-        _cache = cache;
+        _cacheStack = cacheStack;
         _feeds = System.Text.Json.JsonSerializer.Deserialize<List<FeedModel>>(
                 System.IO.File.ReadAllText(_sourceFile),
                 new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
@@ -35,16 +35,28 @@ public class GetFeedHandler : IRequestHandler<GetFeedQuery, string>
     private async Task<string> GetSyndicationItems(string id)
     {
         // See if we already have the items in the cache
-        if (_cache.TryGetValue($"{id}_items", out string s))
+        string xml = await _cacheStack.GetOrSetAsync<string>($"{id}_feedXml", async (old, context) =>
         {
-            _log.Information("CACHE HIT: Returning {bytes} bytes", s.Length);
-            return s;
-        }
+            int days = 5;
+            _log.Information("CACHE MISS: Loading feed {id} with items for {days} days ", id, days);
 
-        _log.Information("CACHE MISS: Loading feed items for {id}", id);
+            var items = await context.GetItemsAsync(new QueryDefinition("SELECT * FROM c WHERE c.FeedId = @id")
+                .WithParameter("@id", id));
+
+            return await FormatItemsAsAtomXml(
+                id,
+                items.Where(q => q.DateAdded >= DateTime.Now.Date.AddDays(-days))
+                     .OrderByDescending(q => q.DateAdded)
+                );
+        }, new CacheSettings(TimeSpan.FromMinutes(60), TimeSpan.FromMinutes(15)));
+
+        return xml;
+    }
+
+    private async Task<string> FormatItemsAsAtomXml(string id, IEnumerable<RssFeedItem> items)
+    {
         var sb = new StringBuilder();
         var stringWriter = new StringWriterWithEncoding(sb, Encoding.UTF8);
-        int days = 5;
         var feed = GetFeed(id);
 
         using (XmlWriter xmlWriter = XmlWriter.Create(stringWriter, new XmlWriterSettings() { Async = true, Indent = true, Encoding = Encoding.UTF8 }))
@@ -56,7 +68,7 @@ public class GetFeedHandler : IRequestHandler<GetFeedQuery, string>
             await rssWriter.WriteUpdated(DateTimeOffset.UtcNow);
 
             // Add Items
-            foreach (var item in await GetFeedItems(id.ToLowerInvariant(), days))
+            foreach (var item in items)
             {
                 try
                 {
@@ -88,11 +100,7 @@ public class GetFeedHandler : IRequestHandler<GetFeedQuery, string>
         }
 
         // Add the items to the cache before returning
-        s = stringWriter.ToString();
-        _cache.Set<string>($"{id}_items", s, TimeSpan.FromMinutes(60));
-        _log.Information("CACHE SET: Storing feed items for {id} for {minutes} minutes", id, 60);
-
-        return s;
+        return stringWriter.ToString();
     }
 
     private FeedModel GetFeed(string id)
@@ -103,16 +111,5 @@ public class GetFeedHandler : IRequestHandler<GetFeedQuery, string>
     private bool FeedExists(string id)
     {
         return _feeds.Any(q => q.collectionname == id);
-    }
-
-    private async Task<IEnumerable<RssFeedItem>> GetFeedItems(string id, int days)
-    {
-        _log.Information("Retrieving {days} days items for '{id}'", days, id);
-
-        var _items = await _repo.GetItemsAsync(new QueryDefinition("SELECT * FROM c WHERE c.FeedId = @id").WithParameter("@id", id));
-
-        return _items
-            .Where(q => q.DateAdded >= DateTime.Now.Date.AddDays(-days))
-            .OrderByDescending(q => q.DateAdded);
     }
 }

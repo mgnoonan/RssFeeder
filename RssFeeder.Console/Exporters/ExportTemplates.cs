@@ -4,7 +4,10 @@ public class ExportTemplates
 {
     public const string MetaDataTemplate = @"
 <p>
-    The post <a href=""$item.Url$"">$item.Title$</a> captured from <a href=""$feed.Url$"">$feed.Title$</a> $item.LinkLocation$ on $item.DateAdded$ UTC.
+    <small>The post <a href=""$item.Url$"">$item.Title$</a> captured from <a href=""$feed.Url$"">$feed.Title$</a> $item.LinkLocation$ on $item.DateAdded$ UTC.</small>
+</p>
+<p style=""text-align: center"">
+    <a style=""background-color: #008CBA;border: none;color: white;padding: 8px;text-align: center;text-decoration: none;display: inline-block;font-size: 14px;margin: 4px 2px;cursor: pointer;border-radius: 8px;"" href=""https://rssfeedermvc.azurewebsites.net/"">Browse more feeds built by RssFeeder</a>
 </p>
 <hr />
 <p>

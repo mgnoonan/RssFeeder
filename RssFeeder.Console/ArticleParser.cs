@@ -197,7 +197,7 @@ public class ArticleParser : IArticleParser
                     contentValue = System.Web.HttpUtility.HtmlDecode(contentValue);
                     _log.Information("Decoded {propertyValue} content value '{contentValue}'", propertyValue, contentValue);
                 }
-                else if (contentValue.Contains("%3A"))
+                else if (contentValue.Contains("%3A") && !Uri.TryCreate(contentValue, UriKind.Absolute, out Uri _))
                 {
                     contentValue = System.Web.HttpUtility.UrlDecode(contentValue);
                     _log.Information("Decoded {propertyValue} content value '{contentValue}'", propertyValue, contentValue);

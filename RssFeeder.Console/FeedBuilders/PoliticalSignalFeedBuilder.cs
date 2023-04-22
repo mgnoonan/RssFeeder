@@ -21,7 +21,6 @@ internal class PoliticalSignalFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
     public List<RssFeedItem> GenerateRssFeedItemList(string html, List<string> filters, string feedUrl)
     {
         var list = new List<RssFeedItem>();
-        int count;
 
         // Load and parse the html from the source file
         var parser = new HtmlParser();
@@ -30,131 +29,76 @@ internal class PoliticalSignalFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         // Main Headlines section
         // #featured_post_1 > h2 > a
         var containers = document.QuerySelectorAll("#home_page_featured");
-        _log.Information("FOUND: {count} sections", containers.Count());
-
-        if (containers != null)
-        {
-            foreach (var c in containers)
-            {
-                var nodes = c.QuerySelectorAll("li > h2 > a");
-                if (nodes?.Length > 0)
-                {
-                    count = 1;
-                    foreach (var node in nodes)
-                    {
-                        var item = CreateNodeLinks(filters, node, "main headlines", count++, feedUrl, false);
-                        if (item != null)
-                        {
-                            _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                            list.Add(item);
-                        }
-                    }
-                }
-            }
-        }
+        string location = "main headlines";
+        int articleCount = GetArticlesBySection(filters, feedUrl, list, containers, location, "li > h2 > a");
+        _log.Information("{location}: {sectionCount} sections, {articleCount} articles", location, containers.Length, articleCount);
 
         // Column 1 section
         containers = document.QuerySelectorAll("#column_1");
-        _log.Information("FOUND: {count} sections", containers.Count());
-
-        if (containers != null)
-        {
-            foreach (var c in containers)
-            {
-                var nodes = c.QuerySelectorAll("a");
-                if (nodes?.Length > 0)
-                {
-                    count = 1;
-                    string text = "";
-                    foreach (var node in nodes)
-                    {
-                        if (String.Join(' ', node.ParentElement.ClassList).Contains("mf-headline"))
-                        {
-                            text = node.Text();
-                        }
-                        else
-                        {
-                            node.TextContent = text;
-                            var item = CreateNodeLinks(filters, node, "column 1", count++, feedUrl, false);
-                            if (item != null)
-                            {
-                                _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                                list.Add(item);
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        location = "column 1";
+        articleCount = GetArticlesBySection(filters, feedUrl, list, containers, location, "a");
+        _log.Information("{location}: {sectionCount} sections, {articleCount} articles", location, containers.Length, articleCount);
 
         // Column 2 section
         containers = document.QuerySelectorAll("#column_2");
-        _log.Information("FOUND: {count} sections", containers.Count());
-
-        if (containers != null)
-        {
-            foreach (var c in containers)
-            {
-                var nodes = c.QuerySelectorAll("a");
-                if (nodes?.Length > 0)
-                {
-                    count = 1;
-                    string text = "";
-                    foreach (var node in nodes)
-                    {
-                        if (String.Join(' ', node.ParentElement.ClassList).Contains("mf-headline"))
-                        {
-                            text = node.Text();
-                        }
-                        else
-                        {
-                            node.TextContent = text;
-                            var item = CreateNodeLinks(filters, node, "column 1", count++, feedUrl, false);
-                            if (item != null)
-                            {
-                                _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                                list.Add(item);
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        location = "column 2";
+        articleCount = GetArticlesBySection(filters, feedUrl, list, containers, location, "a");
+        _log.Information("{location}: {sectionCount} sections, {articleCount} articles", location, containers.Length, articleCount);
 
         // Column 3 section
         containers = document.QuerySelectorAll("#column_3");
-        _log.Information("FOUND: {count} sections", containers.Count());
+        location = "column 3";
+        articleCount = GetArticlesBySection(filters, feedUrl, list, containers, location, "a");
+        _log.Information("{location}: {sectionCount} sections, {articleCount} articles", location, containers.Length, articleCount);
 
-        if (containers != null)
+        return list;
+    }
+
+    private int GetArticlesBySection(List<string> filters, string feedUrl, List<RssFeedItem> fullList, IHtmlCollection<IElement> containers, string location, string querySelector, bool isHeadline = false)
+    {
+        if (containers == null)
         {
-            foreach (var c in containers)
+            return 0;
+        }
+
+        var list = new List<RssFeedItem>();
+
+        foreach (var c in containers)
+        {
+            var nodes = c.QuerySelectorAll(querySelector);
+            if (nodes?.Length > 0)
             {
-                var nodes = c.QuerySelectorAll("a");
-                if (nodes?.Length > 0)
+                int count = 1;
+                string text = "";
+
+                foreach (var node in nodes)
                 {
-                    count = 1;
-                    string text = "";
-                    foreach (var node in nodes)
+                    if (String.Join(' ', node.ParentElement.ClassList).Contains("mf-headline"))
                     {
-                        if (String.Join(' ', node.ParentElement.ClassList).Contains("mf-headline"))
-                        {
-                            text = node.Text();
-                        }
-                        else
+                        text = node.Text();
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrEmpty(text))
                         {
                             node.TextContent = text;
-                            var item = CreateNodeLinks(filters, node, "column 1", count++, feedUrl, false);
-                            if (item != null)
-                            {
-                                _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                                list.Add(item);
-                            }
+                            text = "";
                         }
+
+                        var item = CreateNodeLinks(filters, node, location, count, feedUrl, isHeadline);
+                        if (item != null)
+                        {
+                            _log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+                            list.Add(item);
+                        }
+
+                        count++;
                     }
                 }
             }
         }
 
-        return list;
+        fullList.AddRange(list);
+        return list.Count;
     }
 }
