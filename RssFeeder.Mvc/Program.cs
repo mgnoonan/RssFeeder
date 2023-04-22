@@ -46,7 +46,7 @@ try
     builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
     builder.Services.AddMemoryCache();
     builder.Services.AddApplicationInsightsTelemetry();
-    builder.Services.AddCacheStack((provider, builder) => builder
+    builder.Services.AddCacheStack<IDatabaseService>((provider, builder) => builder
         .AddMemoryCacheLayer()
         .WithCleanupFrequency(TimeSpan.FromMinutes(15))
     );
@@ -80,15 +80,15 @@ try
     app.UseAuthentication();
     app.UseAuthorization();
     app.Use(async (context, next) =>
-{
-    context.Response.Headers.Append("X-Frame-Options", "SAMEORIGIN");
-    context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
-    context.Response.Headers.Append("Content-Security-Policy", "script-src 'self'");
-    context.Response.Headers.Append("Referrer-Policy", "same-origin");
-    context.Response.Headers.Append("Strict-Transport-Security", "max-age=2592000");
+    {
+        context.Response.Headers.Append("X-Frame-Options", "SAMEORIGIN");
+        context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+        context.Response.Headers.Append("Content-Security-Policy", "script-src 'self'");
+        context.Response.Headers.Append("Referrer-Policy", "same-origin");
+        context.Response.Headers.Append("Strict-Transport-Security", "max-age=2592000");
 
-    await next();
-});
+        await next();
+    });
 #endif
     app.MapHealthChecks("/health");
     app.MapControllerRoute(
