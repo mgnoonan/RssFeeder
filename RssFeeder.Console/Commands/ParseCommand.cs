@@ -34,6 +34,12 @@ public class ParseCommand : OaktonCommand<ParseInput>
 
         string urlHash = utils.CreateMD5Hash(input.Url);
         string workingFolder = Path.Combine(utils.GetAssemblyDirectory(), "test-download");
+        if (!Directory.Exists(workingFolder))
+        {
+            Log.Information("Creating folder '{workingFolder}'", workingFolder);
+            Directory.CreateDirectory(workingFolder);
+        }
+
         string filename = $"{workingFolder}\\{DateTime.Now:yyyyMMddhhmmss}_{urlHash}";
 
         (_, string html, _, _) = webUtils.DownloadString(input.Url);
