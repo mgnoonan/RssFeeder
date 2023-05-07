@@ -457,7 +457,7 @@
         "Enabled": true,
         "RuleName": "ParagraphTextEmpty",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "tagname != \"figure\" AND text.Length == 0",
+        "Expression": "tagname != \"figure\" AND text.Length == 0 AND !containsiframe",
         "SuccessEvent": "true"
       },
       {
@@ -645,6 +645,13 @@
         "RuleName": "BlockquoteTextInstagram",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "text.Contains(\"View this post on Instagram\") OR text.Contains(\"See on Instagram\") OR classlist.Contains(\"instagram-media\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "BlockquoteFigureEmbedded",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "parenttagname == \"figure\" OR selector.Contains(\">figure\")",
         "SuccessEvent": "true"
       }
     ]

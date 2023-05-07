@@ -1,5 +1,4 @@
 ﻿using System.Dynamic;
-using System.Linq;
 using System.Text.RegularExpressions;
 using AngleSharp.Html.Dom;
 using RulesEngine.Models;
@@ -17,7 +16,7 @@ public partial class TagParserBase
 
     private const string _sizePattern = @"-?(\d{1,4}x\d{1,4}|rawImage)";
     private const string _sizePattern2 = @"/ALTERNATES/s\d{3,4}";
-	private const string _sizePattern3 = @"\/w:\d{3,4}\/p:";
+    private const string _sizePattern3 = @"\/w:\d{3,4}\/p:";
     private const string _sizePattern4 = @"\/(mobile_thumb__|blog_image_\d{2}_)";
 
     public TagParserBase(ILogger log, IUnlaunchClient client, IWebUtils webUtils)
@@ -82,17 +81,15 @@ public partial class TagParserBase
         // Check for embedded videos
         if (_item.SiteName != "youtube" && _item.SiteName != "rumble")
         {
-            if (TryGetVideoIFrame(document, "rumble.com/embed", out IElement iframeElement))
+            var elements = document.QuerySelectorAll("iframe");
+            _log.Debug("IFRAME tag count {count}", elements.Length);
+
+            if (elements.Length > 0)
             {
-                ExtractIFrameMetadata(iframeElement);
-            }
-            else if (TryGetVideoIFrame(document, "bitchute.com/embed", out iframeElement))
-            {
-                ExtractIFrameMetadata(iframeElement);
-            }
-            else if (TryGetVideoIFrame(document, "youtube.com/embed", out iframeElement))
-            {
-                ExtractIFrameMetadata(iframeElement);
+                if (TryGetVideoIFrame(elements, "(rumble|bitchute|youtube).com/embed", out IElement iframeElement))
+                {
+                    ExtractIFrameMetadata(iframeElement);
+                }
             }
         }
 
@@ -105,6 +102,8 @@ public partial class TagParserBase
         string type = iframeElement.HasAttribute("type") ? iframeElement.GetAttribute("type") : "text/html";
         string width = iframeElement.HasAttribute("width") ? iframeElement.GetAttribute("width") : "640";
         string height = iframeElement.HasAttribute("height") ? iframeElement.GetAttribute("height") : "480";
+
+        if (type.Contains("lazy") && url.Contains("youtube.com")) type = "text/html";
         _log.Information("Embedded video {type} detected {url}", type, url);
 
         _item.OpenGraphAttributes.Add("og:x:video", url);
@@ -336,8 +335,8 @@ public partial class TagParserBase
         value2 = value2.Contains("?") ? (value2.Contains("url=") ? value2.Substring(value2.IndexOf("url=") + 4) : value2.Substring(0, value2.IndexOf('?'))) : value2;
 
         // Replace webp with jpg
-		value1 = value1.EndsWith(".webp") ? value1.Replace(".webp", ".jpg") : value1;
-		value2 = value2.EndsWith(".webp") ? value2.Replace(".webp", ".jpg") : value2;
+        value1 = value1.EndsWith(".webp") ? value1.Replace(".webp", ".jpg") : value1;
+        value2 = value2.EndsWith(".webp") ? value2.Replace(".webp", ".jpg") : value2;
 
         // WSJ has a special route for social media thumbnails
         value1 = value1.EndsWith("/social") ? value1.Substring(0, value1.IndexOf("/social")) : value1;
@@ -351,10 +350,10 @@ public partial class TagParserBase
         value1 = value1.Contains("/https") ? value1.Substring(value1.LastIndexOf("/https") + 1) : value1;
         value2 = value2.Contains("/https") ? value2.Substring(value2.LastIndexOf("/https") + 1) : value2;
 
-		if (value1.Contains(".jpg") && (value1.Split('/', StringSplitOptions.RemoveEmptyEntries).Last() == value2.Split('/', StringSplitOptions.RemoveEmptyEntries).Last()))
-		{
-			return true;
-		}		
+        if (value1.Contains(".jpg") && (value1.Split('/', StringSplitOptions.RemoveEmptyEntries).Last() == value2.Split('/', StringSplitOptions.RemoveEmptyEntries).Last()))
+        {
+            return true;
+        }
 
         return value1 == value2;
     }
@@ -376,13 +375,14 @@ public partial class TagParserBase
 
     public virtual void PreParse() { }
 
-    private bool TryGetVideoIFrame(IHtmlDocument document, string pattern, out IElement iframe)
+    private bool TryGetVideoIFrame(IHtmlCollection<IElement> elements, string pattern, out IElement iframe)
     {
-        var elements = document.QuerySelectorAll("iframe");
-
         foreach (var element in elements)
         {
-            if (element.HasAttribute("src") && element.GetAttribute("src").Contains(pattern))
+            var src = element.HasAttribute("src") ? element.GetAttribute("src").ToLower() : "";
+            _log.Debug("Checking iframe src={src} for {pattern}", src, pattern);
+
+            if (Regex.IsMatch(src, pattern))
             {
                 iframe = element;
                 return true;
@@ -470,6 +470,7 @@ public partial class TagParserBase
         x.selector = p.GetSelector();
         x.parentclasslist = String.Join(' ', p.ParentElement.ClassList);
         x.parenttagname = p.ParentElement?.TagName.ToLower() ?? "";
+        x.containsiframe = p.InnerHtml.Contains("iframe");
         var input = new dynamic[] { x };
 
         _log.Debug("Input = {@input}", input);
@@ -521,7 +522,7 @@ public partial class TagParserBase
         // Add blockquote with some padding and a left side border
         description.AppendLine($"<blockquote style=\"border-left: 7px solid lightgray; padding-left: 10px;\">{p.InnerHtml}</blockquote>");
     }
-    
+
     protected void TryAddAnchor(StringBuilder description, IElement p)
     {
         dynamic x = new ExpandoObject();

@@ -210,10 +210,11 @@
   },
   {
     "Title": "Rubin Report",
-    "Enabled": "true",
+    "Enabled": "false",
     "EnableThumbnail": "false",
     "Exportable": "true",
     "Description": "Rubin Report",
+    "RequiresJavascript": true,
     "Language": "en-US",
     "Url": "https://www.rubinwealthadvisors.com/rubinreport/",
     "CustomParser": "RssFeeder.Console.FeedBuilders.RubinReportFeedBuilder",
