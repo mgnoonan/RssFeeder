@@ -80,7 +80,7 @@ var container = builder.Build();
 var serviceProvider = new AutofacServiceProvider(container);
 
 // set up TLS defaults
-ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls13 | SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
 
 var executor = CommandExecutor.For(_ =>
 {

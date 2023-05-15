@@ -107,7 +107,7 @@ public class RavenDbRepository : IRepository, IExportRepository
         using (IDocumentSession session = _store.OpenSession(database: collectionName))
         {
             var query = session.Advanced.RawQuery<T>(sqlQueryText);
-            foreach (var p in parameters ?? new Dictionary<string, object>())
+            foreach (var p in parameters)
             {
                 query.AddParameter(p.Key, p.Value);
             }
