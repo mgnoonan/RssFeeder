@@ -1,8 +1,7 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Reflection;
+﻿using System.IO;
 using Microsoft.Extensions.Hosting;
+
+namespace RssFeeder.Mvc;
 
 public class AppVersionInfo
 {

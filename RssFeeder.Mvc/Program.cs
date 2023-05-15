@@ -1,3 +1,5 @@
+using RssFeeder.Mvc;
+
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .CreateBootstrapLogger();
