@@ -62,13 +62,13 @@ internal class PoliticalSignalFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         }
 
         var list = new List<RssFeedItem>();
+        int count = 1;
 
         foreach (var c in containers)
         {
             var nodes = c.QuerySelectorAll(querySelector);
             if (nodes?.Length > 0)
             {
-                int count = 1;
                 string text = "";
 
                 foreach (var node in nodes)
