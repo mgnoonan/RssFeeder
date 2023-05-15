@@ -33,7 +33,7 @@ public class ScriptTagParser : TagParserBase, ITagParser
             if (element.TextContent.Contains(bodySelector))
             {
                 var lines = element.TextContent.Replace("\\u003c", "<").Split("\n", StringSplitOptions.RemoveEmptyEntries);
-                content = lines.Where(q => q.Contains(bodySelector)).FirstOrDefault();
+                content = lines.First(q => q.Contains(bodySelector));
                 int pos = content.IndexOf('{');
                 content = content[pos..].Trim();
                 pos = content.LastIndexOf('}') + 1;
