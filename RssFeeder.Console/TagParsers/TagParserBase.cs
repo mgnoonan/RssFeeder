@@ -75,6 +75,7 @@ public partial class TagParserBase
         FixupRelativeUrls(document, baseUrl);
         FixupImageSrc(document, baseUrl);
         FixupIframeSrc(document, baseUrl);
+        FixupFigCaptionStyle(document);
         RemoveDuplicateImgTag(document);
         RemoveElementPadding(document);
 
@@ -217,6 +218,23 @@ public partial class TagParserBase
                 element.SetAttribute("src", dataAttributeValue);
                 element.RemoveAttribute(dataAttribute);
             }
+        }
+    }
+
+    private void FixupFigCaptionStyle(IHtmlDocument document)
+    {
+        foreach (var element in document.QuerySelectorAll("figcaption"))
+        {
+            if (element.HasAttribute("class"))
+            {
+                element.RemoveAttribute("class");
+            }
+            if (element.HasAttribute("style"))
+            {
+                element.RemoveAttribute("style");
+            }
+
+            element.SetAttribute("style", "font-size: 75%;font-style: italic;");
         }
     }
 
