@@ -323,25 +323,29 @@ public partial class TagParserBase
 
     private bool ImageSourcesAreEqual(string value1, string value2)
     {
-        if (Regex.IsMatch(value1, _sizePattern) || Regex.IsMatch(value2, _sizePattern))
+        if (Regex.IsMatch(value1, _sizePattern, RegexOptions.None, TimeSpan.FromMilliseconds(250)) ||
+            Regex.IsMatch(value2, _sizePattern, RegexOptions.None, TimeSpan.FromMilliseconds(250)))
         {
-            value1 = Regex.Replace(value1, _sizePattern, "");
-            value2 = Regex.Replace(value2, _sizePattern, "");
+            value1 = Regex.Replace(value1, _sizePattern, "", RegexOptions.None, TimeSpan.FromMilliseconds(250));
+            value2 = Regex.Replace(value2, _sizePattern, "", RegexOptions.None, TimeSpan.FromMilliseconds(250));
         }
-        if (Regex.IsMatch(value1, _sizePattern2) || Regex.IsMatch(value2, _sizePattern2))
+        if (Regex.IsMatch(value1, _sizePattern2, RegexOptions.None, TimeSpan.FromMilliseconds(250)) ||
+            Regex.IsMatch(value2, _sizePattern2, RegexOptions.None, TimeSpan.FromMilliseconds(250)))
         {
-            value1 = Regex.Replace(value1, _sizePattern2, "");
-            value2 = Regex.Replace(value2, _sizePattern2, "");
+            value1 = Regex.Replace(value1, _sizePattern2, "", RegexOptions.None, TimeSpan.FromMilliseconds(250));
+            value2 = Regex.Replace(value2, _sizePattern2, "", RegexOptions.None, TimeSpan.FromMilliseconds(250));
         }
-        if (Regex.IsMatch(value1, _sizePattern3) || Regex.IsMatch(value2, _sizePattern3))
+        if (Regex.IsMatch(value1, _sizePattern3, RegexOptions.None, TimeSpan.FromMilliseconds(250)) ||
+            Regex.IsMatch(value2, _sizePattern3, RegexOptions.None, TimeSpan.FromMilliseconds(250)))
         {
-            value1 = Regex.Replace(value1, _sizePattern3, "");
-            value2 = Regex.Replace(value2, _sizePattern3, "");
+            value1 = Regex.Replace(value1, _sizePattern3, "", RegexOptions.None, TimeSpan.FromMilliseconds(250));
+            value2 = Regex.Replace(value2, _sizePattern3, "", RegexOptions.None, TimeSpan.FromMilliseconds(250));
         }
-        if (Regex.IsMatch(value1, _sizePattern4) || Regex.IsMatch(value2, _sizePattern4))
+        if (Regex.IsMatch(value1, _sizePattern4, RegexOptions.None, TimeSpan.FromMilliseconds(250)) ||
+            Regex.IsMatch(value2, _sizePattern4, RegexOptions.None, TimeSpan.FromMilliseconds(250)))
         {
-            value1 = Regex.Replace(value1, _sizePattern4, "");
-            value2 = Regex.Replace(value2, _sizePattern4, "");
+            value1 = Regex.Replace(value1, _sizePattern4, "", RegexOptions.None, TimeSpan.FromMilliseconds(250));
+            value2 = Regex.Replace(value2, _sizePattern4, "", RegexOptions.None, TimeSpan.FromMilliseconds(250));
         }
 
         // Decode any URL encoding sometimes used for CDN references
