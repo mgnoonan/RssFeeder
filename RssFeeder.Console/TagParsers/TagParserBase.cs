@@ -404,7 +404,7 @@ public partial class TagParserBase
             var src = element.HasAttribute("src") ? element.GetAttribute("src").ToLower() : "";
             _log.Debug("Checking iframe src={src} for {pattern}", src, pattern);
 
-            if (Regex.IsMatch(src, pattern))
+            if (Regex.IsMatch(src, pattern, RegexOptions.None, TimeSpan.FromMilliseconds(250)))
             {
                 iframe = element;
                 return true;
