@@ -5,13 +5,11 @@ namespace RssFeeder.Console.Commands
 {
     public class CheckRulesCommand : OaktonCommand<CheckRulesInput>
     {
-        private readonly IContainer _container;
         private readonly ILogger _log;
         private RulesEngine.RulesEngine _bre;
 
-        public CheckRulesCommand(IContainer container, ILogger log)
+        public CheckRulesCommand(ILogger log)
         {
-            _container = container;
             _log = log;
 
             InitializeRulesEngine();
@@ -34,7 +32,7 @@ namespace RssFeeder.Console.Commands
             _log.Debug("Input = {@input}", i);
 
             List<RuleResultTree> resultList = new();
-            resultList.AddRange(_bre.ExecuteAllRulesAsync("ExcludeUL", i).Result);
+            resultList.AddRange(_bre.ExecuteAllRulesAsync("ExcludeUL", i).GetAwaiter().GetResult());
             resultList.AddRange(_bre.ExecuteAllRulesAsync("ExcludeHeader", i).Result);
             resultList.AddRange(_bre.ExecuteAllRulesAsync("ExcludeParagraph", i).Result);
             resultList.AddRange(_bre.ExecuteAllRulesAsync("ExcludeBlockquote", i).Result);

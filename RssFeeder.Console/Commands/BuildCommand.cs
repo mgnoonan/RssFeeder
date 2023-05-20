@@ -29,17 +29,17 @@ public class BuildCommand : OaktonCommand<BuildInput>
 
         try
         {
-            var repository = _container.Resolve<IRepository>();
+            //var repository = _container.Resolve<IRepository>();
             var crawler = _container.Resolve<IWebCrawler>();
             var utils = _container.Resolve<IUtils>();
-            var webUtils = _container.Resolve<IWebUtils>();
+            //var webUtils = _container.Resolve<IWebUtils>();
 
             if (string.IsNullOrWhiteSpace(input.ConfigFile))
             {
                 input.ConfigFile = "feed-test.json";
             }
 
-            // Initialze the bootstrap driver
+            // Initialize the bootstrap driver
             crawler.Initialize(_container, "feed-items", "drudge-report");
 
             // Get the directory of the current executable, all config 
