@@ -75,8 +75,8 @@ public partial class TagParserBase
         FixupRelativeUrls(document, baseUrl);
         FixupImageSrc(document, baseUrl);
         FixupIframeSrc(document, baseUrl);
-        FixupFigCaptionStyle(document);
-        FixupBlockQuoteStyle(document);
+        FixupElementStyle(document, "figcaption", "font-size: 75%;font-style: italic;");
+        FixupElementStyle(document, "blockquote", "border-left: 7px solid lightgray; padding-left: 10px;");
         RemoveDuplicateImgTag(document);
         RemoveElementPadding(document);
 
@@ -222,9 +222,9 @@ public partial class TagParserBase
         }
     }
 
-    private void FixupFigCaptionStyle(IHtmlDocument document)
+    private void FixupElementStyle(IHtmlDocument document, string selectors, string style)
     {
-        foreach (var element in document.QuerySelectorAll("figcaption"))
+        foreach (var element in document.QuerySelectorAll(selectors))
         {
             if (element.HasAttribute("class"))
             {
@@ -235,24 +235,8 @@ public partial class TagParserBase
                 element.RemoveAttribute("style");
             }
 
-            element.SetAttribute("style", "font-size: 75%;font-style: italic;");
-        }
-    }
-
-    private void FixupBlockQuoteStyle(IHtmlDocument document)
-    {
-        foreach (var element in document.QuerySelectorAll("blockquote"))
-        {
-            if (element.HasAttribute("class"))
-            {
-                element.RemoveAttribute("class");
-            }
-            if (element.HasAttribute("style"))
-            {
-                element.RemoveAttribute("style");
-            }
-
-            element.SetAttribute("style", "border-left: 7px solid lightgray; padding-left: 10px;");
+            _log.Debug("Setting up style {style} for {selectors}", selectors);
+            element.SetAttribute("style", style);
         }
     }
 

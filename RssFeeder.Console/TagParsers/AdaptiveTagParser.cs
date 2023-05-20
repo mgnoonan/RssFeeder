@@ -78,6 +78,34 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
         }
 
         // Build up the counts for each parent selector
+        Dictionary<string, int> dict = BuildParagraphCountBySelector(skipIfEmptyContent, paragraphs);
+
+        // Get the parent with the most paragraphs, it should be the article content
+        int highCount = default;
+        string bodySelector = "";
+        foreach (var key in dict.Keys)
+        {
+            if (dict[key] > highCount)
+            {
+                bodySelector = key;
+                highCount = dict[key];
+            }
+        }
+
+        _log.Debug("Found {totalCount} paragraph selectors '{paragraphSelector}' in html body", paragraphs.Count(), paragraphSelector);
+        _log.Information("Parent with the most paragraph selectors is '{bodySelector}':{highCount}", bodySelector, highCount);
+
+        if (highCount <= 1)
+        {
+            _log.Warning("Only {highCount} paragraph selector found, that doesn't count", highCount);
+            return string.Empty;
+        }
+
+        return bodySelector;
+    }
+
+    private Dictionary<string, int> BuildParagraphCountBySelector(bool skipIfEmptyContent, IHtmlCollection<IElement> paragraphs)
+    {
         var dict = new Dictionary<string, int>();
         foreach (var p in paragraphs)
         {
@@ -105,32 +133,11 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
             }
             catch (Exception ex)
             {
-                _log.Warning("Unable to determine parent selector for tag {tagName}", parent.TagName);
+                _log.Warning("Unable to determine parent selector for tag {tagName}. Message={message}", parent.TagName, ex.Message);
             }
         }
 
-        // Get the parent with the most paragraphs, it should be the article content
-        int highCount = default;
-        string bodySelector = "";
-        foreach (var key in dict.Keys)
-        {
-            if (dict[key] > highCount)
-            {
-                bodySelector = key;
-                highCount = dict[key];
-            }
-        }
-
-        _log.Debug("Found {totalCount} paragraph selectors '{paragraphSelector}' in html body", paragraphs.Count(), paragraphSelector);
-        _log.Information("Parent with the most paragraph selectors is '{bodySelector}':{highCount}", bodySelector, highCount);
-
-        if (highCount <= 1)
-        {
-            _log.Warning("Only {highCount} paragraph selector found, that doesn't count", highCount);
-            return string.Empty;
-        }
-
-        return bodySelector;
+        return dict;
     }
 
     protected virtual string BuildArticleText(IHtmlCollection<IElement> paragraphs)
