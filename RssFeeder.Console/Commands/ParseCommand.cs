@@ -78,7 +78,7 @@ public class ParseCommand : OaktonCommand<ParseInput>
         return true;
     }
 
-    private string ParseMetaTagAttributes(HtmlDocument doc, string property, string attribute)
+    private static string ParseMetaTagAttributes(HtmlDocument doc, string property, string attribute)
     {
         // Retrieve the requested meta tag by property name
         var node = doc.DocumentNode.SelectSingleNode($"//meta[@property='{property}']");

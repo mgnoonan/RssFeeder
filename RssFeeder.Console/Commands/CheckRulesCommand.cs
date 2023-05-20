@@ -57,7 +57,7 @@ namespace RssFeeder.Console.Commands
         {
             var files = Directory.GetFiles(Directory.GetCurrentDirectory(), "ExcludeContentRules.json", SearchOption.AllDirectories);
             if (files == null || files.Length == 0)
-                throw new Exception("Rules not found.");
+                throw new InvalidOperationException("Rules not found.");
 
             var fileData = File.ReadAllText(files[0]);
             var workflow = JsonConvert.DeserializeObject<List<Workflow>>(fileData) ?? new List<Workflow>();

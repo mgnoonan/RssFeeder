@@ -167,7 +167,7 @@ public class ArticleParser : IArticleParser
         throw new UriFormatException("No valid Url was found");
     }
 
-    private string GetSiteName(RssFeedItem item)
+    private static string GetSiteName(RssFeedItem item)
     {
         string siteName = item.OpenGraphAttributes.GetValueOrDefault("og:site_name")?.ToLower() ?? item.HostName;
 

@@ -2,14 +2,12 @@
 
 public class DownloadCommand : OaktonCommand<DownloadInput>
 {
-    private readonly IContainer _container;
     private readonly ILogger _log;
     private readonly IWebUtils _webUtils;
     private readonly IUtils _utils;
 
-    public DownloadCommand(IContainer container, IWebUtils webUtils, IUtils utils, ILogger log)
+    public DownloadCommand(IWebUtils webUtils, IUtils utils, ILogger log)
     {
-        _container = container;
         _webUtils = webUtils;
         _utils = utils;
         _log = log;
@@ -36,8 +34,7 @@ public class DownloadCommand : OaktonCommand<DownloadInput>
         string filename = $"{workingFolder}\\{DateTime.Now:yyyyMMddhhmmss}_{hash}";
 
         // Download the URL contents using the web driver to the target filename
-        (HttpStatusCode statusCode, string content, Uri trueUri, string contentType) = 
-            _webUtils.DriverGetString(input.Url);
+        (HttpStatusCode statusCode, string content, _, _) = _webUtils.DriverGetString(input.Url);
 
         if (statusCode == HttpStatusCode.OK)
             _webUtils.SaveContentToDisk(filename + ".html", false, content);
