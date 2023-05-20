@@ -29,10 +29,8 @@ public class BuildCommand : OaktonCommand<BuildInput>
 
         try
         {
-            //var repository = _container.Resolve<IRepository>();
             var crawler = _container.Resolve<IWebCrawler>();
             var utils = _container.Resolve<IUtils>();
-            //var webUtils = _container.Resolve<IWebUtils>();
 
             if (string.IsNullOrWhiteSpace(input.ConfigFile))
             {
