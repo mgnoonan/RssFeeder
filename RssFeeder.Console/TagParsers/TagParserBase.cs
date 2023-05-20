@@ -76,6 +76,7 @@ public partial class TagParserBase
         FixupImageSrc(document, baseUrl);
         FixupIframeSrc(document, baseUrl);
         FixupFigCaptionStyle(document);
+        FixupBlockQuoteStyle(document);
         RemoveDuplicateImgTag(document);
         RemoveElementPadding(document);
 
@@ -235,6 +236,23 @@ public partial class TagParserBase
             }
 
             element.SetAttribute("style", "font-size: 75%;font-style: italic;");
+        }
+    }
+
+    private void FixupBlockQuoteStyle(IHtmlDocument document)
+    {
+        foreach (var element in document.QuerySelectorAll("blockquote"))
+        {
+            if (element.HasAttribute("class"))
+            {
+                element.RemoveAttribute("class");
+            }
+            if (element.HasAttribute("style"))
+            {
+                element.RemoveAttribute("style");
+            }
+
+            element.SetAttribute("style", "border-left: 7px solid lightgray; padding-left: 10px;");
         }
     }
 
@@ -542,7 +560,7 @@ public partial class TagParserBase
         }
 
         // Add blockquote with some padding and a left side border
-        description.AppendLine($"<blockquote style=\"border-left: 7px solid lightgray; padding-left: 10px;\">{p.InnerHtml}</blockquote>");
+        description.AppendLine($"<blockquote>{p.InnerHtml}</blockquote>");
     }
 
     protected void TryAddAnchor(StringBuilder description, IElement p)
