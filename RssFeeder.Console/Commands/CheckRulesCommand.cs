@@ -33,9 +33,9 @@ namespace RssFeeder.Console.Commands
 
             List<RuleResultTree> resultList = new();
             resultList.AddRange(_bre.ExecuteAllRulesAsync("ExcludeUL", i).GetAwaiter().GetResult());
-            resultList.AddRange(_bre.ExecuteAllRulesAsync("ExcludeHeader", i).Result);
-            resultList.AddRange(_bre.ExecuteAllRulesAsync("ExcludeParagraph", i).Result);
-            resultList.AddRange(_bre.ExecuteAllRulesAsync("ExcludeBlockquote", i).Result);
+            resultList.AddRange(_bre.ExecuteAllRulesAsync("ExcludeHeader", i).GetAwaiter().GetResult());
+            resultList.AddRange(_bre.ExecuteAllRulesAsync("ExcludeParagraph", i).GetAwaiter().GetResult());
+            resultList.AddRange(_bre.ExecuteAllRulesAsync("ExcludeBlockquote", i).GetAwaiter().GetResult());
 
             //Check success for rule
             foreach (var result in resultList)

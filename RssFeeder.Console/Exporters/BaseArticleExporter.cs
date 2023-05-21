@@ -200,18 +200,12 @@ public class BaseArticleExporter
 
         // Query the document by CSS selectors to get the article text
         var blocks = document.QuerySelectorAll(tagName);
-        if (blocks.Length == 0)
-        {
-        }
 
         string jsonRaw = string.Empty;
-        foreach (var block in blocks)
+        foreach (var block in blocks.Where(b => b.TextContent.Contains(keyName)))
         {
-            if (block.TextContent.Contains(keyName))
-            {
-                jsonRaw = block.TextContent;
-                break;
-            }
+            jsonRaw = block.TextContent;
+            break;
         }
 
         return JsonConvert.DeserializeObject<T>(jsonRaw);

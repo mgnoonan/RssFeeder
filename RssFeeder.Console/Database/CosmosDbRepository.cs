@@ -51,7 +51,7 @@ public class CosmosDbRepository : IRepository, IExportRepository
     {
         string sqlQueryText = $"SELECT c.UrlHash FROM c WHERE c.UrlHash = '{urlHash}' AND c.FeedId = '{feedID}'";
 
-        return QueryItems<T>(collectionName, sqlQueryText).Any();
+        return QueryItems<T>(collectionName, sqlQueryText).Count > 0;
     }
 
     public void DeleteDocument<T>(string collectionName, string documentID, string partitionKey)
@@ -104,6 +104,7 @@ public class CosmosDbRepository : IRepository, IExportRepository
 
     public void EnsureDatabaseExists(string database = null, bool createDatabaseIfNotExists = true)
     {
+        // Not needed, but maybe for future use
     }
 
     public List<T> GetExportDocuments<T>(string collectionName, string feedId, Guid runID)
