@@ -4,9 +4,9 @@ namespace RssFeeder.Console.Database;
 
 public class CosmosDbRepository : IRepository, IExportRepository
 {
-    string _databaseName;
-    ILogger _log;
-    CosmosClient _client = null;
+    readonly string _databaseName;
+    readonly ILogger _log;
+    readonly CosmosClient _client = null;
 
     public CrawlerConfig Config => new CrawlerConfig();
 
@@ -22,7 +22,7 @@ public class CosmosDbRepository : IRepository, IExportRepository
         _client = new CosmosClient(config.endpoint, config.authKey);
     }
 
-    public List<T> GetDocuments<T>(string collectionName, string sqlQueryText, Dictionary<string, object> parameters = default, bool addWait = false)
+    public List<T> GetDocuments<T>(string collectionName, string sqlQueryText, Dictionary<string, object> parameters, bool addWait)
     {
         _log.Debug("GetDocuments: query = '{sqlQueryText}'", sqlQueryText);
         var result = QueryItems<T>(collectionName, sqlQueryText);
@@ -51,8 +51,7 @@ public class CosmosDbRepository : IRepository, IExportRepository
     {
         string sqlQueryText = $"SELECT c.UrlHash FROM c WHERE c.UrlHash = '{urlHash}' AND c.FeedId = '{feedID}'";
 
-        return QueryItems<T>(collectionName, sqlQueryText)
-            .Count() > 0;
+        return QueryItems<T>(collectionName, sqlQueryText).Any();
     }
 
     public void DeleteDocument<T>(string collectionName, string documentID, string partitionKey)
@@ -100,12 +99,11 @@ public class CosmosDbRepository : IRepository, IExportRepository
     {
         string sqlQueryText = $"SELECT * FROM c";
 
-        return GetDocuments<T>(collectionName, sqlQueryText);
+        return GetDocuments<T>(collectionName, sqlQueryText, null, false);
     }
 
     public void EnsureDatabaseExists(string database = null, bool createDatabaseIfNotExists = true)
     {
-        //throw new NotImplementedException();
     }
 
     public List<T> GetExportDocuments<T>(string collectionName, string feedId, Guid runID)

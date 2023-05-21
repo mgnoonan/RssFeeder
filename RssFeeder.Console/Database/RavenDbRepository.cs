@@ -18,17 +18,15 @@ public class RavenDbRepository : IRepository, IExportRepository
             // Default database is not set
         }.Initialize();
 
-        var crawlerConfig = new CrawlerConfig();
         using (IDocumentSession session = store.OpenSession(database: "site-parsers"))
         {
-            crawlerConfig = session.Advanced.RawQuery<CrawlerConfig>("from CrawlerConfig").First();
+            _crawlerConfig = session.Advanced.RawQuery<CrawlerConfig>("from CrawlerConfig").First();
         }
 
-        _crawlerConfig = crawlerConfig;
         _store = store;
         _log = log;
 
-        _log.Debug("Crawler config: {@config}", crawlerConfig);
+        _log.Debug("Crawler config: {@config}", _crawlerConfig);
     }
 
     public void EnsureDatabaseExists(string database = null, bool createDatabaseIfNotExists = true)
@@ -44,7 +42,7 @@ public class RavenDbRepository : IRepository, IExportRepository
         }
         catch (DatabaseDoesNotExistException)
         {
-            if (createDatabaseIfNotExists == false)
+            if (!createDatabaseIfNotExists)
                 throw;
 
             try
@@ -117,7 +115,7 @@ public class RavenDbRepository : IRepository, IExportRepository
         }
     }
 
-    public List<T> GetDocuments<T>(string collectionName, string sqlQueryText, Dictionary<string, object> parameters = default, bool addWait = false)
+    public List<T> GetDocuments<T>(string collectionName, string sqlQueryText, Dictionary<string, object> parameters, bool addWait)
     {
         _log.Debug("Query: {sqlQueryText} Parameters: {@parameters}", sqlQueryText, parameters);
 
@@ -144,7 +142,7 @@ public class RavenDbRepository : IRepository, IExportRepository
         _log.Debug("Query: Retrieving all documents for type {type}", typeof(T).Name);
         string sqlQueryText = "from SiteArticleDefinition";
 
-        return GetDocuments<T>(collectionName, sqlQueryText);
+        return GetDocuments<T>(collectionName, sqlQueryText, null, false);
     }
 
     public List<T> GetExportDocuments<T>(string collectionName, string feedId, Guid runID)
@@ -175,6 +173,6 @@ public class RavenDbRepository : IRepository, IExportRepository
             { "ts", DateTime.UtcNow.AddDays(-maximumAgeInDays) }
         };
 
-        return GetDocuments<T>(collectionName, sqlQueryText, parameters);
+        return GetDocuments<T>(collectionName, sqlQueryText, parameters, false);
     }
 }

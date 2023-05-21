@@ -60,7 +60,6 @@ public class BaseArticleExporter
     protected virtual void SetExtendedArticleMetaData(ExportFeedItem exportFeedItem, RssFeedItem item, string hostName)
     {
         // Extract the meta data from the Open Graph tags helpfully provided with almost every article
-        string url = exportFeedItem.Url;
         exportFeedItem.Url = item.OpenGraphAttributes.GetValueOrDefault("og:url") ?? "";
 
         // Make sure the Url is complete
