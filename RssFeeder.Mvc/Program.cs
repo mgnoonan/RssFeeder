@@ -1,3 +1,5 @@
+using OwaspHeaders.Core.Extensions;
+
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .CreateBootstrapLogger();
@@ -62,8 +64,9 @@ try
     else
     {
         app.UseExceptionHandler("/Home/Error");
-        // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-        app.UseHsts();
+
+        // Add recommended OWASP security headers
+        app.UseSecureHeadersMiddleware(SecureHeadersMiddlewareExtensions.BuildDefaultConfiguration());
     }
 
     var options = new RewriteOptions()
@@ -79,18 +82,7 @@ try
 #if !DEBUG
     app.UseAuthentication();
     app.UseAuthorization();
-    app.Use(async (context, next) =>
-    {
-        context.Response.Headers.Append("X-Frame-Options", "SAMEORIGIN");
-        context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
-        context.Response.Headers.Append("Content-Security-Policy", "script-src 'self'");
-        context.Response.Headers.Append("Referrer-Policy", "same-origin");
-        context.Response.Headers.Append("Strict-Transport-Security", "max-age=2592000");
-
-        await next();
-    });
 #endif
-    app.MapHealthChecks("/health");
     app.MapControllerRoute(
         name: "default",
         pattern: "{controller=Home}/{action=Index}/{id?}");
