@@ -30,7 +30,7 @@ internal class OffThePressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         // Main Headlines section
         // body > div.elementor.elementor-14507.elementor-location-single.post-24.page.type-page.status-publish.has-post-thumbnail.hentry > div > section.elementor-section.elementor-top-section.elementor-element.elementor-element-2322729e.elementor-section-stretched.elementor-section-boxed.elementor-section-height-default.elementor-section-height-default
         var containers = document.QuerySelectorAll("section");
-        _log.Information("FOUND: {count} sections", containers.Count());
+        _log.Information("FOUND: {count} sections", containers.Length);
 
         if (containers != null)
         {

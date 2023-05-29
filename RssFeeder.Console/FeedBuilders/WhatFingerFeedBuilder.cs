@@ -54,7 +54,7 @@ internal class WhatFingerFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         // Main Headlines section
         // div.creative-link.wpb_column.vc_column_container.vc_col-sm-8 > div > div > div
         var containers = document.QuerySelectorAll("div.creative-link.wpb_column.vc_column_container.vc_col-sm-8 > div > div");
-        _log.Information("FOUND: {count} sections", containers.Count());
+        _log.Information("FOUND: {count} sections", containers.Length);
 
         if (containers != null)
         {

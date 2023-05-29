@@ -2,13 +2,11 @@
 
 internal class RevolverNewsFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    private readonly IUnlaunchClient _client;
     private readonly int _articleMaxCount;
 
-    public RevolverNewsFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient client) :
+    public RevolverNewsFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities) :
         base(logger, webUtilities, utilities)
     {
-        _client = client;
         _articleMaxCount = 1000;
     }
 
@@ -34,25 +32,6 @@ internal class RevolverNewsFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         var parser = new HtmlParser();
         var document = parser.ParseDocument(html);
 
-        //// Featured links section
-        //var container = document.QuerySelector("div.revolver > div.column.center > div.post-listing");
-        //var nodes = container.QuerySelectorAll("div.title > a");
-        //if (nodes != null)
-        //{
-        //    count = 1;
-        //    foreach (var node in nodes)
-        //    {
-        //        string title = WebUtility.HtmlDecode(node.Text().Trim());
-
-        //        var item = CreateNodeLinks(filters, node, "feature links", count++, feedUrl, true);
-        //        if (item != null)
-        //        {
-        //            log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-        //            list.Add(item);
-        //        }
-        //    }
-        //}
-
         // Stories section
         var container = document.QuerySelector("div.list-articles");
         var nodes = container.QuerySelectorAll("article.item > div.text > h2.title > a");
@@ -61,8 +40,6 @@ internal class RevolverNewsFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             count = 1;
             foreach (var node in nodes.Take(_articleMaxCount))
             {
-                string title = WebUtility.HtmlDecode(node.Text().Trim());
-
                 var item = CreateNodeLinks(filters, node, "news feed", count++, feedUrl, false);
                 if (item != null)
                 {

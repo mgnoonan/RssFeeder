@@ -59,8 +59,6 @@ class BadBlueFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             count = 1;
             foreach (var node in nodes)
             {
-                string title = WebUtility.HtmlDecode(node.Text().Trim());
-
                 var item = CreateNodeLinks(filters, node, "main headlines", count++, feedUrl, true);
                 if (item != null)
                 {
@@ -78,8 +76,6 @@ class BadBlueFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             count = 1;
             foreach (var node in nodes.Take(_articleMaxCount))
             {
-                string title = WebUtility.HtmlDecode(node.Text().Trim());
-
                 var item = CreateNodeLinks(filters, node, "all stories", count++, feedUrl, false);
                 if (item != null)
                 {

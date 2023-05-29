@@ -200,15 +200,9 @@ public class BaseArticleExporter
 
         // Query the document by CSS selectors to get the article text
         var blocks = document.QuerySelectorAll(tagName);
+        var block = blocks.First(b => b.TextContent.Contains(keyName));
 
-        string jsonRaw = string.Empty;
-        foreach (var block in blocks.Where(b => b.TextContent.Contains(keyName)))
-        {
-            jsonRaw = block.TextContent;
-            break;
-        }
-
-        return JsonConvert.DeserializeObject<T>(jsonRaw);
+        return JsonConvert.DeserializeObject<T>(block.TextContent);
     }
 
     protected virtual void SetGraphicMetaData(RssFeedItem item, ExportFeedItem exportFeedItem)

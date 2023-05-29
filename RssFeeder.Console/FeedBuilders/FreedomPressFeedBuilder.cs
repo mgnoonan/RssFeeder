@@ -40,8 +40,6 @@ internal class FreedomPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                     count = 1;
                     foreach (var link in links)
                     {
-                        string title = WebUtility.HtmlDecode(link.Text().Trim());
-
                         var item = CreateNodeLinks(filters, link, "above the fold", count++, feedUrl, true);
                         if (item != null)
                         {
@@ -63,8 +61,6 @@ internal class FreedomPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                 count = 1;
                 foreach (var node in nodes)
                 {
-                    string title = WebUtility.HtmlDecode(node.Text().Trim());
-
                     var item = CreateNodeLinks(filters, node, "headlines", count++, feedUrl, true);
                     if (item != null)
                     {
@@ -90,8 +86,6 @@ internal class FreedomPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                     count = 1;
                     foreach (var node in nodes)
                     {
-                        string title = WebUtility.HtmlDecode(node.Text().Trim());
-
                         var item = CreateNodeLinks(filters, node, $"{sectionName[sectionCounter]} section", count++, feedUrl, false);
                         if (item != null)
                         {

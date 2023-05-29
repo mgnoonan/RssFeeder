@@ -33,8 +33,6 @@ class LibertyDailyFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             count = 1;
             foreach (HtmlNode node in nodes)
             {
-                string title = WebUtility.HtmlDecode(node.InnerText.Trim());
-
                 var item = CreateNodeLinks(filters, node, "above the fold", count++, feedUrl, true);
                 if (item != null)
                 {
@@ -52,8 +50,6 @@ class LibertyDailyFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             count = 1;
             foreach (HtmlNode node in nodes)
             {
-                string title = WebUtility.HtmlDecode(node.InnerText.Trim());
-
                 var item = CreateNodeLinks(filters, node, "main headlines", count++, feedUrl, true);
                 if (item != null)
                 {
@@ -72,8 +68,6 @@ class LibertyDailyFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             count = 1;
             foreach (HtmlNode node in nodes)
             {
-                string title = WebUtility.HtmlDecode(node.InnerText.Trim());
-
                 var item = CreateNodeLinks(filters, node, "left column", count++, feedUrl, false);
                 if (item != null)
                 {
@@ -92,8 +86,6 @@ class LibertyDailyFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             count = 1;
             foreach (HtmlNode node in nodes)
             {
-                string title = WebUtility.HtmlDecode(node.InnerText.Trim());
-
                 var item = CreateNodeLinks(filters, node, "middle column", count++, feedUrl, false);
                 if (item != null)
                 {
@@ -112,8 +104,6 @@ class LibertyDailyFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             count = 1;
             foreach (HtmlNode node in nodes)
             {
-                string title = WebUtility.HtmlDecode(node.InnerText.Trim());
-
                 var item = CreateNodeLinks(filters, node, "right column", count++, feedUrl, false);
                 if (item != null)
                 {

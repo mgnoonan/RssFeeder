@@ -2,20 +2,8 @@
 
 class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    private readonly IWebUtils _webUtilities;
-    private readonly IUtils _utilities;
-    private readonly List<string> _selectors;
-
     public PopulistPressFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities) : base(log, webUtilities, utilities)
     {
-        _webUtilities = webUtilities;
-        _utilities = utilities;
-
-        _selectors = new List<string>
-            {
-                "#outbound_links > a",
-                "div.entry-content > p > a"
-            };
     }
 
     public List<RssFeedItem> GenerateRssFeedItemList(RssFeed feed, string html)
@@ -51,7 +39,6 @@ class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                 var item = CreateNodeLinks(filters, node, "above the fold", count++, feedUrl, true);
                 if (item != null)
                 {
-                    //TryParseEmbeddedUrl(item, _selectors);
                     _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                     list.Add(item);
                 }
@@ -71,7 +58,6 @@ class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                     var item = CreateNodeLinks(filters, node, "main headlines", count++, feedUrl, true);
                     if (item != null && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
                     {
-                        //TryParseEmbeddedUrl(item, _selectors);
                         _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                         list.Add(item);
                     }
@@ -102,7 +88,6 @@ class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 
                 if (item != null && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
                 {
-                    //TryParseEmbeddedUrl(item, _selectors);
                     _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                     list.Add(item);
                 }
@@ -132,7 +117,6 @@ class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 
                 if (item != null && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
                 {
-                    //TryParseEmbeddedUrl(item, _selectors);
                     _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                     list.Add(item);
                 }
@@ -162,7 +146,6 @@ class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 
                 if (item != null && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
                 {
-                    //TryParseEmbeddedUrl(item, _selectors);
                     _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                     list.Add(item);
                 }

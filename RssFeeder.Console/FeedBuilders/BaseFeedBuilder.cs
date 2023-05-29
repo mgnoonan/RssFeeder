@@ -31,23 +31,23 @@ class BaseFeedBuilder
         }
     }
 
-    protected RssFeedItem CreateNodeLinks(List<string> filters, IElement node, string location, int count, string feedUrl, bool isHeadline)
-    {
-        string title = WebUtility.HtmlDecode(node.Text().Trim());
-
-        // Replace all errant spaces, which sometimes creep into Drudge's URLs
-        var attr = node.Attributes.GetNamedItem("href");
-        string linkUrl = attr.Value.Trim().Replace(" ", string.Empty);
-
-        return CreateNodeLinks(filters, location, count, title, linkUrl, feedUrl, isHeadline);
-    }
-
     protected RssFeedItem CreatePairedNodeLinks(List<string> filters, IElement nodeTitleOnly, IElement nodeLinkOnly, string location, int count, string feedUrl, bool isHeadline)
     {
         string title = WebUtility.HtmlDecode(nodeTitleOnly.Text().Trim());
 
         // Replace all errant spaces, which sometimes creep into Drudge's URLs
         var attr = nodeLinkOnly.Attributes.GetNamedItem("href");
+        string linkUrl = attr.Value.Trim().Replace(" ", string.Empty);
+
+        return CreateNodeLinks(filters, location, count, title, linkUrl, feedUrl, isHeadline);
+    }
+
+    protected RssFeedItem CreateNodeLinks(List<string> filters, IElement node, string location, int count, string feedUrl, bool isHeadline)
+    {
+        string title = WebUtility.HtmlDecode(node.Text().Trim());
+
+        // Replace all errant spaces, which sometimes creep into Drudge's URLs
+        var attr = node.Attributes.GetNamedItem("href");
         string linkUrl = attr.Value.Trim().Replace(" ", string.Empty);
 
         return CreateNodeLinks(filters, location, count, title, linkUrl, feedUrl, isHeadline);

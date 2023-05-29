@@ -60,8 +60,6 @@ class DrudgeReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             count = 1;
             foreach (HtmlNode node in nodes)
             {
-                string title = WebUtility.HtmlDecode(node.InnerText.Trim());
-
                 var item = CreateNodeLinks(filters, node, "above the fold", count++, feedUrl, true);
                 if (item != null)
                 {

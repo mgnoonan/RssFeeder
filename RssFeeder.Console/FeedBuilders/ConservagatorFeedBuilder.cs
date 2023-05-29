@@ -65,8 +65,6 @@ internal class ConservagatorFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                 count = 1;
                 foreach (var node in nodes.Take(1))
                 {
-                    string title = WebUtility.HtmlDecode(node.Text().Trim());
-
                     var item = CreateNodeLinks(filters, node, $"{sectionName[sectionCounter]} section", count++, feedUrl, false);
                     if (item != null)
                     {
