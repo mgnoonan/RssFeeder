@@ -1,4 +1,5 @@
 using RssFeeder.Mvc;
+using OwaspHeaders.Core.Extensions;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -64,8 +65,9 @@ try
     else
     {
         app.UseExceptionHandler("/Home/Error");
-        // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-        app.UseHsts();
+
+        // Add recommended OWASP security headers
+        app.UseSecureHeadersMiddleware(SecureHeadersMiddlewareExtensions.BuildDefaultConfiguration());
     }
 
     var options = new RewriteOptions()
@@ -84,15 +86,10 @@ try
     app.Use(async (context, next) =>
     {
         context.Response.Headers.Remove("X-Powered-By");
-        context.Response.Headers.Append("X-Frame-Options", "SAMEORIGIN");
-        context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
-        context.Response.Headers.Append("Content-Security-Policy", "script-src 'self'");
-        context.Response.Headers.Append("Referrer-Policy", "same-origin");
 
         await next();
     });
 #endif
-    app.MapHealthChecks("/health");
     app.MapControllerRoute(
         name: "default",
         pattern: "{controller=Home}/{action=Index}/{id?}");
