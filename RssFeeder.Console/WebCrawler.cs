@@ -10,7 +10,6 @@ public class WebCrawler : IWebCrawler
     private readonly IWebUtils _webUtils;
     private readonly IUtils _utils;
     private readonly ILogger _log;
-    private readonly IUnlaunchClient _client;
     private string _workingFolder;
     private IContainer _container;
 
@@ -18,7 +17,7 @@ public class WebCrawler : IWebCrawler
     private string _crawlerCollectionName = "feed-items";
 
     public WebCrawler(IRepository crawlerRepository, IExportRepository exportRepository, IArticleDefinitionFactory definitions,
-        IWebUtils webUtils, IUtils utils, IArticleParser articleParser, IArticleExporter exporter, ILogger log, IUnlaunchClient client)
+        IWebUtils webUtils, IUtils utils, IArticleParser articleParser, IArticleExporter exporter, ILogger log)
     {
         _crawlerRepository = crawlerRepository;
         _exportRepository = exportRepository;
@@ -28,7 +27,6 @@ public class WebCrawler : IWebCrawler
         _articleParser = articleParser;
         _exporter = exporter;
         _log = log;
-        _client = client;
     }
 
     public void Initialize(IContainer container, string crawlerCollectionName, string exportCollectionName)
@@ -103,12 +101,6 @@ public class WebCrawler : IWebCrawler
     private void DownloadList(Guid runID, RssFeed feed, List<RssFeedItem> list)
     {
         _articleParser.Initialize(_container, _definitions, _webUtils, _log);
-
-        // Find out which feature flag variation we are using to crawl articles
-        //string key = "crawler-logic";
-        //string identity = feed.CollectionName;
-        //string variation = _client.GetVariation(key, identity);
-        //_log.Information("Unlaunch {key} returned variation {variation} for identity {identity}", key, variation, identity);
 
         // Crawl any new articles and add them to the database
         _log.Information("Downloading new articles to the {collectionName} collection", feed.CollectionName);

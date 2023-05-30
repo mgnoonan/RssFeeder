@@ -6,7 +6,7 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
 {
     private readonly ILogger _log;
 
-    public AdaptiveTagParser(ILogger log, IUnlaunchClient client, IWebUtils webUtils) : base(log, client, webUtils)
+    public AdaptiveTagParser(ILogger log, IWebUtils webUtils) : base(log, webUtils)
     {
         _log = log;
     }

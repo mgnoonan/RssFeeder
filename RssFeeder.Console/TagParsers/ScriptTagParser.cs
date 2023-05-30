@@ -4,7 +4,7 @@ public class ScriptTagParser : TagParserBase, ITagParser
 {
     private readonly ILogger _log;
 
-    public ScriptTagParser(ILogger log, IUnlaunchClient client, IWebUtils webUtils) : base(log, client, webUtils)
+    public ScriptTagParser(ILogger log, IWebUtils webUtils) : base(log, webUtils)
     {
         _log = log;
     }
@@ -21,7 +21,7 @@ public class ScriptTagParser : TagParserBase, ITagParser
 
         // Query the document by CSS selectors to get the article text
         var elements = document.QuerySelectorAll("script");
-        if (elements.Count() == 0)
+        if (elements.Length == 0)
         {
             _log.Warning("Error reading article: '{bodySelector}' article body selector not found.", bodySelector);
             return $"<p>Error reading article: '{bodySelector}' article body selector not found.</p>";

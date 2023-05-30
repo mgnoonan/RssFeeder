@@ -4,7 +4,7 @@ public class AllTagsParser : TagParserBase, ITagParser
 {
     private readonly ILogger _log;
 
-    public AllTagsParser(ILogger log, IUnlaunchClient client, IWebUtils webUtils) : base(log, client, webUtils)
+    public AllTagsParser(ILogger log, IWebUtils webUtils) : base(log, webUtils)
     {
         _log = log;
     }
@@ -42,7 +42,7 @@ public class AllTagsParser : TagParserBase, ITagParser
             }
         }
 
-        _log.Information("Found {totalCount} paragraph selectors '{paragraphSelector}' in html body", paragraphs.Count(), paragraphSelector);
+        _log.Information("Found {totalCount} paragraph selectors '{paragraphSelector}' in html body", paragraphs.Length, paragraphSelector);
 
         try
         {

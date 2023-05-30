@@ -4,7 +4,7 @@ public class JsonLdTagParser : TagParserBase, ITagParser
 {
     private readonly ILogger _log;
 
-    public JsonLdTagParser(ILogger log, IUnlaunchClient client, IWebUtils webUtils) : base(log, client, webUtils)
+    public JsonLdTagParser(ILogger log, IWebUtils webUtils) : base(log, webUtils)
     {
         _log = log;
     }

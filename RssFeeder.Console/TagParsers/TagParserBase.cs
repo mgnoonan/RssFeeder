@@ -8,7 +8,6 @@ namespace RssFeeder.Console.TagParsers;
 public partial class TagParserBase
 {
     private readonly ILogger _log;
-    private readonly IUnlaunchClient _client;
     private readonly IWebUtils _webUtils;
     private RulesEngine.RulesEngine _bre;
     protected string _sourceHtml;
@@ -19,10 +18,9 @@ public partial class TagParserBase
     private const string _sizePattern3 = @"\/w:\d{3,4}\/p:";
     private const string _sizePattern4 = @"\/(mobile_thumb__|blog_image_\d{2}_)";
 
-    public TagParserBase(ILogger log, IUnlaunchClient client, IWebUtils webUtils)
+    public TagParserBase(ILogger log, IWebUtils webUtils)
     {
         _log = log;
-        _client = client;
         _webUtils = webUtils;
     }
 
@@ -44,7 +42,7 @@ public partial class TagParserBase
     {
         var files = Directory.GetFiles(Directory.GetCurrentDirectory(), "ExcludeContentRules.json", SearchOption.AllDirectories);
         if (files == null || files.Length == 0)
-            throw new Exception("Rules not found.");
+            throw new InvalidOperationException("Rules not found.");
 
         var fileData = File.ReadAllText(files[0]);
         var workflow = JsonConvert.DeserializeObject<List<Workflow>>(fileData) ?? new List<Workflow>();
@@ -86,12 +84,9 @@ public partial class TagParserBase
             var elements = document.QuerySelectorAll("iframe");
             _log.Debug("IFRAME tag count {count}", elements.Length);
 
-            if (elements.Length > 0)
+            if (elements.Length > 0 && TryGetVideoIFrame(elements, "(rumble|bitchute|youtube).com/embed", out IElement iframeElement))
             {
-                if (TryGetVideoIFrame(elements, "(rumble|bitchute|youtube).com/embed", out IElement iframeElement))
-                {
-                    ExtractIFrameMetadata(iframeElement);
-                }
+                ExtractIFrameMetadata(iframeElement);
             }
         }
 
@@ -114,15 +109,6 @@ public partial class TagParserBase
         _item.OpenGraphAttributes.Add("og:x:video:height", height);
 
         iframeElement.Remove();
-    }
-
-    private string GetVariationByKey(string key, string identity)
-    {
-        // Find out which feature flag variation we are using to crawl articles
-        string variation = _client.GetVariation(key, identity);
-        _log.Information("Unlaunch {key} returned variation {variation} for identity {identity}", key, variation, identity);
-
-        return variation;
     }
 
     private void FixupRelativeUrls(IHtmlDocument document, string baseUrl)
@@ -264,7 +250,7 @@ public partial class TagParserBase
                 if (element.HasAttribute(alternateAttrName))
                 {
                     sourceUri = element.GetAttribute(alternateAttrName);
-                    if (sourceUri.IndexOf(':') == -1)
+                    if (sourceUri.Contains(':'))
                         sourceUri = _webUtils.RepairUrl(sourceUri, baseUrl);
                     _log.Information("Element {element} using {alternateAttrName} to set {attributeName}={sourceUri}", element.GetSelector(), alternateAttrName, attributeName, sourceUri);
                     element.SetAttribute(attributeName, sourceUri);
@@ -275,7 +261,7 @@ public partial class TagParserBase
                 if (element.HasAttribute(alternateAttrName))
                 {
                     sourceUri = element.GetAttribute(alternateAttrName);
-                    if (sourceUri.IndexOf(':') == -1)
+                    if (sourceUri.Contains(':'))
                         sourceUri = _webUtils.RepairUrl(sourceUri, baseUrl);
                     _log.Information("Element {element} using {alternateAttrName} to set {attributeName}={sourceUri}", element.GetSelector(), alternateAttrName, attributeName, sourceUri);
                     element.SetAttribute(attributeName, sourceUri);
@@ -286,7 +272,7 @@ public partial class TagParserBase
                 if (element.HasAttribute(alternateAttrName))
                 {
                     sourceUri = element.GetAttribute(alternateAttrName);
-                    if (sourceUri.IndexOf(':') == -1)
+                    if (sourceUri.Contains(':'))
                         sourceUri = _webUtils.RepairUrl(sourceUri, baseUrl);
                     _log.Information("Element {element} using {alternateAttrName} to set {attributeName}={sourceUri}", element.GetSelector(), alternateAttrName, attributeName, sourceUri);
                     element.SetAttribute(attributeName, sourceUri);
@@ -354,31 +340,37 @@ public partial class TagParserBase
         value1 = value1.Contains("%3A") ? System.Web.HttpUtility.UrlDecode(value1) : value1;
         value2 = value2.Contains("%3A") ? System.Web.HttpUtility.UrlDecode(value2) : value2;
 
-        // Strip off the query string unless it contains a url parameter
-        value1 = value1.Contains("?") ? (value1.Contains("url=") ? value1.Substring(value1.IndexOf("url=") + 4) : value1.Substring(0, value1.IndexOf('?'))) : value1;
-        value2 = value2.Contains("?") ? (value2.Contains("url=") ? value2.Substring(value2.IndexOf("url=") + 4) : value2.Substring(0, value2.IndexOf('?'))) : value2;
+        // Move query string embedded url
+        value1 = value1.Contains("url=") ? value1[(value1.IndexOf("url=") + 4)..] : value1;
+        value2 = value2.Contains("url=") ? value2[(value2.IndexOf("url=") + 4)..] : value2;
+
+        // Strip off the query string
+        value1 = value1.Contains('?') ? value1[..value1.IndexOf('?')] : value1;
+        value2 = value2.Contains('?') ? value2[..value2.IndexOf('?')] : value2;
 
         // Replace webp with jpg
         value1 = value1.EndsWith(".webp") ? value1.Replace(".webp", ".jpg") : value1;
         value2 = value2.EndsWith(".webp") ? value2.Replace(".webp", ".jpg") : value2;
 
         // WSJ has a special route for social media thumbnails
-        value1 = value1.EndsWith("/social") ? value1.Substring(0, value1.IndexOf("/social")) : value1;
-        value2 = value2.EndsWith("/social") ? value2.Substring(0, value2.IndexOf("/social")) : value2;
+        value1 = value1.EndsWith("/social") ? value1[..value1.IndexOf("/social")] : value1;
+        value2 = value2.EndsWith("/social") ? value2[..value2.IndexOf("/social")] : value2;
 
         // Yahoo CDN route handling
-        value1 = value1.Contains("--/") ? value1.Substring(value1.LastIndexOf("--/") + 3) : value1;
-        value2 = value2.Contains("--/") ? value2.Substring(value2.LastIndexOf("--/") + 3) : value2;
+        value1 = value1.Contains("--/") ? value1[(value1.LastIndexOf("--/") + 3)..] : value1;
+        value2 = value2.Contains("--/") ? value2[(value2.LastIndexOf("--/") + 3)..] : value2;
 
         // Substack CDN route handling
-        value1 = value1.Contains("/https") ? value1.Substring(value1.LastIndexOf("/https") + 1) : value1;
-        value2 = value2.Contains("/https") ? value2.Substring(value2.LastIndexOf("/https") + 1) : value2;
+        value1 = value1.Contains("/https") ? value1[(value1.LastIndexOf("/https") + 1)..] : value1;
+        value2 = value2.Contains("/https") ? value2[(value2.LastIndexOf("/https") + 1)..] : value2;
 
         if (value1.Contains(".jpg") && (value1.Split('/', StringSplitOptions.RemoveEmptyEntries).Last() == value2.Split('/', StringSplitOptions.RemoveEmptyEntries).Last()))
         {
             return true;
         }
 
+        _log.Debug("value1 = {value}", value1);
+        _log.Debug("value2 = {value}", value2);
         return value1 == value2;
     }
 
