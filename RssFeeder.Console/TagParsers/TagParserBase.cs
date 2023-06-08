@@ -165,39 +165,11 @@ public partial class TagParserBase
 
         foreach (var element in document.QuerySelectorAll("img"))
         {
-            string attributeValue = "";
-            string dataAttribute = "";
-            string dataAttributeValue = "";
+            (_, string attributeValue) = GetAttributeValue(element, new string[] { "src" });
+            (string dataAttribute, string dataAttributeValue) = GetAttributeValue(element, new string[] { "data-mm-src", "data-src", "data-lazy-src" });
 
-            if (element.HasAttribute("src"))
-            {
-                attributeValue = element.GetAttribute("src");
-            }
-            if (element.HasAttribute("data-mm-src"))
-            {
-                dataAttribute = "data-mm-src";
-                dataAttributeValue = element.GetAttribute(dataAttribute);
-            }
-            if (element.HasAttribute("data-src"))
-            {
-                dataAttribute = "data-src";
-                dataAttributeValue = element.GetAttribute(dataAttribute);
-            }
-            if (element.HasAttribute("data-lazy-src"))
-            {
-                dataAttribute = "data-lazy-src";
-                dataAttributeValue = element.GetAttribute(dataAttribute);
-            }
-            if (element.HasAttribute("srcset"))
-            {
-                _log.Information("Removing srcset={attributeValue}", element.GetAttribute("srcset"));
-                element.RemoveAttribute("srcset");
-            }
-            if (element.HasAttribute("data-srcset"))
-            {
-                _log.Information("Removing data-srcset={attributeValue}", element.GetAttribute("data-srcset"));
-                element.RemoveAttribute("data-srcset");
-            }
+            RemoveAttribute(element, "srcset");
+            RemoveAttribute(element, "data-srcset");
 
             if (!string.IsNullOrEmpty(dataAttributeValue) && dataAttributeValue != attributeValue)
             {
@@ -205,6 +177,32 @@ public partial class TagParserBase
                 element.SetAttribute("src", dataAttributeValue);
                 element.RemoveAttribute(dataAttribute);
             }
+        }
+    }
+
+    private static (string, string) GetAttributeValue(IElement element, string[] names)
+    {
+        string value = "";
+        string _name = "";
+
+        foreach (string name in names)
+        {
+            if (element.HasAttribute(name))
+            {
+                value = element.GetAttribute(name);
+                _name = name;
+            }
+        }
+
+        return (_name, value);
+    }
+
+    private void RemoveAttribute(IElement element, string name)
+    {
+        if (element.HasAttribute(name))
+        {
+            _log.Information("Removing {name}={attributeValue}", name, element.GetAttribute(name));
+            element.RemoveAttribute(name);
         }
     }
 
@@ -235,7 +233,7 @@ public partial class TagParserBase
 
             var sourceUri = element.HasAttribute(attributeName) ? element.GetAttribute(attributeName) : "";
 
-            if (!sourceUri.IsNullOrEmptyOrData() || sourceUri.StartsWith("#"))
+            if (!sourceUri.IsNullOrEmptyOrData())
             {
                 if (sourceUri.StartsWith("http") || sourceUri.StartsWith("mailto"))
                     continue;
@@ -247,39 +245,34 @@ public partial class TagParserBase
             else
             {
                 var alternateAttrName = string.Concat("data-", attributeName);
-                if (element.HasAttribute(alternateAttrName))
-                {
-                    sourceUri = element.GetAttribute(alternateAttrName);
-                    if (sourceUri.Contains(':'))
-                        sourceUri = _webUtils.RepairUrl(sourceUri, baseUrl);
-                    _log.Information("Element {element} using {alternateAttrName} to set {attributeName}={sourceUri}", element.GetSelector(), alternateAttrName, attributeName, sourceUri);
-                    element.SetAttribute(attributeName, sourceUri);
+                if (ReplaceTagAttribute(element, attributeName, alternateAttrName, baseUrl))
                     continue;
-                }
 
                 alternateAttrName = string.Concat("data-runner-", attributeName);
-                if (element.HasAttribute(alternateAttrName))
-                {
-                    sourceUri = element.GetAttribute(alternateAttrName);
-                    if (sourceUri.Contains(':'))
-                        sourceUri = _webUtils.RepairUrl(sourceUri, baseUrl);
-                    _log.Information("Element {element} using {alternateAttrName} to set {attributeName}={sourceUri}", element.GetSelector(), alternateAttrName, attributeName, sourceUri);
-                    element.SetAttribute(attributeName, sourceUri);
+                if (ReplaceTagAttribute(element, attributeName, alternateAttrName, baseUrl))
                     continue;
-                }
 
                 alternateAttrName = "data-img";
-                if (element.HasAttribute(alternateAttrName))
-                {
-                    sourceUri = element.GetAttribute(alternateAttrName);
-                    if (sourceUri.Contains(':'))
-                        sourceUri = _webUtils.RepairUrl(sourceUri, baseUrl);
-                    _log.Information("Element {element} using {alternateAttrName} to set {attributeName}={sourceUri}", element.GetSelector(), alternateAttrName, attributeName, sourceUri);
-                    element.SetAttribute(attributeName, sourceUri);
-                    continue;
-                }
+                ReplaceTagAttribute(element, attributeName, alternateAttrName, baseUrl);
             }
         }
+    }
+
+    private bool ReplaceTagAttribute(IElement element, string attributeName, string alternateAttrName, string baseUrl)
+    {
+        if (element.HasAttribute(alternateAttrName))
+        {
+            string sourceUri = element.GetAttribute(alternateAttrName);
+            if (sourceUri.Contains(':'))
+                sourceUri = _webUtils.RepairUrl(sourceUri, baseUrl);
+
+            _log.Information("Element {element} using {alternateAttrName} to set {attributeName}={sourceUri}", element.GetSelector(), alternateAttrName, attributeName, sourceUri);
+            element.SetAttribute(attributeName, sourceUri);
+
+            return true;
+        }
+
+        return false;
     }
 
     private void RemoveDuplicateImgTag(IHtmlDocument document)
