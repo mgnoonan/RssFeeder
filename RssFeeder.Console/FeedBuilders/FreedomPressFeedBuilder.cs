@@ -2,6 +2,8 @@
 
 internal class FreedomPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
+    private readonly Serilog.Events.LogEventLevel _logLevel = Serilog.Events.LogEventLevel.Debug;
+
     public FreedomPressFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities) : base(logger, webUtilities, utilities)
     {
     }
@@ -29,31 +31,12 @@ internal class FreedomPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         var document = parser.ParseDocument(html);
 
         // Above the fold
-        var containers = document.QuerySelectorAll("#home-section > div.default");
-        if (containers != null)
-        {
-            foreach (var element in containers.Take(3))
-            {
-                var links = element.QuerySelectorAll("a");
-                if (links != null)
-                {
-                    count = 1;
-                    foreach (var link in links)
-                    {
-                        var item = CreateNodeLinks(filters, link, "above the fold", count++, feedUrl, true);
-                        if (item != null)
-                        {
-                            _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                            list.Add(item);
-                        }
-                    }
-                }
-            }
-        }
+        // TODO
 
         // Headlines links section
-        var container = document.QuerySelector("#home-section > ul");
-        if (containers != null)
+        // #fg-widget-7078f1e3c758989b8c2c66c4a > div.uw-sc-mask > div.uw-sc-cardcont > div > a > div.uw-scroller-text > span.uw-text
+        var container = document.QuerySelector("div.uw-headline");
+        if (container != null)
         {
             var nodes = container.QuerySelectorAll("a");
             if (nodes != null)
@@ -64,7 +47,7 @@ internal class FreedomPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                     var item = CreateNodeLinks(filters, node, "headlines", count++, feedUrl, true);
                     if (item != null)
                     {
-                        _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+                        _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                         list.Add(item);
                     }
                 }
@@ -72,30 +55,22 @@ internal class FreedomPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         }
 
         // Stories section
-        containers = document.QuerySelectorAll("#home-section > div.columns");
-        if (containers != null)
+        container = document.QuerySelector("#container02");
+        if (container != null)
         {
-            string[] sectionName = new string[] { "first", "blend", "previous banner", "second" };
-            int sectionCounter = 0;
-
-            foreach (var element in containers.Take(2))
+            var nodes = container.QuerySelectorAll("a");
+            if (nodes != null)
             {
-                var nodes = element.QuerySelectorAll("a");
-                if (nodes != null)
+                count = 1;
+                foreach (var node in nodes)
                 {
-                    count = 1;
-                    foreach (var node in nodes)
+                    var item = CreateNodeLinks(filters, node, "news stories section", count++, feedUrl, false);
+                    if (item != null)
                     {
-                        var item = CreateNodeLinks(filters, node, $"{sectionName[sectionCounter]} section", count++, feedUrl, false);
-                        if (item != null)
-                        {
-                            _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                            list.Add(item);
-                        }
+                        _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+                        list.Add(item);
                     }
                 }
-
-                sectionCounter++;
             }
         }
 

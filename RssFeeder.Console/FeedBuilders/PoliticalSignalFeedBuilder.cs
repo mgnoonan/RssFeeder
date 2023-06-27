@@ -2,6 +2,8 @@
 
 internal class PoliticalSignalFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
+    private readonly Serilog.Events.LogEventLevel _logLevel = Serilog.Events.LogEventLevel.Debug;
+
     public PoliticalSignalFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities) : base(log, webUtilities, utilities)
     { }
 
@@ -31,25 +33,25 @@ internal class PoliticalSignalFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         var containers = document.QuerySelectorAll("#home_page_featured");
         string location = "main headlines";
         int articleCount = GetArticlesBySection(filters, feedUrl, list, containers, location, "li > h2 > a");
-        _log.Information("{location}: {sectionCount} sections, {articleCount} articles", location, containers.Length, articleCount);
+        _log.Write(_logLevel, "{location}: {sectionCount} sections, {articleCount} articles", location, containers.Length, articleCount);
 
         // Column 1 section
         containers = document.QuerySelectorAll("#column_1");
         location = "column 1";
         articleCount = GetArticlesBySection(filters, feedUrl, list, containers, location, "a");
-        _log.Information("{location}: {sectionCount} sections, {articleCount} articles", location, containers.Length, articleCount);
+        _log.Write(_logLevel, "{location}: {sectionCount} sections, {articleCount} articles", location, containers.Length, articleCount);
 
         // Column 2 section
         containers = document.QuerySelectorAll("#column_2");
         location = "column 2";
         articleCount = GetArticlesBySection(filters, feedUrl, list, containers, location, "a");
-        _log.Information("{location}: {sectionCount} sections, {articleCount} articles", location, containers.Length, articleCount);
+        _log.Write(_logLevel, "{location}: {sectionCount} sections, {articleCount} articles", location, containers.Length, articleCount);
 
         // Column 3 section
         containers = document.QuerySelectorAll("#column_3");
         location = "column 3";
         articleCount = GetArticlesBySection(filters, feedUrl, list, containers, location, "a");
-        _log.Information("{location}: {sectionCount} sections, {articleCount} articles", location, containers.Length, articleCount);
+        _log.Write(_logLevel, "{location}: {sectionCount} sections, {articleCount} articles", location, containers.Length, articleCount);
 
         return list;
     }
@@ -88,7 +90,7 @@ internal class PoliticalSignalFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                         var item = CreateNodeLinks(filters, node, location, count, feedUrl, isHeadline);
                         if (item != null)
                         {
-                            _log.Information("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+                            _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
                             list.Add(item);
                         }
 
