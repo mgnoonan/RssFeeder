@@ -270,7 +270,7 @@
         "Enabled": true,
         "RuleName": "HeaderTwitchyExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"twitchy.com\" AND (parentclasslist.Contains(\"recent-stories\") OR parentclasslist.Contains(\"small-card-bottom\") OR classlist.Contains(\"trending\"))",
+        "Expression": "name == \"twitchy.com\" AND (text == \"Recommended\" OR parentclasslist.Contains(\"recent-stories\") OR parentclasslist.Contains(\"small-card-bottom\") OR classlist.Contains(\"trending\"))",
         "SuccessEvent": "true"
       },
       {
