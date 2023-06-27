@@ -5,6 +5,8 @@ using RulesEngine.Models;
 
 namespace RssFeeder.Console.TagParsers;
 
+// Disabling the ValueTask warning because there is no alternative and so far it works
+#pragma warning disable CA2012
 public partial class TagParserBase
 {
     private readonly ILogger _log;
