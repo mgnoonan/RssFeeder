@@ -2,13 +2,13 @@
 
 internal class WhatFingerFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    private readonly IUnlaunchClient _client;
     private int _articleMaxCount;
-    private readonly Serilog.Events.LogEventLevel _logLevel = Serilog.Events.LogEventLevel.Debug;
+    private readonly IUnlaunchClient _unlaunchClient;
+    private Serilog.Events.LogEventLevel _logLevel = Serilog.Events.LogEventLevel.Debug;
 
-    public WhatFingerFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient client) : base(log, webUtilities, utilities)
+    public WhatFingerFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(log, webUtilities, utilities)
     {
-        _client = client;
+        _unlaunchClient = unlaunchClient;
     }
 
     public List<RssFeedItem> GenerateRssFeedItemList(RssFeed feed, string html)
@@ -16,7 +16,7 @@ internal class WhatFingerFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         // Find out which feature flag variation we are using to crawl articles
         string key = "article-count-limit";
         string identity = feed.CollectionName;
-        string variation = _client.GetVariation(key, identity, new List<UnlaunchAttribute>
+        string variation = _unlaunchClient.GetVariation(key, identity, new List<UnlaunchAttribute>
         {
             UnlaunchAttribute.NewBoolean("weekend", DateTime.Now.DayOfWeek == DayOfWeek.Saturday || DateTime.Now.DayOfWeek == DayOfWeek.Sunday)
         });
@@ -31,6 +31,19 @@ internal class WhatFingerFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             _ => throw new ArgumentException("Unexpected variation")
         };
         _log.Information("Processing a maximum of {articleMaxCount} articles", _articleMaxCount);
+
+        // Find out which feature flag variation we are using to log activity
+        key = "feed-log-level";
+        identity = feed.CollectionName;
+        variation = _unlaunchClient.GetVariation(key, identity);
+        _log.Information("Unlaunch {key} returned variation {variation} for identity {identity}", key, variation, identity);
+
+        _logLevel = variation switch
+        {
+            "debug" => Serilog.Events.LogEventLevel.Debug,
+            "information" => Serilog.Events.LogEventLevel.Information,
+            _ => throw new ArgumentException("Unexpected variation")
+        };
 
         return GenerateRssFeedItemList(feed.CollectionName, feed.Url, feed.Filters, html);
     }
