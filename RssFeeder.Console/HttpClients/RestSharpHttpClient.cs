@@ -27,7 +27,7 @@ public class RestSharpHttpClient : IHttpClient
         _log.Information("RestSharpHttpClient GetContentType to {url}", url);
         var request = new RestRequest(url);
         var response = _client.Execute(request, Method.Head);
-        _log.Information("Response status code = {httpStatusCode} {httpStatusText}, {uri}", (int)response.StatusCode, response.StatusCode, response.ResponseUri);
+        _log.Information("{httpMethod} Response status code = {httpStatusCode} {httpStatusText}, {uri}", "HEAD", (int)response.StatusCode, response.StatusCode, response.ResponseUri);
 
         return (response.StatusCode, response.ResponseUri, response.ContentType);
     }
@@ -38,7 +38,7 @@ public class RestSharpHttpClient : IHttpClient
 
         var request = new RestRequest(url);
         var response = _client.Execute(request, Method.Get);
-        _log.Information("Response status code = {httpStatusCode} {httpStatusText}, {uri}", (int)response.StatusCode, response.StatusCode, response.ResponseUri);
+        _log.Information("{httpMethod} Response status code = {httpStatusCode} {httpStatusText}, {uri}", "GET", (int)response.StatusCode, response.StatusCode, response.ResponseUri);
 
         // Poor man's retry since we can't use Polly here
         if ((int)response.StatusCode == 522)
