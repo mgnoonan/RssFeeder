@@ -2,6 +2,7 @@ namespace RssFeeder.Console.Database;
 
 public class RavenDbRepository : IRepository, IExportRepository
 {
+    private const string _databaseName = "site-parsers";
     readonly ILogger _log;
     readonly IDocumentStore _store;
     readonly CrawlerConfig _crawlerConfig;
@@ -18,13 +19,27 @@ public class RavenDbRepository : IRepository, IExportRepository
             // Default database is not set
         }.Initialize();
 
-        using (IDocumentSession session = store.OpenSession(database: "site-parsers"))
-        {
-            _crawlerConfig = session.Advanced.RawQuery<CrawlerConfig>("from CrawlerConfig").First();
-        }
-
         _store = store;
         _log = log;
+
+        EnsureDatabaseExists(_databaseName, true);
+
+        using (IDocumentSession session = store.OpenSession(database: _databaseName))
+        {
+            var config = session.Advanced.RawQuery<CrawlerConfig>("from CrawlerConfig");
+            if (config.Count() > 0)
+            {
+                _crawlerConfig = config.First();
+            }
+            else
+            {
+                // Read the options in JSON format
+                using StreamReader sr = new StreamReader("crawlerConfig.json");
+                string json = sr.ReadToEnd();
+
+                _crawlerConfig = JsonConvert.DeserializeObject<CrawlerConfig>(json);
+            }
+        }
 
         _log.Debug("Crawler config: {@config}", _crawlerConfig);
     }
@@ -47,6 +62,7 @@ public class RavenDbRepository : IRepository, IExportRepository
 
             try
             {
+                _log.Information("Creating missing database {databaseName}", database);
                 _store.Maintenance.Server.Send(new CreateDatabaseOperation(new DatabaseRecord(database)));
             }
             catch (ConcurrencyException)
