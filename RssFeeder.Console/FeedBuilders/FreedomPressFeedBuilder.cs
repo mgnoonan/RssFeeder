@@ -3,7 +3,6 @@
 internal class FreedomPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
     private readonly IUnlaunchClient _unlaunchClient;
-    private Serilog.Events.LogEventLevel _logLevel = Serilog.Events.LogEventLevel.Debug;
 
     public FreedomPressFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(logger, webUtilities, utilities)
     {
@@ -30,13 +29,16 @@ internal class FreedomPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 
     public List<RssFeedItem> GenerateRssFeedItemList(string feedCollectionName, string feedUrl, List<string> feedFilters, string html)
     {
-        var items = GenerateRssFeedItemList(html, feedFilters ?? new List<string>(), feedUrl);
+        _feedFilters = feedFilters ?? new List<string>();
+        _feedUrl = feedUrl ?? string.Empty;
+
+        var items = GenerateRssFeedItemList(html);
         PostProcessing(feedCollectionName, feedUrl, items);
 
         return items;
     }
 
-    public List<RssFeedItem> GenerateRssFeedItemList(string html, List<string> filters, string feedUrl)
+    public List<RssFeedItem> GenerateRssFeedItemList(string html)
     {
         var list = new List<RssFeedItem>();
         int count;
@@ -59,7 +61,7 @@ internal class FreedomPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                 count = 1;
                 foreach (var node in nodes)
                 {
-                    var item = CreateNodeLinks(filters, node, "headlines", count++, feedUrl, true);
+                    var item = CreateNodeLinks(_feedFilters, node, "headlines", count++, _feedUrl, true);
                     if (item != null)
                     {
                         _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
@@ -79,7 +81,7 @@ internal class FreedomPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                 count = 1;
                 foreach (var node in nodes)
                 {
-                    var item = CreateNodeLinks(filters, node, "news stories section", count++, feedUrl, false);
+                    var item = CreateNodeLinks(_feedFilters, node, "news stories section", count++, _feedUrl, false);
                     if (item != null)
                     {
                         _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);

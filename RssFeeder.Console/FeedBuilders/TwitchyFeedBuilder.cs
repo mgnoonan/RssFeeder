@@ -32,13 +32,13 @@ class TwitchyFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         _feedFilters = feedFilters ?? new List<string>();
         _feedUrl = feedUrl ?? string.Empty;
 
-        var items = GenerateRssFeedItemList(html, _feedFilters, _feedUrl);
+        var items = GenerateRssFeedItemList(html);
         PostProcessing(feedCollectionName, feedUrl, items);
 
         return items;
     }
 
-    public List<RssFeedItem> GenerateRssFeedItemList(string html, List<string> filters, string feedUrl)
+    public List<RssFeedItem> GenerateRssFeedItemList(string html)
     {
         var list = new List<RssFeedItem>();
 

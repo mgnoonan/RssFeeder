@@ -3,7 +3,6 @@
 internal class NoahReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
     private readonly IUnlaunchClient _unlaunchClient;
-    private Serilog.Events.LogEventLevel _logLevel = Serilog.Events.LogEventLevel.Debug;
 
     public NoahReportFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(log, webUtilities, utilities)
     {
@@ -30,13 +29,16 @@ internal class NoahReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 
     public List<RssFeedItem> GenerateRssFeedItemList(string feedCollectionName, string feedUrl, List<string> feedFilters, string html)
     {
-        var items = GenerateRssFeedItemList(html, feedFilters ?? new List<string>(), feedUrl);
+        _feedFilters = feedFilters ?? new List<string>();
+        _feedUrl = feedUrl ?? string.Empty;
+
+        var items = GenerateRssFeedItemList(html);
         PostProcessing(feedCollectionName, feedUrl, items);
 
         return items;
     }
 
-    public List<RssFeedItem> GenerateRssFeedItemList(string html, List<string> filters, string feedUrl)
+    public List<RssFeedItem> GenerateRssFeedItemList(string html)
     {
         var list = new List<RssFeedItem>();
         int count;
@@ -53,7 +55,7 @@ internal class NoahReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             count = 1;
             foreach (var node in nodes)
             {
-                var item = CreateNodeLinks(filters, node, "above the fold", count++, feedUrl, true);
+                var item = CreateNodeLinks(_feedFilters, node, "above the fold", count++, _feedUrl, true);
                 if (item != null)
                 {
                     _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
@@ -71,7 +73,7 @@ internal class NoahReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             count = 1;
             foreach (var node in nodes)
             {
-                var item = CreateNodeLinks(filters, node, "main headlines", count++, feedUrl, true);
+                var item = CreateNodeLinks(_feedFilters, node, "main headlines", count++, _feedUrl, true);
                 if (item != null)
                 {
                     _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
@@ -89,7 +91,7 @@ internal class NoahReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             count = 1;
             foreach (var node in nodes)
             {
-                var item = CreateNodeLinks(filters, node, "column 1", count++, feedUrl, false);
+                var item = CreateNodeLinks(_feedFilters, node, "column 1", count++, _feedUrl, false);
                 if (item != null)
                 {
                     _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
@@ -107,7 +109,7 @@ internal class NoahReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             count = 1;
             foreach (var node in nodes)
             {
-                var item = CreateNodeLinks(filters, node, "column 2", count++, feedUrl, false);
+                var item = CreateNodeLinks(_feedFilters, node, "column 2", count++, _feedUrl, false);
                 if (item != null)
                 {
                     _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
@@ -125,7 +127,7 @@ internal class NoahReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             count = 1;
             foreach (var node in nodes)
             {
-                var item = CreateNodeLinks(filters, node, "column 3", count++, feedUrl, false);
+                var item = CreateNodeLinks(_feedFilters, node, "column 3", count++, _feedUrl, false);
                 if (item != null)
                 {
                     _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);

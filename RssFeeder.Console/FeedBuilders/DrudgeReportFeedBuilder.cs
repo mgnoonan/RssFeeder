@@ -3,7 +3,6 @@
 class DrudgeReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
     private readonly IUnlaunchClient _unlaunchClient;
-    private Serilog.Events.LogEventLevel _logLevel = Serilog.Events.LogEventLevel.Information;
 
     public DrudgeReportFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(log, webUtilities, utilities)
     {
@@ -30,13 +29,16 @@ class DrudgeReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 
     public List<RssFeedItem> GenerateRssFeedItemList(string feedCollectionName, string feedUrl, List<string> feedFilters, string html)
     {
-        var items = GenerateRssFeedItemList(html, feedFilters ?? new List<string>(), feedUrl);
+        _feedFilters = feedFilters ?? new List<string>();
+        _feedUrl = feedUrl ?? string.Empty;
+
+        var items = GenerateRssFeedItemList(html);
         PostProcessing(feedCollectionName, feedUrl, items);
 
         return items;
     }
 
-    public List<RssFeedItem> GenerateRssFeedItemList(string html, List<string> filters, string feedUrl)
+    public List<RssFeedItem> GenerateRssFeedItemList(string html)
     {
         var list = new List<RssFeedItem>();
 
@@ -57,7 +59,7 @@ class DrudgeReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             var nodeList = link.Descendants("a").ToList();
             foreach (var node in nodeList)
             {
-                var item = CreateNodeLinks(filters, node, "main headlines", count++, feedUrl, true);
+                var item = CreateNodeLinks(_feedFilters, node, "main headlines", count++, _feedUrl, true);
                 if (item != null)
                 {
                     _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
@@ -78,7 +80,7 @@ class DrudgeReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
             count = 1;
             foreach (HtmlNode node in nodes)
             {
-                var item = CreateNodeLinks(filters, node, "above the fold", count++, feedUrl, true);
+                var item = CreateNodeLinks(_feedFilters, node, "above the fold", count++, _feedUrl, true);
                 if (item != null)
                 {
                     _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
@@ -103,7 +105,7 @@ class DrudgeReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                     break;
                 }
 
-                var item = CreateNodeLinks(filters, node, "left column", count++, feedUrl, false);
+                var item = CreateNodeLinks(_feedFilters, node, "left column", count++, _feedUrl, false);
                 if (item != null)
                 {
                     _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
@@ -128,7 +130,7 @@ class DrudgeReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                     break;
                 }
 
-                var item = CreateNodeLinks(filters, node, "middle column", count++, feedUrl, false);
+                var item = CreateNodeLinks(_feedFilters, node, "middle column", count++, _feedUrl, false);
                 if (item != null)
                 {
                     _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
@@ -153,7 +155,7 @@ class DrudgeReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
                     break;
                 }
 
-                var item = CreateNodeLinks(filters, node, "right column", count++, feedUrl, false);
+                var item = CreateNodeLinks(_feedFilters, node, "right column", count++, _feedUrl, false);
                 if (item != null)
                 {
                     _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
