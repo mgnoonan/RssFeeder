@@ -50,6 +50,9 @@
     <None Update="crawlerconfig.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="feed-twitchy.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="feed-cfp.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

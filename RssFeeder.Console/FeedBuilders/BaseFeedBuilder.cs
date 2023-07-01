@@ -1,10 +1,15 @@
-﻿namespace RssFeeder.Console.FeedBuilders;
+﻿using AngleSharp.Html.Dom;
+
+namespace RssFeeder.Console.FeedBuilders;
 
 class BaseFeedBuilder
 {
     protected readonly ILogger _log;
     readonly IWebUtils _webUtils;
     readonly IUtils _utils;
+    protected Serilog.Events.LogEventLevel _logLevel = Serilog.Events.LogEventLevel.Information;
+    protected List<string> _feedFilters = new List<string>();
+    protected string _feedUrl;
 
     public BaseFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities)
     {
@@ -124,5 +129,47 @@ class BaseFeedBuilder
         }
 
         return null;
+    }
+
+    protected void GetNodeLinks(IHtmlDocument document, string sectionName, string containerSelector, string linkSelector, List<RssFeedItem> list)
+    {
+        var containers = document.QuerySelectorAll(containerSelector);
+        if (containers is null)
+        {
+            _log.Warning("Containers not found {containerSelector}", containerSelector);
+            return;
+        }
+
+        _log.Information("FOUND: {sectionName} section with {containerCount} containers", sectionName, containers.Length);
+        foreach (var container in containers)
+        {
+            GetNodeLinks(container, sectionName, linkSelector, list);
+        }
+    }
+
+    protected void GetNodeLinks(IElement container, string sectionName, string linkSelector, List<RssFeedItem> list)
+    {
+        if (container is null)
+        {
+            _log.Warning("Container not found for section {sectionName}", sectionName);
+            return;
+        }
+
+        _log.Information("Parsing container {containerSelector}", container.GetSelector());
+
+        var nodes = container.QuerySelectorAll(linkSelector);
+        if (nodes?.Length > 0)
+        {
+            int count = 1;
+            foreach (var node in nodes)
+            {
+                var item = CreateNodeLinks(_feedFilters, node, sectionName, count++, _feedUrl, true);
+                if (item != null)
+                {
+                    _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+                    list.Add(item);
+                }
+            }
+        }
     }
 }

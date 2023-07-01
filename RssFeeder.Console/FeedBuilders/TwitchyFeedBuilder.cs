@@ -1,10 +1,10 @@
 ﻿namespace RssFeeder.Console.FeedBuilders;
 
-internal class OffThePressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
+class TwitchyFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
     private readonly IUnlaunchClient _unlaunchClient;
 
-    public OffThePressFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(log, webUtilities, utilities)
+    public TwitchyFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(logger, webUtilities, utilities)
     {
         _unlaunchClient = unlaunchClient;
     }
@@ -47,11 +47,14 @@ internal class OffThePressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         var document = parser.ParseDocument(html);
 
         // Main Headlines section
-        // #main > div.section.features > div > div > div.col-md-offset-1.col-sm-offset-1.col-xs-offset-0.col-md-10.col-sm-10.col-xs-12.featured-post > a:nth-child(3)
-        GetNodeLinks(document, "main headlines", "div.featured-post", "a", list);
+        GetNodeLinks(document, "main headlines", "section.pt-2", "div.wp-card-huge__title > a", list);
+
+        // Above the fold section
+        //var container = document.QuerySelectorAll("section.container-xl")?.FirstOrDefault();
+        GetNodeLinks(document, "above the fold", "body>main>section:nth-child(2)", "div.wp-card__title > a", list);
 
         // Posts section
-        GetNodeLinks(document, "posts", "#post-list", "a", list);
+        GetNodeLinks(document, "posts", "#post-list", "div.wp-card__title > a", list);
 
         return list;
     }

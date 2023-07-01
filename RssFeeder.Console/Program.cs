@@ -54,6 +54,7 @@ builder.RegisterType<OffThePressFeedBuilder>().Named<IRssFeedBuilder>("off-the-p
 builder.RegisterType<RubinReportFeedBuilder>().Named<IRssFeedBuilder>("rubin-report");
 builder.RegisterType<WhatFingerFeedBuilder>().Named<IRssFeedBuilder>("whatfinger");
 builder.RegisterType<PoliticalSignalFeedBuilder>().Named<IRssFeedBuilder>("political-signal");
+builder.RegisterType<TwitchyFeedBuilder>().Named<IRssFeedBuilder>("twitchy");
 builder.RegisterType<GenericTagParser>().Named<ITagParser>("generic-parser");
 builder.RegisterType<AdaptiveTagParser>().Named<ITagParser>("adaptive-parser");
 builder.RegisterType<AllTagsParser>().Named<ITagParser>("alltags-parser");
