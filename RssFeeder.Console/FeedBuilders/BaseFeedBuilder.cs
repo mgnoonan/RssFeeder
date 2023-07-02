@@ -5,17 +5,30 @@ namespace RssFeeder.Console.FeedBuilders;
 class BaseFeedBuilder
 {
     protected readonly ILogger _log;
+    protected readonly IUnlaunchClient _unlaunchClient;
     readonly IWebUtils _webUtils;
     readonly IUtils _utils;
     protected Serilog.Events.LogEventLevel _logLevel = Serilog.Events.LogEventLevel.Information;
     protected List<string> _feedFilters = new List<string>();
     protected string _feedUrl;
+    protected IHtmlDocument _document;
 
-    public BaseFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities)
+    public BaseFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient)
     {
         _log = logger;
         _webUtils = webUtilities;
         _utils = utilities;
+        _unlaunchClient = unlaunchClient;
+    }
+
+    protected void Initialize(string feedUrl, List<string> feedFilters, string html)
+    {
+        _feedFilters = feedFilters ?? new List<string>();
+        _feedUrl = feedUrl ?? string.Empty;
+
+        // Load and parse the html from the source file
+        var parser = new HtmlParser();
+        _document = parser.ParseDocument(html);
     }
 
     protected void PostProcessing(string feedCollectionName, string feedUrl, List<RssFeedItem> items)
@@ -131,9 +144,9 @@ class BaseFeedBuilder
         return null;
     }
 
-    protected void GetNodeLinks(IHtmlDocument document, string sectionName, string containerSelector, string linkSelector, List<RssFeedItem> list)
+    protected void GetNodeLinks(string sectionName, string containerSelector, string linkSelector, List<RssFeedItem> list)
     {
-        var containers = document.QuerySelectorAll(containerSelector);
+        var containers = _document.QuerySelectorAll(containerSelector);
         if (containers is null)
         {
             _log.Warning("Containers not found {containerSelector}", containerSelector);

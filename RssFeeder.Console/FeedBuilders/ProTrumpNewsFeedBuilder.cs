@@ -2,11 +2,8 @@
 
 internal class ProTrumpNewsFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    private readonly IUnlaunchClient _unlaunchClient;
-
-    public ProTrumpNewsFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(logger, webUtilities, utilities)
+    public ProTrumpNewsFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(logger, webUtilities, utilities, unlaunchClient)
     {
-        _unlaunchClient = unlaunchClient;
     }
 
     public List<RssFeedItem> GenerateRssFeedItemList(RssFeed feed, string html)
@@ -29,9 +26,7 @@ internal class ProTrumpNewsFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 
     public List<RssFeedItem> GenerateRssFeedItemList(string feedCollectionName, string feedUrl, List<string> feedFilters, string html)
     {
-        _feedFilters = feedFilters ?? new List<string>();
-        _feedUrl = feedUrl ?? string.Empty;
-
+        Initialize(feedUrl, feedFilters, html);
         var items = GenerateRssFeedItemList(html);
         PostProcessing(feedCollectionName, feedUrl, items);
 
@@ -43,12 +38,8 @@ internal class ProTrumpNewsFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         var list = new List<RssFeedItem>();
         int count;
 
-        // Load and parse the html from the source file
-        var parser = new HtmlParser();
-        var document = parser.ParseDocument(html);
-
         // Above the Fold section
-        var container = document.QuerySelector("div.widget-area-top-1 > div.sl-links-main");
+        var container = _document.QuerySelector("div.widget-area-top-1 > div.sl-links-main");
         if (container != null)
         {
             var nodes = container.QuerySelectorAll("a");
@@ -66,7 +57,7 @@ internal class ProTrumpNewsFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 
         // Featured headline(s)
         // #link-70828 > a
-        container = document.QuerySelector("div.widget-area-top-2 > div.sl-links-main");
+        container = _document.QuerySelector("div.widget-area-top-2 > div.sl-links-main");
         if (container != null)
         {
             var nodes = container.QuerySelectorAll("a");
@@ -84,7 +75,7 @@ internal class ProTrumpNewsFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 
         // Column 1
         // #link-70828 > a
-        container = document.QuerySelector("div.homepage-column-1 > div.sl-links-main");
+        container = _document.QuerySelector("div.homepage-column-1 > div.sl-links-main");
         if (container != null)
         {
             var nodes = container.QuerySelectorAll("a");
@@ -102,7 +93,7 @@ internal class ProTrumpNewsFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 
         // Column 2
         // #link-70828 > a
-        container = document.QuerySelector("div.homepage-column-2 > div.sl-links-main");
+        container = _document.QuerySelector("div.homepage-column-2 > div.sl-links-main");
         if (container != null)
         {
             var nodes = container.QuerySelectorAll("a");
@@ -120,7 +111,7 @@ internal class ProTrumpNewsFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 
         // Column 3
         // #link-70828 > a
-        container = document.QuerySelector("div.homepage-column-3 > div.sl-links-main");
+        container = _document.QuerySelector("div.homepage-column-3 > div.sl-links-main");
         if (container != null)
         {
             var nodes = container.QuerySelectorAll("a");

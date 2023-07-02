@@ -2,11 +2,8 @@
 
 class CitizenFreePressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    private readonly IUnlaunchClient _unlaunchClient;
-
-    public CitizenFreePressFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(log, webUtilities, utilities)
+    public CitizenFreePressFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(log, webUtilities, utilities, unlaunchClient)
     {
-        _unlaunchClient = unlaunchClient;
     }
 
     public List<RssFeedItem> GenerateRssFeedItemList(RssFeed feed, string html)
@@ -29,9 +26,7 @@ class CitizenFreePressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 
     public List<RssFeedItem> GenerateRssFeedItemList(string feedCollectionName, string feedUrl, List<string> feedFilters, string html)
     {
-        _feedFilters = feedFilters ?? new List<string>();
-        _feedUrl = feedUrl ?? string.Empty;
-
+        Initialize(feedUrl, feedFilters, html);
         var items = GenerateRssFeedItemList(html);
         PostProcessing(feedCollectionName, feedUrl, items);
 
@@ -43,12 +38,8 @@ class CitizenFreePressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         var list = new List<RssFeedItem>();
         int count;
 
-        // Load and parse the html from the source file
-        var parser = new HtmlParser();
-        var document = parser.ParseDocument(html);
-
         // Above the Fold section
-        var container = document.QuerySelector("ul.wpd-top-links");
+        var container = _document.QuerySelector("ul.wpd-top-links");
         var nodes = container.QuerySelectorAll("a");
         if (nodes != null)
         {
@@ -65,7 +56,7 @@ class CitizenFreePressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         }
 
         // Main Headlines section
-        container = document.QuerySelector("#featured");
+        container = _document.QuerySelector("#featured");
         if (container != null)
         {
             nodes = container.QuerySelectorAll("a");
@@ -85,7 +76,7 @@ class CitizenFreePressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         }
 
         // Column 1
-        container = document.QuerySelector("#column-1");
+        container = _document.QuerySelector("#column-1");
         nodes = container.QuerySelectorAll("a");
         if (nodes != null)
         {
@@ -102,7 +93,7 @@ class CitizenFreePressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         }
 
         // Column 2
-        container = document.QuerySelector("#column-2");
+        container = _document.QuerySelector("#column-2");
         nodes = container.QuerySelectorAll("a");
         if (nodes != null)
         {
@@ -119,7 +110,7 @@ class CitizenFreePressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         }
 
         // Column 3
-        container = document.QuerySelector("#column-3");
+        container = _document.QuerySelector("#column-3");
         nodes = container.QuerySelectorAll("a");
         if (nodes != null)
         {

@@ -2,11 +2,8 @@
 
 class BonginoReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    private readonly IUnlaunchClient _unlaunchClient;
-
-    public BonginoReportFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(log, webUtilities, utilities)
+    public BonginoReportFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(log, webUtilities, utilities, unlaunchClient)
     {
-        _unlaunchClient = unlaunchClient;
     }
 
     public List<RssFeedItem> GenerateRssFeedItemList(RssFeed feed, string html)
@@ -29,9 +26,7 @@ class BonginoReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 
     public List<RssFeedItem> GenerateRssFeedItemList(string feedCollectionName, string feedUrl, List<string> feedFilters, string html)
     {
-        _feedFilters = feedFilters ?? new List<string>();
-        _feedUrl = feedUrl ?? string.Empty;
-
+        Initialize(feedUrl, feedFilters, html);
         var items = GenerateRssFeedItemList(html);
         PostProcessing(feedCollectionName, feedUrl, items);
 
@@ -43,13 +38,9 @@ class BonginoReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         var list = new List<RssFeedItem>();
         int count;
 
-        // Load and parse the html from the source file
-        var parser = new HtmlParser();
-        var document = parser.ParseDocument(html);
-
         // Top Stories section
         // //section.banner > div > div > div.col-12.col-sm-8 > div > div > div > h5 > a
-        var container = document.QuerySelector("section.banner");
+        var container = _document.QuerySelector("section.banner");
         if (container != null)
         {
             var nodes = container.QuerySelectorAll("a");
@@ -70,7 +61,7 @@ class BonginoReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 
         // Top Stories section
         // //section.top-stories > div > div > div.col-12.col-sm-8 > div > div > div > h5 > a
-        container = document.QuerySelector("section.top-stories");
+        container = _document.QuerySelector("section.top-stories");
         if (container != null)
         {
             var nodes = container.QuerySelectorAll("a");
@@ -91,7 +82,7 @@ class BonginoReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 
         // All Stories section
         // //section.all-stories > div > div > div.col-12.col-sm-8 > div > div > div > h5 > a
-        container = document.QuerySelector("section.all-stories");
+        container = _document.QuerySelector("section.all-stories");
         if (container != null)
         {
             var nodes = container.QuerySelectorAll("a");
@@ -112,7 +103,7 @@ class BonginoReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 
         // Video Stories section
         // //section.stories-video > div > div > div.col-12.col-sm-8 > div > div > div > h5 > a
-        container = document.QuerySelector("section.stories-video");
+        container = _document.QuerySelector("section.stories-video");
         if (container != null)
         {
             var nodes = container.QuerySelectorAll("a");

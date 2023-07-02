@@ -2,11 +2,8 @@
 
 class LibertyDailyFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    private readonly IUnlaunchClient _unlaunchClient;
-
-    public LibertyDailyFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(log, webUtilities, utilities)
+    public LibertyDailyFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(log, webUtilities, utilities, unlaunchClient)
     {
-        _unlaunchClient = unlaunchClient;
     }
 
     public List<RssFeedItem> GenerateRssFeedItemList(RssFeed feed, string html)
@@ -29,9 +26,7 @@ class LibertyDailyFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 
     public List<RssFeedItem> GenerateRssFeedItemList(string feedCollectionName, string feedUrl, List<string> feedFilters, string html)
     {
-        _feedFilters = feedFilters ?? new List<string>();
-        _feedUrl = feedUrl ?? string.Empty;
-
+        Initialize(feedUrl, feedFilters, html);
         var items = GenerateRssFeedItemList(html);
         PostProcessing(feedCollectionName, feedUrl, items);
 

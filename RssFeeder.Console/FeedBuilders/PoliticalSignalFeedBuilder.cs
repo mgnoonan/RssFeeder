@@ -2,11 +2,8 @@
 
 internal class PoliticalSignalFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    private readonly IUnlaunchClient _unlaunchClient;
-
-    public PoliticalSignalFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(log, webUtilities, utilities)
+    public PoliticalSignalFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(log, webUtilities, utilities, unlaunchClient)
     {
-        _unlaunchClient = unlaunchClient;
     }
 
     public List<RssFeedItem> GenerateRssFeedItemList(RssFeed feed, string html)
@@ -29,9 +26,7 @@ internal class PoliticalSignalFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 
     public List<RssFeedItem> GenerateRssFeedItemList(string feedCollectionName, string feedUrl, List<string> feedFilters, string html)
     {
-        _feedFilters = feedFilters ?? new List<string>();
-        _feedUrl = feedUrl ?? string.Empty;
-
+        Initialize(feedUrl, feedFilters, html);
         var items = GenerateRssFeedItemList(html);
         PostProcessing(feedCollectionName, feedUrl, items);
 
@@ -42,31 +37,27 @@ internal class PoliticalSignalFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
     {
         var list = new List<RssFeedItem>();
 
-        // Load and parse the html from the source file
-        var parser = new HtmlParser();
-        var document = parser.ParseDocument(html);
-
         // Main Headlines section
         // #featured_post_1 > h2 > a
-        var containers = document.QuerySelectorAll("#home_page_featured");
+        var containers = _document.QuerySelectorAll("#home_page_featured");
         string location = "main headlines";
         int articleCount = GetArticlesBySection(list, containers, location, "li > h2 > a");
         _log.Write(_logLevel, "{location}: {sectionCount} sections, {articleCount} articles", location, containers.Length, articleCount);
 
         // Column 1 section
-        containers = document.QuerySelectorAll("#column_1");
+        containers = _document.QuerySelectorAll("#column_1");
         location = "column 1";
         articleCount = GetArticlesBySection(list, containers, location, "a");
         _log.Write(_logLevel, "{location}: {sectionCount} sections, {articleCount} articles", location, containers.Length, articleCount);
 
         // Column 2 section
-        containers = document.QuerySelectorAll("#column_2");
+        containers = _document.QuerySelectorAll("#column_2");
         location = "column 2";
         articleCount = GetArticlesBySection(list, containers, location, "a");
         _log.Write(_logLevel, "{location}: {sectionCount} sections, {articleCount} articles", location, containers.Length, articleCount);
 
         // Column 3 section
-        containers = document.QuerySelectorAll("#column_3");
+        containers = _document.QuerySelectorAll("#column_3");
         location = "column 3";
         articleCount = GetArticlesBySection(list, containers, location, "a");
         _log.Write(_logLevel, "{location}: {sectionCount} sections, {articleCount} articles", location, containers.Length, articleCount);

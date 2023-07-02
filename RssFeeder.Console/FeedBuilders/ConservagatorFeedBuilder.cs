@@ -2,11 +2,8 @@
 
 internal class ConservagatorFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    private readonly IUnlaunchClient _unlaunchClient;
-
-    public ConservagatorFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(logger, webUtilities, utilities)
+    public ConservagatorFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(logger, webUtilities, utilities, unlaunchClient)
     {
-        _unlaunchClient = unlaunchClient;
     }
 
     public List<RssFeedItem> GenerateRssFeedItemList(RssFeed feed, string html)
@@ -29,9 +26,7 @@ internal class ConservagatorFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 
     public List<RssFeedItem> GenerateRssFeedItemList(string feedCollectionName, string feedUrl, List<string> feedFilters, string html)
     {
-        _feedFilters = feedFilters ?? new List<string>();
-        _feedUrl = feedUrl ?? string.Empty;
-
+        Initialize(feedUrl, feedFilters, html);
         var items = GenerateRssFeedItemList(html);
         PostProcessing(feedCollectionName, feedUrl, items);
 
@@ -43,12 +38,8 @@ internal class ConservagatorFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         var list = new List<RssFeedItem>();
         int count;
 
-        // Load and parse the html from the source file
-        var parser = new HtmlParser();
-        var document = parser.ParseDocument(html);
-
         // Articles are grouped in columns by news site
-        var containers = document.QuerySelectorAll("div.wp-block-column");
+        var containers = _document.QuerySelectorAll("div.wp-block-column");
         string[] sectionName = new string[]
         {
             "Fox News", "New York Post", "Breitbart",

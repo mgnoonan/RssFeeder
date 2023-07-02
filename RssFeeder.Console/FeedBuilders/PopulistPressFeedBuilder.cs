@@ -2,11 +2,8 @@
 
 class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    private readonly IUnlaunchClient _unlaunchClient;
-
-    public PopulistPressFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(log, webUtilities, utilities)
+    public PopulistPressFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(log, webUtilities, utilities, unlaunchClient)
     {
-        _unlaunchClient = unlaunchClient;
     }
 
     public List<RssFeedItem> GenerateRssFeedItemList(RssFeed feed, string html)
@@ -29,9 +26,7 @@ class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 
     public List<RssFeedItem> GenerateRssFeedItemList(string feedCollectionName, string feedUrl, List<string> feedFilters, string html)
     {
-        _feedFilters = feedFilters ?? new List<string>();
-        _feedUrl = feedUrl ?? string.Empty;
-
+        Initialize(feedUrl, feedFilters, html);
         var items = GenerateRssFeedItemList(html);
         PostProcessing(feedCollectionName, feedUrl, items);
 
@@ -43,12 +38,8 @@ class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         var list = new List<RssFeedItem>();
         int count;
 
-        // Load and parse the html from the source file
-        var parser = new HtmlParser();
-        var document = parser.ParseDocument(html);
-
         // Above the Fold section
-        var container = document.QuerySelector("#home_page_breaking");
+        var container = _document.QuerySelector("#home_page_breaking");
         if (container != null)
         {
             var nodes = container.QuerySelectorAll("a");
@@ -65,7 +56,7 @@ class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         }
 
         // Main Headlines section
-        container = document.QuerySelector("#home_page_featured");
+        container = _document.QuerySelector("#home_page_featured");
         if (container != null)
         {
             var nodes = container.QuerySelectorAll("a");
@@ -85,7 +76,7 @@ class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         }
 
         // Column 1
-        container = document.QuerySelector("#column_1");
+        container = _document.QuerySelector("#column_1");
         if (container != null)
         {
             var pairedContainers = container.QuerySelectorAll("ul > li > h2");
@@ -114,7 +105,7 @@ class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         }
 
         // Column 2
-        container = document.QuerySelector("#column_2");
+        container = _document.QuerySelector("#column_2");
         if (container != null)
         {
             var pairedContainers = container.QuerySelectorAll("ul > li > h2");
@@ -143,7 +134,7 @@ class PopulistPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         }
 
         // Column 3
-        container = document.QuerySelector("#column_3");
+        container = _document.QuerySelector("#column_3");
         if (container != null)
         {
             var pairedContainers = container.QuerySelectorAll("ul > li > h2");

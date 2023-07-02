@@ -3,13 +3,11 @@
 internal class RevolverNewsFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
     private readonly int _articleMaxCount;
-    private readonly IUnlaunchClient _unlaunchClient;
 
     public RevolverNewsFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) :
-        base(logger, webUtilities, utilities)
+        base(logger, webUtilities, utilities, unlaunchClient)
     {
         _articleMaxCount = 1000;
-        _unlaunchClient = unlaunchClient;
     }
 
     public List<RssFeedItem> GenerateRssFeedItemList(RssFeed feed, string html)
@@ -32,9 +30,7 @@ internal class RevolverNewsFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 
     public List<RssFeedItem> GenerateRssFeedItemList(string feedCollectionName, string feedUrl, List<string> feedFilters, string html)
     {
-        _feedFilters = feedFilters ?? new List<string>();
-        _feedUrl = feedUrl ?? string.Empty;
-
+        Initialize(feedUrl, feedFilters, html);
         var items = GenerateRssFeedItemList(html);
         PostProcessing(feedCollectionName, feedUrl, items);
 
@@ -46,12 +42,8 @@ internal class RevolverNewsFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         var list = new List<RssFeedItem>();
         int count;
 
-        // Load and parse the html from the source file
-        var parser = new HtmlParser();
-        var document = parser.ParseDocument(html);
-
         // Stories section
-        var container = document.QuerySelector("div.list-articles");
+        var container = _document.QuerySelector("div.list-articles");
         var nodes = container.QuerySelectorAll("article.item > div.text > h2.title > a");
         if (nodes != null)
         {

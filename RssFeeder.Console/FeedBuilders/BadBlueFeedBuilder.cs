@@ -2,12 +2,10 @@ namespace RssFeeder.Console.FeedBuilders;
 
 class BadBlueFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    private readonly IUnlaunchClient _unlaunchClient;
     private int _articleMaxCount;
 
-    public BadBlueFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(log, webUtilities, utilities)
+    public BadBlueFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(log, webUtilities, utilities, unlaunchClient)
     {
-        _unlaunchClient = unlaunchClient;
     }
 
     public List<RssFeedItem> GenerateRssFeedItemList(RssFeed feed, string html)
@@ -49,9 +47,7 @@ class BadBlueFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 
     public List<RssFeedItem> GenerateRssFeedItemList(string feedCollectionName, string feedUrl, List<string> feedFilters, string html)
     {
-        _feedFilters = feedFilters ?? new List<string>();
-        _feedUrl = feedUrl ?? string.Empty;
-
+        Initialize(feedUrl, feedFilters, html);
         var items = GenerateRssFeedItemList(html);
         PostProcessing(feedCollectionName, feedUrl, items);
 
@@ -63,12 +59,8 @@ class BadBlueFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         var list = new List<RssFeedItem>();
         int count;
 
-        // Load and parse the html from the source file
-        var parser = new HtmlParser();
-        var document = parser.ParseDocument(html);
-
         // Main headlines section
-        var container = document.QuerySelector("div.storyh1 > span");
+        var container = _document.QuerySelector("div.storyh1 > span");
         var nodes = container.QuerySelectorAll("a");
         if (nodes != null)
         {
@@ -85,7 +77,7 @@ class BadBlueFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         }
 
         // Stories section
-        container = document.QuerySelector("div.grid");
+        container = _document.QuerySelector("div.grid");
         nodes = container.QuerySelectorAll("div.headlines > p > a");
         if (nodes != null)
         {

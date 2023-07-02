@@ -2,11 +2,8 @@
 
 internal class FreedomPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    private readonly IUnlaunchClient _unlaunchClient;
-
-    public FreedomPressFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(logger, webUtilities, utilities)
+    public FreedomPressFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(logger, webUtilities, utilities, unlaunchClient)
     {
-        _unlaunchClient = unlaunchClient;
     }
 
     public List<RssFeedItem> GenerateRssFeedItemList(RssFeed feed, string html)
@@ -29,9 +26,7 @@ internal class FreedomPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 
     public List<RssFeedItem> GenerateRssFeedItemList(string feedCollectionName, string feedUrl, List<string> feedFilters, string html)
     {
-        _feedFilters = feedFilters ?? new List<string>();
-        _feedUrl = feedUrl ?? string.Empty;
-
+        Initialize(feedUrl, feedFilters, html);
         var items = GenerateRssFeedItemList(html);
         PostProcessing(feedCollectionName, feedUrl, items);
 
@@ -43,16 +38,12 @@ internal class FreedomPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         var list = new List<RssFeedItem>();
         int count;
 
-        // Load and parse the html from the source file
-        var parser = new HtmlParser();
-        var document = parser.ParseDocument(html);
-
         // Above the fold
         // TODO
 
         // Headlines links section
         // #fg-widget-7078f1e3c758989b8c2c66c4a > div.uw-sc-mask > div.uw-sc-cardcont > div > a > div.uw-scroller-text > span.uw-text
-        var container = document.QuerySelector("div.uw-headline");
+        var container = _document.QuerySelector("div.uw-headline");
         if (container != null)
         {
             var nodes = container.QuerySelectorAll("a");
@@ -72,7 +63,7 @@ internal class FreedomPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         }
 
         // Stories section
-        container = document.QuerySelector("#container02");
+        container = _document.QuerySelector("#container02");
         if (container != null)
         {
             var nodes = container.QuerySelectorAll("a");
