@@ -228,7 +228,7 @@
         "Enabled": true,
         "RuleName": "HeaderWsjExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"wsj\" AND (text.StartsWith(\"What's News\") OR classlist.Contains(\"subhead\") OR classlist.Contains(\"newsletter-signup-title\") OR classlist.Contains(\"widget-heading\") OR tagname == \"h5\")",
+        "Expression": "name == \"wsj\" AND (text.StartsWith(\"What's News\") OR text.StartsWith(\"What to Read Next\") OR classlist.Contains(\"subhead\") OR classlist.Contains(\"newsletter-signup-title\") OR classlist.Contains(\"widget-heading\") OR tagname == \"h5\")",
         "SuccessEvent": "true"
       },
       {
