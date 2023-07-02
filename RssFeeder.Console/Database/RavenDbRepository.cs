@@ -24,22 +24,16 @@ public class RavenDbRepository : IRepository, IExportRepository
 
         EnsureDatabaseExists(_databaseName, true);
 
+#if DEBUG
+        // Read the options in JSON format
+        using StreamReader sr = new StreamReader("crawlerConfig.json");
+        _crawlerConfig = JsonConvert.DeserializeObject<CrawlerConfig>(sr.ReadToEnd());
+#else
         using (IDocumentSession session = store.OpenSession(database: _databaseName))
         {
-            var config = session.Advanced.RawQuery<CrawlerConfig>("from CrawlerConfig");
-            if (config.Count() > 0)
-            {
-                _crawlerConfig = config.First();
-            }
-            else
-            {
-                // Read the options in JSON format
-                using StreamReader sr = new StreamReader("crawlerConfig.json");
-                string json = sr.ReadToEnd();
-
-                _crawlerConfig = JsonConvert.DeserializeObject<CrawlerConfig>(json);
-            }
+            _crawlerConfig = session.Advanced.RawQuery<CrawlerConfig>("from CrawlerConfig").First();
         }
+#endif
 
         _log.Debug("Crawler config: {@config}", _crawlerConfig);
     }
