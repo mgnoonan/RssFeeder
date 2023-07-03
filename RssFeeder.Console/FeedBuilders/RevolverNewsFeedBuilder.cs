@@ -2,12 +2,9 @@
 
 internal class RevolverNewsFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    private readonly int _articleMaxCount;
-
     public RevolverNewsFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) :
         base(logger, webUtilities, utilities, unlaunchClient)
     {
-        _articleMaxCount = 1000;
     }
 
     public List<RssFeedItem> GenerateRssFeedItemList(RssFeed feed, string html)

@@ -36,95 +36,12 @@ class GutSmackFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
     public List<RssFeedItem> GenerateRssFeedItemList(string html)
     {
         var list = new List<RssFeedItem>();
-        int count;
 
         // Above the Fold section
-        var container = _document.QuerySelector("ul.wpd-top-links");
-        if (container != null)
-        {
-            var nodes = container.QuerySelectorAll("a");
-            count = 1;
-            foreach (var node in nodes)
-            {
-                var item = CreateNodeLinks(_feedFilters, node, "above the fold", count++, _feedUrl, false);
-                if (item != null)
-                {
-                    _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                    list.Add(item);
-                }
-            }
-        }
+        GetNodeLinks("above the fold", "ul.wpd-top-links", "a", list, false);
 
         // Main Headlines section
-        container = _document.QuerySelector("#featured");
-        if (container != null)
-        {
-            var nodes = container.QuerySelectorAll("a.headline-link");
-            if (nodes != null)
-            {
-                count = 1;
-                foreach (var node in nodes)
-                {
-                    var item = CreateNodeLinks(_feedFilters, node, "main headlines", count++, _feedUrl, true);
-                    if (item != null && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
-                    {
-                        _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                        list.Add(item);
-                    }
-                }
-            }
-        }
-
-        // Column 1
-        container = _document.QuerySelector("#column-1 > div > div.wpd-posted-links");
-        if (container != null)
-        {
-            var nodes = container.QuerySelectorAll("a");
-            count = 1;
-            foreach (var node in nodes)
-            {
-                var item = CreateNodeLinks(_feedFilters, node, "column 1", count++, _feedUrl, false);
-                if (item != null && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
-                {
-                    _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                    list.Add(item);
-                }
-            }
-        }
-
-        // Column 2
-        container = _document.QuerySelector("#column-2 > div > div.wpd-posted-links");
-        if (container != null)
-        {
-            var nodes = container.QuerySelectorAll("a");
-            count = 1;
-            foreach (var node in nodes)
-            {
-                var item = CreateNodeLinks(_feedFilters, node, "column 2", count++, _feedUrl, false);
-                if (item != null && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
-                {
-                    _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                    list.Add(item);
-                }
-            }
-        }
-
-        // Column 2
-        container = _document.QuerySelector("#column-3 > div > div.wpd-posted-links");
-        if (container != null)
-        {
-            var nodes = container.QuerySelectorAll("a");
-            count = 1;
-            foreach (var node in nodes)
-            {
-                var item = CreateNodeLinks(_feedFilters, node, "column 3", count++, _feedUrl, false);
-                if (item != null && !item.FeedAttributes.Url.Contains("#the-comments") && !item.FeedAttributes.Url.Contains("#comment-"))
-                {
-                    _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                    list.Add(item);
-                }
-            }
-        }
+        GetNodeLinks("headlines", "#featured", "a.headline-link", list, false);
 
         return list;
     }

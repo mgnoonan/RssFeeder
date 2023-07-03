@@ -2,8 +2,6 @@ namespace RssFeeder.Console.FeedBuilders;
 
 class BadBlueFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    private int _articleMaxCount;
-
     public BadBlueFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(log, webUtilities, utilities, unlaunchClient)
     {
     }

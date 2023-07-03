@@ -36,91 +36,22 @@ class BonginoReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
     public List<RssFeedItem> GenerateRssFeedItemList(string html)
     {
         var list = new List<RssFeedItem>();
-        int count;
 
         // Top Stories section
         // //section.banner > div > div > div.col-12.col-sm-8 > div > div > div > h5 > a
-        var container = _document.QuerySelector("section.banner");
-        if (container != null)
-        {
-            var nodes = container.QuerySelectorAll("a");
-            if (nodes != null)
-            {
-                count = 1;
-                foreach (var node in nodes)
-                {
-                    var item = CreateNodeLinks(_feedFilters, node, "main headlines", count++, _feedUrl, true);
-                    if (item != null)
-                    {
-                        _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                        list.Add(item);
-                    }
-                }
-            }
-        }
+        GetNodeLinks("headlines", "section.banner", "a", list, false);
 
         // Top Stories section
         // //section.top-stories > div > div > div.col-12.col-sm-8 > div > div > div > h5 > a
-        container = _document.QuerySelector("section.top-stories");
-        if (container != null)
-        {
-            var nodes = container.QuerySelectorAll("a");
-            if (nodes != null)
-            {
-                count = 1;
-                foreach (var node in nodes)
-                {
-                    var item = CreateNodeLinks(_feedFilters, node, "top stories", count++, _feedUrl, true);
-                    if (item != null)
-                    {
-                        _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                        list.Add(item);
-                    }
-                }
-            }
-        }
+        GetNodeLinks("top stories", "section.top-stories", "a", list, false);
 
         // All Stories section
         // //section.all-stories > div > div > div.col-12.col-sm-8 > div > div > div > h5 > a
-        container = _document.QuerySelector("section.all-stories");
-        if (container != null)
-        {
-            var nodes = container.QuerySelectorAll("a");
-            if (nodes != null)
-            {
-                count = 1;
-                foreach (var node in nodes)
-                {
-                    var item = CreateNodeLinks(_feedFilters, node, "all stories", count++, _feedUrl, false);
-                    if (item != null)
-                    {
-                        _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                        list.Add(item);
-                    }
-                }
-            }
-        }
+        GetNodeLinks("all stories", "section.all-stories", "a", list, false);
 
         // Video Stories section
         // //section.stories-video > div > div > div.col-12.col-sm-8 > div > div > div > h5 > a
-        container = _document.QuerySelector("section.stories-video");
-        if (container != null)
-        {
-            var nodes = container.QuerySelectorAll("a");
-            if (nodes != null)
-            {
-                count = 1;
-                foreach (var node in nodes)
-                {
-                    var item = CreateNodeLinks(_feedFilters, node, "video stories", count++, _feedUrl, false);
-                    if (item != null)
-                    {
-                        _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                        list.Add(item);
-                    }
-                }
-            }
-        }
+        GetNodeLinks("video stories", "section.stories-video", "a", list, false);
 
         return list;
     }

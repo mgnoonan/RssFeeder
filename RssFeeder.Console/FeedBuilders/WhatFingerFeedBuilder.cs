@@ -2,8 +2,6 @@
 
 internal class WhatFingerFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    private int _articleMaxCount;
-
     public WhatFingerFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(log, webUtilities, utilities, unlaunchClient)
     {
     }
@@ -57,39 +55,9 @@ internal class WhatFingerFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
     public List<RssFeedItem> GenerateRssFeedItemList(string html)
     {
         var list = new List<RssFeedItem>();
-        int count;
 
         // Main Headlines section
-        // div.creative-link.wpb_column.vc_column_container.vc_col-sm-8 > div > div > div
-        var containers = _document.QuerySelectorAll("div.creative-link.wpb_column.vc_column_container.vc_col-sm-8 > div > div");
-        _log.Information("FOUND: {count} sections", containers.Length);
-
-        if (containers != null)
-        {
-            foreach (var c in containers)
-            {
-                var nodes = c.QuerySelectorAll("ul li a");
-                if (nodes?.Length > 0)
-                {
-                    count = 1;
-                    string previousHash = "";
-                    foreach (var node in nodes.Take(_articleMaxCount))
-                    {
-                        var item = CreateNodeLinks(_feedFilters, node, "main headlines", count, _feedUrl, false);
-                        if (item != null && item.FeedAttributes.UrlHash != previousHash)
-                        {
-                            _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                            list.Add(item);
-                            count++;
-                        }
-
-                        previousHash = item?.FeedAttributes.UrlHash ?? "";
-                    }
-
-                    break;
-                }
-            }
-        }
+        GetNodeLinks("headlines", "div.creative-link.wpb_column.vc_column_container.vc_col-sm-8 > div > div", "ul li a", list, true);
 
         return list;
     }

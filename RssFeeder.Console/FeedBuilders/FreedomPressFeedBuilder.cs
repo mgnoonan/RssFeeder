@@ -36,51 +36,6 @@ internal class FreedomPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
     public List<RssFeedItem> GenerateRssFeedItemList(string html)
     {
         var list = new List<RssFeedItem>();
-        int count;
-
-        // Above the fold
-        // TODO
-
-        // Headlines links section
-        // #fg-widget-7078f1e3c758989b8c2c66c4a > div.uw-sc-mask > div.uw-sc-cardcont > div > a > div.uw-scroller-text > span.uw-text
-        var container = _document.QuerySelector("div.uw-headline");
-        if (container != null)
-        {
-            var nodes = container.QuerySelectorAll("a");
-            if (nodes != null)
-            {
-                count = 1;
-                foreach (var node in nodes)
-                {
-                    var item = CreateNodeLinks(_feedFilters, node, "headlines", count++, _feedUrl, true);
-                    if (item != null)
-                    {
-                        _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                        list.Add(item);
-                    }
-                }
-            }
-        }
-
-        // Stories section
-        container = _document.QuerySelector("#container02");
-        if (container != null)
-        {
-            var nodes = container.QuerySelectorAll("a");
-            if (nodes != null)
-            {
-                count = 1;
-                foreach (var node in nodes)
-                {
-                    var item = CreateNodeLinks(_feedFilters, node, "news stories section", count++, _feedUrl, false);
-                    if (item != null)
-                    {
-                        _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                        list.Add(item);
-                    }
-                }
-            }
-        }
 
         return list;
     }

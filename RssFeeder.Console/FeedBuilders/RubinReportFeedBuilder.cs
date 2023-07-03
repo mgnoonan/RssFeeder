@@ -36,24 +36,9 @@ internal class RubinReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
     public List<RssFeedItem> GenerateRssFeedItemList(string html)
     {
         var list = new List<RssFeedItem>();
-        int count;
 
         // Main Headlines section
-        var container = _document.QuerySelector("div.elementor-widget-container");
-        if (container != null)
-        {
-            var nodes = container.QuerySelectorAll("h1.elementor-post__title > a");
-            count = 1;
-            foreach (var node in nodes)
-            {
-                var item = CreateNodeLinks(_feedFilters, node, "main headlines", count++, _feedUrl, true);
-                if (item != null)
-                {
-                    _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                    list.Add(item);
-                }
-            }
-        }
+        GetNodeLinks("headlines", "div.elementor-widget-container", "h1.elementor-post__title > a", list, false);
 
         return list;
     }

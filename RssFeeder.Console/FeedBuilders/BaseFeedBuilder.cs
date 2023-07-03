@@ -12,6 +12,7 @@ class BaseFeedBuilder
     protected List<string> _feedFilters = new List<string>();
     protected string _feedUrl;
     protected IHtmlDocument _document;
+    protected int _articleMaxCount = 1000;
 
     public BaseFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient)
     {
@@ -134,7 +135,7 @@ class BaseFeedBuilder
                     Url = uri.AbsoluteUri,
                     UrlHash = hash,
                     DateAdded = DateTime.Now.ToUniversalTime(),
-                    LinkLocation = $"{location}, article {count}",
+                    LinkLocation = $"{location}, link {count}",
                     IsUrlShortened = uri.Host.ToLower() == "t.co",
                     IsHeadline = isHeadline
                 }
@@ -144,7 +145,7 @@ class BaseFeedBuilder
         return null;
     }
 
-    protected void GetNodeLinks(string sectionName, string containerSelector, string linkSelector, List<RssFeedItem> list)
+    protected void GetNodeLinks(string sectionName, string containerSelector, string linkSelector, List<RssFeedItem> list, bool filterDuplicates)
     {
         var containers = _document.QuerySelectorAll(containerSelector);
         if (containers is null)
@@ -153,14 +154,16 @@ class BaseFeedBuilder
             return;
         }
 
+        int count = 1;
+
         _log.Information("FOUND: {sectionName} section with {containerCount} containers", sectionName, containers.Length);
         foreach (var container in containers)
         {
-            GetNodeLinks(container, sectionName, linkSelector, list);
+            GetNodeLinks(container, sectionName, linkSelector, list, filterDuplicates, ref count);
         }
     }
 
-    protected void GetNodeLinks(IElement container, string sectionName, string linkSelector, List<RssFeedItem> list)
+    protected void GetNodeLinks(IElement container, string sectionName, string linkSelector, List<RssFeedItem> list, bool filterDuplicates, ref int count)
     {
         if (container is null)
         {
@@ -171,18 +174,24 @@ class BaseFeedBuilder
         _log.Information("Parsing container {containerSelector}", container.GetSelector());
 
         var nodes = container.QuerySelectorAll(linkSelector);
-        if (nodes?.Length > 0)
+        if (nodes is null || nodes.Length == 0)
         {
-            int count = 1;
-            foreach (var node in nodes)
-            {
-                var item = CreateNodeLinks(_feedFilters, node, sectionName, count++, _feedUrl, true);
-                if (item != null)
-                {
-                    _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                    list.Add(item);
-                }
-            }
+            return;
+        }
+
+        string previousHash = "";
+
+        foreach (var node in nodes.Take(_articleMaxCount))
+        {
+            var item = CreateNodeLinks(_feedFilters, node, sectionName, count, _feedUrl, true);
+
+            if (item is null) continue;
+            if (filterDuplicates && item.FeedAttributes.UrlHash == previousHash) continue;
+
+            _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
+            list.Add(item);
+            count++;
+            previousHash = item.FeedAttributes.UrlHash;
         }
     }
 }

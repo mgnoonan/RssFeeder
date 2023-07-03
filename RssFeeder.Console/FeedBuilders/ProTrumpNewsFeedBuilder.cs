@@ -36,96 +36,25 @@ internal class ProTrumpNewsFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
     public List<RssFeedItem> GenerateRssFeedItemList(string html)
     {
         var list = new List<RssFeedItem>();
-        int count;
-
-        // Above the Fold section
-        var container = _document.QuerySelector("div.widget-area-top-1 > div.sl-links-main");
-        if (container != null)
-        {
-            var nodes = container.QuerySelectorAll("a");
-            count = 1;
-            foreach (var node in nodes)
-            {
-                var item = CreateNodeLinks(_feedFilters, node, "above the fold", count++, _feedUrl, true);
-                if (item != null)
-                {
-                    _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                    list.Add(item);
-                }
-            }
-        }
 
         // Featured headline(s)
         // #link-70828 > a
-        container = _document.QuerySelector("div.widget-area-top-2 > div.sl-links-main");
-        if (container != null)
-        {
-            var nodes = container.QuerySelectorAll("a");
-            count = 1;
-            foreach (var node in nodes)
-            {
-                var item = CreateNodeLinks(_feedFilters, node, "main headlines", count++, _feedUrl, true);
-                if (item != null)
-                {
-                    _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                    list.Add(item);
-                }
-            }
-        }
+        GetNodeLinks("headlines", "div.widget-area-top-2 > div.sl-links-main", "a", list, false);
+
+        // Above the Fold section
+        GetNodeLinks("above the fold", "div.widget-area-top-1 > div.sl-links-main", "a", list, false);
 
         // Column 1
         // #link-70828 > a
-        container = _document.QuerySelector("div.homepage-column-1 > div.sl-links-main");
-        if (container != null)
-        {
-            var nodes = container.QuerySelectorAll("a");
-            count = 1;
-            foreach (var node in nodes)
-            {
-                var item = CreateNodeLinks(_feedFilters, node, "column 1", count++, _feedUrl, false);
-                if (item != null)
-                {
-                    _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                    list.Add(item);
-                }
-            }
-        }
+        GetNodeLinks("column 1", "div.homepage-column-1 > div.sl-links-main", "a", list, false);
 
         // Column 2
         // #link-70828 > a
-        container = _document.QuerySelector("div.homepage-column-2 > div.sl-links-main");
-        if (container != null)
-        {
-            var nodes = container.QuerySelectorAll("a");
-            count = 1;
-            foreach (var node in nodes)
-            {
-                var item = CreateNodeLinks(_feedFilters, node, "column 2", count++, _feedUrl, false);
-                if (item != null)
-                {
-                    _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                    list.Add(item);
-                }
-            }
-        }
+        GetNodeLinks("column 2", "div.homepage-column-2 > div.sl-links-main", "a", list, false);
 
         // Column 3
         // #link-70828 > a
-        container = _document.QuerySelector("div.homepage-column-3 > div.sl-links-main");
-        if (container != null)
-        {
-            var nodes = container.QuerySelectorAll("a");
-            count = 1;
-            foreach (var node in nodes)
-            {
-                var item = CreateNodeLinks(_feedFilters, node, "column 3", count++, _feedUrl, false);
-                if (item != null)
-                {
-                    _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                    list.Add(item);
-                }
-            }
-        }
+        GetNodeLinks("column 3", "div.homepage-column-3 > div.sl-links-main", "a", list, false);
 
         return list;
     }

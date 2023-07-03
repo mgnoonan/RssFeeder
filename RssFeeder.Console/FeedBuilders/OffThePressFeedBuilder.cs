@@ -39,10 +39,10 @@ internal class OffThePressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 
         // Main Headlines section
         // #main > div.section.features > div > div > div.col-md-offset-1.col-sm-offset-1.col-xs-offset-0.col-md-10.col-sm-10.col-xs-12.featured-post > a:nth-child(3)
-        GetNodeLinks("main headlines", "div.featured-post", "a", list);
+        GetNodeLinks("headlines", "div.featured-post", "a", list, false);
 
         // Posts section
-        GetNodeLinks("posts", "#post-list", "a", list);
+        GetNodeLinks("posts", "#post-list", "a", list, false);
 
         return list;
     }
