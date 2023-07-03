@@ -1,0 +1,16 @@
+[
+  {
+    "Title": "Pro Trump News",
+    "Enabled": "true",
+    "EnableThumbnail": "false",
+    "Exportable": "false",
+    "Description": "Pro Trump News",
+    "Language": "en-US",
+    "Url": "https://protrumpnews.com/",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.ProTrumpNewsFeedBuilder",
+    "CollectionName": "protrump-news",
+    "FileRetentionDays": 7,
+    "DatabaseRetentionDays": 180,
+    "Filters": []
+  }
+]
