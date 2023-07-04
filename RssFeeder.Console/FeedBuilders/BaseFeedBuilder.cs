@@ -156,7 +156,7 @@ class BaseFeedBuilder
 
         int count = 1;
 
-        _log.Information("FOUND: {sectionName} section with {containerCount} containers", sectionName, containers.Length);
+        _log.Information("SECTION {sectionName}: Selector {containerSelector} found {containerCount} containers", sectionName, containerSelector, containers.Length);
         foreach (var container in containers)
         {
             GetNodeLinks(container, sectionName, linkSelector, list, filterDuplicates, ref count, stopHash);
@@ -171,7 +171,7 @@ class BaseFeedBuilder
             return;
         }
 
-        _log.Information("Parsing container {containerSelector}", container.GetSelector());
+        _log.Information("CONTAINER: Parsing {containerSelector}", container.GetSelector());
 
         var nodes = container.QuerySelectorAll(linkSelector);
         if (nodes is null || nodes.Length == 0)
