@@ -145,7 +145,7 @@ class BaseFeedBuilder
         return null;
     }
 
-    protected void GetNodeLinks(string sectionName, string containerSelector, string linkSelector, List<RssFeedItem> list, bool filterDuplicates)
+    protected void GetNodeLinks(string sectionName, string containerSelector, string linkSelector, List<RssFeedItem> list, bool filterDuplicates, string stopHash = "")
     {
         var containers = _document.QuerySelectorAll(containerSelector);
         if (containers is null)
@@ -159,11 +159,11 @@ class BaseFeedBuilder
         _log.Information("FOUND: {sectionName} section with {containerCount} containers", sectionName, containers.Length);
         foreach (var container in containers)
         {
-            GetNodeLinks(container, sectionName, linkSelector, list, filterDuplicates, ref count);
+            GetNodeLinks(container, sectionName, linkSelector, list, filterDuplicates, ref count, stopHash);
         }
     }
 
-    protected void GetNodeLinks(IElement container, string sectionName, string linkSelector, List<RssFeedItem> list, bool filterDuplicates, ref int count)
+    protected void GetNodeLinks(IElement container, string sectionName, string linkSelector, List<RssFeedItem> list, bool filterDuplicates, ref int count, string stopHash)
     {
         if (container is null)
         {
@@ -186,6 +186,7 @@ class BaseFeedBuilder
             var item = CreateNodeLinks(_feedFilters, node, sectionName, count, _feedUrl, true);
 
             if (item is null) continue;
+            if (item.FeedAttributes.UrlHash == stopHash) break;
             if (filterDuplicates && item.FeedAttributes.UrlHash == previousHash) continue;
 
             _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
