@@ -36,97 +36,26 @@ class LibertyDailyFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
     public List<RssFeedItem> GenerateRssFeedItemList(string html)
     {
         var list = new List<RssFeedItem>();
-        var doc = new HtmlDocument();
-        doc.Load(new StringReader(html));
-
-        // Above the fold headline(s)
-        // //div[@class=\"drudgery-top-links\"]/div/a
-        var nodes = doc.DocumentNode.SelectNodes("//div[@class=\"drudgery-top-links\"]/div/a");
-        int count;
-        if (nodes != null)
-        {
-            count = 1;
-            foreach (HtmlNode node in nodes)
-            {
-                var item = CreateNodeLinks(_feedFilters, node, "above the fold", count++, _feedUrl, true);
-                if (item != null)
-                {
-                    _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                    list.Add(item);
-                }
-            }
-        }
 
         // Featured headline(s)
-        // //div[@class=\"drudgery-featured\"]/div/a
-        nodes = doc.DocumentNode.SelectNodes("//div[@class=\"drudgery-featured\"]/div/a");
-        if (nodes != null)
-        {
-            count = 1;
-            foreach (HtmlNode node in nodes)
-            {
-                var item = CreateNodeLinks(_feedFilters, node, "main headlines", count++, _feedUrl, true);
-                if (item != null)
-                {
-                    _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                    list.Add(item);
-                }
-            }
-        }
+        // div[@class=\"drudgery-featured\"]/div/a
+        GetNodeLinks("headlines", "div.drudgery-featured", "div.drudgery-featured-link > a", list, false);
+
+        // Above the fold headline(s)
+        // div[@class=\"drudgery-top-links\"]/div/a
+        GetNodeLinks("above the fold", "div.drudgery-top-links", "div.drudgery-top-link > a", list, false);
 
         // Column 1 Articles
-        // //div[@class=\"drudgery-column-1\"]/div[@class=\"drudgery-articles\"]/div/a
         // #main > div.drudgery-column-1 > div:nth-child(2) > div:nth-child(1) > a
-        nodes = doc.DocumentNode.SelectNodes("//div[@class=\"drudgery-column-1\"]/div[@class=\"drudgery-articles\"]/div/a");
-        if (nodes != null)
-        {
-            count = 1;
-            foreach (HtmlNode node in nodes)
-            {
-                var item = CreateNodeLinks(_feedFilters, node, "left column", count++, _feedUrl, false);
-                if (item != null)
-                {
-                    _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                    list.Add(item);
-                }
-            }
-        }
+        GetNodeLinks("column 1", "div.drudgery-column-1 > div.drudgery-articles", "div.drudgery-link > a", list, false);
 
         // Column 2 Articles
-        // //div[@class=\"drudgery-column-2\"]/div[@class=\"drudgery-articles\"]/div/a
         // #main > div.drudgery-column-2 > div:nth-child(2) > div:nth-child(1) > a
-        nodes = doc.DocumentNode.SelectNodes("//div[@class=\"drudgery-column-2\"]/div[@class=\"drudgery-articles\"]/div/a");
-        if (nodes != null)
-        {
-            count = 1;
-            foreach (HtmlNode node in nodes)
-            {
-                var item = CreateNodeLinks(_feedFilters, node, "middle column", count++, _feedUrl, false);
-                if (item != null)
-                {
-                    _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                    list.Add(item);
-                }
-            }
-        }
+        GetNodeLinks("column 2", "div.drudgery-column-2 > div.drudgery-articles", "div.drudgery-link > a", list, false);
 
         // Column 3 Articles
-        // //div[@class=\"drudgery-column-3\"]/div[@class=\"drudgery-articles\"]/div/a
         // #main > div.drudgery-column-3 > div:nth-child(2) > div:nth-child(1) > a
-        nodes = doc.DocumentNode.SelectNodes("//div[@class=\"drudgery-column-3\"]/div[@class=\"drudgery-articles\"]/div/a");
-        if (nodes != null)
-        {
-            count = 1;
-            foreach (HtmlNode node in nodes)
-            {
-                var item = CreateNodeLinks(_feedFilters, node, "right column", count++, _feedUrl, false);
-                if (item != null)
-                {
-                    _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                    list.Add(item);
-                }
-            }
-        }
+        GetNodeLinks("column 3", "div.drudgery-column-3 > div.drudgery-articles", "div.drudgery-link > a", list, false);
 
         return list;
     }
