@@ -4,6 +4,7 @@
     "Enabled": "true",
     "EnableThumbnail": "false",
     "Exportable": "false",
+    "RequiresJavascript": true,
     "Description": "Freedom of the Press",
     "Language": "en-US",
     "Url": "https://freedomofthepress.com/",
