@@ -39,77 +39,18 @@ internal class PoliticalSignalFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 
         // Main Headlines section
         // #featured_post_1 > h2 > a
-        var containers = _document.QuerySelectorAll("#home_page_featured");
-        string location = "main headlines";
-        int articleCount = GetArticlesBySection(list, containers, location, "li > h2 > a");
-        _log.Write(_logLevel, "{location}: {sectionCount} sections, {articleCount} articles", location, containers.Length, articleCount);
+        GetNodeLinks("headlines", "#home_page_featured", "li > h2 > a", list, false);
 
         // Column 1 section
-        containers = _document.QuerySelectorAll("#column_1");
-        location = "column 1";
-        articleCount = GetArticlesBySection(list, containers, location, "a");
-        _log.Write(_logLevel, "{location}: {sectionCount} sections, {articleCount} articles", location, containers.Length, articleCount);
+        // #main_feed_post_1 > h2 > span.iconbox > a
+        GetNodeLinks("column 1", "#column_1", "span.mf-headline > a", "h2 > span.iconbox > a", list, false);
 
-        // Column 2 section
-        containers = _document.QuerySelectorAll("#column_2");
-        location = "column 2";
-        articleCount = GetArticlesBySection(list, containers, location, "a");
-        _log.Write(_logLevel, "{location}: {sectionCount} sections, {articleCount} articles", location, containers.Length, articleCount);
+        //// Column 2 section
+        GetNodeLinks("column 2", "#column_2", "span.mf-headline > a", "h2 > span.iconbox > a", list, false);
 
-        // Column 3 section
-        containers = _document.QuerySelectorAll("#column_3");
-        location = "column 3";
-        articleCount = GetArticlesBySection(list, containers, location, "a");
-        _log.Write(_logLevel, "{location}: {sectionCount} sections, {articleCount} articles", location, containers.Length, articleCount);
+        //// Column 3 section
+        GetNodeLinks("column 3", "#column_3", "span.mf-headline > a", "h2 > span.iconbox > a", list, false);
 
         return list;
-    }
-
-    private int GetArticlesBySection(List<RssFeedItem> fullList, IHtmlCollection<IElement> containers, string location, string querySelector, bool isHeadline = false)
-    {
-        if (containers == null)
-        {
-            return 0;
-        }
-
-        var list = new List<RssFeedItem>();
-        int count = 1;
-
-        foreach (var c in containers)
-        {
-            var nodes = c.QuerySelectorAll(querySelector);
-            if (nodes?.Length > 0)
-            {
-                string text = "";
-
-                foreach (var node in nodes)
-                {
-                    if (String.Join(' ', node.ParentElement.ClassList).Contains("mf-headline"))
-                    {
-                        text = node.Text();
-                    }
-                    else
-                    {
-                        if (!string.IsNullOrEmpty(text))
-                        {
-                            node.TextContent = text;
-                            text = "";
-                        }
-
-                        var item = CreateNodeLinks(_feedFilters, node, location, count, _feedUrl, isHeadline);
-                        if (item != null)
-                        {
-                            _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                            list.Add(item);
-                        }
-
-                        count++;
-                    }
-                }
-            }
-        }
-
-        fullList.AddRange(list);
-        return list.Count;
     }
 }

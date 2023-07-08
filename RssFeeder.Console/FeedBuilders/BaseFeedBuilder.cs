@@ -147,6 +147,11 @@ class BaseFeedBuilder
 
     protected void GetNodeLinks(string sectionName, string containerSelector, string linkSelector, List<RssFeedItem> list, bool filterDuplicates, string stopHash = "")
     {
+        GetNodeLinks(sectionName, containerSelector, "", linkSelector, list, filterDuplicates, stopHash);
+    }
+
+    protected void GetNodeLinks(string sectionName, string containerSelector, string textSelector, string linkSelector, List<RssFeedItem> list, bool filterDuplicates, string stopHash = "")
+    {
         var containers = _document.QuerySelectorAll(containerSelector);
         if (containers is null)
         {
@@ -160,11 +165,11 @@ class BaseFeedBuilder
         _log.Information("SECTION {sectionName}: Selector {containerSelector} found {containerCount} containers", sectionName, containerSelector, containers.Length);
         foreach (var container in containers)
         {
-            GetNodeLinks(container, sectionName, linkSelector, list, isHeadline, filterDuplicates, ref count, stopHash);
+            GetNodeLinks(container, sectionName, textSelector, linkSelector, list, isHeadline, filterDuplicates, ref count, stopHash);
         }
     }
 
-    protected void GetNodeLinks(IElement container, string sectionName, string linkSelector, List<RssFeedItem> list, bool isHeadline, bool filterDuplicates, ref int count, string stopHash)
+    protected void GetNodeLinks(IElement container, string sectionName, string textSelector, string linkSelector, List<RssFeedItem> list, bool isHeadline, bool filterDuplicates, ref int count, string stopHash)
     {
         if (container is null)
         {
@@ -184,6 +189,13 @@ class BaseFeedBuilder
 
         foreach (var node in nodes.Take(_articleMaxCount))
         {
+            if (!string.IsNullOrEmpty(textSelector))
+            {
+                var textContainer = container.QuerySelector(node.ParentElement.ParentElement.GetSelector());
+                var textNode = textContainer.QuerySelector(textSelector);
+                node.TextContent = textNode.TextContent;
+            }
+
             var item = CreateNodeLinks(_feedFilters, node, sectionName, count, _feedUrl, isHeadline);
 
             if (item is null) continue;
