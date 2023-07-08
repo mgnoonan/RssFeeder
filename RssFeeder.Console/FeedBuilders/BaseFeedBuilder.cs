@@ -1,4 +1,4 @@
-﻿using AngleSharp.Html.Dom;
+using AngleSharp.Html.Dom;
 
 namespace RssFeeder.Console.FeedBuilders;
 
@@ -160,7 +160,6 @@ class BaseFeedBuilder
         }
 
         int count = 1;
-        bool isHeadline = sectionName.Contains("headline") || sectionName.Contains("above");
 
         _log.Information("SECTION {sectionName}: Selector {containerSelector} found {containerCount} containers", sectionName, containerSelector, containers.Length);
         foreach (var container in containers)
@@ -196,7 +195,7 @@ class BaseFeedBuilder
                 node.TextContent = textNode.TextContent;
             }
 
-            var item = CreateNodeLinks(_feedFilters, node, sectionName, count, _feedUrl, isHeadline);
+            var item = CreateNodeLinks(_feedFilters, node, sectionName, count, _feedUrl, sectionName.Contains("headline") || sectionName.Contains("above"));
 
             if (item is null) continue;
             if (item.FeedAttributes.UrlHash == stopHash) break;

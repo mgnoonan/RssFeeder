@@ -70,8 +70,8 @@ public class BaseArticleExporter
 
         // Extract the meta data from the Open Graph tags
         exportFeedItem.ArticleText = item.HtmlAttributes.GetValueOrDefault("ParserResult") ?? "";
-        exportFeedItem.Subtitle = item.OpenGraphAttributes.GetValueOrDefault("og:title") ?? null;
-        exportFeedItem.ImageUrl = item.OpenGraphAttributes.GetValueOrDefault("og:image") ?? null;
+        exportFeedItem.Subtitle = item.OpenGraphAttributes.GetValueOrDefault("og:title") ?? "";
+        exportFeedItem.ImageUrl = item.OpenGraphAttributes.GetValueOrDefault("og:image") ?? "";
         exportFeedItem.SiteName = item.OpenGraphAttributes.GetValueOrDefault("og:site_name")?.ToLower() ?? "";
         exportFeedItem.HostName = hostName;
 

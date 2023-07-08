@@ -9,13 +9,15 @@ public class RavenDbRepository : IRepository, IExportRepository
 
     public CrawlerConfig Config => _crawlerConfig;
 
+    private static readonly string[] ravenDbUrlArray = new[] { "http://127.0.0.1:8080/" };
+
     public RavenDbRepository(ILogger log)
     {
         // Setup RavenDb
         // docker run --rm -d -p 8080:8080 -p 38888:38888 ravendb/ravendb:latest
         IDocumentStore store = new DocumentStore
         {
-            Urls = new[] { "http://127.0.0.1:8080/" }
+            Urls = ravenDbUrlArray
             // Default database is not set
         }.Initialize();
 
