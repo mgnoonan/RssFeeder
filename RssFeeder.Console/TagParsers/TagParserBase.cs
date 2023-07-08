@@ -19,6 +19,8 @@ public partial class TagParserBase
     private const string _sizePattern2 = @"/ALTERNATES/s\d{3,4}";
     private const string _sizePattern3 = @"\/w:\d{3,4}\/p:";
     private const string _sizePattern4 = @"\/(mobile_thumb__|blog_image_\d{2}_)";
+    private static readonly string[] srcAttributeArray = new string[] { "src" };
+    private static readonly string[] extendedSrcAttributeArray = new string[] { "data-mm-src", "data-src", "data-lazy-src" };
 
     public TagParserBase(ILogger log, IWebUtils webUtils)
     {
@@ -167,8 +169,8 @@ public partial class TagParserBase
 
         foreach (var element in document.QuerySelectorAll("img"))
         {
-            (_, string attributeValue) = GetAttributeValue(element, new string[] { "src" });
-            (string dataAttribute, string dataAttributeValue) = GetAttributeValue(element, new string[] { "data-mm-src", "data-src", "data-lazy-src" });
+            (_, string attributeValue) = GetAttributeValue(element, srcAttributeArray);
+            (string dataAttribute, string dataAttributeValue) = GetAttributeValue(element, extendedSrcAttributeArray);
 
             RemoveAttribute(element, "srcset");
             RemoveAttribute(element, "data-srcset");
@@ -404,6 +406,20 @@ public partial class TagParserBase
         return false;
     }
 
+    protected string GetSelector(IElement element)
+    {
+        try
+        {
+            // Retrieving the selector will sometimes generate an exception
+            return element.GetSelector();
+        }
+        catch (DomException ex)
+        {
+            _log.Error(ex, "Error attempting to retrieve selector for {tagName}", element.TagName);
+            return "";
+        }
+    }
+
     protected void TryAddHeaderParagraph(StringBuilder description, IElement p)
     {
         dynamic x = new ExpandoObject();
@@ -413,7 +429,7 @@ public partial class TagParserBase
         x.tagname = p.TagName.ToLower();
         x.style = p.Attributes["style"];
         x.classlist = String.Join(' ', p.ClassList);
-        x.selector = p.GetSelector();
+        x.selector = GetSelector(p);
         x.parentclasslist = String.Join(' ', p.ParentElement.ClassList);
         x.parenttagname = p.ParentElement?.TagName.ToLower() ?? "";
         var input = new dynamic[] { x };

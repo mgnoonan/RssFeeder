@@ -1,5 +1,4 @@
 using System.Reflection;
-using Autofac.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Oakton.Help;
 using RssFeeder.Console;
@@ -78,7 +77,6 @@ builder.RegisterType<CheckRulesInput>().SingleInstance();
 builder.RegisterType<HelpInput>().SingleInstance();
 
 var container = builder.Build();
-var serviceProvider = new AutofacServiceProvider(container);
 
 // set up TLS defaults
 ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls13 | SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;

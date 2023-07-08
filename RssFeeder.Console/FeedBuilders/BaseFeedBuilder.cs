@@ -155,16 +155,15 @@ class BaseFeedBuilder
         }
 
         int count = 1;
-        bool isHeadline = sectionName.Contains("headline") || sectionName.Contains("above");
 
         _log.Information("SECTION {sectionName}: Selector {containerSelector} found {containerCount} containers", sectionName, containerSelector, containers.Length);
         foreach (var container in containers)
         {
-            GetNodeLinks(container, sectionName, linkSelector, list, isHeadline, filterDuplicates, ref count, stopHash);
+            GetNodeLinks(container, sectionName, linkSelector, list, filterDuplicates, ref count, stopHash);
         }
     }
 
-    protected void GetNodeLinks(IElement container, string sectionName, string linkSelector, List<RssFeedItem> list, bool isHeadline, bool filterDuplicates, ref int count, string stopHash)
+    protected void GetNodeLinks(IElement container, string sectionName, string linkSelector, List<RssFeedItem> list, bool filterDuplicates, ref int count, string stopHash)
     {
         if (container is null)
         {
@@ -184,7 +183,7 @@ class BaseFeedBuilder
 
         foreach (var node in nodes.Take(_articleMaxCount))
         {
-            var item = CreateNodeLinks(_feedFilters, node, sectionName, count, _feedUrl, isHeadline);
+            var item = CreateNodeLinks(_feedFilters, node, sectionName, count, _feedUrl, sectionName.Contains("headline") || sectionName.Contains("above"));
 
             if (item is null) continue;
             if (item.FeedAttributes.UrlHash == stopHash) break;

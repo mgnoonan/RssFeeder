@@ -1,6 +1,6 @@
 ﻿namespace RssFeeder.Console.Exporters;
 
-public class ExportTemplates
+public static class ExportTemplates
 {
     public const string MetaDataTemplate = @"
 <p>

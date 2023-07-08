@@ -71,7 +71,7 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
     {
         // Query the document by CSS selectors to get the article text
         var paragraphs = document.QuerySelectorAll(paragraphSelector);
-        if (!paragraphs.Any())
+        if (paragraphs.Length == 0)
         {
             _log.Warning("Paragraph selector '{paragraphSelector}' not found", paragraphSelector);
             return string.Empty;
@@ -92,7 +92,7 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
             }
         }
 
-        _log.Debug("Found {totalCount} paragraph selectors '{paragraphSelector}' in html body", paragraphs.Count(), paragraphSelector);
+        _log.Debug("Found {totalCount} paragraph selectors '{paragraphSelector}' in html body", paragraphs.Length, paragraphSelector);
         _log.Information("Parent with the most paragraph selectors is '{bodySelector}':{highCount}", bodySelector, highCount);
 
         if (highCount <= 1)
@@ -122,9 +122,9 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
             {
                 var key = parent.GetSelector();
 
-                if (dict.ContainsKey(key))
+                if (dict.TryGetValue(key, out int value))
                 {
-                    dict[key]++;
+                    dict[key] = ++value;
                 }
                 else
                 {

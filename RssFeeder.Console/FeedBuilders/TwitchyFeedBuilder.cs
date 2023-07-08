@@ -41,7 +41,6 @@ class TwitchyFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         GetNodeLinks("headlines", "section.pt-2", "div.wp-card-huge__title > a", list, false);
 
         // Above the fold section
-        //var container = document.QuerySelectorAll("section.container-xl")?.FirstOrDefault();
         GetNodeLinks("above the fold", "body>main>section:nth-child(2)", "div.wp-card__title > a", list, false);
 
         // Posts section
