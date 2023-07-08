@@ -164,11 +164,11 @@ class BaseFeedBuilder
         _log.Information("SECTION {sectionName}: Selector {containerSelector} found {containerCount} containers", sectionName, containerSelector, containers.Length);
         foreach (var container in containers)
         {
-            GetNodeLinks(container, sectionName, textSelector, linkSelector, list, isHeadline, filterDuplicates, ref count, stopHash);
+            GetNodeLinks(container, sectionName, textSelector, linkSelector, list, filterDuplicates, ref count, stopHash);
         }
     }
 
-    protected void GetNodeLinks(IElement container, string sectionName, string textSelector, string linkSelector, List<RssFeedItem> list, bool isHeadline, bool filterDuplicates, ref int count, string stopHash)
+    protected void GetNodeLinks(IElement container, string sectionName, string textSelector, string linkSelector, List<RssFeedItem> list, bool filterDuplicates, ref int count, string stopHash)
     {
         if (container is null)
         {
