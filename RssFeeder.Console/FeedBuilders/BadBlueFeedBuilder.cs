@@ -55,41 +55,14 @@ class BadBlueFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
     public List<RssFeedItem> GenerateRssFeedItemList(string html)
     {
         var list = new List<RssFeedItem>();
-        int count;
 
         // Main headlines section
-        var container = _document.QuerySelector("div.storyh1 > span");
-        var nodes = container.QuerySelectorAll("a");
-        if (nodes != null)
-        {
-            count = 1;
-            foreach (var node in nodes)
-            {
-                var item = CreateNodeLinks(_feedFilters, node, "main headlines", count++, _feedUrl, true);
-                if (item != null)
-                {
-                    _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                    list.Add(item);
-                }
-            }
-        }
+        // body > div.headln1 > div > span.tih1 > a
+        GetNodeLinks("headlines", "div.headln1", "span.tih1 > a", list, false);
 
         // Stories section
-        container = _document.QuerySelector("div.grid");
-        nodes = container.QuerySelectorAll("div.headlines > p > a");
-        if (nodes != null)
-        {
-            count = 1;
-            foreach (var node in nodes.Take(_articleMaxCount))
-            {
-                var item = CreateNodeLinks(_feedFilters, node, "all stories", count++, _feedUrl, false);
-                if (item != null)
-                {
-                    _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                    list.Add(item);
-                }
-            }
-        }
+        // body > div.grid > div:nth-child(1) > p:nth-child(1) > a
+        GetNodeLinks("stories", "div.grid > div.headlines", "p > a", list, false);
 
         return list;
     }
