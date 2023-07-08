@@ -37,24 +37,9 @@ internal class RevolverNewsFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
     public List<RssFeedItem> GenerateRssFeedItemList(string html)
     {
         var list = new List<RssFeedItem>();
-        int count;
 
         // Stories section
-        var container = _document.QuerySelector("div.list-articles");
-        var nodes = container.QuerySelectorAll("article.item > div.text > h2.title > a");
-        if (nodes != null)
-        {
-            count = 1;
-            foreach (var node in nodes.Take(_articleMaxCount))
-            {
-                var item = CreateNodeLinks(_feedFilters, node, "news feed", count++, _feedUrl, false);
-                if (item != null)
-                {
-                    _log.Write(_logLevel, "FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                    list.Add(item);
-                }
-            }
-        }
+        GetNodeLinks("stories", "div.list-articles", "article.item > div.text > h2.title > a", list, false);
 
         return list;
     }
