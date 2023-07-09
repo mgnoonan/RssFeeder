@@ -120,7 +120,7 @@ public class BaseArticleExporter
         if (item.SiteName == "rumble")
         {
             var text = item.HtmlAttributes.GetValueOrDefault("ParserResult") ?? "";
-            if (!text.StartsWith("<"))
+            if (!string.IsNullOrEmpty(text) && !text.StartsWith("<"))
             {
                 _log.Debug("EXPORT: Processing rumble.com ld+json metadata");
 
@@ -133,6 +133,11 @@ public class BaseArticleExporter
                 catch (Exception ex)
                 {
                     _log.Error(ex, "Error deserialzing json+ld values");
+                }
+
+                if (list is null)
+                {
+                    _log.Error("Error deserializing json+ld values for {urlHash}", exportFeedItem.UrlHash);
                 }
 
                 foreach (var value in list)
