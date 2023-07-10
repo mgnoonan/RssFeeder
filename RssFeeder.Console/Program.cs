@@ -1,5 +1,4 @@
 using System.Reflection;
-using Autofac.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Oakton.Help;
 using RssFeeder.Console;
@@ -54,6 +53,7 @@ builder.RegisterType<OffThePressFeedBuilder>().Named<IRssFeedBuilder>("off-the-p
 builder.RegisterType<RubinReportFeedBuilder>().Named<IRssFeedBuilder>("rubin-report");
 builder.RegisterType<WhatFingerFeedBuilder>().Named<IRssFeedBuilder>("whatfinger");
 builder.RegisterType<PoliticalSignalFeedBuilder>().Named<IRssFeedBuilder>("political-signal");
+builder.RegisterType<TwitchyFeedBuilder>().Named<IRssFeedBuilder>("twitchy");
 builder.RegisterType<GenericTagParser>().Named<ITagParser>("generic-parser");
 builder.RegisterType<AdaptiveTagParser>().Named<ITagParser>("adaptive-parser");
 builder.RegisterType<AllTagsParser>().Named<ITagParser>("alltags-parser");
@@ -77,10 +77,9 @@ builder.RegisterType<CheckRulesInput>().SingleInstance();
 builder.RegisterType<HelpInput>().SingleInstance();
 
 var container = builder.Build();
-var serviceProvider = new AutofacServiceProvider(container);
 
 // set up TLS defaults
-ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls13 | SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
 
 var executor = CommandExecutor.For(_ =>
 {

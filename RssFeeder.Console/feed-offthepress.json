@@ -2,7 +2,7 @@
   {
     "Title": "Off the Press",
     "Enabled": "true",
-    "EnableThumbnail": "true",
+    "EnableThumbnail": "false",
     "Exportable": "true",
     "Description": "Off the Press",
     "Language": "en-US",

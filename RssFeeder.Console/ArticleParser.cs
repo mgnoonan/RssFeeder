@@ -145,14 +145,14 @@ public class ArticleParser : IArticleParser
         }
     }
 
-    private string GetHostName(RssFeedItem item)
+    private static string GetHostName(RssFeedItem item)
     {
         return GetHostName(item.OpenGraphAttributes.GetValueOrDefault("og:url"),
                            item.HtmlAttributes.GetValueOrDefault("Url"),
                            item.FeedAttributes.Url);
     }
 
-    private string GetHostName(params string[] urls)
+    private static string GetHostName(params string[] urls)
     {
         foreach (string url in urls)
         {
@@ -167,7 +167,7 @@ public class ArticleParser : IArticleParser
         throw new UriFormatException("No valid Url was found");
     }
 
-    private string GetSiteName(RssFeedItem item)
+    private static string GetSiteName(RssFeedItem item)
     {
         string siteName = item.OpenGraphAttributes.GetValueOrDefault("og:site_name")?.ToLower() ?? item.HostName;
 
@@ -188,42 +188,53 @@ public class ArticleParser : IArticleParser
             string propertyValue = node.Attributes["property"]?.Value ??
                 node.Attributes["name"]?.Value ?? "";
 
-            if (propertyValue.StartsWith("og:"))
+            if (!propertyValue.StartsWith("og:"))
+                continue;
+
+            string contentValue = ParseOpenGraphAttributeValue(node, propertyValue);
+
+            if (attributes.ContainsKey(propertyValue))
             {
-                string contentValue = node.Attributes["content"]?.Value ?? "";
-
-                if (contentValue.Contains("&#x") || contentValue.Contains("&#32;"))
-                {
-                    contentValue = System.Web.HttpUtility.HtmlDecode(contentValue);
-                    _log.Information("Decoded {propertyValue} content value '{contentValue}'", propertyValue, contentValue);
-                }
-                else if (contentValue.Contains("%3A") && !Uri.TryCreate(contentValue, UriKind.Absolute, out Uri _))
-                {
-                    contentValue = System.Web.HttpUtility.UrlDecode(contentValue);
-                    _log.Information("Decoded {propertyValue} content value '{contentValue}'", propertyValue, contentValue);
-                }
-                _log.Debug("Found open graph attribute '{propertyValue}':'{contentValue}'", propertyValue, contentValue);
-
-                if (!attributes.ContainsKey(propertyValue))
-                {
-                    attributes.Add(propertyValue, contentValue);
-                }
-                else
-                {
-                    for (int i = 1; i < 100; i++)
-                    {
-                        string newPropertyValue = $"{propertyValue}:{i:0#}";
-                        if (!attributes.ContainsKey(newPropertyValue))
-                        {
-                            attributes.Add(newPropertyValue, contentValue);
-                            break;
-                        }
-                    }
-                }
+                propertyValue = GetPropertyValueIndex(attributes, propertyValue);
             }
+
+            attributes.Add(propertyValue, contentValue);
         }
 
         return attributes;
+    }
+
+    private static string GetPropertyValueIndex(Dictionary<string, string> attributes, string propertyValue)
+    {
+        for (int i = 1; i < 100; i++)
+        {
+            string newPropertyValue = $"{propertyValue}:{i:0#}";
+            if (!attributes.ContainsKey(newPropertyValue))
+            {
+                return newPropertyValue;
+            }
+        }
+
+        return "og:unknown";
+    }
+
+    private string ParseOpenGraphAttributeValue(HtmlNode node, string propertyValue)
+    {
+        string contentValue = node.Attributes["content"]?.Value ?? "";
+
+        if (contentValue.Contains("&#x") || contentValue.Contains("&#32;"))
+        {
+            contentValue = System.Web.HttpUtility.HtmlDecode(contentValue);
+            _log.Information("Decoded {propertyValue} content value '{contentValue}'", propertyValue, contentValue);
+        }
+        else if (contentValue.Contains("%3A") && !Uri.TryCreate(contentValue, UriKind.Absolute, out Uri _))
+        {
+            contentValue = System.Web.HttpUtility.UrlDecode(contentValue);
+            _log.Information("Decoded {propertyValue} content value '{contentValue}'", propertyValue, contentValue);
+        }
+
+        _log.Debug("Found open graph attribute '{propertyValue}':'{contentValue}'", propertyValue, contentValue);
+        return contentValue;
     }
 
     private Dictionary<string, string> ParseHtmlAttributes(HtmlDocument doc)

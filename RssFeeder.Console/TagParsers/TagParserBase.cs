@@ -1,15 +1,15 @@
 ﻿using System.Dynamic;
-using System.Linq;
 using System.Text.RegularExpressions;
 using AngleSharp.Html.Dom;
 using RulesEngine.Models;
 
 namespace RssFeeder.Console.TagParsers;
 
+// Disabling the ValueTask warning because there is no alternative and so far it works
+#pragma warning disable CA2012
 public partial class TagParserBase
 {
     private readonly ILogger _log;
-    private readonly IUnlaunchClient _client;
     private readonly IWebUtils _webUtils;
     private RulesEngine.RulesEngine _bre;
     protected string _sourceHtml;
@@ -17,13 +17,14 @@ public partial class TagParserBase
 
     private const string _sizePattern = @"-?(\d{1,4}x\d{1,4}|rawImage)";
     private const string _sizePattern2 = @"/ALTERNATES/s\d{3,4}";
-	private const string _sizePattern3 = @"\/w:\d{3,4}\/p:";
+    private const string _sizePattern3 = @"\/w:\d{3,4}\/p:";
     private const string _sizePattern4 = @"\/(mobile_thumb__|blog_image_\d{2}_)";
+    private static readonly string[] srcAttributeArray = new string[] { "src" };
+    private static readonly string[] extendedSrcAttributeArray = new string[] { "data-mm-src", "data-src", "data-lazy-src" };
 
-    public TagParserBase(ILogger log, IUnlaunchClient client, IWebUtils webUtils)
+    public TagParserBase(ILogger log, IWebUtils webUtils)
     {
         _log = log;
-        _client = client;
         _webUtils = webUtils;
     }
 
@@ -45,7 +46,7 @@ public partial class TagParserBase
     {
         var files = Directory.GetFiles(Directory.GetCurrentDirectory(), "ExcludeContentRules.json", SearchOption.AllDirectories);
         if (files == null || files.Length == 0)
-            throw new Exception("Rules not found.");
+            throw new InvalidOperationException("Rules not found.");
 
         var fileData = File.ReadAllText(files[0]);
         var workflow = JsonConvert.DeserializeObject<List<Workflow>>(fileData) ?? new List<Workflow>();
@@ -76,21 +77,18 @@ public partial class TagParserBase
         FixupRelativeUrls(document, baseUrl);
         FixupImageSrc(document, baseUrl);
         FixupIframeSrc(document, baseUrl);
+        FixupElementStyle(document, "figcaption", "font-size: 75%;font-style: italic;");
+        FixupElementStyle(document, "blockquote", "border-left: 7px solid lightgray; padding-left: 10px;");
         RemoveDuplicateImgTag(document);
         RemoveElementPadding(document);
 
         // Check for embedded videos
         if (_item.SiteName != "youtube" && _item.SiteName != "rumble")
         {
-            if (TryGetVideoIFrame(document, "rumble.com/embed", out IElement iframeElement))
-            {
-                ExtractIFrameMetadata(iframeElement);
-            }
-            else if (TryGetVideoIFrame(document, "bitchute.com/embed", out iframeElement))
-            {
-                ExtractIFrameMetadata(iframeElement);
-            }
-            else if (TryGetVideoIFrame(document, "youtube.com/embed", out iframeElement))
+            var elements = document.QuerySelectorAll("iframe");
+            _log.Debug("IFRAME tag count {count}", elements.Length);
+
+            if (elements.Length > 0 && TryGetVideoIFrame(elements, "(rumble|bitchute|youtube).com/embed", out IElement iframeElement))
             {
                 ExtractIFrameMetadata(iframeElement);
             }
@@ -105,6 +103,8 @@ public partial class TagParserBase
         string type = iframeElement.HasAttribute("type") ? iframeElement.GetAttribute("type") : "text/html";
         string width = iframeElement.HasAttribute("width") ? iframeElement.GetAttribute("width") : "640";
         string height = iframeElement.HasAttribute("height") ? iframeElement.GetAttribute("height") : "480";
+
+        if (type.Contains("lazy") && url.Contains("youtube.com")) type = "text/html";
         _log.Information("Embedded video {type} detected {url}", type, url);
 
         _item.OpenGraphAttributes.Add("og:x:video", url);
@@ -113,15 +113,6 @@ public partial class TagParserBase
         _item.OpenGraphAttributes.Add("og:x:video:height", height);
 
         iframeElement.Remove();
-    }
-
-    private string GetVariationByKey(string key, string identity)
-    {
-        // Find out which feature flag variation we are using to crawl articles
-        string variation = _client.GetVariation(key, identity);
-        _log.Information("Unlaunch {key} returned variation {variation} for identity {identity}", key, variation, identity);
-
-        return variation;
     }
 
     private void FixupRelativeUrls(IHtmlDocument document, string baseUrl)
@@ -178,39 +169,11 @@ public partial class TagParserBase
 
         foreach (var element in document.QuerySelectorAll("img"))
         {
-            string attributeValue = "";
-            string dataAttribute = "";
-            string dataAttributeValue = "";
+            (_, string attributeValue) = GetAttributeValue(element, srcAttributeArray);
+            (string dataAttribute, string dataAttributeValue) = GetAttributeValue(element, extendedSrcAttributeArray);
 
-            if (element.HasAttribute("src"))
-            {
-                attributeValue = element.GetAttribute("src");
-            }
-            if (element.HasAttribute("data-mm-src"))
-            {
-                dataAttribute = "data-mm-src";
-                dataAttributeValue = element.GetAttribute(dataAttribute);
-            }
-            if (element.HasAttribute("data-src"))
-            {
-                dataAttribute = "data-src";
-                dataAttributeValue = element.GetAttribute(dataAttribute);
-            }
-            if (element.HasAttribute("data-lazy-src"))
-            {
-                dataAttribute = "data-lazy-src";
-                dataAttributeValue = element.GetAttribute(dataAttribute);
-            }
-            if (element.HasAttribute("srcset"))
-            {
-                _log.Information("Removing srcset={attributeValue}", element.GetAttribute("srcset"));
-                element.RemoveAttribute("srcset");
-            }
-            if (element.HasAttribute("data-srcset"))
-            {
-                _log.Information("Removing data-srcset={attributeValue}", element.GetAttribute("data-srcset"));
-                element.RemoveAttribute("data-srcset");
-            }
+            RemoveAttribute(element, "srcset");
+            RemoveAttribute(element, "data-srcset");
 
             if (!string.IsNullOrEmpty(dataAttributeValue) && dataAttributeValue != attributeValue)
             {
@@ -218,6 +181,50 @@ public partial class TagParserBase
                 element.SetAttribute("src", dataAttributeValue);
                 element.RemoveAttribute(dataAttribute);
             }
+        }
+    }
+
+    private static (string, string) GetAttributeValue(IElement element, string[] names)
+    {
+        string value = "";
+        string _name = "";
+
+        foreach (string name in names)
+        {
+            if (element.HasAttribute(name))
+            {
+                value = element.GetAttribute(name);
+                _name = name;
+            }
+        }
+
+        return (_name, value);
+    }
+
+    private void RemoveAttribute(IElement element, string name)
+    {
+        if (element.HasAttribute(name))
+        {
+            _log.Information("Removing {name}={attributeValue}", name, element.GetAttribute(name));
+            element.RemoveAttribute(name);
+        }
+    }
+
+    private void FixupElementStyle(IHtmlDocument document, string selectors, string style)
+    {
+        foreach (var element in document.QuerySelectorAll(selectors))
+        {
+            if (element.HasAttribute("class"))
+            {
+                element.RemoveAttribute("class");
+            }
+            if (element.HasAttribute("style"))
+            {
+                element.RemoveAttribute("style");
+            }
+
+            _log.Debug("Setting up style {style} for {selectors}", selectors);
+            element.SetAttribute("style", style);
         }
     }
 
@@ -230,7 +237,7 @@ public partial class TagParserBase
 
             var sourceUri = element.HasAttribute(attributeName) ? element.GetAttribute(attributeName) : "";
 
-            if (!sourceUri.IsNullOrEmptyOrData() || sourceUri.StartsWith("#"))
+            if (!sourceUri.IsNullOrEmptyOrData())
             {
                 if (sourceUri.StartsWith("http") || sourceUri.StartsWith("mailto"))
                     continue;
@@ -242,39 +249,34 @@ public partial class TagParserBase
             else
             {
                 var alternateAttrName = string.Concat("data-", attributeName);
-                if (element.HasAttribute(alternateAttrName))
-                {
-                    sourceUri = element.GetAttribute(alternateAttrName);
-                    if (sourceUri.IndexOf(':') == -1)
-                        sourceUri = _webUtils.RepairUrl(sourceUri, baseUrl);
-                    _log.Information("Element {element} using {alternateAttrName} to set {attributeName}={sourceUri}", element.GetSelector(), alternateAttrName, attributeName, sourceUri);
-                    element.SetAttribute(attributeName, sourceUri);
+                if (ReplaceTagAttribute(element, attributeName, alternateAttrName, baseUrl))
                     continue;
-                }
 
                 alternateAttrName = string.Concat("data-runner-", attributeName);
-                if (element.HasAttribute(alternateAttrName))
-                {
-                    sourceUri = element.GetAttribute(alternateAttrName);
-                    if (sourceUri.IndexOf(':') == -1)
-                        sourceUri = _webUtils.RepairUrl(sourceUri, baseUrl);
-                    _log.Information("Element {element} using {alternateAttrName} to set {attributeName}={sourceUri}", element.GetSelector(), alternateAttrName, attributeName, sourceUri);
-                    element.SetAttribute(attributeName, sourceUri);
+                if (ReplaceTagAttribute(element, attributeName, alternateAttrName, baseUrl))
                     continue;
-                }
 
                 alternateAttrName = "data-img";
-                if (element.HasAttribute(alternateAttrName))
-                {
-                    sourceUri = element.GetAttribute(alternateAttrName);
-                    if (sourceUri.IndexOf(':') == -1)
-                        sourceUri = _webUtils.RepairUrl(sourceUri, baseUrl);
-                    _log.Information("Element {element} using {alternateAttrName} to set {attributeName}={sourceUri}", element.GetSelector(), alternateAttrName, attributeName, sourceUri);
-                    element.SetAttribute(attributeName, sourceUri);
-                    continue;
-                }
+                ReplaceTagAttribute(element, attributeName, alternateAttrName, baseUrl);
             }
         }
+    }
+
+    private bool ReplaceTagAttribute(IElement element, string attributeName, string alternateAttrName, string baseUrl)
+    {
+        if (element.HasAttribute(alternateAttrName))
+        {
+            string sourceUri = element.GetAttribute(alternateAttrName);
+            if (sourceUri.Contains(':'))
+                sourceUri = _webUtils.RepairUrl(sourceUri, baseUrl);
+
+            _log.Information("Element {element} using {alternateAttrName} to set {attributeName}={sourceUri}", element.GetSelector(), alternateAttrName, attributeName, sourceUri);
+            element.SetAttribute(attributeName, sourceUri);
+
+            return true;
+        }
+
+        return false;
     }
 
     private void RemoveDuplicateImgTag(IHtmlDocument document)
@@ -306,56 +308,66 @@ public partial class TagParserBase
 
     private bool ImageSourcesAreEqual(string value1, string value2)
     {
-        if (Regex.IsMatch(value1, _sizePattern) || Regex.IsMatch(value2, _sizePattern))
+        if (Regex.IsMatch(value1, _sizePattern, RegexOptions.None, TimeSpan.FromMilliseconds(250)) ||
+            Regex.IsMatch(value2, _sizePattern, RegexOptions.None, TimeSpan.FromMilliseconds(250)))
         {
-            value1 = Regex.Replace(value1, _sizePattern, "");
-            value2 = Regex.Replace(value2, _sizePattern, "");
+            value1 = Regex.Replace(value1, _sizePattern, "", RegexOptions.None, TimeSpan.FromMilliseconds(250));
+            value2 = Regex.Replace(value2, _sizePattern, "", RegexOptions.None, TimeSpan.FromMilliseconds(250));
         }
-        if (Regex.IsMatch(value1, _sizePattern2) || Regex.IsMatch(value2, _sizePattern2))
+        if (Regex.IsMatch(value1, _sizePattern2, RegexOptions.None, TimeSpan.FromMilliseconds(250)) ||
+            Regex.IsMatch(value2, _sizePattern2, RegexOptions.None, TimeSpan.FromMilliseconds(250)))
         {
-            value1 = Regex.Replace(value1, _sizePattern2, "");
-            value2 = Regex.Replace(value2, _sizePattern2, "");
+            value1 = Regex.Replace(value1, _sizePattern2, "", RegexOptions.None, TimeSpan.FromMilliseconds(250));
+            value2 = Regex.Replace(value2, _sizePattern2, "", RegexOptions.None, TimeSpan.FromMilliseconds(250));
         }
-        if (Regex.IsMatch(value1, _sizePattern3) || Regex.IsMatch(value2, _sizePattern3))
+        if (Regex.IsMatch(value1, _sizePattern3, RegexOptions.None, TimeSpan.FromMilliseconds(250)) ||
+            Regex.IsMatch(value2, _sizePattern3, RegexOptions.None, TimeSpan.FromMilliseconds(250)))
         {
-            value1 = Regex.Replace(value1, _sizePattern3, "");
-            value2 = Regex.Replace(value2, _sizePattern3, "");
+            value1 = Regex.Replace(value1, _sizePattern3, "", RegexOptions.None, TimeSpan.FromMilliseconds(250));
+            value2 = Regex.Replace(value2, _sizePattern3, "", RegexOptions.None, TimeSpan.FromMilliseconds(250));
         }
-        if (Regex.IsMatch(value1, _sizePattern4) || Regex.IsMatch(value2, _sizePattern4))
+        if (Regex.IsMatch(value1, _sizePattern4, RegexOptions.None, TimeSpan.FromMilliseconds(250)) ||
+            Regex.IsMatch(value2, _sizePattern4, RegexOptions.None, TimeSpan.FromMilliseconds(250)))
         {
-            value1 = Regex.Replace(value1, _sizePattern4, "");
-            value2 = Regex.Replace(value2, _sizePattern4, "");
+            value1 = Regex.Replace(value1, _sizePattern4, "", RegexOptions.None, TimeSpan.FromMilliseconds(250));
+            value2 = Regex.Replace(value2, _sizePattern4, "", RegexOptions.None, TimeSpan.FromMilliseconds(250));
         }
 
         // Decode any URL encoding sometimes used for CDN references
         value1 = value1.Contains("%3A") ? System.Web.HttpUtility.UrlDecode(value1) : value1;
         value2 = value2.Contains("%3A") ? System.Web.HttpUtility.UrlDecode(value2) : value2;
 
-        // Strip off the query string unless it contains a url parameter
-        value1 = value1.Contains("?") ? (value1.Contains("url=") ? value1.Substring(value1.IndexOf("url=") + 4) : value1.Substring(0, value1.IndexOf('?'))) : value1;
-        value2 = value2.Contains("?") ? (value2.Contains("url=") ? value2.Substring(value2.IndexOf("url=") + 4) : value2.Substring(0, value2.IndexOf('?'))) : value2;
+        // Move query string embedded url
+        value1 = value1.Contains("url=") ? value1[(value1.IndexOf("url=") + 4)..] : value1;
+        value2 = value2.Contains("url=") ? value2[(value2.IndexOf("url=") + 4)..] : value2;
+
+        // Strip off the query string
+        value1 = value1.Contains('?') ? value1[..value1.IndexOf('?')] : value1;
+        value2 = value2.Contains('?') ? value2[..value2.IndexOf('?')] : value2;
 
         // Replace webp with jpg
-		value1 = value1.EndsWith(".webp") ? value1.Replace(".webp", ".jpg") : value1;
-		value2 = value2.EndsWith(".webp") ? value2.Replace(".webp", ".jpg") : value2;
+        value1 = value1.EndsWith(".webp") ? value1.Replace(".webp", ".jpg") : value1;
+        value2 = value2.EndsWith(".webp") ? value2.Replace(".webp", ".jpg") : value2;
 
         // WSJ has a special route for social media thumbnails
-        value1 = value1.EndsWith("/social") ? value1.Substring(0, value1.IndexOf("/social")) : value1;
-        value2 = value2.EndsWith("/social") ? value2.Substring(0, value2.IndexOf("/social")) : value2;
+        value1 = value1.EndsWith("/social") ? value1[..value1.IndexOf("/social")] : value1;
+        value2 = value2.EndsWith("/social") ? value2[..value2.IndexOf("/social")] : value2;
 
         // Yahoo CDN route handling
-        value1 = value1.Contains("--/") ? value1.Substring(value1.LastIndexOf("--/") + 3) : value1;
-        value2 = value2.Contains("--/") ? value2.Substring(value2.LastIndexOf("--/") + 3) : value2;
+        value1 = value1.Contains("--/") ? value1[(value1.LastIndexOf("--/") + 3)..] : value1;
+        value2 = value2.Contains("--/") ? value2[(value2.LastIndexOf("--/") + 3)..] : value2;
 
         // Substack CDN route handling
-        value1 = value1.Contains("/https") ? value1.Substring(value1.LastIndexOf("/https") + 1) : value1;
-        value2 = value2.Contains("/https") ? value2.Substring(value2.LastIndexOf("/https") + 1) : value2;
+        value1 = value1.Contains("/https") ? value1[(value1.LastIndexOf("/https") + 1)..] : value1;
+        value2 = value2.Contains("/https") ? value2[(value2.LastIndexOf("/https") + 1)..] : value2;
 
-		if (value1.Contains(".jpg") && (value1.Split('/', StringSplitOptions.RemoveEmptyEntries).Last() == value2.Split('/', StringSplitOptions.RemoveEmptyEntries).Last()))
-		{
-			return true;
-		}		
+        if (value1.Contains(".jpg") && (value1.Split('/', StringSplitOptions.RemoveEmptyEntries).Last() == value2.Split('/', StringSplitOptions.RemoveEmptyEntries).Last()))
+        {
+            return true;
+        }
 
+        _log.Debug("value1 = {value}", value1);
+        _log.Debug("value2 = {value}", value2);
         return value1 == value2;
     }
 
@@ -376,13 +388,14 @@ public partial class TagParserBase
 
     public virtual void PreParse() { }
 
-    private bool TryGetVideoIFrame(IHtmlDocument document, string pattern, out IElement iframe)
+    private bool TryGetVideoIFrame(IHtmlCollection<IElement> elements, string pattern, out IElement iframe)
     {
-        var elements = document.QuerySelectorAll("iframe");
-
         foreach (var element in elements)
         {
-            if (element.HasAttribute("src") && element.GetAttribute("src").Contains(pattern))
+            var src = element.HasAttribute("src") ? element.GetAttribute("src").ToLower() : "";
+            _log.Debug("Checking iframe src={src} for {pattern}", src, pattern);
+
+            if (Regex.IsMatch(src, pattern, RegexOptions.None, TimeSpan.FromMilliseconds(250)))
             {
                 iframe = element;
                 return true;
@@ -391,6 +404,20 @@ public partial class TagParserBase
 
         iframe = null;
         return false;
+    }
+
+    protected string GetSelector(IElement element)
+    {
+        try
+        {
+            // Retrieving the selector will sometimes generate an exception
+            return element.GetSelector();
+        }
+        catch (DomException ex)
+        {
+            _log.Error(ex, "Error attempting to retrieve selector for {tagName}", element.TagName);
+            return "";
+        }
     }
 
     protected void TryAddHeaderParagraph(StringBuilder description, IElement p)
@@ -402,7 +429,7 @@ public partial class TagParserBase
         x.tagname = p.TagName.ToLower();
         x.style = p.Attributes["style"];
         x.classlist = String.Join(' ', p.ClassList);
-        x.selector = p.GetSelector();
+        x.selector = GetSelector(p);
         x.parentclasslist = String.Join(' ', p.ParentElement.ClassList);
         x.parenttagname = p.ParentElement?.TagName.ToLower() ?? "";
         var input = new dynamic[] { x };
@@ -470,6 +497,7 @@ public partial class TagParserBase
         x.selector = p.GetSelector();
         x.parentclasslist = String.Join(' ', p.ParentElement.ClassList);
         x.parenttagname = p.ParentElement?.TagName.ToLower() ?? "";
+        x.containsiframe = p.InnerHtml.Contains("iframe");
         var input = new dynamic[] { x };
 
         _log.Debug("Input = {@input}", input);
@@ -519,9 +547,9 @@ public partial class TagParserBase
         }
 
         // Add blockquote with some padding and a left side border
-        description.AppendLine($"<blockquote style=\"border-left: 7px solid lightgray; padding-left: 10px;\">{p.InnerHtml}</blockquote>");
+        description.AppendLine($"<blockquote>{p.InnerHtml}</blockquote>");
     }
-    
+
     protected void TryAddAnchor(StringBuilder description, IElement p)
     {
         dynamic x = new ExpandoObject();

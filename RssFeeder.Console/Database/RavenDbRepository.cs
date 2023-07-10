@@ -2,11 +2,14 @@ namespace RssFeeder.Console.Database;
 
 public class RavenDbRepository : IRepository, IExportRepository
 {
+    private const string _databaseName = "site-parsers";
     readonly ILogger _log;
     readonly IDocumentStore _store;
     readonly CrawlerConfig _crawlerConfig;
 
     public CrawlerConfig Config => _crawlerConfig;
+
+    private static readonly string[] ravenDbUrlArray = new[] { "http://127.0.0.1:8080/" };
 
     public RavenDbRepository(ILogger log)
     {
@@ -14,21 +17,27 @@ public class RavenDbRepository : IRepository, IExportRepository
         // docker run --rm -d -p 8080:8080 -p 38888:38888 ravendb/ravendb:latest
         IDocumentStore store = new DocumentStore
         {
-            Urls = new[] { "http://127.0.0.1:8080/" }
+            Urls = ravenDbUrlArray
             // Default database is not set
         }.Initialize();
 
-        var crawlerConfig = new CrawlerConfig();
-        using (IDocumentSession session = store.OpenSession(database: "site-parsers"))
-        {
-            crawlerConfig = session.Advanced.RawQuery<CrawlerConfig>("from CrawlerConfig").First();
-        }
-
-        _crawlerConfig = crawlerConfig;
         _store = store;
         _log = log;
 
-        _log.Debug("Crawler config: {@config}", crawlerConfig);
+        EnsureDatabaseExists(_databaseName, true);
+
+#if DEBUG
+        // Read the options in JSON format
+        using StreamReader sr = new StreamReader("crawlerConfig.json");
+        _crawlerConfig = JsonConvert.DeserializeObject<CrawlerConfig>(sr.ReadToEnd());
+#else
+        using (IDocumentSession session = store.OpenSession(database: _databaseName))
+        {
+            _crawlerConfig = session.Advanced.RawQuery<CrawlerConfig>("from CrawlerConfig").First();
+        }
+#endif
+
+        _log.Debug("Crawler config: {@config}", _crawlerConfig);
     }
 
     public void EnsureDatabaseExists(string database = null, bool createDatabaseIfNotExists = true)
@@ -44,11 +53,12 @@ public class RavenDbRepository : IRepository, IExportRepository
         }
         catch (DatabaseDoesNotExistException)
         {
-            if (createDatabaseIfNotExists == false)
+            if (!createDatabaseIfNotExists)
                 throw;
 
             try
             {
+                _log.Information("Creating missing database {databaseName}", database);
                 _store.Maintenance.Server.Send(new CreateDatabaseOperation(new DatabaseRecord(database)));
             }
             catch (ConcurrencyException)
@@ -107,7 +117,7 @@ public class RavenDbRepository : IRepository, IExportRepository
         using (IDocumentSession session = _store.OpenSession(database: collectionName))
         {
             var query = session.Advanced.RawQuery<T>(sqlQueryText);
-            foreach (var p in parameters ?? new Dictionary<string, object>())
+            foreach (var p in parameters)
             {
                 query.AddParameter(p.Key, p.Value);
             }
@@ -117,7 +127,7 @@ public class RavenDbRepository : IRepository, IExportRepository
         }
     }
 
-    public List<T> GetDocuments<T>(string collectionName, string sqlQueryText, Dictionary<string, object> parameters = default, bool addWait = false)
+    public List<T> GetDocuments<T>(string collectionName, string sqlQueryText, Dictionary<string, object> parameters, bool addWait)
     {
         _log.Debug("Query: {sqlQueryText} Parameters: {@parameters}", sqlQueryText, parameters);
 
@@ -144,7 +154,7 @@ public class RavenDbRepository : IRepository, IExportRepository
         _log.Debug("Query: Retrieving all documents for type {type}", typeof(T).Name);
         string sqlQueryText = "from SiteArticleDefinition";
 
-        return GetDocuments<T>(collectionName, sqlQueryText);
+        return GetDocuments<T>(collectionName, sqlQueryText, null, false);
     }
 
     public List<T> GetExportDocuments<T>(string collectionName, string feedId, Guid runID)
@@ -175,6 +185,6 @@ public class RavenDbRepository : IRepository, IExportRepository
             { "ts", DateTime.UtcNow.AddDays(-maximumAgeInDays) }
         };
 
-        return GetDocuments<T>(collectionName, sqlQueryText, parameters);
+        return GetDocuments<T>(collectionName, sqlQueryText, parameters, false);
     }
 }

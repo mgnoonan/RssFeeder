@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
 
+namespace RssFeeder.Mvc;
+
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public class SerilogMvcLoggingAttribute : ActionFilterAttribute
 {

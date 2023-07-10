@@ -2,149 +2,58 @@
 
 class DrudgeReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    public DrudgeReportFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities) : base(log, webUtilities, utilities)
-    { }
+    public DrudgeReportFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(log, webUtilities, utilities, unlaunchClient)
+    {
+    }
 
     public List<RssFeedItem> GenerateRssFeedItemList(RssFeed feed, string html)
     {
+        // Find out which feature flag variation we are using to log activity
+        string key = "feed-log-level";
+        string identity = feed.CollectionName;
+        string variation = _unlaunchClient.GetVariation(key, identity);
+        _log.Information("Unlaunch {key} returned variation {variation} for identity {identity}", key, variation, identity);
+
+        _logLevel = variation switch
+        {
+            "debug" => Serilog.Events.LogEventLevel.Debug,
+            "information" => Serilog.Events.LogEventLevel.Information,
+            _ => throw new ArgumentException("Unexpected variation")
+        };
+
         return GenerateRssFeedItemList(feed.CollectionName, feed.Url, feed.Filters, html);
     }
 
     public List<RssFeedItem> GenerateRssFeedItemList(string feedCollectionName, string feedUrl, List<string> feedFilters, string html)
     {
-        var items = GenerateRssFeedItemList(html, feedFilters ?? new List<string>(), feedUrl);
+        Initialize(feedUrl, feedFilters, html);
+        var items = GenerateRssFeedItemList();
         PostProcessing(feedCollectionName, feedUrl, items);
 
         return items;
     }
 
-    public List<RssFeedItem> GenerateRssFeedItemList(string html, List<string> filters, string feedUrl)
+    public List<RssFeedItem> GenerateRssFeedItemList()
     {
         var list = new List<RssFeedItem>();
 
-        var doc = new HtmlDocument();
-        doc.Load(new StringReader(html));
-
         // Centered main headline(s)
-
-        var nodes = doc.DocumentNode.SelectNodes("//center");
-        int count = 1;
-        foreach (HtmlNode link in nodes)
-        {
-            if (!link.InnerHtml.Contains("MAIN HEADLINE"))
-            {
-                continue;
-            }
-
-            var nodeList = link.Descendants("a").ToList();
-            foreach (var node in nodeList)
-            {
-                var item = CreateNodeLinks(filters, node, "main headlines", count++, feedUrl, true);
-                if (item != null)
-                {
-                    _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                    list.Add(item);
-                }
-            }
-
-            // Get out of the loop, there are no more headlines
-            break;
-        }
-
+        // body > tt > b > tt > b > center
+        GetNodeLinks("headlines", "body > tt > b > tt > b > center", "a", list, false);
 
         // Above the fold top headlines
-
-        nodes = doc.DocumentNode.SelectNodes("/html/body/tt/b/tt/b/a[@href]");
-        if (nodes != null)
-        {
-            count = 1;
-            foreach (HtmlNode node in nodes)
-            {
-                string title = WebUtility.HtmlDecode(node.InnerText.Trim());
-
-                var item = CreateNodeLinks(filters, node, "above the fold", count++, feedUrl, true);
-                if (item != null)
-                {
-                    _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                    list.Add(item);
-                }
-            }
-        }
-
+        // body > tt > b > tt > b > a:nth-child(5)
+        GetNodeLinks("above the fold", "body > tt > b > tt", "b > a", list, false);
 
         // Left column articles
-
-        nodes = doc.DocumentNode.SelectNodes("//table/tr/td[1]/tt/b/a[@href]");
-        if (nodes != null)
-        {
-            count = 1;
-            foreach (HtmlNode node in nodes)
-            {
-                string title = WebUtility.HtmlDecode(node.InnerText.Trim());
-
-                if (title == "FRONT PAGES UK" || title == "BOXOFFICE")
-                {
-                    break;
-                }
-
-                var item = CreateNodeLinks(filters, node, "left column", count++, feedUrl, false);
-                if (item != null)
-                {
-                    _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                    list.Add(item);
-                }
-            }
-        }
-
+        // body > font > font > center > table > tbody > tr > td:nth-child(1) > tt > b > a:nth-child(1)
+        GetNodeLinks("column 1", "table > tbody > tr > td:nth-child(1) > tt", "b > a", list, false, "1dc7f1c814187b538e82d9d56fd4f66d");
 
         // Middle column articles
-
-        nodes = doc.DocumentNode.SelectNodes("//table/tr/td[3]/tt/b/a[@href]");
-        if (nodes != null)
-        {
-            count = 1;
-            foreach (HtmlNode node in nodes)
-            {
-                string title = WebUtility.HtmlDecode(node.InnerText.Trim());
-
-                if (title == "WORLD SICK MAP..." || title == "3 AM GIRLS")
-                {
-                    break;
-                }
-
-                var item = CreateNodeLinks(filters, node, "middle column", count++, feedUrl, false);
-                if (item != null)
-                {
-                    _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                    list.Add(item);
-                }
-            }
-        }
-
+        GetNodeLinks("column 2", "table > tbody > tr > td:nth-child(3) > tt", "b > a", list, false, "4099925931f0e142ca280f22343236e3");
 
         // Right column articles
-
-        nodes = doc.DocumentNode.SelectNodes("//table/tr/td[5]/tt/b/a[@href]");
-        if (nodes != null)
-        {
-            count = 1;
-            foreach (HtmlNode node in nodes)
-            {
-                string title = WebUtility.HtmlDecode(node.InnerText.Trim());
-
-                if (title == "UPDATE:  DRUDGE APP IPHONE, IPAD..." || title == "ANDROID...")
-                {
-                    break;
-                }
-
-                var item = CreateNodeLinks(filters, node, "right column", count++, feedUrl, false);
-                if (item != null)
-                {
-                    _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                    list.Add(item);
-                }
-            }
-        }
+        GetNodeLinks("column 3", "table > tbody > tr > td:nth-child(5) > tt", "b > a", list, false, "cb1d91b100c1732694cf8a55e39ad2d2");
 
         return list;
     }

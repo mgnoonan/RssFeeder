@@ -1,0 +1,16 @@
+﻿[
+  {
+    "Title": "Rantingly",
+    "Enabled": "true",
+    "EnableThumbnail": "false",
+    "Exportable": "false",
+    "Description": "Rantingly",
+    "Language": "en-US",
+    "Url": "https://rantingly.com/",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.RantinglyFeedBuilder",
+    "CollectionName": "rantingly",
+    "FileRetentionDays": 3,
+    "DatabaseRetentionDays": 180,
+    "Filters": []
+  }
+]

@@ -2,108 +2,56 @@
 
 internal class FreedomPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    public FreedomPressFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities) : base(logger, webUtilities, utilities)
+    public FreedomPressFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(logger, webUtilities, utilities, unlaunchClient)
     {
     }
 
     public List<RssFeedItem> GenerateRssFeedItemList(RssFeed feed, string html)
     {
+        // Find out which feature flag variation we are using to log activity
+        string key = "feed-log-level";
+        string identity = feed.CollectionName;
+        string variation = _unlaunchClient.GetVariation(key, identity);
+        _log.Information("Unlaunch {key} returned variation {variation} for identity {identity}", key, variation, identity);
+
+        _logLevel = variation switch
+        {
+            "debug" => Serilog.Events.LogEventLevel.Debug,
+            "information" => Serilog.Events.LogEventLevel.Information,
+            _ => throw new ArgumentException("Unexpected variation")
+        };
+
         return GenerateRssFeedItemList(feed.CollectionName, feed.Url, feed.Filters, html);
     }
 
     public List<RssFeedItem> GenerateRssFeedItemList(string feedCollectionName, string feedUrl, List<string> feedFilters, string html)
     {
-        var items = GenerateRssFeedItemList(html, feedFilters ?? new List<string>(), feedUrl);
+        Initialize(feedUrl, feedFilters, html);
+        var items = GenerateRssFeedItemList();
         PostProcessing(feedCollectionName, feedUrl, items);
 
         return items;
     }
 
-    public List<RssFeedItem> GenerateRssFeedItemList(string html, List<string> filters, string feedUrl)
+    public List<RssFeedItem> GenerateRssFeedItemList()
     {
         var list = new List<RssFeedItem>();
-        int count;
 
-        // Load and parse the html from the source file
-        var parser = new HtmlParser();
-        var document = parser.ParseDocument(html);
+        // Main headlines section
+        // #fg-widget-65cf26586c253334929d032bf > div.uw-sc-mask > div.uw-sc-cardcont > div.uw-card2.uw-headline > a
+        GetNodeLinks("headlines", "#fg-widget-65cf26586c253334929d032bf > div.uw-sc-mask > div.uw-sc-cardcont", "div > a", list, false);
 
-        // Above the fold
-        var containers = document.QuerySelectorAll("#home-section > div.default");
-        if (containers != null)
-        {
-            foreach (var element in containers.Take(3))
-            {
-                var links = element.QuerySelectorAll("a");
-                if (links != null)
-                {
-                    count = 1;
-                    foreach (var link in links)
-                    {
-                        string title = WebUtility.HtmlDecode(link.Text().Trim());
+        // Column 1 section
+        // #fg-widget-fd07a65186f463b9a3ff917c1 > div.uw-sc-mask > div.uw-sc-cardcont > div.uw-card2.uw-headline > a
+        GetNodeLinks("column 1", "#fg-widget-fd07a65186f463b9a3ff917c1 > div.uw-sc-mask > div.uw-sc-cardcont", "div > a", list, false);
 
-                        var item = CreateNodeLinks(filters, link, "above the fold", count++, feedUrl, true);
-                        if (item != null)
-                        {
-                            _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                            list.Add(item);
-                        }
-                    }
-                }
-            }
-        }
+        // Column 2 section
+        // #fg-widget-f9e047dd6b8da3cdc21edad8d > div.uw-sc-mask > div.uw-sc-cardcont > div.uw-card2.uw-headline > a
+        GetNodeLinks("column 2", "#fg-widget-f9e047dd6b8da3cdc21edad8d > div.uw-sc-mask > div.uw-sc-cardcont", "div > a", list, false);
 
-        // Headlines links section
-        var container = document.QuerySelector("#home-section > ul");
-        if (containers != null)
-        {
-            var nodes = container.QuerySelectorAll("a");
-            if (nodes != null)
-            {
-                count = 1;
-                foreach (var node in nodes)
-                {
-                    string title = WebUtility.HtmlDecode(node.Text().Trim());
-
-                    var item = CreateNodeLinks(filters, node, "headlines", count++, feedUrl, true);
-                    if (item != null)
-                    {
-                        _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                        list.Add(item);
-                    }
-                }
-            }
-        }
-
-        // Stories section
-        containers = document.QuerySelectorAll("#home-section > div.columns");
-        if (containers != null)
-        {
-            string[] sectionName = new string[] { "first", "blend", "previous banner", "second" };
-            int sectionCounter = 0;
-
-            foreach (var element in containers.Take(2))
-            {
-                var nodes = element.QuerySelectorAll("a");
-                if (nodes != null)
-                {
-                    count = 1;
-                    foreach (var node in nodes)
-                    {
-                        string title = WebUtility.HtmlDecode(node.Text().Trim());
-
-                        var item = CreateNodeLinks(filters, node, $"{sectionName[sectionCounter]} section", count++, feedUrl, false);
-                        if (item != null)
-                        {
-                            _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                            list.Add(item);
-                        }
-                    }
-                }
-
-                sectionCounter++;
-            }
-        }
+        // Column 3 section
+        // #fg-widget-a52b0845e1da669a0aa917645 > div.uw-sc-mask > div.uw-sc-cardcont > div.uw-card2.uw-headline > a
+        GetNodeLinks("column 3", "#fg-widget-a52b0845e1da669a0aa917645 > div.uw-sc-mask > div.uw-sc-cardcont", "div > a", list, false);
 
         return list;
     }

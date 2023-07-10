@@ -162,7 +162,7 @@ public class WebUtils : IWebUtils
         try
         {
             _log.Debug("Loading URL '{urlHash}':'{url}'", urlHash, url);
-            (HttpStatusCode status, string content, Uri trueUri, string contentType) = _crawler.GetString(url);
+            (_, string content, Uri trueUri, _) = _crawler.GetString(url);
 
             if (trueUri is null)
             {
@@ -318,15 +318,15 @@ public class WebUtils : IWebUtils
     /// <returns>
     /// The sanitized and repaired URL, although not all repairs will be successful
     /// </returns>
-    public string RepairUrl(string relativeUrl, string defaultBaseUrl)
+    public string RepairUrl(string pathAndQuery, string defaultBaseUrl)
     {
         if (!Uri.TryCreate(defaultBaseUrl, UriKind.Absolute, out Uri baseUri))
         {
             _log.Warning("Invalid base url {baseUrl}, aborting relative Url fixup", defaultBaseUrl);
-            return relativeUrl;
+            return pathAndQuery;
         }
 
-        return RepairUrl(relativeUrl, baseUri);
+        return RepairUrl(pathAndQuery, baseUri);
     }
 
     public string RepairUrl(string relativeUrl, Uri baseUri)

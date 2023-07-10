@@ -1,17 +1,14 @@
 ﻿using System.Diagnostics;
-using Microsoft.Extensions.Logging;
 
 namespace RssFeeder.Mvc.Controllers;
 
 public class HomeController : Controller
 {
-    private readonly ILogger<HomeController> _log;
     private readonly string _sourceFile = "feeds.json";
     private readonly List<FeedModel> _feeds;
 
-    public HomeController(ILogger<HomeController> logger)
+    public HomeController()
     {
-        _log = logger;
         _feeds = System.Text.Json.JsonSerializer.Deserialize<List<FeedModel>>(
             System.IO.File.ReadAllText(_sourceFile),
             new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });

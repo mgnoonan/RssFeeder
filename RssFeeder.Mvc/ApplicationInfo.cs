@@ -1,13 +1,12 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Reflection;
+﻿using System.IO;
 using Microsoft.Extensions.Hosting;
+
+namespace RssFeeder.Mvc;
 
 public class AppVersionInfo
 {
     private static readonly string _buildFileName = ".buildinfo.json";
-    private string _buildFilePath;
+    private readonly string _buildFilePath;
     private string _buildNumber;
     private string _gitHash;
     private string _gitShortHash;

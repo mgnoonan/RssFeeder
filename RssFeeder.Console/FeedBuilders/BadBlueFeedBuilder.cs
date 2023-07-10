@@ -2,12 +2,8 @@ namespace RssFeeder.Console.FeedBuilders;
 
 class BadBlueFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    private readonly IUnlaunchClient _client;
-    private int _articleMaxCount;
-
-    public BadBlueFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient client) : base(log, webUtilities, utilities)
+    public BadBlueFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(log, webUtilities, utilities, unlaunchClient)
     {
-        _client = client;
     }
 
     public List<RssFeedItem> GenerateRssFeedItemList(RssFeed feed, string html)
@@ -15,7 +11,7 @@ class BadBlueFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         // Find out which feature flag variation we are using to crawl articles
         string key = "article-count-limit";
         string identity = feed.CollectionName;
-        string variation = _client.GetVariation(key, identity, new List<UnlaunchAttribute>
+        string variation = _unlaunchClient.GetVariation(key, identity, new List<UnlaunchAttribute>
         {
             UnlaunchAttribute.NewBoolean("weekend", DateTime.Now.DayOfWeek == DayOfWeek.Saturday || DateTime.Now.DayOfWeek == DayOfWeek.Sunday)
         });
@@ -31,63 +27,42 @@ class BadBlueFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         };
         _log.Information("Processing a maximum of {articleMaxCount} articles", _articleMaxCount);
 
+        // Find out which feature flag variation we are using to log activity
+        key = "feed-log-level";
+        identity = feed.CollectionName;
+        variation = _unlaunchClient.GetVariation(key, identity);
+        _log.Information("Unlaunch {key} returned variation {variation} for identity {identity}", key, variation, identity);
+
+        _logLevel = variation switch
+        {
+            "debug" => Serilog.Events.LogEventLevel.Debug,
+            "information" => Serilog.Events.LogEventLevel.Information,
+            _ => throw new ArgumentException("Unexpected variation")
+        };
+
         return GenerateRssFeedItemList(feed.CollectionName, feed.Url, feed.Filters, html);
     }
 
     public List<RssFeedItem> GenerateRssFeedItemList(string feedCollectionName, string feedUrl, List<string> feedFilters, string html)
     {
-        var items = GenerateRssFeedItemList(html, feedFilters ?? new List<string>(), feedUrl);
+        Initialize(feedUrl, feedFilters, html);
+        var items = GenerateRssFeedItemList();
         PostProcessing(feedCollectionName, feedUrl, items);
 
         return items;
     }
 
-    public List<RssFeedItem> GenerateRssFeedItemList(string html, List<string> filters, string feedUrl)
+    public List<RssFeedItem> GenerateRssFeedItemList()
     {
         var list = new List<RssFeedItem>();
-        int count;
-
-        // Load and parse the html from the source file
-        var parser = new HtmlParser();
-        var document = parser.ParseDocument(html);
 
         // Main headlines section
-        var container = document.QuerySelector("div.storyh1 > span");
-        var nodes = container.QuerySelectorAll("a");
-        if (nodes != null)
-        {
-            count = 1;
-            foreach (var node in nodes)
-            {
-                string title = WebUtility.HtmlDecode(node.Text().Trim());
-
-                var item = CreateNodeLinks(filters, node, "main headlines", count++, feedUrl, true);
-                if (item != null)
-                {
-                    _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                    list.Add(item);
-                }
-            }
-        }
+        // body > div.headln1 > div > span.tih1 > a
+        GetNodeLinks("headlines", "div.headln1", "span.tih1 > a", list, false);
 
         // Stories section
-        container = document.QuerySelector("div.grid");
-        nodes = container.QuerySelectorAll("div.headlines > p > a");
-        if (nodes != null)
-        {
-            count = 1;
-            foreach (var node in nodes.Take(_articleMaxCount))
-            {
-                string title = WebUtility.HtmlDecode(node.Text().Trim());
-
-                var item = CreateNodeLinks(filters, node, "all stories", count++, feedUrl, false);
-                if (item != null)
-                {
-                    _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                    list.Add(item);
-                }
-            }
-        }
+        // body > div.grid > div:nth-child(1) > p:nth-child(1) > a
+        GetNodeLinks("stories", "div.grid > div.headlines", "p > a", list, false);
 
         return list;
     }

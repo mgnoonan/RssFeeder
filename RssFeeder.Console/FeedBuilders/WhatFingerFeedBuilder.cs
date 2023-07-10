@@ -2,12 +2,8 @@
 
 internal class WhatFingerFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    private readonly IUnlaunchClient _client;
-    private int _articleMaxCount;
-
-    public WhatFingerFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient client) : base(log, webUtilities, utilities)
+    public WhatFingerFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(log, webUtilities, utilities, unlaunchClient)
     {
-        _client = client;
     }
 
     public List<RssFeedItem> GenerateRssFeedItemList(RssFeed feed, string html)
@@ -15,7 +11,7 @@ internal class WhatFingerFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         // Find out which feature flag variation we are using to crawl articles
         string key = "article-count-limit";
         string identity = feed.CollectionName;
-        string variation = _client.GetVariation(key, identity, new List<UnlaunchAttribute>
+        string variation = _unlaunchClient.GetVariation(key, identity, new List<UnlaunchAttribute>
         {
             UnlaunchAttribute.NewBoolean("weekend", DateTime.Now.DayOfWeek == DayOfWeek.Saturday || DateTime.Now.DayOfWeek == DayOfWeek.Sunday)
         });
@@ -31,57 +27,37 @@ internal class WhatFingerFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         };
         _log.Information("Processing a maximum of {articleMaxCount} articles", _articleMaxCount);
 
+        // Find out which feature flag variation we are using to log activity
+        key = "feed-log-level";
+        identity = feed.CollectionName;
+        variation = _unlaunchClient.GetVariation(key, identity);
+        _log.Information("Unlaunch {key} returned variation {variation} for identity {identity}", key, variation, identity);
+
+        _logLevel = variation switch
+        {
+            "debug" => Serilog.Events.LogEventLevel.Debug,
+            "information" => Serilog.Events.LogEventLevel.Information,
+            _ => throw new ArgumentException("Unexpected variation")
+        };
+
         return GenerateRssFeedItemList(feed.CollectionName, feed.Url, feed.Filters, html);
     }
 
     public List<RssFeedItem> GenerateRssFeedItemList(string feedCollectionName, string feedUrl, List<string> feedFilters, string html)
     {
-        var items = GenerateRssFeedItemList(html, feedFilters ?? new List<string>(), feedUrl);
+        Initialize(feedUrl, feedFilters, html);
+        var items = GenerateRssFeedItemList();
         PostProcessing(feedCollectionName, feedUrl, items);
 
         return items;
     }
 
-    public List<RssFeedItem> GenerateRssFeedItemList(string html, List<string> filters, string feedUrl)
+    public List<RssFeedItem> GenerateRssFeedItemList()
     {
         var list = new List<RssFeedItem>();
-        int count;
-
-        // Load and parse the html from the source file
-        var parser = new HtmlParser();
-        var document = parser.ParseDocument(html);
 
         // Main Headlines section
-        // div.creative-link.wpb_column.vc_column_container.vc_col-sm-8 > div > div > div
-        var containers = document.QuerySelectorAll("div.creative-link.wpb_column.vc_column_container.vc_col-sm-8 > div > div");
-        _log.Information("FOUND: {count} sections", containers.Count());
-
-        if (containers != null)
-        {
-            foreach (var c in containers)
-            {
-                var nodes = c.QuerySelectorAll("ul li a");
-                if (nodes?.Length > 0)
-                {
-                    count = 1;
-                    string previousHash = "";
-                    foreach (var node in nodes.Take(_articleMaxCount))
-                    {
-                        var item = CreateNodeLinks(filters, node, "main headlines", count, feedUrl, false);
-                        if (item != null && item.FeedAttributes.UrlHash != previousHash)
-                        {
-                            _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                            list.Add(item);
-                            count++;
-                        }
-
-                        previousHash = item?.FeedAttributes.UrlHash ?? "";
-                    }
-
-                    break;
-                }
-            }
-        }
+        GetNodeLinks("headlines", "div.creative-link.wpb_column.vc_column_container.vc_col-sm-8 > div > div", "ul li a", list, true);
 
         return list;
     }

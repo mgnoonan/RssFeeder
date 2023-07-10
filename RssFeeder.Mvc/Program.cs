@@ -1,3 +1,4 @@
+using RssFeeder.Mvc;
 using OwaspHeaders.Core.Extensions;
 
 Log.Logger = new LoggerConfiguration()
@@ -82,6 +83,12 @@ try
 #if !DEBUG
     app.UseAuthentication();
     app.UseAuthorization();
+    app.Use(async (context, next) =>
+    {
+        context.Response.Headers.Remove("X-Powered-By");
+
+        await next();
+    });
 #endif
     app.MapControllerRoute(
         name: "default",

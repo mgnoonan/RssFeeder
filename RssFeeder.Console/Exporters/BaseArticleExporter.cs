@@ -60,7 +60,6 @@ public class BaseArticleExporter
     protected virtual void SetExtendedArticleMetaData(ExportFeedItem exportFeedItem, RssFeedItem item, string hostName)
     {
         // Extract the meta data from the Open Graph tags helpfully provided with almost every article
-        string url = exportFeedItem.Url;
         exportFeedItem.Url = item.OpenGraphAttributes.GetValueOrDefault("og:url") ?? "";
 
         // Make sure the Url is complete
@@ -71,8 +70,8 @@ public class BaseArticleExporter
 
         // Extract the meta data from the Open Graph tags
         exportFeedItem.ArticleText = item.HtmlAttributes.GetValueOrDefault("ParserResult") ?? "";
-        exportFeedItem.Subtitle = item.OpenGraphAttributes.GetValueOrDefault("og:title") ?? null;
-        exportFeedItem.ImageUrl = item.OpenGraphAttributes.GetValueOrDefault("og:image") ?? null;
+        exportFeedItem.Subtitle = item.OpenGraphAttributes.GetValueOrDefault("og:title") ?? "";
+        exportFeedItem.ImageUrl = item.OpenGraphAttributes.GetValueOrDefault("og:image") ?? "";
         exportFeedItem.SiteName = item.OpenGraphAttributes.GetValueOrDefault("og:site_name")?.ToLower() ?? "";
         exportFeedItem.HostName = hostName;
 
@@ -121,7 +120,7 @@ public class BaseArticleExporter
         if (item.SiteName == "rumble")
         {
             var text = item.HtmlAttributes.GetValueOrDefault("ParserResult") ?? "";
-            if (!text.StartsWith("<"))
+            if (!string.IsNullOrEmpty(text) && !text.StartsWith("<"))
             {
                 _log.Debug("EXPORT: Processing rumble.com ld+json metadata");
 
@@ -134,6 +133,11 @@ public class BaseArticleExporter
                 catch (Exception ex)
                 {
                     _log.Error(ex, "Error deserialzing json+ld values");
+                }
+
+                if (list is null)
+                {
+                    _log.Error("Error deserializing json+ld values for {urlHash}", exportFeedItem.UrlHash);
                 }
 
                 foreach (var value in list)
@@ -201,21 +205,9 @@ public class BaseArticleExporter
 
         // Query the document by CSS selectors to get the article text
         var blocks = document.QuerySelectorAll(tagName);
-        if (blocks.Length == 0)
-        {
-        }
+        var block = blocks.First(b => b.TextContent.Contains(keyName));
 
-        string jsonRaw = string.Empty;
-        foreach (var block in blocks)
-        {
-            if (block.TextContent.Contains(keyName))
-            {
-                jsonRaw = block.TextContent;
-                break;
-            }
-        }
-
-        return JsonConvert.DeserializeObject<T>(jsonRaw);
+        return JsonConvert.DeserializeObject<T>(block.TextContent);
     }
 
     protected virtual void SetGraphicMetaData(RssFeedItem item, ExportFeedItem exportFeedItem)

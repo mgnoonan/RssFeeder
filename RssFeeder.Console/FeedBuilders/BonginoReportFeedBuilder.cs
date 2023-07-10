@@ -2,122 +2,88 @@
 
 class BonginoReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    public BonginoReportFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities) : base(log, webUtilities, utilities)
-    { }
+    public BonginoReportFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(log, webUtilities, utilities, unlaunchClient)
+    {
+    }
 
     public List<RssFeedItem> GenerateRssFeedItemList(RssFeed feed, string html)
     {
+        // Find out which feature flag variation we are using to log activity
+        string key = "feed-log-level";
+        string identity = feed.CollectionName;
+        string variation = _unlaunchClient.GetVariation(key, identity);
+        _log.Information("Unlaunch {key} returned variation {variation} for identity {identity}", key, variation, identity);
+
+        _logLevel = variation switch
+        {
+            "debug" => Serilog.Events.LogEventLevel.Debug,
+            "information" => Serilog.Events.LogEventLevel.Information,
+            _ => throw new ArgumentException("Unexpected variation")
+        };
+
         return GenerateRssFeedItemList(feed.CollectionName, feed.Url, feed.Filters, html);
     }
 
     public List<RssFeedItem> GenerateRssFeedItemList(string feedCollectionName, string feedUrl, List<string> feedFilters, string html)
     {
-        var items = GenerateRssFeedItemList(html, feedFilters ?? new List<string>(), feedUrl);
+        Initialize(feedUrl, feedFilters, html);
+        var items = GenerateRssFeedItemList();
         PostProcessing(feedCollectionName, feedUrl, items);
 
         return items;
     }
 
-    public List<RssFeedItem> GenerateRssFeedItemList(string html, List<string> filters, string feedUrl)
+    public List<RssFeedItem> GenerateRssFeedItemList()
     {
         var list = new List<RssFeedItem>();
-        int count;
-
-        // Load and parse the html from the source file
-        var parser = new HtmlParser();
-        var document = parser.ParseDocument(html);
 
         // Top Stories section
-        // //section.banner > div > div > div.col-12.col-sm-8 > div > div > div > h5 > a
-        var container = document.QuerySelector("section.banner");
-        if (container != null)
-        {
-            var nodes = container.QuerySelectorAll("a");
-            if (nodes != null)
-            {
-                count = 1;
-                foreach (var node in nodes)
-                {
-                    string title = WebUtility.HtmlDecode(node.Text().Trim());
-
-                    var item = CreateNodeLinks(filters, node, "main headlines", count++, feedUrl, true);
-                    if (item != null)
-                    {
-                        _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                        list.Add(item);
-                    }
-                }
-            }
-        }
+        // #hero > div > div > div.col-md-8 > div:nth-child(2) > div:nth-child(1) > div > a
+        GetNodeLinks("headlines", "div.feature-article", "h1 > a", list, false);
 
         // Top Stories section
-        // //section.top-stories > div > div > div.col-12.col-sm-8 > div > div > div > h5 > a
-        container = document.QuerySelector("section.top-stories");
-        if (container != null)
-        {
-            var nodes = container.QuerySelectorAll("a");
-            if (nodes != null)
-            {
-                count = 1;
-                foreach (var node in nodes)
-                {
-                    string title = WebUtility.HtmlDecode(node.Text().Trim());
+        // #hero > div > div > div.col-md-8 > div:nth-child(2) > div:nth-child(2) > div
+        GetNodeLinks("top stories", "#hero > div > div > div.col-md-8 > div:nth-child(2) > div:nth-child(2) > div.all-stories", "li > a", list, false);
 
-                    var item = CreateNodeLinks(filters, node, "top stories", count++, feedUrl, true);
-                    if (item != null)
-                    {
-                        _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                        list.Add(item);
-                    }
-                }
-            }
-        }
+        // Trending videos
+        // #hero > div > div > div.col-md-4 > div.all-stories
+        GetNodeLinks("trending videos", "#hero > div > div > div.col-md-4 > div.all-stories", "div.col > a", list, false);
 
-        // All Stories section
-        // //section.all-stories > div > div > div.col-12.col-sm-8 > div > div > div > h5 > a
-        container = document.QuerySelector("section.all-stories");
-        if (container != null)
-        {
-            var nodes = container.QuerySelectorAll("a");
-            if (nodes != null)
-            {
-                count = 1;
-                foreach (var node in nodes)
-                {
-                    string title = WebUtility.HtmlDecode(node.Text().Trim());
+        // Capitol Hill stories
+        // body > div > section.all-stories > div > div > div:nth-child(1)
+        GetNodeLinks("column 1", "body > div > section.all-stories > div > div > div:nth-child(1)", "li > a", list, false);
 
-                    var item = CreateNodeLinks(filters, node, "all stories", count++, feedUrl, false);
-                    if (item != null)
-                    {
-                        _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                        list.Add(item);
-                    }
-                }
-            }
-        }
+        // Culture War stories
+        // body > div > section.all-stories > div > div > div:nth-child(2)
+        GetNodeLinks("column 2", "body > div > section.all-stories > div > div > div:nth-child(2)", "li > a", list, false);
 
-        // Video Stories section
-        // //section.stories-video > div > div > div.col-12.col-sm-8 > div > div > div > h5 > a
-        container = document.QuerySelector("section.stories-video");
-        if (container != null)
-        {
-            var nodes = container.QuerySelectorAll("a");
-            if (nodes != null)
-            {
-                count = 1;
-                foreach (var node in nodes)
-                {
-                    string title = WebUtility.HtmlDecode(node.Text().Trim());
+        // Culture War stories
+        // body > div > section.all-stories > div > div > div:nth-child(3)
+        GetNodeLinks("column 3", "body > div > section.all-stories > div > div > div:nth-child(3)", "li > a", list, false);
 
-                    var item = CreateNodeLinks(filters, node, "video stories", count++, feedUrl, false);
-                    if (item != null)
-                    {
-                        _log.Debug("FOUND: {urlHash}|{linkLocation}|{title}|{url}", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title, item.FeedAttributes.Url);
-                        list.Add(item);
-                    }
-                }
-            }
-        }
+        // Swamp Watch stories
+        // body > div > section.all-stories > div > div > div:nth-child(8)
+        GetNodeLinks("column 4", "body > div > section.all-stories > div > div > div:nth-child(8)", "li > a", list, false);
+
+        // National Security stories
+        // body > div > section.all-stories > div > div > div:nth-child(9)
+        GetNodeLinks("column 5", "body > div > section.all-stories > div > div > div:nth-child(9)", "li > a", list, false);
+
+        // Opinion stories
+        // body > div > section.all-stories > div > div > div:nth-child(10)
+        GetNodeLinks("column 6", "body > div > section.all-stories > div > div > div:nth-child(10)", "li > a", list, false);
+
+        // Entertainment stories
+        // body > div > section.all-stories > div > div > div:nth-child(14)
+        GetNodeLinks("column 7", "body > div > section.all-stories > div > div > div:nth-child(14)", "li > a", list, false);
+
+        // Sports stories
+        // body > div > section.all-stories > div > div > div:nth-child(15)
+        GetNodeLinks("column 8", "body > div > section.all-stories > div > div > div:nth-child(15)", "li > a", list, false);
+
+        // Health stories
+        // body > div > section.all-stories > div > div > div:nth-child(16)
+        GetNodeLinks("column 9", "body > div > section.all-stories > div > div > div:nth-child(16)", "li > a", list, false);
 
         return list;
     }

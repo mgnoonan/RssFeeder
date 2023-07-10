@@ -1,0 +1,16 @@
+﻿[
+  {
+    "Title": "Twitchy",
+    "Enabled": "true",
+    "EnableThumbnail": "false",
+    "Exportable": "false",
+    "Description": "Twitchy",
+    "Language": "en-US",
+    "Url": "https://www.twitchy.com/",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.TwitchyFeedBuilder",
+    "CollectionName": "twitchy",
+    "FileRetentionDays": 3,
+    "DatabaseRetentionDays": 180,
+    "Filters": []
+  }
+]

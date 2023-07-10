@@ -206,5 +206,18 @@
     "FeedlyUrl": "",
     "RssUrl": "/api/rss/political-signal",
     "Filters": []
+  },
+  {
+    "id": "",
+    "Title": "Twitchy",
+    "Url": "https://www.twitchy.com/",
+    "Description": "Twitchy",
+    "Language": "en-US",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.TwitchyFeedBuilder",
+    "CollectionName": "twitchy",
+    "authoremail": "editor@twitchy.com",
+    "FeedlyUrl": "",
+    "RssUrl": "/api/rss/twitchy",
+    "Filters": []
   }
 ]

@@ -4,7 +4,7 @@ public class AllTagsParser : TagParserBase, ITagParser
 {
     private readonly ILogger _log;
 
-    public AllTagsParser(ILogger log, IUnlaunchClient client, IWebUtils webUtils) : base(log, client, webUtils)
+    public AllTagsParser(ILogger log, IWebUtils webUtils) : base(log, webUtils)
     {
         _log = log;
     }
@@ -20,21 +20,20 @@ public class AllTagsParser : TagParserBase, ITagParser
 
         // Query the document by CSS selectors to get the article text
         var paragraphs = document.QuerySelectorAll(paragraphSelector);
-        if (!paragraphs.Any())
+        if (paragraphs.Length == 0)
         {
             _log.Warning("Paragraph selector '{paragraphSelector}' not found", paragraphSelector);
             return string.Empty;
         }
 
         var dict = new Dictionary<string, int>();
-        foreach (var p in paragraphs)
+        foreach (var parent in paragraphs.Select(p => p.ParentElement))
         {
-            var parent = p.ParentElement;
             var key = parent.GetSelector();
 
-            if (dict.ContainsKey(key))
+            if (dict.TryGetValue(key, out int value))
             {
-                dict[key]++;
+                dict[key] = ++value;
             }
             else
             {
@@ -42,7 +41,7 @@ public class AllTagsParser : TagParserBase, ITagParser
             }
         }
 
-        _log.Information("Found {totalCount} paragraph selectors '{paragraphSelector}' in html body", paragraphs.Count(), paragraphSelector);
+        _log.Information("Found {totalCount} paragraph selectors '{paragraphSelector}' in html body", paragraphs.Length, paragraphSelector);
 
         try
         {

@@ -23,8 +23,8 @@ static class DictionaryExtensions
 {
     public static void Add<TKey, TValue>(this IDictionary<TKey, TValue> target, IDictionary<TKey, TValue> source)
     {
-        if (source is null) throw new ArgumentNullException("source");
-        if (target is null) throw new ArgumentNullException("target");
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(target);
 
         foreach (var keyValuePair in source)
         {

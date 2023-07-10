@@ -1,8 +1,8 @@
 ﻿namespace RssFeeder.Console.FeedBuilders;
 
-class GutSmackFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
+class TwitchyFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    public GutSmackFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(log, webUtilities, utilities, unlaunchClient)
+    public TwitchyFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(logger, webUtilities, utilities, unlaunchClient)
     {
     }
 
@@ -37,11 +37,14 @@ class GutSmackFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
     {
         var list = new List<RssFeedItem>();
 
-        // Above the Fold section
-        GetNodeLinks("above the fold", "ul.wpd-top-links", "a", list, false);
-
         // Main Headlines section
-        GetNodeLinks("headlines", "#featured", "a.headline-link", list, false);
+        GetNodeLinks("headlines", "section.pt-2", "div.wp-card-huge__title > a", list, false);
+
+        // Above the fold section
+        GetNodeLinks("above the fold", "body>main>section:nth-child(2)", "div.wp-card__title > a", list, false);
+
+        // Posts section
+        GetNodeLinks("posts", "#post-list", "div.wp-card__title > a", list, false);
 
         return list;
     }
