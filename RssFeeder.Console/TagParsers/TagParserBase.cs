@@ -20,7 +20,7 @@ public partial class TagParserBase
     private const string _sizePattern3 = @"\/w:\d{3,4}\/p:";
     private const string _sizePattern4 = @"\/(mobile_thumb__|blog_image_\d{2}_)";
     private static readonly string[] srcAttributeArray = new string[] { "src" };
-    private static readonly string[] extendedSrcAttributeArray = new string[] { "data-mm-src", "data-src", "data-lazy-src", "data-srcs" };
+    private static readonly string[] extendedSrcAttributeArray = new string[] { "data-mm-src", "data-src", "data-lazy-src", "data-srcs", "data-srcset" };
 
     public TagParserBase(ILogger log, IWebUtils webUtils)
     {
@@ -182,6 +182,12 @@ public partial class TagParserBase
                 dataAttributeValue = obj.Properties().First().Name;
             }
 
+            if (dataAttribute == "data-srcset" && string.IsNullOrEmpty(attributeValue))
+            {
+                string url = System.Web.HttpUtility.UrlDecode(dataAttributeValue.Split(' ', StringSplitOptions.RemoveEmptyEntries).First());
+                dataAttributeValue = url;
+            }
+
             if (!string.IsNullOrEmpty(dataAttributeValue) && dataAttributeValue != attributeValue)
             {
                 _log.Information("Replacing src={attributeValue} with {dataAttribute}={dataAttributeValue}", attributeValue, dataAttribute, dataAttributeValue);
@@ -304,11 +310,11 @@ public partial class TagParserBase
                 {
                     _log.Information("Removed duplicate image {imageUrl}", imgUrl);
                     element.Remove();
-                }
 
-                // CFP also wraps the image with an anchor tag
-                if (parentElement.NodeName.ToLower() == "a")
-                    parentElement.Remove();
+                    // CFP also wraps the image with an anchor tag
+                    if (parentElement.NodeName.ToLower() == "a")
+                        parentElement.Remove();
+                }
             }
         }
     }
@@ -524,6 +530,12 @@ public partial class TagParserBase
         // Watch for the older style line breaks and convert to proper paragraphs
         string innerHtml = LineBreakRegex().Replace(p.InnerHtml, "</p><p>");
         description.AppendLine($"<p>{innerHtml}</p>");
+    }
+
+    protected void TryAddFigure(StringBuilder description, IElement p)
+    {
+        _log.Information("InnerHtml = {html}", p.InnerHtml);
+        description.AppendLine($"<figure>{p.InnerHtml}</figure>");
     }
 
     protected void TryAddBlockquote(StringBuilder description, IElement p)

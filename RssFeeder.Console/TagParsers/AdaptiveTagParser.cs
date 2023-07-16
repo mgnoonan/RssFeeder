@@ -21,7 +21,7 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
         if (string.IsNullOrEmpty(paragraphSelector))
             paragraphSelector = "p,ol,ul,blockquote,h2,h3,h4,h5,figure";
 
-        _log.Debug("Attempting adaptive parsing using paragraph selector '{paragraphSelector}'", paragraphSelector);
+        _log.Information("Attempting adaptive parsing using paragraph selector '{paragraphSelector}'", paragraphSelector);
         string bodySelector = GetHighestParagraphCountSelector(document, paragraphSelector, true);
 
         if (string.IsNullOrEmpty(bodySelector))
@@ -157,6 +157,10 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
             else if (p.TagName.ToLower().StartsWith("blockquote"))
             {
                 TryAddBlockquote(description, p);
+            }
+            else if (p.TagName.ToLower().StartsWith("figure"))
+            {
+                TryAddFigure(description, p);
             }
             else
             {
