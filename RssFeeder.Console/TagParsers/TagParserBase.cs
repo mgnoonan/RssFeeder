@@ -81,6 +81,7 @@ public partial class TagParserBase
         FixupElementStyle(document, "blockquote", "border-left: 7px solid lightgray; padding-left: 10px;");
         RemoveDuplicateImgTag(document);
         RemoveElementPadding(document);
+        RemoveAllTag(document, "noscript");
 
         // Check for embedded videos
         if (_item.SiteName != "youtube" && _item.SiteName != "rumble")
@@ -295,6 +296,16 @@ public partial class TagParserBase
         }
 
         return false;
+    }
+
+    private void RemoveAllTag(IHtmlDocument document, string tagName)
+    {
+        var elements = document.QuerySelectorAll(tagName);
+        foreach (var element in elements)
+        {
+            _log.Information("Removed tag {tagName} {selector}", tagName, element.GetSelector());
+            element.Remove();
+        }
     }
 
     private void RemoveDuplicateImgTag(IHtmlDocument document)
