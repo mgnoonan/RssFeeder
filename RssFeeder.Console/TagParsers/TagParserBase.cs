@@ -550,7 +550,7 @@ public partial class TagParserBase
 
     protected void TryAddFigure(StringBuilder description, IElement p)
     {
-        _log.Information("InnerHtml = {html}", p.InnerHtml);
+        _log.Debug("InnerHtml = {html}", p.InnerHtml);
         description.AppendLine($"<figure>{p.InnerHtml}</figure>");
     }
 
