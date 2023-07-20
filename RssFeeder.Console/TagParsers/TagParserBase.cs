@@ -188,7 +188,7 @@ public partial class TagParserBase
                 dataAttributeValue = obj.Properties().First().Name;
             }
 
-            if (dataAttribute == "data-srcset" && string.IsNullOrEmpty(attributeValue))
+            if (dataAttributeValue?.Contains(" "))
             {
                 string url = System.Web.HttpUtility.UrlDecode(dataAttributeValue.Split(' ', StringSplitOptions.RemoveEmptyEntries).First());
                 dataAttributeValue = url;
