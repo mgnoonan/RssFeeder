@@ -188,7 +188,7 @@ public partial class TagParserBase
                 dataAttributeValue = obj.Properties().First().Name;
             }
 
-            if (dataAttributeValue?.Contains(" "))
+            if (dataAttributeValue?.Contains(" ") ?? false)
             {
                 string url = System.Web.HttpUtility.UrlDecode(dataAttributeValue.Split(' ', StringSplitOptions.RemoveEmptyEntries).First());
                 dataAttributeValue = url;
