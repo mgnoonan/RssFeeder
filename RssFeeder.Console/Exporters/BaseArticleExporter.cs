@@ -75,16 +75,10 @@ public class BaseArticleExporter
         exportFeedItem.SiteName = item.OpenGraphAttributes.GetValueOrDefault("og:site_name")?.ToLower() ?? "";
         exportFeedItem.HostName = hostName;
 
-        // Fixup apnews on populist press links which sometimes report incorrectly
-        if (string.IsNullOrWhiteSpace(exportFeedItem.SiteName) || (exportFeedItem.SiteName == "ap news" && exportFeedItem.Url.Contains("populist.press")))
+        // Fixup empty sitename
+        if (string.IsNullOrWhiteSpace(exportFeedItem.SiteName))
         {
             exportFeedItem.SiteName = exportFeedItem.HostName;
-        }
-
-        // Fixup news.trust.org imageUrl links which have an embedded redirect
-        if (string.IsNullOrWhiteSpace(exportFeedItem.ImageUrl) || (exportFeedItem.SiteName == "news.trust.org" && exportFeedItem.Url.Contains("news.trust.org")))
-        {
-            exportFeedItem.ImageUrl = null;
         }
 
         // Remove the protocol portion if there is one, i.e. 'https://'
