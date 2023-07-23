@@ -179,9 +179,16 @@
       },
       {
         "Enabled": true,
-        "RuleName": "UlExclude",
+        "RuleName": "UlEbtExclude",
         "RuleExpressionType": "LambdaExpression",
         "Expression": "name == \"east bay times\" AND selector.Contains(\"aside\"))",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "UlSkyNewsExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"sky news\" AND classlist.Contains(\"related-stories\"))",
         "SuccessEvent": "true"
       }
     ]
