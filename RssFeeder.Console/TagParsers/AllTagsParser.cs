@@ -1,4 +1,6 @@
-﻿namespace RssFeeder.Console.TagParsers;
+﻿using AngleSharp.Html.Dom;
+
+namespace RssFeeder.Console.TagParsers;
 
 public class AllTagsParser : TagParserBase, ITagParser
 {
@@ -14,10 +16,16 @@ public class AllTagsParser : TagParserBase, ITagParser
         // Load and parse the html from the source file
         var parser = new HtmlParser();
         var document = parser.ParseDocument(_sourceHtml);
+
+        string bodySelector = template.ArticleSelector;
         string paragraphSelector = template.ParagraphSelector;
 
-        _log.Information("Attempting alltags parsing using paragraph selector '{paragraphSelector}'", paragraphSelector);
+        _log.Information(_parserMessageTemplate, nameof(AllTagsParser), bodySelector, paragraphSelector);
+        return BuildArticleText(document, bodySelector, paragraphSelector);
+    }
 
+    private string BuildArticleText(IHtmlDocument document, string bodySelector, string paragraphSelector)
+    {
         // Query the document by CSS selectors to get the article text
         var paragraphs = document.QuerySelectorAll(paragraphSelector);
         if (paragraphs.Length == 0)

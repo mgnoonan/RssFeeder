@@ -1,4 +1,6 @@
-﻿namespace RssFeeder.Console.TagParsers;
+﻿using AngleSharp.Html.Dom;
+
+namespace RssFeeder.Console.TagParsers;
 
 public class JsonLdTagParser : TagParserBase, ITagParser
 {
@@ -14,11 +16,16 @@ public class JsonLdTagParser : TagParserBase, ITagParser
         // Load and parse the html from the source file
         var parser = new HtmlParser();
         var document = parser.ParseDocument(_sourceHtml);
+
         string bodySelector = template.ArticleSelector;
         string paragraphSelector = template.ParagraphSelector;
 
-        _log.Information("Attempting json+ld tag parsing using body selector '{bodySelector}' and paragraph selector '{paragraphSelector}'", bodySelector, paragraphSelector);
+        _log.Information(_parserMessageTemplate, nameof(JsonLdTagParser), bodySelector, paragraphSelector);
+        return BuildArticleText(document, bodySelector, paragraphSelector);
+    }
 
+    private string BuildArticleText(IHtmlDocument document, string bodySelector, string paragraphSelector)
+    {
         // Query the document by CSS selectors to get the article text
         var elements = document.QuerySelectorAll("script");
         if (elements.Length == 0)
@@ -44,7 +51,7 @@ public class JsonLdTagParser : TagParserBase, ITagParser
             }
         }
 
-        _log.Warning("Error reading article: No ld+json selector not found.");
+        _log.Warning("Error reading article: No json+ld selector not found.");
         return string.Empty;
     }
 }

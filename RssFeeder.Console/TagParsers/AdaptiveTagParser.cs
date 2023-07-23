@@ -21,19 +21,21 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
         if (string.IsNullOrEmpty(paragraphSelector))
             paragraphSelector = "p,ol,ul,blockquote,h2,h3,h4,h5,figure";
 
-        _log.Information("Attempting adaptive parsing using paragraph selector '{paragraphSelector}'", paragraphSelector);
         string bodySelector = GetHighestParagraphCountSelector(document, paragraphSelector, true);
 
         if (string.IsNullOrEmpty(bodySelector))
         {
             paragraphSelector = "br";
-            _log.Debug("Attempting adaptive parsing using paragraph selector '{paragraphSelector}'", paragraphSelector);
             bodySelector = GetHighestParagraphCountSelector(document, paragraphSelector, false);
         }
 
         if (string.IsNullOrEmpty(bodySelector))
+        {
+            _log.Warning("Paragraph selector '{paragraphSelector}' not found", paragraphSelector);
             return string.Empty;
+        }
 
+        _log.Information(_parserMessageTemplate, nameof(AdaptiveTagParser), bodySelector, paragraphSelector);
         return GetArticleText(document, bodySelector, paragraphSelector);
     }
 

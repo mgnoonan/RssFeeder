@@ -17,7 +17,7 @@ public class HtmlTagParser : TagParserBase, ITagParser
         string bodySelector = template.ArticleSelector;
         string paragraphSelector = template.ParagraphSelector;
 
-        _log.Information("Attempting HTML tag parsing using body selector '{bodySelector}' and paragraph selector '{paragraphSelector}'", bodySelector, paragraphSelector);
+        _log.Information(_parserMessageTemplate, nameof(HtmlTagParser), bodySelector, paragraphSelector);
 
         // Query the document by CSS selectors to get the article text
         var container = document.QuerySelector(bodySelector);

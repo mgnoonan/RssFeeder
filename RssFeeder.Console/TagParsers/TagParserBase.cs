@@ -9,6 +9,8 @@ namespace RssFeeder.Console.TagParsers;
 #pragma warning disable CA2012
 public partial class TagParserBase
 {
+    protected const string _parserMessageTemplate = "Parser {parserName} using body selector '{bodySelector}' and paragraph selector '{paragraphSelector}'";
+
     private readonly ILogger _log;
     private readonly IWebUtils _webUtils;
     private RulesEngine.RulesEngine _bre;
