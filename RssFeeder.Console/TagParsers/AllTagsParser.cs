@@ -17,14 +17,13 @@ public class AllTagsParser : TagParserBase, ITagParser
         var parser = new HtmlParser();
         var document = parser.ParseDocument(_sourceHtml);
 
-        string bodySelector = template.ArticleSelector;
         string paragraphSelector = template.ParagraphSelector;
 
-        _log.Information(_parserMessageTemplate, nameof(AllTagsParser), bodySelector, paragraphSelector);
-        return BuildArticleText(document, bodySelector, paragraphSelector);
+        _log.Information(_parserMessageTemplate, nameof(AllTagsParser), string.Empty, paragraphSelector);
+        return BuildArticleText(document, paragraphSelector);
     }
 
-    private string BuildArticleText(IHtmlDocument document, string bodySelector, string paragraphSelector)
+    private string BuildArticleText(IHtmlDocument document, string paragraphSelector)
     {
         // Query the document by CSS selectors to get the article text
         var paragraphs = document.QuerySelectorAll(paragraphSelector);
@@ -69,7 +68,7 @@ public class AllTagsParser : TagParserBase, ITagParser
 
         foreach (var p in paragraphs)
         {
-            if (p.TagName.ToLower().StartsWith("h"))
+            if (p.TagName.StartsWith("h", StringComparison.CurrentCultureIgnoreCase))
             {
                 description.AppendLine($"<h4>{p.TextContent.Trim()}</h4>");
             }

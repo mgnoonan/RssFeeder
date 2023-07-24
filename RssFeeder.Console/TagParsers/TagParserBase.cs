@@ -213,9 +213,9 @@ public partial class TagParserBase
                 dataAttributeValue = obj.Properties().First().Name;
             }
 
-            if (dataAttributeValue?.Contains(" ") ?? false)
+            if (dataAttributeValue?.Contains(' ') ?? false)
             {
-                string url = System.Web.HttpUtility.UrlDecode(dataAttributeValue.Split(' ', StringSplitOptions.RemoveEmptyEntries).First());
+                string url = System.Web.HttpUtility.UrlDecode(dataAttributeValue.Split(' ', StringSplitOptions.RemoveEmptyEntries)[0]);
                 dataAttributeValue = url;
             }
 

@@ -66,11 +66,11 @@ public partial class GenericTagParser : TagParserBase, ITagParser
             {
                 TryAddHeaderParagraph(description, p);
             }
-            else if (p.TagName.ToLower() == "ul" || p.TagName.ToLower() == "ol")
+            else if (string.Compare(p.TagName, "ul", true) == 0 || string.Compare(p.TagName, "ol", true) == 0)
             {
                 TryAddUlParagraph(description, p);
             }
-            else if (p.TagName.ToLower() == "pre")
+            else if (string.Compare(p.TagName, "pre", true) == 0)
             {
                 // Pre tag is for formatted monospaced text
                 var lines = p.TextContent.Split('\n', StringSplitOptions.TrimEntries);
@@ -82,15 +82,15 @@ public partial class GenericTagParser : TagParserBase, ITagParser
                 }
                 description.AppendLine("</pre>");
             }
-            else if (p.TagName.ToLower().StartsWith("blockquote"))
+            else if (p.TagName.StartsWith("blockquote", StringComparison.CurrentCultureIgnoreCase))
             {
                 TryAddBlockquote(description, p);
             }
-            else if (p.TagName.ToLower().StartsWith("figure"))
+            else if (p.TagName.StartsWith("figure", StringComparison.CurrentCultureIgnoreCase))
             {
                 TryAddFigure(description, p);
             }
-            else if (p.TagName.ToLower() == "a")
+            else if (string.Compare(p.TagName, "a", true) == 0)
             {
                 TryAddAnchor(description, p);
             }
