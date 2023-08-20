@@ -174,7 +174,7 @@
         "Enabled": true,
         "RuleName": "UlDailyStarExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"dailystar.co.uk\" AND selector.Contains(\"aside\"))",
+        "Expression": "name == \"dailystar.co.uk\" AND (selector.Contains(\"aside\") OR parentclasslist.Contains(\"read-more-links\"))",
         "SuccessEvent": "true"
       },
       {
