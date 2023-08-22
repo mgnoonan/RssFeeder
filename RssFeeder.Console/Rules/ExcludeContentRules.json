@@ -167,7 +167,7 @@
         "Enabled": true,
         "RuleName": "UlDeadlineExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"deadline\" AND classlist.Contains(\"o-story-list\"))",
+        "Expression": "name == \"deadline\" AND classlist.Contains(\"o-story-list\")",
         "SuccessEvent": "true"
       },
       {
