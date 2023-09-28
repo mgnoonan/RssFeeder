@@ -21,4 +21,5 @@ public record ExportFeedItem
     public string SiteName { get; set; }
     public string HostName { get; set; }
     public string LinkLocation { get; set; }
+    public string Description { get; set; }
 }
