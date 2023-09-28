@@ -1,4 +1,6 @@
-﻿namespace RssFeeder.Console.TagParsers;
+﻿using AngleSharp.Html.Dom;
+
+namespace RssFeeder.Console.TagParsers;
 
 public class AllTagsParser : TagParserBase, ITagParser
 {
@@ -14,10 +16,15 @@ public class AllTagsParser : TagParserBase, ITagParser
         // Load and parse the html from the source file
         var parser = new HtmlParser();
         var document = parser.ParseDocument(_sourceHtml);
+
         string paragraphSelector = template.ParagraphSelector;
 
-        _log.Information("Attempting alltags parsing using paragraph selector '{paragraphSelector}'", paragraphSelector);
+        _log.Information(_parserMessageTemplate, nameof(AllTagsParser), string.Empty, paragraphSelector);
+        return BuildArticleText(document, paragraphSelector);
+    }
 
+    private string BuildArticleText(IHtmlDocument document, string paragraphSelector)
+    {
         // Query the document by CSS selectors to get the article text
         var paragraphs = document.QuerySelectorAll(paragraphSelector);
         if (paragraphs.Length == 0)
@@ -61,7 +68,7 @@ public class AllTagsParser : TagParserBase, ITagParser
 
         foreach (var p in paragraphs)
         {
-            if (p.TagName.ToLower().StartsWith("h"))
+            if (p.TagName.StartsWith("h", StringComparison.CurrentCultureIgnoreCase))
             {
                 description.AppendLine($"<h4>{p.TextContent.Trim()}</h4>");
             }

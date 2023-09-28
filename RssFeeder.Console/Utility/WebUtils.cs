@@ -63,7 +63,7 @@ public class WebUtils : IWebUtils
 
             // Web Driver does not support returning the response code, but if
             // we got to here then it is most likely a 200 OK result
-            _log.Information("Response status code = {httpStatusCode} {httpStatusText}, {uri}", 200, "OK", driver.Url);
+            _log.Information("{httpMethod} {uri}, {httpStatusCode} {httpStatusText}", "GET", driver.Url, 200, "OK");
 
             return (HttpStatusCode.OK, driver.PageSource, new Uri(driver.Url), "text/html");
         }
@@ -248,7 +248,7 @@ public class WebUtils : IWebUtils
 
             // Web Driver does not support returning the response code, but if
             // we got to here then it is most likely a 200 OK result
-            _log.Information("Response status code = {httpStatusCode} {httpStatusText}, {uri}", 200, "OK", driver.Url);
+            _log.Information("{httpMethod} {uri}, {httpStatusCode} {httpStatusText}", "GET", driver.Url, 200, "OK");
 
             // Delete the file if it already exists
             if (File.Exists(filename))

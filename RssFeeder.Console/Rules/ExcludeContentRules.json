@@ -139,49 +139,56 @@
         "Enabled": true,
         "RuleName": "UlWiredExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"wired\" AND classlist.Contains(\"RecircMostPopularItems\"))",
+        "Expression": "name == \"wired\" AND classlist.Contains(\"RecircMostPopularItems\")",
         "SuccessEvent": "true"
       },
       {
         "Enabled": true,
         "RuleName": "UlFrance24Exclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"france 24\" AND classlist.Contains(\"m-tags-list\"))",
+        "Expression": "name == \"france 24\" AND classlist.Contains(\"m-tags-list\")",
         "SuccessEvent": "true"
       },
       {
         "Enabled": true,
         "RuleName": "UlFederalistExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"the federalist\" AND classlist.Contains(\"list-unstyled\"))",
+        "Expression": "name == \"the federalist\" AND classlist.Contains(\"list-unstyled\")",
         "SuccessEvent": "true"
       },
       {
         "Enabled": true,
         "RuleName": "UlHillExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"the hill\" AND classlist.Contains(\"inline-related-stories\"))",
+        "Expression": "name == \"the hill\" AND classlist.Contains(\"inline-related-stories\")",
         "SuccessEvent": "true"
       },
       {
         "Enabled": true,
         "RuleName": "UlDeadlineExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"deadline\" AND classlist.Contains(\"o-story-list\"))",
+        "Expression": "name == \"deadline\" AND classlist.Contains(\"o-story-list\")",
         "SuccessEvent": "true"
       },
       {
         "Enabled": true,
         "RuleName": "UlDailyStarExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"dailystar.co.uk\" AND selector.Contains(\">aside\"))",
+        "Expression": "name == \"dailystar.co.uk\" AND (selector.Contains(\"aside\") OR parentclasslist.Contains(\"read-more-links\"))",
         "SuccessEvent": "true"
       },
       {
         "Enabled": true,
-        "RuleName": "UlExclude",
+        "RuleName": "UlEbtExclude",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "name == \"east bay times\" AND selector.Contains(\">aside\"))",
+        "Expression": "name == \"east bay times\" AND selector.Contains(\"aside\")",
+        "SuccessEvent": "true"
+      },
+      {
+        "Enabled": true,
+        "RuleName": "UlSkyNewsExclude",
+        "RuleExpressionType": "LambdaExpression",
+        "Expression": "name == \"sky news\" AND classlist.Contains(\"related-stories\")",
         "SuccessEvent": "true"
       }
     ]

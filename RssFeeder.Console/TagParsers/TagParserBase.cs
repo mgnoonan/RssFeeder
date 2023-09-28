@@ -9,6 +9,8 @@ namespace RssFeeder.Console.TagParsers;
 #pragma warning disable CA2012
 public partial class TagParserBase
 {
+    protected const string _parserMessageTemplate = "Parser {parserName} using body selector '{bodySelector}' and paragraph selector '{paragraphSelector}'";
+
     private readonly ILogger _log;
     private readonly IWebUtils _webUtils;
     private RulesEngine.RulesEngine _bre;
@@ -20,7 +22,7 @@ public partial class TagParserBase
     private const string _sizePattern3 = @"\/w:\d{3,4}\/p:";
     private const string _sizePattern4 = @"\/(mobile_thumb__|blog_image_\d{2}_)";
     private static readonly string[] srcAttributeArray = new string[] { "src" };
-    private static readonly string[] extendedSrcAttributeArray = new string[] { "data-mm-src", "data-src", "data-lazy-src" };
+    private static readonly string[] extendedSrcAttributeArray = new string[] { "data-mm-src", "data-src", "data-lazy-src", "data-srcs", "data-srcset" };
 
     public TagParserBase(ILogger log, IWebUtils webUtils)
     {
@@ -81,9 +83,14 @@ public partial class TagParserBase
         FixupElementStyle(document, "blockquote", "border-left: 7px solid lightgray; padding-left: 10px;");
         RemoveDuplicateImgTag(document);
         RemoveElementPadding(document);
+        RemoveAllTag(document, "noscript");
 
         // Check for embedded videos
-        if (_item.SiteName != "youtube" && _item.SiteName != "rumble")
+        if (_item.SiteName == "vidmaxviral.com")
+        {
+            ExtractVideoMetadata(document);
+        }
+        else if (_item.SiteName != "youtube" && _item.SiteName != "rumble")
         {
             var elements = document.QuerySelectorAll("iframe");
             _log.Debug("IFRAME tag count {count}", elements.Length);
@@ -95,6 +102,25 @@ public partial class TagParserBase
         }
 
         _item.HtmlAttributes["ParserResult"] = document.Body.InnerHtml.Trim();
+    }
+
+    private void ExtractVideoMetadata(IHtmlDocument document)
+    {
+        var element = document.QuerySelector("video");
+        var source = element.Children[0];
+
+        string url = source.GetAttribute("src");
+        string type = source.HasAttribute("type") ? source.GetAttribute("type") : "text/html";
+        string width = source.HasAttribute("width") ? source.GetAttribute("width") : "100%";
+        string height = source.HasAttribute("height") ? source.GetAttribute("height") : "100%";
+        _log.Information("Embedded video {type} detected {url}", type, url);
+
+        _item.OpenGraphAttributes.Add("og:x:video", url);
+        _item.OpenGraphAttributes.Add("og:x:video:type", type);
+        _item.OpenGraphAttributes.Add("og:x:video:width", width);
+        _item.OpenGraphAttributes.Add("og:x:video:height", height);
+
+        element.Remove();
     }
 
     private void ExtractIFrameMetadata(IElement iframeElement)
@@ -144,6 +170,11 @@ public partial class TagParserBase
                 dataAttribute = "data-src";
                 dataAttributeValue = element.GetAttribute(dataAttribute);
             }
+            if (element.HasAttribute("data-lazy-src"))
+            {
+                dataAttribute = "data-lazy-src";
+                dataAttributeValue = element.GetAttribute(dataAttribute);
+            }
             if (element.HasAttribute("data-runner-src"))
             {
                 dataAttribute = "data-runner-src";
@@ -174,6 +205,19 @@ public partial class TagParserBase
 
             RemoveAttribute(element, "srcset");
             RemoveAttribute(element, "data-srcset");
+            RemoveAttribute(element, "data-srcs");
+
+            if (dataAttribute == "data-srcs")
+            {
+                JObject obj = JObject.Parse(System.Web.HttpUtility.HtmlDecode(dataAttributeValue));
+                dataAttributeValue = obj.Properties().First().Name;
+            }
+
+            if (dataAttributeValue?.Contains(' ') ?? false)
+            {
+                string url = System.Web.HttpUtility.UrlDecode(dataAttributeValue.Split(' ', StringSplitOptions.RemoveEmptyEntries)[0]);
+                dataAttributeValue = url;
+            }
 
             if (!string.IsNullOrEmpty(dataAttributeValue) && dataAttributeValue != attributeValue)
             {
@@ -279,6 +323,16 @@ public partial class TagParserBase
         return false;
     }
 
+    private void RemoveAllTag(IHtmlDocument document, string tagName)
+    {
+        var elements = document.QuerySelectorAll(tagName);
+        foreach (var element in elements)
+        {
+            _log.Information("Removed tag {tagName} {selector}", tagName, element.GetSelector());
+            element.Remove();
+        }
+    }
+
     private void RemoveDuplicateImgTag(IHtmlDocument document)
     {
         var imgUrl = _item.OpenGraphAttributes.GetValueOrDefault("og:image:secure_url") ??
@@ -297,11 +351,11 @@ public partial class TagParserBase
                 {
                     _log.Information("Removed duplicate image {imageUrl}", imgUrl);
                     element.Remove();
-                }
 
-                // CFP also wraps the image with an anchor tag
-                if (parentElement.NodeName.ToLower() == "a")
-                    parentElement.Remove();
+                    // CFP also wraps the image with an anchor tag
+                    if (parentElement.NodeName.ToLower() == "a")
+                        parentElement.Remove();
+                }
             }
         }
     }
@@ -517,6 +571,12 @@ public partial class TagParserBase
         // Watch for the older style line breaks and convert to proper paragraphs
         string innerHtml = LineBreakRegex().Replace(p.InnerHtml, "</p><p>");
         description.AppendLine($"<p>{innerHtml}</p>");
+    }
+
+    protected void TryAddFigure(StringBuilder description, IElement p)
+    {
+        _log.Debug("InnerHtml = {html}", p.InnerHtml);
+        description.AppendLine($"<figure>{p.InnerHtml}</figure>");
     }
 
     protected void TryAddBlockquote(StringBuilder description, IElement p)

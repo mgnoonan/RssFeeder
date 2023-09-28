@@ -21,19 +21,21 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
         if (string.IsNullOrEmpty(paragraphSelector))
             paragraphSelector = "p,ol,ul,blockquote,h2,h3,h4,h5,figure";
 
-        _log.Debug("Attempting adaptive parsing using paragraph selector '{paragraphSelector}'", paragraphSelector);
         string bodySelector = GetHighestParagraphCountSelector(document, paragraphSelector, true);
 
         if (string.IsNullOrEmpty(bodySelector))
         {
             paragraphSelector = "br";
-            _log.Debug("Attempting adaptive parsing using paragraph selector '{paragraphSelector}'", paragraphSelector);
             bodySelector = GetHighestParagraphCountSelector(document, paragraphSelector, false);
         }
 
         if (string.IsNullOrEmpty(bodySelector))
+        {
+            _log.Warning("Paragraph selector '{paragraphSelector}' not found", paragraphSelector);
             return string.Empty;
+        }
 
+        _log.Information(_parserMessageTemplate, nameof(AdaptiveTagParser), bodySelector, paragraphSelector);
         return GetArticleText(document, bodySelector, paragraphSelector);
     }
 
@@ -146,17 +148,21 @@ public partial class AdaptiveTagParser : TagParserBase, ITagParser
 
         foreach (var p in paragraphs)
         {
-            if (p.TagName.ToLower().StartsWith("h"))
+            if (p.TagName.StartsWith("h", StringComparison.CurrentCultureIgnoreCase))
             {
                 TryAddHeaderParagraph(description, p);
             }
-            else if (p.TagName.ToLower() == "ul" || p.TagName.ToLower() == "ol")
+            else if (string.Compare(p.TagName, "ul", true) == 0 || string.Compare(p.TagName, "ol", true) == 0)
             {
                 TryAddUlParagraph(description, p);
             }
-            else if (p.TagName.ToLower().StartsWith("blockquote"))
+            else if (p.TagName.StartsWith("blockquote", StringComparison.CurrentCultureIgnoreCase))
             {
                 TryAddBlockquote(description, p);
+            }
+            else if (p.TagName.StartsWith("figure", StringComparison.CurrentCultureIgnoreCase))
+            {
+                TryAddFigure(description, p);
             }
             else
             {

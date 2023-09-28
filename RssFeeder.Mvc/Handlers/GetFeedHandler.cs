@@ -27,31 +27,34 @@ public class GetFeedHandler : IRequestHandler<GetFeedQuery, string>
             return Task.FromResult(string.Empty);
         }
 
-        return GetSyndicationItems(request.Id);
+        return GetSyndicationItems(request.Id, request.Agent.BrowserAgent);
     }
 
-    private async Task<string> GetSyndicationItems(string id)
+    private async Task<string> GetSyndicationItems(string id, string userAgent)
     {
+        bool textOnly = userAgent.Contains("Feedly/1.0", StringComparison.InvariantCultureIgnoreCase);
+        string key = string.Concat(id, "_feed_", textOnly ? "TextOnly" : "Xml");
+
         // See if we already have the items in the cache
-        string xml = await _cacheStack.GetOrSetAsync<string>($"{id}_feedXml", async (old, context) =>
+        string xml = await _cacheStack.GetOrSetAsync<string>(key, async (old, context) =>
         {
             int days = 5;
-            _log.Information("CACHE MISS: Loading feed {id} with items for {days} days ", id, days);
+            _log.Information("CACHE MISS {key}: Loading feed {id} with items for {days} days ", key, id, days);
 
             var items = await context.GetItemsAsync(new QueryDefinition("SELECT * FROM c WHERE c.FeedId = @id")
                 .WithParameter("@id", id));
 
             return await FormatItemsAsAtomXml(
                 id,
-                items.Where(q => q.DateAdded >= DateTime.Now.Date.AddDays(-days))
-                     .OrderByDescending(q => q.DateAdded)
+                items.Where(q => q.DateAdded >= DateTime.Now.Date.AddDays(-days)).OrderByDescending(q => q.DateAdded),
+                textOnly
                 );
         }, new CacheSettings(TimeSpan.FromMinutes(60), TimeSpan.FromMinutes(15)));
 
         return xml;
     }
 
-    private async Task<string> FormatItemsAsAtomXml(string id, IEnumerable<RssFeedItem> items)
+    private async Task<string> FormatItemsAsAtomXml(string id, IEnumerable<RssFeedItem> items, bool textOnly)
     {
         var sb = new StringBuilder();
         var stringWriter = new StringWriterWithEncoding(sb, Encoding.UTF8);
@@ -68,13 +71,14 @@ public class GetFeedHandler : IRequestHandler<GetFeedQuery, string>
             // Add Items
             foreach (var item in items)
             {
+                string text = textOnly ? item.Description : item.ArticleText;
                 try
                 {
                     var si = new SyndicationItem()
                     {
                         Id = item.Id,
                         Title = Regex.Replace(item.Title, "[\u0001-\u001f\ufffe]", "", RegexOptions.None, TimeSpan.FromMilliseconds(250)),
-                        Description = Regex.Replace(item.ArticleText, "[\u0001-\u001f\ufffe]", "", RegexOptions.None, TimeSpan.FromMilliseconds(250)),
+                        Description = Regex.Replace(text, "[\u0001-\u001f\ufffe]", "", RegexOptions.None, TimeSpan.FromMilliseconds(250)),
                         Published = item.DateAdded,
                         LastUpdated = item.DateAdded
                     };
