@@ -78,7 +78,7 @@ public class GetFeedHandler : IRequestHandler<GetFeedQuery, string>
                     {
                         Id = item.Id,
                         Title = Regex.Replace(item.Title, "[\u0001-\u001f\ufffe]", "", RegexOptions.None, TimeSpan.FromMilliseconds(250)),
-                        Description = Regex.Replace(text, "[\u0001-\u001f\ufffe]", "", RegexOptions.None, TimeSpan.FromMilliseconds(250)),
+                        Description = Regex.Replace(text ?? string.Empty, "[\u0001-\u001f\ufffe]", "", RegexOptions.None, TimeSpan.FromMilliseconds(250)),
                         Published = item.DateAdded,
                         LastUpdated = item.DateAdded
                     };
