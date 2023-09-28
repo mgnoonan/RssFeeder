@@ -24,7 +24,8 @@ public class ArticleExporter : BaseArticleExporter, IArticleExporter
             UrlHash = item.FeedAttributes.UrlHash,
             DateAdded = item.FeedAttributes.DateAdded,
             LinkLocation = item.FeedAttributes.LinkLocation,
-            Title = item.FeedAttributes.Title
+            Title = item.FeedAttributes.Title,
+            Description = item.OpenGraphAttributes.GetValueOrDefault("og:description")
         };
 
         Uri uri = new Uri(exportFeedItem.Url);
