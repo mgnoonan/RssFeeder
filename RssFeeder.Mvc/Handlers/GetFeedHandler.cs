@@ -71,7 +71,7 @@ public class GetFeedHandler : IRequestHandler<GetFeedQuery, string>
             // Add Items
             foreach (var item in items)
             {
-                string text = textOnly ? item.Description : item.ArticleText;
+                string text = textOnly ? System.Web.HttpUtility.HtmlDecode(item.Description) : item.ArticleText;
                 try
                 {
                     var si = new SyndicationItem()
