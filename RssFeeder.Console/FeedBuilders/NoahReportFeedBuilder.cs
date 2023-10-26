@@ -9,17 +9,7 @@ internal class NoahReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
     public List<RssFeedItem> GenerateRssFeedItemList(RssFeed feed, string html)
     {
         // Find out which feature flag variation we are using to log activity
-        string key = "feed-log-level";
-        string identity = feed.CollectionName;
-        string variation = _unlaunchClient.GetVariation(key, identity);
-        _log.Information("Unlaunch {key} returned variation {variation} for identity {identity}", key, variation, identity);
-
-        _logLevel = variation switch
-        {
-            "debug" => Serilog.Events.LogEventLevel.Debug,
-            "information" => Serilog.Events.LogEventLevel.Information,
-            _ => throw new ArgumentException("Unexpected variation")
-        };
+        _logLevel = Serilog.Events.LogEventLevel.Debug;
 
         return GenerateRssFeedItemList(feed.CollectionName, feed.Url, feed.Filters, html);
     }
