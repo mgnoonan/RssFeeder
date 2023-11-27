@@ -22,7 +22,7 @@ public partial class TagParserBase
     private const string _sizePattern3 = @"\/w:\d{3,4}\/p:";
     private const string _sizePattern4 = @"\/(mobile_thumb__|blog_image_\d{2}_)";
     private static readonly string[] srcAttributeArray = new string[] { "src" };
-    private static readonly string[] extendedSrcAttributeArray = new string[] { "data-mm-src", "data-src", "data-lazy-src", "data-srcs", "data-srcset" };
+    private static readonly string[] extendedSrcAttributeArray = new string[] { "data-mm-src", "data-src", "data-lazy-src", "data-srcs", "data-srcset", "data-img-url" };
 
     public TagParserBase(ILogger log, IWebUtils webUtils)
     {

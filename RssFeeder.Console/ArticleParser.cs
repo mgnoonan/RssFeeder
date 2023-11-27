@@ -247,7 +247,7 @@ public class ArticleParser : IArticleParser
         if (contentValue.Contains("&#x") || contentValue.Contains("&#32;"))
         {
             contentValue = System.Web.HttpUtility.HtmlDecode(contentValue);
-            _log.Information("Decoded {propertyValue} content value '{contentValue}'", node.Name, contentValue);
+            _log.Information("Decoded {propertyValue} content value '{contentValue}'", node?.Name ?? "unknown", contentValue);
         }
         attributes.Add("title", contentValue);
 
@@ -257,7 +257,7 @@ public class ArticleParser : IArticleParser
         if (contentValue.Contains("&#x") || contentValue.Contains("&#32;"))
         {
             contentValue = System.Web.HttpUtility.HtmlDecode(contentValue);
-            _log.Information("Decoded {propertyValue} content value '{contentValue}'", node.Name, contentValue);
+            _log.Information("Decoded {propertyValue} content value '{contentValue}'", node?.Name ?? "unknown", contentValue);
         }
         attributes.Add("h1", contentValue);
 
