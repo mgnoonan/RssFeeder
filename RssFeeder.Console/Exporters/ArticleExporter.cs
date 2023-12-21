@@ -24,7 +24,7 @@ public class ArticleExporter : BaseArticleExporter, IArticleExporter
             UrlHash = item.FeedAttributes.UrlHash,
             DateAdded = item.FeedAttributes.DateAdded,
             LinkLocation = item.FeedAttributes.LinkLocation,
-            Title = item.FeedAttributes.Title,
+            Title = item.FeedAttributes.Title.Replace("\n", " | "),
             Description = item.OpenGraphAttributes.GetValueOrDefault("og:description")
         };
 
