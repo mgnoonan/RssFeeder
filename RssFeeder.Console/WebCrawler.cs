@@ -233,6 +233,7 @@ public class WebCrawler : IWebCrawler
             case "application/jpg":
             case "image/gif":
             case "image/png":
+            case "image/webp":
             case "application/pdf":
             case "audio/mpeg":
                 return true;
