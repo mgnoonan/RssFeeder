@@ -32,7 +32,12 @@ public class ArticleExporter : BaseArticleExporter, IArticleExporter
         string hostName = uri.GetComponents(UriComponents.Host, UriFormat.Unescaped).ToLower();
 
         var fileName = item.FeedAttributes.FileName ?? "";
-        if (fileName.EndsWith(".png") || fileName.EndsWith(".jpg") || fileName.EndsWith(".gif") || fileName.EndsWith(".pdf"))
+        if (fileName.EndsWith(".png") ||
+            fileName.EndsWith(".jpg") ||
+            fileName.EndsWith(".gif") ||
+            fileName.EndsWith(".pdf") ||
+            fileName.EndsWith(".mp4") ||
+            fileName.EndsWith(".webp"))
         {
             SetGraphicMetaData(item, exportFeedItem);
             exportFeedItem.ArticleText = ApplyTemplateToDescription(exportFeedItem, feed, ExportTemplates.GraphicTemplate);

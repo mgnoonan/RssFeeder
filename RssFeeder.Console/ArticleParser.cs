@@ -36,7 +36,9 @@ public class ArticleParser : IArticleParser
         if (item.FeedAttributes.FileName.EndsWith(".png") ||
             item.FeedAttributes.FileName.EndsWith(".jpg") ||
             item.FeedAttributes.FileName.EndsWith(".gif") ||
-            item.FeedAttributes.FileName.EndsWith(".pdf"))
+            item.FeedAttributes.FileName.EndsWith(".pdf") ||
+            item.FeedAttributes.FileName.EndsWith(".mp4") ||
+            item.FeedAttributes.FileName.EndsWith(".webp"))
         {
             _log.Information("Binary file detected, skipping metadata values for '{url}'", item.FeedAttributes.Url);
             return;
