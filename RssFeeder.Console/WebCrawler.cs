@@ -234,6 +234,7 @@ public class WebCrawler : IWebCrawler
             case "image/gif":
             case "image/png":
             case "application/pdf":
+            case "audio/mpeg":
                 return true;
             default:
                 _log.Warning("Unexpected content type {contentType}", contentTypeLowered);
