@@ -347,7 +347,7 @@ public class WebCrawler : IWebCrawler
                 extension = ".xml";
                 break;
             case "audio/mpeg":
-                extension = ".mp4";
+                extension = ".mp3";
                 break;
             case "image/webp":
                 extension = ".webp";

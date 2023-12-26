@@ -36,7 +36,7 @@ public class ArticleExporter : BaseArticleExporter, IArticleExporter
             fileName.EndsWith(".jpg") ||
             fileName.EndsWith(".gif") ||
             fileName.EndsWith(".pdf") ||
-            fileName.EndsWith(".mp4") ||
+            fileName.EndsWith(".mp3") ||
             fileName.EndsWith(".webp"))
         {
             SetGraphicMetaData(item, exportFeedItem);
