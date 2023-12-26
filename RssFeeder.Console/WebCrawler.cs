@@ -346,6 +346,12 @@ public class WebCrawler : IWebCrawler
             case "application/xml":
                 extension = ".xml";
                 break;
+            case "audio/mpeg":
+                extension = ".mp4";
+                break;
+            case "image/webp":
+                extension = ".webp";
+                break;
         }
 
         _log.Information("GetFileExtensionByContentType: Detected extension {extension} from content type {contentType}", extension, contentTypeLowered);
