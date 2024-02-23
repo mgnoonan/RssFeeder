@@ -80,11 +80,12 @@ public class ArticleExporter : BaseArticleExporter, IArticleExporter
         }
         else
         {
-            string result = item.HtmlAttributes.GetValueOrDefault("ParserResult") ?? "";
+            bool useTitle = item.HostName == "twitter.com";
+            string result = useTitle ? item.OpenGraphAttributes.GetValueOrDefault("og:title") : item.HtmlAttributes.GetValueOrDefault("ParserResult") ?? "";
             string imageUrl = item.OpenGraphAttributes.GetValueOrDefault("og:image") ?? null;
             if (string.IsNullOrEmpty(result))
             {
-                _log.Debug("No parsed result, applying basic metadata values for '{hostname}'", hostName);
+                _log.Information("No parsed result, applying basic metadata values for '{hostname}'", hostName);
 
                 // Article failed to download, display minimal basic meta data
                 SetBasicArticleMetaData(exportFeedItem, item, hostName);
@@ -92,7 +93,7 @@ public class ArticleExporter : BaseArticleExporter, IArticleExporter
             }
             else
             {
-                _log.Debug("Applying extended metadata values for '{hostname}'", hostName);
+                _log.Information("Applying extended metadata values for '{hostname}'", hostName);
 
                 SetExtendedArticleMetaData(exportFeedItem, item, hostName);
                 exportFeedItem.ArticleText = ApplyTemplateToDescription(exportFeedItem, feed, ExportTemplates.ExtendedTemplate);

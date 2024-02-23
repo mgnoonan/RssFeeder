@@ -446,7 +446,7 @@ public partial class TagParserBase
         }
         catch (DomException ex)
         {
-            _log.Error(ex, "Error attempting to retrieve selector for {tagName}", element.TagName);
+            _log.Warning(ex, "Error retrieving selector for {tagName}", element.TagName);
             return "";
         }
     }

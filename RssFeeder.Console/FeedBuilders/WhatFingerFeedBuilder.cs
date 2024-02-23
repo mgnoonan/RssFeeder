@@ -31,7 +31,8 @@ internal class WhatFingerFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         var list = new List<RssFeedItem>();
 
         // Main Headlines section
-        GetNodeLinks("headlines", "div.creative-link.wpb_column.vc_column_container.vc_col-sm-8 > div > div > div:nth-child(5) > div", "ul li a", list, true);
+        // div.creative-link.wpb_column.vc_column_container.vc_col-sm-8 > div > div > div:nth-child(6) > div > h4:nth-child(1) > span > a
+        GetNodeLinks("headlines", "div.creative-link.wpb_column.vc_column_container.vc_col-sm-8 > div > div > div:nth-child(6) > div", "ul li a", list, true);
 
         return list;
     }
