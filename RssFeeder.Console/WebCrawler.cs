@@ -352,6 +352,9 @@ public class WebCrawler : IWebCrawler
             case "audio/mpeg":
                 extension = ".mp3";
                 break;
+            case "video/mp4":
+                extension = ".mp4";
+                break;
             case "image/webp":
                 extension = ".webp";
                 break;
