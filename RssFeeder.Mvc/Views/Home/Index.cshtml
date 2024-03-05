@@ -23,7 +23,7 @@
         <tbody>
             @foreach (var item in Model)
             {
-                string badge => item.StatusMessage switch
+                string badge = item.StatusMessage switch
                 {
                     "online" => "success",
                     "offline" => "danger",
