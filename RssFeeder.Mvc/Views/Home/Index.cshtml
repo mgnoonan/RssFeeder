@@ -15,6 +15,7 @@
         <thead>
             <tr>
                 <th>Site</th>
+                <th>Status</th>
                 <th>Feedly</th>
                 <th>RSS</th>
             </tr>
@@ -24,6 +25,7 @@
             {
                 <tr>
                     <td><a href="@item.url" target="_blank">@item.title</a></td>
+                    <td>@item.StatusMessage</td>
                     <td>
                         @if (!string.IsNullOrEmpty(item.FeedlyUrl))
                         {

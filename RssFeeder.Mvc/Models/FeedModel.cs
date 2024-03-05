@@ -21,4 +21,5 @@ public class FeedModel
     public string authoremail { get; set; }
     public string FeedlyUrl { get; set; }
     public string RssUrl { get; set; }
+    public string StatusMessage { get; set; }
 }
