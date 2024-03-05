@@ -1,9 +1,5 @@
 ﻿@inject Microsoft.ApplicationInsights.AspNetCore.JavaScriptSnippet JavaScriptSnippet
 @inject AppVersionInfo appInfo
-@{
-    const string shoelaceStylesheet = "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.12.0/cdn/themes/light.css";
-    const string shoelaceJavaScript = "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.12.0/cdn/shoelace-autoloader.js";
-}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,8 +8,6 @@
     <title>@ViewData["Title"] - RssFeeder</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" />
-    <link rel="stylesheet" href="@shoelaceStylesheet" />
-    <script type="module" src="@shoelaceJavaScript"></script>
     @Html.Raw(JavaScriptSnippet.FullScript)
 </head>
 <body>

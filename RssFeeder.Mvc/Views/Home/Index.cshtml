@@ -1,4 +1,4 @@
-﻿@model IEnumerable<RssFeeder.Mvc.Models.FeedModel>
+@model IEnumerable<RssFeeder.Mvc.Models.FeedModel>
 
 @{
     ViewData["Title"] = "Home Page";
@@ -25,14 +25,14 @@
             {
                 string badge = item.StatusMessage switch
                 {
-                    "online" => "success",
-                    "offline" => "danger",
-                    "degraded" => "warning",
-                    _ => "primary"
+                    "online" => "badge badge-success",
+                    "offline" => "badge badge-danger",
+                    "degraded" => "badge badge-warning",
+                    _ => "badge badge-primary"
                 };
                 <tr>
                     <td><a href="@item.url" target="_blank">@item.title</a></td>
-                    <td><sl-badge variant="@badge">@item.StatusMessage</sl-badge></td>
+                    <td><span class="@badge">@item.StatusMessage</span></td>
                     <td>
                         @if (!string.IsNullOrEmpty(item.FeedlyUrl))
                         {
