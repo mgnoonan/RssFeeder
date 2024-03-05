@@ -116,7 +116,7 @@
     "Title": "Freedom of the Press",
     "Url": "https://freedomofthepress.com/",
     "Description": "Freedom of the Press",
-    "StatusMessage": "online",
+    "StatusMessage": "degraded",
     "Language": "en-US",
     "CustomParser": "RssFeeder.Console.FeedBuilders.FreedomPressFeedBuilder",
     "CollectionName": "freedom-press",

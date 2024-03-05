@@ -23,9 +23,16 @@
         <tbody>
             @foreach (var item in Model)
             {
+                string badge => item.StatusMessage switch
+                {
+                    "online" => "success",
+                    "offline" => "danger",
+                    "degraded" => "warning",
+                    _ => "primary"
+                };
                 <tr>
                     <td><a href="@item.url" target="_blank">@item.title</a></td>
-                    <td>@item.StatusMessage</td>
+                    <td><sl-badge variant="@badge">@item.StatusMessage</sl-badge></td>
                     <td>
                         @if (!string.IsNullOrEmpty(item.FeedlyUrl))
                         {
