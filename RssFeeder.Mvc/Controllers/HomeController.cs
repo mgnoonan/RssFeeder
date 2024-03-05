@@ -18,7 +18,7 @@ public class HomeController : Controller
     [AllowAnonymous]
     public IActionResult Index()
     {
-        return View(_feeds.OrderBy(i => i.title).AsEnumerable());
+        return View(_feeds.OrderByDescending(i => i.StatusMessage).ThenBy(i => i.title).AsEnumerable());
     }
 
     [AllowAnonymous]
