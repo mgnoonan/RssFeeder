@@ -225,6 +225,7 @@ public class WebCrawler : IWebCrawler
             case "text/html":
             case "text/plain":
             case "text/json":
+            case "text/xml":
             case "application/json":
             case "application/xhtml+xml":
             case "application/xml":
