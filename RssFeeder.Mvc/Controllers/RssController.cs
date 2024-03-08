@@ -14,7 +14,7 @@ public class RssController : ControllerBase
         _log = log;
     }
 
-    [HttpGet, HttpHead, Route("{id}"), ResponseCache(Duration = 60 * 60), Produces("text/xml")]
+    [HttpGet, HttpHead, Route("{id}"), ResponseCache(Duration = 60 * 60), Produces("application/rss+xml")]
     public async Task<IActionResult> Get(string id)
     {
         try
@@ -42,7 +42,7 @@ public class RssController : ControllerBase
                 return new ContentResult
                 {
                     Content = result,
-                    ContentType = "text/xml",
+                    ContentType = "application/rss+xml",
                     StatusCode = StatusCodes.Status200OK
                 };
             }
