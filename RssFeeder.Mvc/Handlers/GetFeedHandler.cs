@@ -32,7 +32,7 @@ public class GetFeedHandler : IRequestHandler<GetFeedQuery, string>
 
     private async Task<string> GetSyndicationItems(string id, string userAgent)
     {
-        bool textOnly = userAgent.Contains("Feedly/1.0", StringComparison.InvariantCultureIgnoreCase) && id.Contains("drudge");
+        bool textOnly = userAgent.Contains("Feedly/1.0", StringComparison.InvariantCultureIgnoreCase);
         string key = string.Concat(id, "_feed_", textOnly ? "TextOnly" : "Xml");
 
         // See if we already have the items in the cache
