@@ -24,6 +24,7 @@ public class RssController : ControllerBase
                 BrowserAgent = HttpContext.Request.Headers[HeaderNames.UserAgent].ToString() ?? "",
                 IpAddress = HttpContext.Connection.RemoteIpAddress.ToString(),
                 Referrer = HttpContext.Request.Headers[HeaderNames.Referer].ToString() ?? "",
+                QueryString = HttpContext.Request.QueryString,
                 Timestamp = DateTime.Now
             });
             var result = await _mediator.Send(query);

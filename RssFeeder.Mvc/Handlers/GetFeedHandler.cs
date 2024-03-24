@@ -27,12 +27,12 @@ public class GetFeedHandler : IRequestHandler<GetFeedQuery, string>
             return Task.FromResult(string.Empty);
         }
 
-        return GetSyndicationItems(request.Id, request.Agent.BrowserAgent);
+        return GetSyndicationItems(request.Id, request.Agent.BrowserAgent, request.Agent.QueryString);
     }
 
-    private async Task<string> GetSyndicationItems(string id, string userAgent)
+    private async Task<string> GetSyndicationItems(string id, string userAgent, QueryString queryString)
     {
-        bool textOnly = true; // userAgent.Contains("Feedly/1.0", StringComparison.InvariantCultureIgnoreCase);
+        bool textOnly = userAgent.Contains("Feedly/1.0", StringComparison.InvariantCultureIgnoreCase) || !queryString.HasValue;
         string key = string.Concat(id, "_feed_", textOnly ? "TextOnly" : "Xml");
 
         // See if we already have the items in the cache
