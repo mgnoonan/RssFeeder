@@ -37,7 +37,7 @@ public class GetFeedHandler : IRequestHandler<GetFeedQuery, string>
         bool textOnly = userAgent.Contains("Feedly/1.0", StringComparison.InvariantCultureIgnoreCase) || !queryString.HasValue;
         string key = string.Concat(id, "_feed_", textOnly ? "TextOnly" : "Xml");
 
-        // See if we already have the items in the cache
+        // Retrieve or set the items in the cache
         string xml = await _cache.GetOrSetAsync<string>(
             key,
             _ => GetSyndicationItemsFromDatabaseAsync(id, textOnly, key)
