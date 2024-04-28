@@ -1,5 +1,7 @@
-using RssFeeder.Mvc;
+using Microsoft.Extensions.Logging;
 using OwaspHeaders.Core.Extensions;
+using RssFeeder.Mvc;
+using ZiggyCreatures.Caching.Fusion;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -49,10 +51,29 @@ try
     builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
     builder.Services.AddMemoryCache();
     builder.Services.AddApplicationInsightsTelemetry();
-    builder.Services.AddCacheStack<IDatabaseService>((provider, builder) => builder
-        .AddMemoryCacheLayer()
-        .WithCleanupFrequency(TimeSpan.FromMinutes(15))
-    );
+    builder.Services.AddFusionCache()
+        .WithOptions(options =>
+        {
+            // CUSTOM LOG LEVELS
+            options.FailSafeActivationLogLevel = LogLevel.Debug;
+            options.SerializationErrorsLogLevel = LogLevel.Warning;
+            options.FactorySyntheticTimeoutsLogLevel = LogLevel.Debug;
+            options.FactoryErrorsLogLevel = LogLevel.Error;
+        })
+        .WithDefaultEntryOptions(new FusionCacheEntryOptions
+        {
+            // DEFAULT CACHE EXPIRATION
+            Duration = TimeSpan.FromMinutes(15),
+
+            // FAIL-SAFE OPTIONS
+            IsFailSafeEnabled = true,
+            FailSafeMaxDuration = TimeSpan.FromHours(2),
+            FailSafeThrottleDuration = TimeSpan.FromSeconds(30),
+
+            // FACTORY TIMEOUTS
+            FactorySoftTimeout = TimeSpan.FromMilliseconds(200),
+            FactoryHardTimeout = TimeSpan.FromMilliseconds(1500)
+        });
 
     builder.Services.AddMvc().AddXmlDataContractSerializerFormatters();
 
