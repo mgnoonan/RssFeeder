@@ -2,7 +2,7 @@
 
 internal class WhatFingerFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    public WhatFingerFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(log, webUtilities, utilities, unlaunchClient)
+    public WhatFingerFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities) : base(log, webUtilities, utilities)
     {
     }
 

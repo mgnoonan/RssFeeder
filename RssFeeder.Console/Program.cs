@@ -26,7 +26,6 @@ var builder = new ContainerBuilder();
 
 builder.RegisterInstance(Log.Logger).As<ILogger>();
 builder.RegisterInstance(configuration).As<IConfigurationRoot>();
-builder.RegisterInstance(UnlaunchClient.Create(configuration.GetValue<string>("Unlaunch_key"))).As<IUnlaunchClient>().SingleInstance();
 #if DEBUG
 builder.RegisterType<RavenDbRepository>().As<IExportRepository>();
 #else

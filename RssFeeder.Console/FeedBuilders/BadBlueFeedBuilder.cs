@@ -2,7 +2,7 @@ namespace RssFeeder.Console.FeedBuilders;
 
 class BadBlueFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    public BadBlueFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(log, webUtilities, utilities, unlaunchClient)
+    public BadBlueFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities) : base(log, webUtilities, utilities)
     {
     }
 

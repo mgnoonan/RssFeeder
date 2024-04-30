@@ -2,7 +2,7 @@
 
 internal class ConservagatorFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    public ConservagatorFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(logger, webUtilities, utilities, unlaunchClient)
+    public ConservagatorFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities) : base(logger, webUtilities, utilities)
     {
     }
 

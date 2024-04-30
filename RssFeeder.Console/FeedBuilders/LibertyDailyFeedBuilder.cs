@@ -2,7 +2,7 @@
 
 class LibertyDailyFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    public LibertyDailyFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(log, webUtilities, utilities, unlaunchClient)
+    public LibertyDailyFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities) : base(log, webUtilities, utilities)
     {
     }
 

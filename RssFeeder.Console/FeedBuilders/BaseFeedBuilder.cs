@@ -5,7 +5,6 @@ namespace RssFeeder.Console.FeedBuilders;
 class BaseFeedBuilder
 {
     protected readonly ILogger _log;
-    protected readonly IUnlaunchClient _unlaunchClient;
     readonly IWebUtils _webUtils;
     readonly IUtils _utils;
     protected Serilog.Events.LogEventLevel _logLevel = Serilog.Events.LogEventLevel.Information;
@@ -14,12 +13,11 @@ class BaseFeedBuilder
     protected IHtmlDocument _document;
     protected int _articleMaxCount = 1000;
 
-    public BaseFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient)
+    public BaseFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities)
     {
         _log = logger;
         _webUtils = webUtilities;
         _utils = utilities;
-        _unlaunchClient = unlaunchClient;
     }
 
     protected void Initialize(string feedUrl, List<string> feedFilters, string html)

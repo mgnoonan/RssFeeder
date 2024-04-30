@@ -2,7 +2,7 @@
 
 internal class PoliticalSignalFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    public PoliticalSignalFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(log, webUtilities, utilities, unlaunchClient)
+    public PoliticalSignalFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities) : base(log, webUtilities, utilities)
     {
     }
 

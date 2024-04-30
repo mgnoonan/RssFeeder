@@ -2,7 +2,7 @@
 
 internal class RubinReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    public RubinReportFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(log, webUtilities, utilities, unlaunchClient)
+    public RubinReportFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities) : base(log, webUtilities, utilities)
     {
     }
 

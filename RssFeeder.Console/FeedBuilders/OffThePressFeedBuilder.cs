@@ -2,7 +2,7 @@
 
 internal class OffThePressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    public OffThePressFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(log, webUtilities, utilities, unlaunchClient)
+    public OffThePressFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities) : base(log, webUtilities, utilities)
     {
     }
 

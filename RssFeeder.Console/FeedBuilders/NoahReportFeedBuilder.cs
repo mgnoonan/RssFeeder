@@ -2,7 +2,7 @@
 
 internal class NoahReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    public NoahReportFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(log, webUtilities, utilities, unlaunchClient)
+    public NoahReportFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities) : base(log, webUtilities, utilities)
     {
     }
 

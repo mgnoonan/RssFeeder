@@ -2,7 +2,7 @@
 
 class DrudgeReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    public DrudgeReportFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(log, webUtilities, utilities, unlaunchClient)
+    public DrudgeReportFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities) : base(log, webUtilities, utilities)
     {
     }
 

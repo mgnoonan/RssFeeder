@@ -2,7 +2,7 @@
 
 class CitizenFreePressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    public CitizenFreePressFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(log, webUtilities, utilities, unlaunchClient)
+    public CitizenFreePressFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities) : base(log, webUtilities, utilities)
     {
     }
 

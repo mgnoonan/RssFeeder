@@ -2,7 +2,7 @@
 
 class TwitchyFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    public TwitchyFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(logger, webUtilities, utilities, unlaunchClient)
+    public TwitchyFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities) : base(logger, webUtilities, utilities)
     {
     }
 

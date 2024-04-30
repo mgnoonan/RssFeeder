@@ -2,7 +2,7 @@
 
 class RantinglyFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    public RantinglyFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(log, webUtilities, utilities, unlaunchClient)
+    public RantinglyFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities) : base(log, webUtilities, utilities)
     {
     }
 

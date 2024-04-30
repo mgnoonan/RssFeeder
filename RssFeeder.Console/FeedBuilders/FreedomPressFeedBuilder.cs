@@ -2,7 +2,7 @@
 
 internal class FreedomPressFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    public FreedomPressFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(logger, webUtilities, utilities, unlaunchClient)
+    public FreedomPressFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities) : base(logger, webUtilities, utilities)
     {
     }
 

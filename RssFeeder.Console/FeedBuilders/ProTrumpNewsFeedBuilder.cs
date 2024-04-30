@@ -2,7 +2,7 @@
 
 internal class ProTrumpNewsFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    public ProTrumpNewsFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(logger, webUtilities, utilities, unlaunchClient)
+    public ProTrumpNewsFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities) : base(logger, webUtilities, utilities)
     {
     }
 

@@ -2,8 +2,8 @@
 
 internal class RevolverNewsFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    public RevolverNewsFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) :
-        base(logger, webUtilities, utilities, unlaunchClient)
+    public RevolverNewsFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities) :
+        base(logger, webUtilities, utilities)
     {
     }
 

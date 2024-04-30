@@ -2,7 +2,7 @@
 
 class GutSmackFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    public GutSmackFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities, IUnlaunchClient unlaunchClient) : base(log, webUtilities, utilities, unlaunchClient)
+    public GutSmackFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities) : base(log, webUtilities, utilities)
     {
     }
 
