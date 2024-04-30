@@ -7,6 +7,13 @@ public class ArticleParser : IArticleParser
     private IWebUtils _webUtils;
     private ILogger _log;
 
+    /// <summary>
+    /// Initializes the ArticleParser with the necessary dependencies.
+    /// </summary>
+    /// <param name="container">The dependency injection container.</param>
+    /// <param name="definitionFactory">The factory for creating article definitions.</param>
+    /// <param name="webUtils">The utility class for web-related operations.</param>
+    /// <param name="log">The logger for logging messages.</param>
     public void Initialize(IContainer container, IArticleDefinitionFactory definitionFactory, IWebUtils webUtils, ILogger log)
     {
         _container = container;
@@ -197,7 +204,7 @@ public class ArticleParser : IArticleParser
 
             if (attributes.ContainsKey(propertyValue))
             {
-                propertyValue = GetPropertyValueIndex(attributes, propertyValue);
+                propertyValue = GetUniqueKey(attributes, propertyValue);
             }
 
             attributes.Add(propertyValue, contentValue);
@@ -206,18 +213,22 @@ public class ArticleParser : IArticleParser
         return attributes;
     }
 
-    private static string GetPropertyValueIndex(Dictionary<string, string> attributes, string propertyValue)
+    /// <summary>
+    /// Generates a unique key for the given attributes dictionary and key.
+    /// If the generated key already exists in the dictionary, a modified key with a timestamp suffix is returned.
+    /// </summary>
+    /// <param name="attributes">The dictionary of attributes.</param>
+    /// <param name="key">The key to generate a unique key for.</param>
+    /// <returns>A unique key.</returns>
+    private static string GetUniqueKey(Dictionary<string, string> attributes, string key)
     {
-        for (int i = 1; i < 100; i++)
+        string uniqueKey = $"{key}-{DateTime.Now.Ticks:000#}";
+        if (!attributes.ContainsKey(uniqueKey))
         {
-            string newPropertyValue = $"{propertyValue}:{i:0#}";
-            if (!attributes.ContainsKey(newPropertyValue))
-            {
-                return newPropertyValue;
-            }
+            return uniqueKey;
         }
 
-        return "og:unknown";
+        return key;
     }
 
     private string ParseOpenGraphAttributeValue(HtmlNode node, string propertyValue)
