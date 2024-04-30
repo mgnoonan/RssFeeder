@@ -224,6 +224,8 @@ public class WebCrawler : IWebCrawler
         {
             case "text/html":
             case "text/plain":
+            case "text/json":
+            case "text/xml":
             case "application/json":
             case "application/xhtml+xml":
             case "application/xml":
@@ -233,7 +235,10 @@ public class WebCrawler : IWebCrawler
             case "application/jpg":
             case "image/gif":
             case "image/png":
+            case "image/webp":
             case "application/pdf":
+            case "audio/mpeg":
+            case "video/mp4":
                 return true;
             default:
                 _log.Warning("Unexpected content type {contentType}", contentTypeLowered);
@@ -336,6 +341,7 @@ public class WebCrawler : IWebCrawler
                 extension = ".png";
                 break;
             case "application/json":
+            case "text/json":
                 extension = ".json";
                 break;
             case "application/pdf":
@@ -343,6 +349,15 @@ public class WebCrawler : IWebCrawler
                 break;
             case "application/xml":
                 extension = ".xml";
+                break;
+            case "audio/mpeg":
+                extension = ".mp3";
+                break;
+            case "video/mp4":
+                extension = ".mp4";
+                break;
+            case "image/webp":
+                extension = ".webp";
                 break;
         }
 

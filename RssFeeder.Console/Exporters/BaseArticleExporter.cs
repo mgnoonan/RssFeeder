@@ -134,7 +134,7 @@ public class BaseArticleExporter
                     _log.Error("Error deserializing json+ld values for {urlHash}", exportFeedItem.UrlHash);
                 }
 
-                foreach (var value in list)
+                foreach (var value in list!)
                 {
                     if (string.IsNullOrWhiteSpace(value.embedUrl))
                         continue;

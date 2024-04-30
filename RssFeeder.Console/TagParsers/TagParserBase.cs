@@ -22,7 +22,7 @@ public partial class TagParserBase
     private const string _sizePattern3 = @"\/w:\d{3,4}\/p:";
     private const string _sizePattern4 = @"\/(mobile_thumb__|blog_image_\d{2}_)";
     private static readonly string[] srcAttributeArray = new string[] { "src" };
-    private static readonly string[] extendedSrcAttributeArray = new string[] { "data-mm-src", "data-src", "data-lazy-src", "data-srcs", "data-srcset" };
+    private static readonly string[] extendedSrcAttributeArray = new string[] { "data-mm-src", "data-src", "data-lazy-src", "data-srcs", "data-srcset", "data-img-url" };
 
     public TagParserBase(ILogger log, IWebUtils webUtils)
     {
@@ -86,11 +86,7 @@ public partial class TagParserBase
         RemoveAllTag(document, "noscript");
 
         // Check for embedded videos
-        if (_item.SiteName == "vidmaxviral.com")
-        {
-            ExtractVideoMetadata(document);
-        }
-        else if (_item.SiteName != "youtube" && _item.SiteName != "rumble")
+        if (_item.SiteName != "youtube" && _item.SiteName != "rumble")
         {
             var elements = document.QuerySelectorAll("iframe");
             _log.Debug("IFRAME tag count {count}", elements.Length);
@@ -102,25 +98,6 @@ public partial class TagParserBase
         }
 
         _item.HtmlAttributes["ParserResult"] = document.Body.InnerHtml.Trim();
-    }
-
-    private void ExtractVideoMetadata(IHtmlDocument document)
-    {
-        var element = document.QuerySelector("video");
-        var source = element.Children[0];
-
-        string url = source.GetAttribute("src");
-        string type = source.HasAttribute("type") ? source.GetAttribute("type") : "text/html";
-        string width = source.HasAttribute("width") ? source.GetAttribute("width") : "100%";
-        string height = source.HasAttribute("height") ? source.GetAttribute("height") : "100%";
-        _log.Information("Embedded video {type} detected {url}", type, url);
-
-        _item.OpenGraphAttributes.Add("og:x:video", url);
-        _item.OpenGraphAttributes.Add("og:x:video:type", type);
-        _item.OpenGraphAttributes.Add("og:x:video:width", width);
-        _item.OpenGraphAttributes.Add("og:x:video:height", height);
-
-        element.Remove();
     }
 
     private void ExtractIFrameMetadata(IElement iframeElement)
@@ -469,7 +446,7 @@ public partial class TagParserBase
         }
         catch (DomException ex)
         {
-            _log.Error(ex, "Error attempting to retrieve selector for {tagName}", element.TagName);
+            _log.Warning(ex, "Error retrieving selector for {tagName}", element.TagName);
             return "";
         }
     }

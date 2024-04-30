@@ -24,7 +24,7 @@ public class ArticleExporter : BaseArticleExporter, IArticleExporter
             UrlHash = item.FeedAttributes.UrlHash,
             DateAdded = item.FeedAttributes.DateAdded,
             LinkLocation = item.FeedAttributes.LinkLocation,
-            Title = item.FeedAttributes.Title,
+            Title = item.FeedAttributes.Title.Replace("\n", " | "),
             Description = item.OpenGraphAttributes.GetValueOrDefault("og:description")
         };
 
@@ -32,7 +32,12 @@ public class ArticleExporter : BaseArticleExporter, IArticleExporter
         string hostName = uri.GetComponents(UriComponents.Host, UriFormat.Unescaped).ToLower();
 
         var fileName = item.FeedAttributes.FileName ?? "";
-        if (fileName.EndsWith(".png") || fileName.EndsWith(".jpg") || fileName.EndsWith(".gif") || fileName.EndsWith(".pdf"))
+        if (fileName.EndsWith(".png") ||
+            fileName.EndsWith(".jpg") ||
+            fileName.EndsWith(".gif") ||
+            fileName.EndsWith(".pdf") ||
+            fileName.EndsWith(".mp3") ||
+            fileName.EndsWith(".webp"))
         {
             SetGraphicMetaData(item, exportFeedItem);
             exportFeedItem.ArticleText = ApplyTemplateToDescription(exportFeedItem, feed, ExportTemplates.GraphicTemplate);
@@ -75,11 +80,12 @@ public class ArticleExporter : BaseArticleExporter, IArticleExporter
         }
         else
         {
-            string result = item.HtmlAttributes.GetValueOrDefault("ParserResult") ?? "";
+            bool useTitle = item.HostName == "twitter.com";
+            string result = useTitle ? item.OpenGraphAttributes.GetValueOrDefault("og:title") : item.HtmlAttributes.GetValueOrDefault("ParserResult") ?? "";
             string imageUrl = item.OpenGraphAttributes.GetValueOrDefault("og:image") ?? null;
             if (string.IsNullOrEmpty(result))
             {
-                _log.Debug("No parsed result, applying basic metadata values for '{hostname}'", hostName);
+                _log.Information("No parsed result, applying basic metadata values for '{hostname}'", hostName);
 
                 // Article failed to download, display minimal basic meta data
                 SetBasicArticleMetaData(exportFeedItem, item, hostName);
@@ -87,7 +93,7 @@ public class ArticleExporter : BaseArticleExporter, IArticleExporter
             }
             else
             {
-                _log.Debug("Applying extended metadata values for '{hostname}'", hostName);
+                _log.Information("Applying extended metadata values for '{hostname}'", hostName);
 
                 SetExtendedArticleMetaData(exportFeedItem, item, hostName);
                 exportFeedItem.ArticleText = ApplyTemplateToDescription(exportFeedItem, feed, ExportTemplates.ExtendedTemplate);
