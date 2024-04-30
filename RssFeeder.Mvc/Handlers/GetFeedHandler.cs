@@ -2,14 +2,16 @@
 
 public class GetFeedHandler : IRequestHandler<GetFeedQuery, string>
 {
-    private readonly ICacheStack<IDatabaseService> _cacheStack;
+    private readonly IDatabaseService _databaseService;
+    private readonly IFusionCache _cache;
     private readonly List<FeedModel> _feeds;
     private readonly ILogger _log;
     private readonly string _sourceFile = "feeds.json";
 
-    public GetFeedHandler(ICacheStack<IDatabaseService> cacheStack, ILogger log)
+    public GetFeedHandler(IDatabaseService databaseService, IFusionCache cache, ILogger log)
     {
-        _cacheStack = cacheStack;
+        _databaseService = databaseService;
+        _cache = cache;
         _feeds = System.Text.Json.JsonSerializer.Deserialize<List<FeedModel>>(
                 System.IO.File.ReadAllText(_sourceFile),
                 new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
@@ -35,23 +37,29 @@ public class GetFeedHandler : IRequestHandler<GetFeedQuery, string>
         bool textOnly = userAgent.Contains("Feedly/1.0", StringComparison.InvariantCultureIgnoreCase) || !queryString.HasValue;
         string key = string.Concat(id, "_feed_", textOnly ? "TextOnly" : "Xml");
 
-        // See if we already have the items in the cache
-        string xml = await _cacheStack.GetOrSetAsync<string>(key, async (old, context) =>
-        {
-            int days = 5;
-            _log.Information("CACHE MISS {key}: Loading feed {id} with items for {days} days ", key, id, days);
-
-            var items = await context.GetItemsAsync(new QueryDefinition("SELECT * FROM c WHERE c.FeedId = @id")
-                .WithParameter("@id", id));
-
-            return await FormatItemsAsAtomXml(
-                id,
-                items.Where(q => q.DateAdded >= DateTime.Now.Date.AddDays(-days)).OrderByDescending(q => q.DateAdded),
-                textOnly
-                );
-        }, new CacheSettings(TimeSpan.FromMinutes(60), TimeSpan.FromMinutes(15)));
+        // Retrieve or set the items in the cache
+        string xml = await _cache.GetOrSetAsync<string>(
+            key,
+            _ => GetSyndicationItemsFromDatabaseAsync(id, textOnly, key)
+        );
 
         return xml;
+    }
+
+    private async Task<string> GetSyndicationItemsFromDatabaseAsync(string id, bool textOnly, string key)
+    {
+        int days = 5;
+
+        _log.Information("CACHE MISS {key}: Loading feed {id} with items for {days} days ", key, id, days);
+        var items = await _databaseService
+            .GetItemsAsync(new QueryDefinition("SELECT * FROM c WHERE c.FeedId = @id")
+            .WithParameter("@id", id));
+
+        return await FormatItemsAsAtomXml(
+            id,
+            items.Where(q => q.DateAdded >= DateTime.Now.Date.AddDays(-days)).OrderByDescending(q => q.DateAdded),
+            textOnly
+            );
     }
 
     private async Task<string> FormatItemsAsAtomXml(string id, IEnumerable<RssFeedItem> items, bool textOnly)
