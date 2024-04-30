@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Logging;
 using OwaspHeaders.Core.Extensions;
 using RssFeeder.Mvc;
-using ZiggyCreatures.Caching.Fusion;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -71,8 +70,8 @@ try
             FailSafeThrottleDuration = TimeSpan.FromSeconds(30),
 
             // FACTORY TIMEOUTS
-            FactorySoftTimeout = TimeSpan.FromMilliseconds(200),
-            FactoryHardTimeout = TimeSpan.FromMilliseconds(1500)
+            FactorySoftTimeout = TimeSpan.FromMilliseconds(1500),
+            FactoryHardTimeout = TimeSpan.FromMilliseconds(3000)
         });
 
     builder.Services.AddMvc().AddXmlDataContractSerializerFormatters();
