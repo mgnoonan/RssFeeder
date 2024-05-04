@@ -70,7 +70,7 @@ try
             FailSafeThrottleDuration = TimeSpan.FromSeconds(30),
 
             // FACTORY TIMEOUTS
-            FactorySoftTimeout = TimeSpan.FromMilliseconds(1500),
+            FactorySoftTimeout = TimeSpan.FromMilliseconds(250),
             FactoryHardTimeout = TimeSpan.FromMilliseconds(3000)
         });
 
