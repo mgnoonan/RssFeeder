@@ -104,7 +104,7 @@ public class Utils : IUtils
 
         // Add the trailing backslash if not present
         string name = Path.GetDirectoryName(path);
-        if (!name.EndsWith("\\"))
+        if (!name.EndsWith('\\'))
             name += "\\";
 
         return name;

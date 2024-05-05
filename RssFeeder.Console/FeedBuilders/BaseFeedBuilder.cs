@@ -104,7 +104,7 @@ class BaseFeedBuilder
         }
 
         // Repair any protocol typos if possible
-        if (!linkUrl.ToLower().StartsWith("http"))
+        if (!linkUrl.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
         {
             linkUrl = _webUtils.RepairUrl(linkUrl, feedUrl);
         }
@@ -134,7 +134,7 @@ class BaseFeedBuilder
                     UrlHash = hash,
                     DateAdded = DateTime.Now.ToUniversalTime(),
                     LinkLocation = $"{location}, link {count}",
-                    IsUrlShortened = uri.Host.ToLower() == "t.co",
+                    IsUrlShortened = uri.Host.Equals("t.co", StringComparison.CurrentCultureIgnoreCase),
                     IsHeadline = isHeadline
                 }
             };
