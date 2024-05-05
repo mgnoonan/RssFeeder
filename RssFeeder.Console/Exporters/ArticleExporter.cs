@@ -49,11 +49,29 @@ public class ArticleExporter : BaseArticleExporter, IArticleExporter
             item.OpenGraphAttributes.GetValueOrDefault("og:video") ??
             item.OpenGraphAttributes.GetValueOrDefault("og:x:video") ??
             "";
+
         // Some sites do not provide OpenGraph video tags so watch for those specifically
-        string videoType = item.OpenGraphAttributes.GetValueOrDefault("og:video:type") ??
-            item.OpenGraphAttributes.GetValueOrDefault("og:x:video:type") ??
-            (videoUrl.EndsWith(".mp4") || item.SiteName == "bitchute" ? "video/mp4" :
-            videoUrl.Contains("youtube.com") || item.SiteName == "rumble" ? "text/html" : "");
+        string videoType;
+        if (item.OpenGraphAttributes.TryGetValue("og:video:type", out string value))
+        {
+            videoType = value;
+        }
+        else if (item.OpenGraphAttributes.TryGetValue("og:x:video:type", out value))
+        {
+            videoType = value;
+        }
+        else if (videoUrl.EndsWith(".mp4") || item.SiteName == "bitchute")
+        {
+            videoType = "video/mp4";
+        }
+        else if (videoUrl.Contains("youtube.com") || item.SiteName == "rumble")
+        {
+            videoType = "text/html";
+        }
+        else
+        {
+            videoType = "";
+        }
 
         bool hasSupportedVideoFormat = (videoUrl.Length > 0 || item.SiteName == "rumble" || item.SiteName == "bitchute") &&
             (videoType == "text/html" || videoType == "video/mp4" || videoType == "application/x-mpegURL");

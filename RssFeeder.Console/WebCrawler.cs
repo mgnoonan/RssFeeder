@@ -298,11 +298,23 @@ public class WebCrawler : IWebCrawler
             string path = uri.GetComponents(UriComponents.Path, UriFormat.Unescaped).ToLower();
             string query = uri.GetComponents(UriComponents.Query, UriFormat.Unescaped).ToLower();
 
-            string extension = path.EndsWith(".png") || query.Contains("format=png") ? ".png" :
-                path.EndsWith(".jpg") || path.EndsWith(".jpeg") || query.Contains("format=jpg") ? ".jpg" :
-                path.EndsWith(".gif") || query.Contains("format=gif") ? ".gif" :
-                path.EndsWith(".pdf") || query.Contains("format=pdf") ? ".pdf" :
-                ".html";
+            string extension = ".html";
+            if (path.EndsWith(".png") || query.Contains("format=png"))
+            {
+                extension = ".png";
+            }
+            else if (path.EndsWith(".jpg") || path.EndsWith(".jpeg") || query.Contains("format=jpg"))
+            {
+                extension = ".jpg";
+            }
+            else if (path.EndsWith(".gif") || query.Contains("format=gif"))
+            {
+                extension = ".gif";
+            }
+            else if (path.EndsWith(".pdf") || query.Contains("format=pdf"))
+            {
+                extension = ".pdf";
+            }
 
             _log.Information("GetFileExtensionByPathQuery: Detected extension {extension} from path /{path}?{query}", extension, path, query);
             return extension;
