@@ -28,7 +28,7 @@ public class FeedController : Controller
     // GET: Feed/Details/5
     public ActionResult Details(string id)
     {
-        var item = _feeds.FirstOrDefault(q => q.id == id);
+        var item = _feeds.Find(q => q.id == id);
         return View(item);
     }
 }

@@ -115,7 +115,7 @@ public class GetFeedHandler : IRequestHandler<GetFeedQuery, string>
 
     private FeedModel GetFeed(string id)
     {
-        return _feeds.FirstOrDefault(q => q.collectionname == id);
+        return _feeds.Find(q => q.collectionname == id);
     }
 
     private bool FeedExists(string id)

@@ -24,6 +24,6 @@ public class ArticleDefinitionFactory : IArticleDefinitionFactory
     {
         if (!isInitialized) Initialize();
 
-        return ArticleDefinitions.FirstOrDefault(q => q.SiteName == sitename);
+        return ArticleDefinitions.Find(q => q.SiteName == sitename);
     }
 }
