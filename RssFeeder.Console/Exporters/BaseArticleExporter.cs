@@ -114,7 +114,7 @@ public class BaseArticleExporter
         if (item.SiteName == "rumble")
         {
             var text = item.HtmlAttributes.GetValueOrDefault("ParserResult") ?? "";
-            if (!string.IsNullOrEmpty(text) && !text.StartsWith("<"))
+            if (!string.IsNullOrEmpty(text) && !text.StartsWith('<'))
             {
                 _log.Debug("EXPORT: Processing rumble.com ld+json metadata");
 
