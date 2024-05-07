@@ -1,35 +1,35 @@
 name: RssFeederMvc Local Deployment
 
 env:
-    DOTNET_VERSION: '8.0.x'                 # set this to the .NET Core version to use
+  DOTNET_VERSION: '8.0.x'                 # set this to the .NET Core version to use
   
 on:
-    push:
-      branches:
-        - "master"
-      paths:
-        - 'RssFeeder.Console/**'
-    workflow_dispatch:
+  push:
+    branches:
+      - "master"
+    paths:
+      - 'RssFeeder.Console/**'
+  workflow_dispatch:
   
   permissions:
     contents: read
   
-  jobs:
-    build:
-      runs-on: self-hosted
-  
-      steps:
-        - uses: actions/checkout@v4
-  
-        - name: Set up .NET Core
-          uses: actions/setup-dotnet@v4
-          with:
-            dotnet-version: ${{ env.DOTNET_VERSION }}
-  
-        - name: Show GitHub context
-          env:
-            GITHUB_CONTEXT: ${{ toJson(github) }}
-          run: echo "$GITHUB_CONTEXT"
-  
-        - name: Call the deployment script
-          run: /ps/cicd.ps1
+jobs:
+  build:
+    runs-on: self-hosted
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Show GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+
+      - name: Call the deployment script
+        run: /ps/cicd.ps1
