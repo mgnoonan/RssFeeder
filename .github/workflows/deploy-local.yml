@@ -15,7 +15,32 @@ permissions:
   contents: read
   
 jobs:
-  build:
+  sq-analysis:
+    name: SonarQube Analysis
+    runs-on: self-hosted
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v2
+
+      - name: SonarQube Begin Scan
+        run: dotnet sonarscanner begin /k:"RssFeeder" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.exclusions="**/bin/**/*,**/obj/**/*" /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" /d:sonar.coverage.exclusions="**/bin/**/*,**/obj/**/*" /d:sonar.cs.vstest.reportsPaths="**/*.trx" /d:sonar.cs.dotcover.reportsPaths="**/*.dotCover"
+
+      - name: Build
+        run: dotnet build
+
+      - name: SonarQube End Scan
+        run: dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+
+  backup-config:
+    name: Backup Configs
+    runs-on: self-hosted
+    steps:
+      - name: Run Backup Script
+        run: /ps/Backup-FeedConfigs.ps1 -deployFolder "${{ secrets.LOCAL_DEPLOY_FOLDER }}"
+
+  deploy-local:
+    name: Deploy to Local
+
     runs-on: self-hosted
 
     steps:
@@ -24,5 +49,5 @@ jobs:
           GITHUB_CONTEXT: ${{ toJson(github) }}
         run: echo "$GITHUB_CONTEXT"
 
-      - name: Call the deployment script
-        run: /ps/cicd.ps1 -branchName "${{github.ref_name}}"
+      - name: Publish the updated app
+        run: dotnet publish ./RssFeeder.Console/RssFeeder.Console.csproj /p:PublishProfile=FolderProfile /p:DeployFolder="${{ secrets.LOCAL_DEPLOY_FOLDER }}"
