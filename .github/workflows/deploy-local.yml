@@ -1,4 +1,4 @@
-name: RssFeederMvc Local Deployment
+name: RssFeeder Local Deployment
 
 env:
   DOTNET_VERSION: '8.0.x'                 # set this to the .NET Core version to use
@@ -25,4 +25,4 @@ jobs:
         run: echo "$GITHUB_CONTEXT"
 
       - name: Call the deployment script
-        run: /ps/cicd.ps1
+        run: /ps/cicd.ps1 -branchName "${{github.ref_name}}"
