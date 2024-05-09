@@ -34,15 +34,15 @@ jobs:
   backup-config:
     name: Backup Configs
     runs-on: self-hosted
+    needs: sq-analysis
     steps:
       - name: Run Backup Script
         run: /ps/Backup-FeedConfigs.ps1 -deployFolder "${{ secrets.LOCAL_DEPLOY_FOLDER }}"
 
   deploy-local:
     name: Deploy to Local
-
     runs-on: self-hosted
-
+    needs: backup-config
     steps:
       - name: Show GitHub context
         env:
