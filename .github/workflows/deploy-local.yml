@@ -20,7 +20,7 @@ jobs:
     runs-on: self-hosted
     steps:
       - name: Checkout the code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: SonarQube Begin Scan
         run: dotnet sonarscanner begin /k:"RssFeeder" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.exclusions="**/bin/**/*,**/obj/**/*" /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" /d:sonar.coverage.exclusions="**/bin/**/*,**/obj/**/*" /d:sonar.cs.vstest.reportsPaths="**/*.trx" /d:sonar.cs.dotcover.reportsPaths="**/*.dotCover"
