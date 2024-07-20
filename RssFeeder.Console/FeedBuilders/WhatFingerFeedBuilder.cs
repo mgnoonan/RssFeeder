@@ -32,7 +32,25 @@ internal class WhatFingerFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 
         // Main Headlines section
         // div.creative-link.wpb_column.vc_column_container.vc_col-sm-8 > div > div > div:nth-child(6) > div > h4:nth-child(1) > span > a
-        GetNodeLinks("headlines", "div.creative-link.wpb_column.vc_column_container.vc_col-sm-8 > div > div > div:nth-child(6) > div", "ul li a", list, true);
+        GetNodeLinks("headlines", "div.creative-link.wpb_column.vc_column_container.vc_col-sm-8 > div > div > div:nth-child(3) > div", "ul li a", list, true);
+
+        // No articles found, try the next container down the stack
+        if (list.Count == 0)
+        {
+            GetNodeLinks("headlines", "div.creative-link.wpb_column.vc_column_container.vc_col-sm-8 > div > div > div:nth-child(4) > div", "ul li a", list, true);
+        }
+
+        // No articles found, try the next container down the stack
+        if (list.Count == 0)
+        {
+            GetNodeLinks("headlines", "div.creative-link.wpb_column.vc_column_container.vc_col-sm-8 > div > div > div:nth-child(5) > div", "ul li a", list, true);
+        }
+
+        // No articles found, try the next container down the stack
+        if (list.Count == 0)
+        {
+            GetNodeLinks("headlines", "div.creative-link.wpb_column.vc_column_container.vc_col-sm-8 > div > div > div:nth-child(6) > div", "ul li a", list, true);
+        }
 
         // No articles found, try the next container down the stack
         if (list.Count == 0)

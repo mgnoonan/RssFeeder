@@ -29,11 +29,11 @@ class DrudgeReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 
         // Centered main headline(s)
         // body > tt > b > tt > b > center
-        GetNodeLinks("headlines", "body > tt > b > tt > b > center", "a", list, false);
+        GetNodeLinks("headlines", "#DR-HU-TOP-LEFT", "a", list, false);
 
         // Above the fold top headlines
         // body > tt > b > tt > b > a:nth-child(5)
-        GetNodeLinks("above the fold", "body > tt > b > tt", "b > a", list, false);
+        GetNodeLinks("above the fold", "#DR-HU-MAIN", "a", list, false);
 
         // Left column articles
         // body > font > font > center > table > tbody > tr > td:nth-child(1) > tt > b > a:nth-child(1)
