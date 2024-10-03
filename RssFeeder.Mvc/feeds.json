@@ -212,9 +212,9 @@
   {
     "id": "",
     "Title": "Political Signal",
-    "Url": "https://politicalsignal.com/",
+    "Url": "https://thepoliticalsignal.com/",
     "Description": "Political Signal",
-    "StatusMessage": "offline",
+    "StatusMessage": "online",
     "Language": "en-US",
     "CustomParser": "RssFeeder.Console.FeedBuilders.PoliticalSignalFeedBuilder",
     "CollectionName": "political-signal",

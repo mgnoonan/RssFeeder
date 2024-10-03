@@ -1,7 +1,7 @@
 name: RssFeeder Local Deployment
 
 env:
-  DOTNET_VERSION: '8.0.x'                 # set this to the .NET Core version to use
+  DOTNET_VERSION: '9.0.x'                 # set this to the .NET Core version to use
   
 on:
   push:

@@ -536,13 +536,10 @@ public partial class TagParserBase
         List<RuleResultTree> resultList = _bre.ExecuteAllRulesAsync("ExcludeParagraph", input).Result;
 
         //Check success for rule
-        foreach (var result in resultList)
+        foreach (var result in resultList.Where(p => p.IsSuccess == true))
         {
-            if (result.IsSuccess)
-            {
-                _log.Information("Skipped tag: {tag} Reason: {reason}", p.TagName, result.Rule.RuleName);
-                return;
-            }
+            _log.Information("Skipped tag: {tag} Reason: {reason}", p.TagName, result.Rule.RuleName);
+            return;
         }
 
         // Watch for the older style line breaks and convert to proper paragraphs
