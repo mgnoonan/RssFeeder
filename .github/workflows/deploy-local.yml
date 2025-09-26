@@ -1,7 +1,7 @@
 name: RssFeeder Local Deployment
 
 env:
-  DOTNET_VERSION: '9.0.x'                 # set this to the .NET Core version to use
+  DOTNET_VERSION: '10.0.x'                 # set this to the .NET Core version to use
   
 on:
   push:
@@ -15,26 +15,9 @@ permissions:
   contents: read
   
 jobs:
-  sq-analysis:
-    name: SonarQube Analysis
-    runs-on: self-hosted
-    steps:
-      - name: Checkout the code
-        uses: actions/checkout@v4
-
-      - name: SonarQube Begin Scan
-        run: dotnet sonarscanner begin /k:"RssFeeder" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.exclusions="**/bin/**/*,**/obj/**/*" /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" /d:sonar.coverage.exclusions="**/bin/**/*,**/obj/**/*" /d:sonar.cs.vstest.reportsPaths="**/*.trx" /d:sonar.cs.dotcover.reportsPaths="**/*.dotCover"
-
-      - name: Build
-        run: dotnet build
-
-      - name: SonarQube End Scan
-        run: dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
-
   backup-config:
     name: Backup Configs
     runs-on: self-hosted
-    needs: sq-analysis
     steps:
       - name: Run Backup Script
         run: /ps/Backup-FeedConfigs.ps1 -deployFolder "${{ secrets.LOCAL_DEPLOY_FOLDER }}"
