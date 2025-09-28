@@ -77,9 +77,6 @@ builder.RegisterType<HelpInput>().SingleInstance();
 
 var container = builder.Build();
 
-// set up TLS defaults
-ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls13 | SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
-
 var executor = CommandExecutor.For(_ =>
 {
     // Find and apply all command classes discovered
