@@ -53,7 +53,11 @@ public class WebUtils : IWebUtils
         options.AddArgument("--headless");//Comment if we want to see the window. 
         options.AddArgument("--remote-allow-origins=*");
 
+#if DEBUG
+        string path = @"C:\RssFeeder";
+#else
         string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+#endif
         EdgeDriver driver = null;
 
         try
