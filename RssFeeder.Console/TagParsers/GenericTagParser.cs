@@ -34,7 +34,7 @@ public partial class GenericTagParser : TagParserBase, ITagParser
         var container = document.QuerySelector(bodySelector);
         if (container is null)
         {
-            _log.Warning("Error reading article: '{bodySelector}' article body selector not found.", bodySelector);
+            _log.Warning("Error reading {siteName} article: '{bodySelector}' article body selector not found.", _item.SiteName, bodySelector);
             return $"<p>Error reading article: '{bodySelector}' article body selector not found.</p>";
         }
 
