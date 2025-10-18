@@ -30,7 +30,7 @@ public class ScriptTagParser : TagParserBase, ITagParser
         var elements = document.QuerySelectorAll("script");
         if (elements.Length == 0)
         {
-            _log.Warning("Error reading article: '{bodySelector}' article body selector not found.", bodySelector);
+            _log.Warning("Error reading {siteName} article: '{bodySelector}' article body selector not found.", _item.SiteName, bodySelector);
             return $"<p>Error reading article: '{bodySelector}' article body selector not found.</p>";
         }
 
