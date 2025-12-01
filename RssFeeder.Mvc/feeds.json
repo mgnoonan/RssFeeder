@@ -236,5 +236,33 @@
     "FeedlyUrl": "",
     "RssUrl": "/api/rss/twitchy",
     "Filters": []
+  },
+  {
+    "id": "",
+    "Title": "Gutsmack",
+    "Url": "https://gutsmack.com/",
+    "Description": "Gutsmack",
+    "StatusMessage": "offline",
+    "Language": "en-US",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.GutSmackFeedBuilder",
+    "CollectionName": "gutsmack",
+    "authoremail": "editor@gutsmack.com",
+    "FeedlyUrl": "",
+    "RssUrl": "/api/rss/gutsmack",
+    "Filters": []
+  },
+  {
+    "id": "",
+    "Title": "Bad Blue",
+    "Url": "http://badblue.bitnamiapp.com/trendr8.htm",
+    "Description": "Bad Blue",
+    "StatusMessage": "offline",
+    "Language": "en-US",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.BadBlueFeedBuilder",
+    "CollectionName": "bad-blue",
+    "authoremail": "editor@badblue.com",
+    "FeedlyUrl": "",
+    "RssUrl": "/api/rss/bad-blue",
+    "Filters": []
   }
 ]
