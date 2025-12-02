@@ -536,9 +536,10 @@ public partial class TagParserBase
         List<RuleResultTree> resultList = _bre.ExecuteAllRulesAsync("ExcludeParagraph", input).Result;
 
         //Check success for rule
-        foreach (var result in resultList.Where(p => p.IsSuccess == true))
+        var firstSuccess = resultList.FirstOrDefault(p => p.IsSuccess);
+        if (firstSuccess != null)
         {
-            _log.Information("Skipped tag: {tag} Reason: {reason}", p.TagName, result.Rule.RuleName);
+            _log.Information("Skipped tag: {tag} Reason: {reason}", p.TagName, firstSuccess.Rule.RuleName);
             return;
         }
 
