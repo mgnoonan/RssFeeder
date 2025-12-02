@@ -470,13 +470,11 @@ public partial class TagParserBase
         List<RuleResultTree> resultList = _bre.ExecuteAllRulesAsync("ExcludeHeader", input).Result;
 
         //Check success for rule
-        foreach (var result in resultList)
+        var firstSuccess = resultList.FirstOrDefault(r => r.IsSuccess);
+        if (firstSuccess != null)
         {
-            if (result.IsSuccess)
-            {
-                _log.Information("Skipped tag: {tag} Reason: {reason}", p.TagName, result.Rule.RuleName);
-                return;
-            }
+            _log.Information("Skipped tag: {tag} Reason: {reason}", p.TagName, firstSuccess.Rule.RuleName);
+            return;
         }
 
         description.AppendLine($"<{p.TagName.ToLower()}>{p.TextContent.Trim()}</{p.TagName.ToLower()}>");
@@ -505,13 +503,11 @@ public partial class TagParserBase
         List<RuleResultTree> resultList = _bre.ExecuteAllRulesAsync("ExcludeUL", input).Result;
 
         //Check success for rule
-        foreach (var result in resultList)
+        var firstSuccess = resultList.FirstOrDefault(r => r.IsSuccess);
+        if (firstSuccess != null)
         {
-            if (result.IsSuccess)
-            {
-                _log.Information("Skipped tag: {tag} Reason: {reason}", p.TagName, result.Rule.RuleName);
-                return;
-            }
+            _log.Information("Skipped tag: {tag} Reason: {reason}", p.TagName, firstSuccess.Rule.RuleName);
+            return;
         }
 
         description.AppendLine($"<p><{p.TagName.ToLower()}>{p.InnerHtml}</{p.TagName.ToLower()}></p>");
@@ -572,13 +568,11 @@ public partial class TagParserBase
         List<RuleResultTree> resultList = _bre.ExecuteAllRulesAsync("ExcludeBlockquote", input).Result;
 
         //Check success for rule
-        foreach (var result in resultList)
+        var firstSuccess = resultList.FirstOrDefault(r => r.IsSuccess);
+        if (firstSuccess != null)
         {
-            if (result.IsSuccess)
-            {
-                _log.Information("Skipped tag: {tag} Reason: {reason}", p.TagName, result.Rule.RuleName);
-                return;
-            }
+            _log.Information("Skipped tag: {tag} Reason: {reason}", p.TagName, firstSuccess.Rule.RuleName);
+            return;
         }
 
         // Add blockquote with some padding and a left side border
@@ -603,13 +597,11 @@ public partial class TagParserBase
         List<RuleResultTree> resultList = _bre.ExecuteAllRulesAsync("ExcludeAnchor", input).Result;
 
         //Check success for rule
-        foreach (var result in resultList)
+        var firstSuccess = resultList.FirstOrDefault(r => r.IsSuccess);
+        if (firstSuccess != null)
         {
-            if (result.IsSuccess)
-            {
-                _log.Information("Skipped tag: {tag} Reason: {reason}", p.TagName, result.Rule.RuleName);
-                return;
-            }
+            _log.Information("Skipped tag: {tag} Reason: {reason}", p.TagName, firstSuccess.Rule.RuleName);
+            return;
         }
 
         description.AppendLine($"<p>{p.OuterHtml}</p>");
