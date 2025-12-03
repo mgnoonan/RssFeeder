@@ -2,8 +2,8 @@ namespace RssFeeder.Console.FeedBuilders;
 
 internal class ParkinsonsNewsTodayFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
 {
-    public ParkinsonsNewsTodayFeedBuilder(ILogger logger, IWebUtils webUtilities, IUtils utilities) 
-        : base(logger, webUtilities, utilities)
+    public ParkinsonsNewsTodayFeedBuilder(ILogger log, IWebUtils webUtilities, IUtils utilities) 
+        : base(log, webUtilities, utilities)
     {
     }
 
