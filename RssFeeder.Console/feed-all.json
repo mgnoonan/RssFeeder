@@ -241,19 +241,33 @@
       "f474e4c0861b2de36e3421e0dd701db0"
     ]
   },
-  {
-    "Title": "Political Signal",
-    "Enabled": "true",
-    "EnableThumbnail": "false",
-    "Exportable": "true",
-    "Description": "Political Signal",
-    "RequiresJavascript": false,
-    "Language": "en-US",
-    "Url": "http://politicalsignal.com/",
-    "CustomParser": "RssFeeder.Console.FeedBuilders.PoliticalSignalFeedBuilder",
-    "CollectionName": "political-signal",
-    "FileRetentionDays": 7,
-    "DatabaseRetentionDays": 7,
-    "Filters": []
-  }
+    {
+        "Title": "Political Signal",
+        "Enabled": "true",
+        "EnableThumbnail": "false",
+        "Exportable": "true",
+        "Description": "Political Signal",
+        "RequiresJavascript": false,
+        "Language": "en-US",
+        "Url": "http://politicalsignal.com/",
+        "CustomParser": "RssFeeder.Console.FeedBuilders.PoliticalSignalFeedBuilder",
+        "CollectionName": "political-signal",
+        "FileRetentionDays": 7,
+        "DatabaseRetentionDays": 7,
+        "Filters": []
+    },
+    {
+        "Title": "Parkinson's News Today",
+        "Enabled": "true",
+        "EnableThumbnail": "false",
+        "Exportable": "true",
+        "Description": "Parkinson's News Today",
+        "Language": "en-US",
+        "Url": "https://parkinsonsnewstoday.com/",
+        "CustomParser": "RssFeeder.Console.FeedBuilders.ParkinsonsNewsTodayFeedBuilder",
+        "CollectionName": "parkinsons-news-today",
+        "FileRetentionDays": 3,
+        "DatabaseRetentionDays": 180,
+        "Filters": []
+    }
 ]

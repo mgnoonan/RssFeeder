@@ -53,6 +53,7 @@ builder.RegisterType<RubinReportFeedBuilder>().Named<IRssFeedBuilder>("rubin-rep
 builder.RegisterType<WhatFingerFeedBuilder>().Named<IRssFeedBuilder>("whatfinger");
 builder.RegisterType<PoliticalSignalFeedBuilder>().Named<IRssFeedBuilder>("political-signal");
 builder.RegisterType<TwitchyFeedBuilder>().Named<IRssFeedBuilder>("twitchy");
+builder.RegisterType<ParkinsonsNewsTodayFeedBuilder>().Named<IRssFeedBuilder>("parkinsons-news-today");
 builder.RegisterType<GenericTagParser>().Named<ITagParser>("generic-parser");
 builder.RegisterType<AdaptiveTagParser>().Named<ITagParser>("adaptive-parser");
 builder.RegisterType<AllTagsParser>().Named<ITagParser>("alltags-parser");

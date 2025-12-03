@@ -2,7 +2,7 @@
   "profiles": {
     "RssFeeder.Console": {
       "commandName": "Project",
-      "commandLineArgs": "build feed-offthepress.json"
+      "commandLineArgs": "build feed-parkinsonsnewstoday.json"
     }
   }
 }
