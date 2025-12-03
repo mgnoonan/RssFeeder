@@ -250,5 +250,19 @@
     "FeedlyUrl": "",
     "RssUrl": "/api/rss/gutsmack",
     "Filters": []
+  },
+  {
+    "id": "",
+    "Title": "Parkinson's News Today",
+    "Url": "https://parkinsonsnewstoday.com/",
+    "Description": "Parkinson's News Today",
+    "StatusMessage": "online",
+    "Language": "en-US",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.ParkinsonsNewsTodayFeedBuilder",
+    "CollectionName": "parkinsons-news-today",
+    "authoremail": "info@bionews.com",
+    "FeedlyUrl": "",
+    "RssUrl": "/api/rss/parkinsons-news-today",
+    "Filters": []
   }
 ]

@@ -50,6 +50,9 @@
     <None Update="crawlerconfig.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="feed-parkinsonsnewstoday.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="feed-protrumpnews.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
