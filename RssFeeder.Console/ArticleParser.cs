@@ -2,6 +2,8 @@
 
 public class ArticleParser : IArticleParser
 {
+    private const string DecodedContentValueMessage = "Decoded {propertyValue} content value '{contentValue}'";
+    
     private IContainer _container;
     private IArticleDefinitionFactory _definitionFactory;
     private IWebUtils _webUtils;
@@ -96,13 +98,14 @@ public class ArticleParser : IArticleParser
         if (definition.RouteTemplates?.Length > 0)
         {
             var matcher = new RouteMatcher();
-            foreach (var articleRoute in definition.RouteTemplates)
+            var matchedRoute = definition.RouteTemplates
+                .Where(articleRoute => matcher.Match(articleRoute.Template, "/" + routeToMatch) != null)
+                .FirstOrDefault();
+
+            if (matchedRoute != null)
             {
-                if (matcher.Match(articleRoute.Template, "/" + routeToMatch) != null)
-                {
-                    _log.Information("Matched route {routeName} on template {template}", articleRoute.Name, articleRoute.Template);
-                    return articleRoute;
-                }
+                _log.Information("Matched route {routeName} on template {template}", matchedRoute.Name, matchedRoute.Template);
+                return matchedRoute;
             }
 
             // Might have forgotten to create a **catch-all template, fall back to adaptive parser
@@ -238,12 +241,12 @@ public class ArticleParser : IArticleParser
         if (contentValue.Contains("&#x") || contentValue.Contains("&#32;"))
         {
             contentValue = System.Web.HttpUtility.HtmlDecode(contentValue);
-            _log.Information("Decoded {propertyValue} content value '{contentValue}'", propertyValue, contentValue);
+            _log.Information(DecodedContentValueMessage, propertyValue, contentValue);
         }
         else if (contentValue.Contains("%3A") && !Uri.TryCreate(contentValue, UriKind.Absolute, out Uri _))
         {
             contentValue = System.Web.HttpUtility.UrlDecode(contentValue);
-            _log.Information("Decoded {propertyValue} content value '{contentValue}'", propertyValue, contentValue);
+            _log.Information(DecodedContentValueMessage, propertyValue, contentValue);
         }
 
         _log.Debug("Found open graph attribute '{propertyValue}':'{contentValue}'", propertyValue, contentValue);
@@ -260,7 +263,7 @@ public class ArticleParser : IArticleParser
         if (contentValue.Contains("&#x") || contentValue.Contains("&#32;"))
         {
             contentValue = System.Web.HttpUtility.HtmlDecode(contentValue);
-            _log.Information("Decoded {propertyValue} content value '{contentValue}'", node?.Name ?? "unknown", contentValue);
+            _log.Information(DecodedContentValueMessage, node?.Name ?? "unknown", contentValue);
         }
         attributes.Add("title", contentValue);
 
@@ -270,7 +273,7 @@ public class ArticleParser : IArticleParser
         if (contentValue.Contains("&#x") || contentValue.Contains("&#32;"))
         {
             contentValue = System.Web.HttpUtility.HtmlDecode(contentValue);
-            _log.Information("Decoded {propertyValue} content value '{contentValue}'", node?.Name ?? "unknown", contentValue);
+            _log.Information(DecodedContentValueMessage, node?.Name ?? "unknown", contentValue);
         }
         attributes.Add("h1", contentValue);
 
