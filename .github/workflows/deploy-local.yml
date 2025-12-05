@@ -27,6 +27,8 @@ jobs:
     runs-on: self-hosted
     needs: backup-config
     steps:
+      - uses: actions/checkout@v4
+      
       - name: Show GitHub context
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
