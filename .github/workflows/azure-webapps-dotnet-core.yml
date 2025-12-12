@@ -60,20 +60,20 @@ jobs:
           GITHUB_CONTEXT: ${{ toJson(github) }}
         run: echo "$GITHUB_CONTEXT"
 
-      - name: Output run number
-        run: echo "${{github.run_number}}" > ./RssFeeder.Mvc/.buildinfo.json
-
-      - name: Output workflow
-        run: echo "${{github.workflow}}" >> ./RssFeeder.Mvc/.buildinfo.json
-
-      - name: Output commit hash
-        run: echo "${{github.sha}}" >> ./RssFeeder.Mvc/.buildinfo.json
-
       - name: Build with dotnet
         run: dotnet build ./RssFeeder.Mvc/RssFeeder.Mvc.csproj --configuration Release
 
       - name: dotnet publish
         run: dotnet publish ./RssFeeder.Mvc/RssFeeder.Mvc.csproj -c Release -r win-x86 --self-contained -o "${{env.DOTNET_ROOT}}/myapp"
+
+      - name: Output run number
+        run: echo "${{github.run_number}}" > "${{env.DOTNET_ROOT}}/myapp/.buildinfo.json"
+
+      - name: Output workflow
+        run: echo "${{github.workflow}}" >> "${{env.DOTNET_ROOT}}/myapp/.buildinfo.json"
+
+      - name: Output commit hash
+        run: echo "${{github.sha}}" >> "${{env.DOTNET_ROOT}}/myapp/.buildinfo.json"
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
