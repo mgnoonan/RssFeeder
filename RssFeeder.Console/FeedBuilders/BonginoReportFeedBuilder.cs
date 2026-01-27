@@ -41,8 +41,8 @@ class BonginoReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         GetNodeLinks("top stories", "#home-top-stories > ul", "li > a", list, false);
 
         // Trending videos
-        // #hero > div > div > div.col-md-4 > div.all-stories
-        GetNodeLinks("trending videos", "#hero > div > div > div.col-md-4 > div.all-stories", "div.col > a", list, false);
+        // #page-wrapper > section.stories-video-redesign.px-4.pt-4 > div > div > div > div:nth-child(1) > a
+        GetNodeLinks("trending videos", "#page-wrapper > section.stories-video-redesign.px-4.pt-4 > div > div > div", "a", list, false);
 
         // Capitol Hill stories
         // body > div > section.all-stories > div > div > div:nth-child(1)
