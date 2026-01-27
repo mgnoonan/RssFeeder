@@ -34,51 +34,44 @@ class BonginoReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         GetNodeLinks("picks", "#hero > div > div > div.col-md-4 > div.row > div > div", "a", list, false);
 
         // Top Stories section
-        // #hero > div > div > div.col-md-8 > div:nth-child(2) > div:nth-child(2) > div
-        GetNodeLinks("top stories", "#hero > div > div > div.col-md-8 > div:nth-child(2) > div:nth-child(2) > div.all-stories", "li > a", list, false);
-
         // #home-top-stories > ul > li:nth-child(2) > a
-        GetNodeLinks("top stories", "#home-top-stories > ul", "li > a", list, false);
+        GetNodeLinks("top stories", "#home-top-stories > ul", "a", list, false);
 
         // Trending videos
         // #page-wrapper > section.stories-video-redesign.px-4.pt-4 > div > div > div > div:nth-child(1) > a
-        GetNodeLinks("trending videos", "#page-wrapper > section.stories-video-redesign.px-4.pt-4 > div > div > div", "a", list, false);
+        GetNodeLinks("trending videos", "#page-wrapper > section.stories-video-redesign > div > div > div", "a", list, false);
 
         // Capitol Hill stories
-        // body > div > section.all-stories > div > div > div:nth-child(1)
-        GetNodeLinks("column 1", "#content > div > section.all-stories > div > div > div:nth-child(1)", "li > a", list, false);
+        // #page-wrapper > section.all-stories.mt-4 > div > div > div:nth-child(1) > ul > li:nth-child(1) > a
+        GetNodeLinks("column 1", "#page-wrapper > section.all-stories > div > div > div:nth-child(1)", "a", list, false);
 
         // Culture War stories
-        // body > div > section.all-stories > div > div > div:nth-child(2)
-        GetNodeLinks("column 2", "#content > div > section.all-stories > div > div > div:nth-child(2)", "li > a", list, false);
+        // #page-wrapper > section.all-stories.mt-4 > div > div > div:nth-child(2) > ul:nth-child(2) > li:nth-child(1) > a
+        GetNodeLinks("column 2", "#page-wrapper > section.all-stories > div > div > div:nth-child(2)", "a", list, false);
 
         // Culture War stories
         // body > div > section.all-stories > div > div > div:nth-child(3)
-        GetNodeLinks("column 3", "#content > div > section.all-stories > div > div > div:nth-child(3)", "li > a", list, false);
+        GetNodeLinks("column 3", "#page-wrapper > section.all-stories > div > div > div:nth-child(3)", "a", list, false);
 
         // Swamp Watch stories
         // body > div > section.all-stories > div > div > div:nth-child(8)
-        GetNodeLinks("column 4", "#content > div > section.all-stories > div > div > div:nth-child(4)", "li > a", list, false);
+        GetNodeLinks("column 4", "#page-wrapper > section.all-stories > div > div > div:nth-child(4)", "a", list, false);
 
         // National Security stories
         // body > div > section.all-stories > div > div > div:nth-child(9)
-        GetNodeLinks("column 5", "#content > div > section.all-stories > div > div > div:nth-child(5)", "li > a", list, false);
+        GetNodeLinks("column 5", "#page-wrapper > section.all-stories > div > div > div:nth-child(5)", "a", list, false);
 
         // Opinion stories
         // body > div > section.all-stories > div > div > div:nth-child(10)
-        GetNodeLinks("column 6", "#content > div > section.all-stories > div > div > div:nth-child(6)", "li > a", list, false);
+        GetNodeLinks("column 6", "#page-wrapper > section.all-stories > div > div > div:nth-child(6)", "a", list, false);
 
         // Entertainment stories
         // body > div > section.all-stories > div > div > div:nth-child(14)
-        GetNodeLinks("column 7", "#content > div > section.all-stories > div > div > div:nth-child(7)", "li > a", list, false);
+        GetNodeLinks("column 7", "#page-wrapper > section.all-stories > div > div > div:nth-child(7)", "a", list, false);
 
         // Sports stories
-        // body > div > section.all-stories > div > div > div:nth-child(15)
-        GetNodeLinks("column 8", "#content > div > section.all-stories > div > div > div:nth-child(8)", "li > a", list, false);
-
-        // Health stories
-        // body > div > section.all-stories > div > div > div:nth-child(16)
-        GetNodeLinks("column 9", "#content > div > section.all-stories > div > div > div:nth-child(9)", "li > a", list, false);
+        // #page-wrapper > section.all-stories.mt-4 > div > div > div:nth-child(8) > ul > li:nth-child(1) > a
+        GetNodeLinks("column 8", "#page-wrapper > section.all-stories > div > div > div:nth-child(8)", "a", list, false);
 
         return list;
     }
