@@ -27,17 +27,22 @@ class BonginoReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
     {
         var list = new List<RssFeedItem>();
 
-        // Top Stories section
-        // #hero > div > div > div.col-md-8 > div:nth-child(2) > div:nth-child(1) > div > a
-        GetNodeLinks("headlines", "div.feature-article", "h1 > a", list, false);
+        // Picks section
+        // #hero > div > div > div.col-md-4 > div.feature-article > h1 > a
+        GetNodeLinks("picks", "div.feature-article > h1.lead-story_title", "a", list, false);
+        // #hero > div > div > div.col-md-4 > div.row > div > div > ul > li:nth-child(1) > a
+        GetNodeLinks("picks", "#hero > div > div > div.col-md-4 > div.row > div > div", "a", list, false);
 
         // Top Stories section
         // #hero > div > div > div.col-md-8 > div:nth-child(2) > div:nth-child(2) > div
         GetNodeLinks("top stories", "#hero > div > div > div.col-md-8 > div:nth-child(2) > div:nth-child(2) > div.all-stories", "li > a", list, false);
 
+        // #home-top-stories > ul > li:nth-child(2) > a
+        GetNodeLinks("top stories", "#home-top-stories > ul", "li > a", list, false);
+
         // Trending videos
-        // #hero > div > div > div.col-md-4 > div.all-stories
-        GetNodeLinks("trending videos", "#hero > div > div > div.col-md-4 > div.all-stories", "div.col > a", list, false);
+        // #page-wrapper > section.stories-video-redesign.px-4.pt-4 > div > div > div > div:nth-child(1) > a
+        GetNodeLinks("trending videos", "#page-wrapper > section.stories-video-redesign.px-4.pt-4 > div > div > div", "a", list, false);
 
         // Capitol Hill stories
         // body > div > section.all-stories > div > div > div:nth-child(1)
