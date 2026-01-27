@@ -50,6 +50,12 @@ public class WebCrawler : IWebCrawler
         DownloadList(runID, feed, list);
     }
 
+    public List<RssFeedItem> Audit(Guid runID, RssFeed feed)
+    {
+        _workingFolder = PrepareWorkspace(feed);
+        return GenerateFeedLinks(feed);
+    }
+
     private string PrepareWorkspace(RssFeed feed)
     {
         // Create the working folder for the collection if it doesn't exist
