@@ -3,7 +3,7 @@
 namespace RssFeeder.Console.Commands;
 
 [Description("Audit the RSS Feeds using the config file", Name = "audit")]
-internal class AuditCommand : OaktonCommand<AuditInput>
+public class AuditCommand : OaktonCommand<AuditInput>
 {
     private readonly IContainer _container;
     private readonly ILogger _log;
@@ -38,7 +38,7 @@ internal class AuditCommand : OaktonCommand<AuditInput>
             }
 
             // Initialize the bootstrap driver
-            //crawler.Initialize(_container, "feed-items", "drudge-report");
+            crawler.Initialize(_container, "feed-items", "drudge-report");
 
             // Get the directory of the current executable, all config 
             // files should be in this path
@@ -61,6 +61,7 @@ internal class AuditCommand : OaktonCommand<AuditInput>
             {
                 using (LogContext.PushProperty("collectionName", feed.CollectionName))
                 using (LogContext.PushProperty("runID", runID))
+                using (LogContext.PushProperty("audit", true))
                 {
                     try
                     {
