@@ -40,7 +40,7 @@ class DrudgeReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         GetNodeLinks("column 1", "table > tbody > tr > td:nth-child(1) > tt", "b > a", list, false, "1dc7f1c814187b538e82d9d56fd4f66d");
 
         // Middle column articles
-        GetNodeLinks("column 2", "table > tbody > tr > td:nth-child(3) > tt", "b > a", list, false, "4099925931f0e142ca280f22343236e3");
+        GetNodeLinks("column 2", "table > tbody > tr > td:nth-child(3) > tt", "b > a", list, false, "4ee8a93f92a1be4ced3de6f96b13bcca");
 
         // Right column articles
         GetNodeLinks("column 3", "table > tbody > tr > td:nth-child(5) > tt", "b > a", list, false, "cb1d91b100c1732694cf8a55e39ad2d2");
