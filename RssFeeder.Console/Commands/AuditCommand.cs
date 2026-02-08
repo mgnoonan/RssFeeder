@@ -70,7 +70,7 @@ public class AuditCommand : OaktonCommand<AuditInput>
 
                         foreach (var item in list)
                         {
-                            _log.Information("{linkLocation} - Item: '{itemTitle}'", item.FeedAttributes.LinkLocation, item.FeedAttributes.Title);
+                            _log.Information("{urlHash} - {linkLocation} - Item: '{itemTitle}'", item.FeedAttributes.UrlHash, item.FeedAttributes.LinkLocation, item.FeedAttributes.Title);
                         }
                     }
                     catch (Exception ex)
