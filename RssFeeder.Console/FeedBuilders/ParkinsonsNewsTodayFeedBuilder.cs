@@ -29,10 +29,10 @@ internal class ParkinsonsNewsTodayFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         var list = new List<RssFeedItem>();
 
         // Featured headline
-        // #content > div > div:nth-child(1) > div > div:nth-child(1) > div:nth-child(1) > div.bio-post-preview.bio-post-preview--large.bio-post-preview--vertical > div > a.bio-link.bio-link--title
+        // #content > div > div.bio-background.bio-background--white > div > div:nth-child(1) > div:nth-child(1) > div.bio-post-preview.bio-post-preview--large.bio-post-preview--vertical > div.bio-post-preview--title-and-byline > a
         GetNodeLinks("featured headline",
-            "#content > div > div:nth-child(1) > div > div:nth-child(1)", 
-            "div > a.bio-link.bio-link--title", 
+            "div.bio-post-preview--title-and-byline", 
+            "a", 
             list, 
             false);
 
