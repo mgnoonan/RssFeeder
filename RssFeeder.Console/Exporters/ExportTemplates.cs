@@ -29,7 +29,7 @@ public static class ExportTemplates
 $ArticleText$
 " + MetaDataTemplate;
 
-    public const string HtmlVideoTemplate = @"<iframe class=""{class}"" width=""$item.VideoWidth$"" height=""$item.VideoHeight$"" src=""$item.VideoUrl$"" frameborder=""0"" allow=""{allow}"" allowfullscreen></iframe>
+    public const string HtmlVideoTemplate = @"<iframe class=""{class}"" width=""$item.VideoWidth$"" height=""$item.VideoHeight$"" src=""$item.VideoUrl$"" allow=""{allow}"" allowfullscreen="""" referrerpolicy=""strict-origin-when-cross-origin"" style=""margin-top: 3rem; margin-bottom: 3rem; display: block""></iframe>
 <h3>$item.Subtitle$</h3>
 $ArticleText$
 " + MetaDataTemplate;
