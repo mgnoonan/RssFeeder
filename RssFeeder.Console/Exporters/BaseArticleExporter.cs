@@ -16,7 +16,7 @@ public class BaseArticleExporter
             case "youtube":
             case "youtu.be":
                 template = template.Replace("{class}", "");
-                template = template.Replace("{allow}", "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture");
+                template = template.Replace("{allow}", "");
                 break;
             case "rumble":
                 template = template.Replace("{class}", "rumble");
