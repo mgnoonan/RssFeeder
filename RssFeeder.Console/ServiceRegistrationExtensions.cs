@@ -66,34 +66,38 @@ internal static class ServiceRegistrationExtensions
         services.AddSingleton<AuditInput>();
         services.AddSingleton<HelpInput>();
 
-        // Register named feed builders as keyed services
-        services.AddKeyedSingleton<IRssFeedBuilder>("drudge-report", (sp, key) => new DrudgeReportFeedBuilder(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>(), sp.GetRequiredService<IUtils>()));
-        services.AddKeyedSingleton<IRssFeedBuilder>("liberty-daily", (sp, key) => new LibertyDailyFeedBuilder(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>(), sp.GetRequiredService<IUtils>()));
-        services.AddKeyedSingleton<IRssFeedBuilder>("bongino-report", (sp, key) => new BonginoReportFeedBuilder(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>(), sp.GetRequiredService<IUtils>()));
-        services.AddKeyedSingleton<IRssFeedBuilder>("citizen-freepress", (sp, key) => new CitizenFreePressFeedBuilder(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>(), sp.GetRequiredService<IUtils>()));
-        services.AddKeyedSingleton<IRssFeedBuilder>("rantingly", (sp, key) => new RantinglyFeedBuilder(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>(), sp.GetRequiredService<IUtils>()));
-        services.AddKeyedSingleton<IRssFeedBuilder>("gutsmack", (sp, key) => new GutSmackFeedBuilder(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>(), sp.GetRequiredService<IUtils>()));
-        services.AddKeyedSingleton<IRssFeedBuilder>("populist-press", (sp, key) => new PopulistPressFeedBuilder(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>(), sp.GetRequiredService<IUtils>()));
-        services.AddKeyedSingleton<IRssFeedBuilder>("bad-blue", (sp, key) => new BadBlueFeedBuilder(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>(), sp.GetRequiredService<IUtils>()));
-        services.AddKeyedSingleton<IRssFeedBuilder>("revolver-news", (sp, key) => new RevolverNewsFeedBuilder(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>(), sp.GetRequiredService<IUtils>()));
-        services.AddKeyedSingleton<IRssFeedBuilder>("freedom-press", (sp, key) => new FreedomPressFeedBuilder(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>(), sp.GetRequiredService<IUtils>()));
-        services.AddKeyedSingleton<IRssFeedBuilder>("conservagator", (sp, key) => new ConservagatorFeedBuilder(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>(), sp.GetRequiredService<IUtils>()));
-        services.AddKeyedSingleton<IRssFeedBuilder>("noah-report", (sp, key) => new NoahReportFeedBuilder(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>(), sp.GetRequiredService<IUtils>()));
-        services.AddKeyedSingleton<IRssFeedBuilder>("protrump-news", (sp, key) => new ProTrumpNewsFeedBuilder(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>(), sp.GetRequiredService<IUtils>()));
-        services.AddKeyedSingleton<IRssFeedBuilder>("off-the-press", (sp, key) => new OffThePressFeedBuilder(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>(), sp.GetRequiredService<IUtils>()));
-        services.AddKeyedSingleton<IRssFeedBuilder>("rubin-report", (sp, key) => new RubinReportFeedBuilder(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>(), sp.GetRequiredService<IUtils>()));
-        services.AddKeyedSingleton<IRssFeedBuilder>("whatfinger", (sp, key) => new WhatFingerFeedBuilder(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>(), sp.GetRequiredService<IUtils>()));
-        services.AddKeyedSingleton<IRssFeedBuilder>("political-signal", (sp, key) => new PoliticalSignalFeedBuilder(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>(), sp.GetRequiredService<IUtils>()));
-        services.AddKeyedSingleton<IRssFeedBuilder>("twitchy", (sp, key) => new TwitchyFeedBuilder(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>(), sp.GetRequiredService<IUtils>()));
-        services.AddKeyedSingleton<IRssFeedBuilder>("parkinsons-news-today", (sp, key) => new ParkinsonsNewsTodayFeedBuilder(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>(), sp.GetRequiredService<IUtils>()));
+        // Register named feed builders as keyed transient services.
+        // BaseFeedBuilder carries mutable per-request state (_feedFilters, _feedUrl, _document),
+        // so each resolution must produce a fresh instance to avoid cross-feed contamination.
+        services.AddKeyedTransient<IRssFeedBuilder>("drudge-report", (sp, key) => new DrudgeReportFeedBuilder(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>(), sp.GetRequiredService<IUtils>()));
+        services.AddKeyedTransient<IRssFeedBuilder>("liberty-daily", (sp, key) => new LibertyDailyFeedBuilder(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>(), sp.GetRequiredService<IUtils>()));
+        services.AddKeyedTransient<IRssFeedBuilder>("bongino-report", (sp, key) => new BonginoReportFeedBuilder(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>(), sp.GetRequiredService<IUtils>()));
+        services.AddKeyedTransient<IRssFeedBuilder>("citizen-freepress", (sp, key) => new CitizenFreePressFeedBuilder(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>(), sp.GetRequiredService<IUtils>()));
+        services.AddKeyedTransient<IRssFeedBuilder>("rantingly", (sp, key) => new RantinglyFeedBuilder(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>(), sp.GetRequiredService<IUtils>()));
+        services.AddKeyedTransient<IRssFeedBuilder>("gutsmack", (sp, key) => new GutSmackFeedBuilder(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>(), sp.GetRequiredService<IUtils>()));
+        services.AddKeyedTransient<IRssFeedBuilder>("populist-press", (sp, key) => new PopulistPressFeedBuilder(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>(), sp.GetRequiredService<IUtils>()));
+        services.AddKeyedTransient<IRssFeedBuilder>("bad-blue", (sp, key) => new BadBlueFeedBuilder(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>(), sp.GetRequiredService<IUtils>()));
+        services.AddKeyedTransient<IRssFeedBuilder>("revolver-news", (sp, key) => new RevolverNewsFeedBuilder(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>(), sp.GetRequiredService<IUtils>()));
+        services.AddKeyedTransient<IRssFeedBuilder>("freedom-press", (sp, key) => new FreedomPressFeedBuilder(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>(), sp.GetRequiredService<IUtils>()));
+        services.AddKeyedTransient<IRssFeedBuilder>("conservagator", (sp, key) => new ConservagatorFeedBuilder(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>(), sp.GetRequiredService<IUtils>()));
+        services.AddKeyedTransient<IRssFeedBuilder>("noah-report", (sp, key) => new NoahReportFeedBuilder(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>(), sp.GetRequiredService<IUtils>()));
+        services.AddKeyedTransient<IRssFeedBuilder>("protrump-news", (sp, key) => new ProTrumpNewsFeedBuilder(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>(), sp.GetRequiredService<IUtils>()));
+        services.AddKeyedTransient<IRssFeedBuilder>("off-the-press", (sp, key) => new OffThePressFeedBuilder(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>(), sp.GetRequiredService<IUtils>()));
+        services.AddKeyedTransient<IRssFeedBuilder>("rubin-report", (sp, key) => new RubinReportFeedBuilder(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>(), sp.GetRequiredService<IUtils>()));
+        services.AddKeyedTransient<IRssFeedBuilder>("whatfinger", (sp, key) => new WhatFingerFeedBuilder(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>(), sp.GetRequiredService<IUtils>()));
+        services.AddKeyedTransient<IRssFeedBuilder>("political-signal", (sp, key) => new PoliticalSignalFeedBuilder(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>(), sp.GetRequiredService<IUtils>()));
+        services.AddKeyedTransient<IRssFeedBuilder>("twitchy", (sp, key) => new TwitchyFeedBuilder(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>(), sp.GetRequiredService<IUtils>()));
+        services.AddKeyedTransient<IRssFeedBuilder>("parkinsons-news-today", (sp, key) => new ParkinsonsNewsTodayFeedBuilder(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>(), sp.GetRequiredService<IUtils>()));
 
-        // Register named tag parsers as keyed services
-        services.AddKeyedSingleton<ITagParser>("generic-parser", (sp, key) => new GenericTagParser(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>()));
-        services.AddKeyedSingleton<ITagParser>("adaptive-parser", (sp, key) => new AdaptiveTagParser(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>()));
-        services.AddKeyedSingleton<ITagParser>("alltags-parser", (sp, key) => new AllTagsParser(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>()));
-        services.AddKeyedSingleton<ITagParser>("script-parser", (sp, key) => new ScriptTagParser(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>()));
-        services.AddKeyedSingleton<ITagParser>("htmltag-parser", (sp, key) => new HtmlTagParser(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>()));
-        services.AddKeyedSingleton<ITagParser>("jsonldtag-parser", (sp, key) => new JsonLdTagParser(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>()));
+        // Register named tag parsers as keyed transient services.
+        // TagParserBase carries mutable per-parse state (_sourceHtml, _item, _bre),
+        // so each resolution must produce a fresh instance to avoid cross-request contamination.
+        services.AddKeyedTransient<ITagParser>("generic-parser", (sp, key) => new GenericTagParser(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>()));
+        services.AddKeyedTransient<ITagParser>("adaptive-parser", (sp, key) => new AdaptiveTagParser(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>()));
+        services.AddKeyedTransient<ITagParser>("alltags-parser", (sp, key) => new AllTagsParser(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>()));
+        services.AddKeyedTransient<ITagParser>("script-parser", (sp, key) => new ScriptTagParser(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>()));
+        services.AddKeyedTransient<ITagParser>("htmltag-parser", (sp, key) => new HtmlTagParser(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>()));
+        services.AddKeyedTransient<ITagParser>("jsonldtag-parser", (sp, key) => new JsonLdTagParser(sp.GetRequiredService<ILogger>(), sp.GetRequiredService<IWebUtils>()));
 
         return services;
     }
