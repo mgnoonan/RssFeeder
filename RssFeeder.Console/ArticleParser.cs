@@ -4,7 +4,7 @@ public class ArticleParser : IArticleParser
 {
     private const string DecodedContentValueMessage = "Decoded {propertyValue} content value '{contentValue}'";
     
-    private IContainer _container;
+    private ITagParserResolver _tagParserResolver;
     private IArticleDefinitionFactory _definitionFactory;
     private IWebUtils _webUtils;
     private ILogger _log;
@@ -12,13 +12,13 @@ public class ArticleParser : IArticleParser
     /// <summary>
     /// Initializes the ArticleParser with the necessary dependencies.
     /// </summary>
-    /// <param name="container">The dependency injection container.</param>
+    /// <param name="tagParserResolver">The resolver for tag parser implementations.</param>
     /// <param name="definitionFactory">The factory for creating article definitions.</param>
     /// <param name="webUtils">The utility class for web-related operations.</param>
     /// <param name="log">The logger for logging messages.</param>
-    public void Initialize(IContainer container, IArticleDefinitionFactory definitionFactory, IWebUtils webUtils, ILogger log)
+    public void Initialize(ITagParserResolver tagParserResolver, IArticleDefinitionFactory definitionFactory, IWebUtils webUtils, ILogger log)
     {
-        _container = container;
+        _tagParserResolver = tagParserResolver;
         _definitionFactory = definitionFactory;
         _webUtils = webUtils;
         _log = log;
@@ -73,7 +73,7 @@ public class ArticleParser : IArticleParser
             var template = GetRouteMatchedTagParser(definition, GetRouteOnly(item));
 
             // Resolve the named parameter using DI
-            var parser = _container.ResolveNamed<ITagParser>(template.Parser);
+            var parser = _tagParserResolver.Resolve(template.Parser);
             parser.Initialize(doc.Text, item);
 
             // Parse the content to get the article text

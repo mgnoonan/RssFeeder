@@ -1,10 +1,12 @@
 using System.Reflection;
+using Autofac;
+using Autofac.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Oakton.Help;
 using RssFeeder.Console;
 using RssFeeder.Console.Commands;
 using RssFeeder.Console.HttpClients;
-
 
 // Load configuration
 var configBuilder = new ConfigurationBuilder()
@@ -14,6 +16,20 @@ var configBuilder = new ConfigurationBuilder()
    .AddEnvironmentVariables();
 IConfigurationRoot configuration = configBuilder.Build();
 
+var ravenDbOptions = configuration.GetSection(RavenDbOptions.SectionName).Get<RavenDbOptions>() ?? new RavenDbOptions();
+var crawlerConfigOptions = configuration.GetSection(CrawlerConfigOptions.SectionName).Get<CrawlerConfigOptions>() ?? new CrawlerConfigOptions();
+
+if (!crawlerConfigOptions.Source.HasValue)
+{
+#if DEBUG
+    crawlerConfigOptions.Source = CrawlerConfigSource.File;
+#else
+    crawlerConfigOptions.Source = CrawlerConfigSource.RavenDb;
+#endif
+}
+
+crawlerConfigOptions.FilePath ??= "crawlerconfig.json";
+
 // Init Serilog
 // docker run --name seq -e ACCEPT_EULA=Y -p 5341:80 datalust/seq:latest
 var log = new LoggerConfiguration()
@@ -21,62 +37,21 @@ var log = new LoggerConfiguration()
     .CreateLogger();
 Log.Logger = log;
 
+var services = new ServiceCollection();
+services.AddRssFeederConsoleServices(configuration, Log.Logger);
+
 // Setup dependency injection
 var builder = new ContainerBuilder();
+builder.Populate(services);
 
-builder.RegisterInstance(Log.Logger).As<ILogger>();
-builder.RegisterInstance(configuration).As<IConfigurationRoot>();
-#if DEBUG
-builder.RegisterType<RavenDbRepository>().As<IExportRepository>();
-#else
-builder.RegisterType<CosmosDbRepository>().As<IExportRepository>();
-#endif
-builder.RegisterType<RavenDbRepository>().As<IRepository>();
-builder.RegisterType<ArticleExporter>().As<IArticleExporter>();
-builder.RegisterType<ArticleParser>().As<IArticleParser>();
-builder.RegisterType<WebCrawler>().As<IWebCrawler>();
-builder.RegisterType<DrudgeReportFeedBuilder>().Named<IRssFeedBuilder>("drudge-report");
-builder.RegisterType<LibertyDailyFeedBuilder>().Named<IRssFeedBuilder>("liberty-daily");
-builder.RegisterType<BonginoReportFeedBuilder>().Named<IRssFeedBuilder>("bongino-report");
-builder.RegisterType<CitizenFreePressFeedBuilder>().Named<IRssFeedBuilder>("citizen-freepress");
-builder.RegisterType<RantinglyFeedBuilder>().Named<IRssFeedBuilder>("rantingly");
-builder.RegisterType<GutSmackFeedBuilder>().Named<IRssFeedBuilder>("gutsmack");
-builder.RegisterType<PopulistPressFeedBuilder>().Named<IRssFeedBuilder>("populist-press");
-builder.RegisterType<BadBlueFeedBuilder>().Named<IRssFeedBuilder>("bad-blue");
-builder.RegisterType<RevolverNewsFeedBuilder>().Named<IRssFeedBuilder>("revolver-news");
-builder.RegisterType<FreedomPressFeedBuilder>().Named<IRssFeedBuilder>("freedom-press");
-builder.RegisterType<ConservagatorFeedBuilder>().Named<IRssFeedBuilder>("conservagator");
-builder.RegisterType<NoahReportFeedBuilder>().Named<IRssFeedBuilder>("noah-report");
-builder.RegisterType<ProTrumpNewsFeedBuilder>().Named<IRssFeedBuilder>("protrump-news");
-builder.RegisterType<OffThePressFeedBuilder>().Named<IRssFeedBuilder>("off-the-press");
-builder.RegisterType<RubinReportFeedBuilder>().Named<IRssFeedBuilder>("rubin-report");
-builder.RegisterType<WhatFingerFeedBuilder>().Named<IRssFeedBuilder>("whatfinger");
-builder.RegisterType<PoliticalSignalFeedBuilder>().Named<IRssFeedBuilder>("political-signal");
-builder.RegisterType<TwitchyFeedBuilder>().Named<IRssFeedBuilder>("twitchy");
-builder.RegisterType<ParkinsonsNewsTodayFeedBuilder>().Named<IRssFeedBuilder>("parkinsons-news-today");
-builder.RegisterType<GenericTagParser>().Named<ITagParser>("generic-parser");
-builder.RegisterType<AdaptiveTagParser>().Named<ITagParser>("adaptive-parser");
-builder.RegisterType<AllTagsParser>().Named<ITagParser>("alltags-parser");
-builder.RegisterType<ScriptTagParser>().Named<ITagParser>("script-parser");
-builder.RegisterType<HtmlTagParser>().Named<ITagParser>("htmltag-parser");
-builder.RegisterType<JsonLdTagParser>().Named<ITagParser>("jsonldtag-parser");
-builder.RegisterType<RestSharpHttpClient>().As<IHttpClient>().SingleInstance();
-builder.RegisterType<WebUtils>().As<IWebUtils>().SingleInstance();
-builder.RegisterType<Utils>().As<IUtils>().SingleInstance();
-builder.RegisterType<ArticleDefinitionFactory>().As<IArticleDefinitionFactory>().SingleInstance();
-builder.RegisterType<TestCommand>().SingleInstance();
-builder.RegisterType<TestInput>().SingleInstance();
-builder.RegisterType<BuildCommand>().SingleInstance();
-builder.RegisterType<BuildInput>().SingleInstance();
-builder.RegisterType<ParseCommand>().SingleInstance();
-builder.RegisterType<ParseInput>().SingleInstance();
-builder.RegisterType<DownloadCommand>().SingleInstance();
-builder.RegisterType<DownloadInput>().SingleInstance();
-builder.RegisterType<CheckRulesCommand>().SingleInstance();
-builder.RegisterType<CheckRulesInput>().SingleInstance();
-builder.RegisterType<AuditCommand>().SingleInstance();
-builder.RegisterType<AuditInput>().SingleInstance();
-builder.RegisterType<HelpInput>().SingleInstance();
+// Register resolver instances using the populated container (which implements IServiceProvider)
+builder.Register(c => new KeyedServiceTagParserResolver(c.Resolve<IServiceProvider>()))
+    .As<ITagParserResolver>()
+    .SingleInstance();
+
+builder.Register(c => new KeyedServiceFeedBuilderResolver(c.Resolve<IServiceProvider>()))
+    .As<IFeedBuilderResolver>()
+    .SingleInstance();
 
 var container = builder.Build();
 

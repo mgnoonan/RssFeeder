@@ -2,40 +2,22 @@ namespace RssFeeder.Console.Database;
 
 public class RavenDbRepository : IRepository, IExportRepository
 {
-    private const string _databaseName = "site-parsers";
+    private readonly string _databaseName;
     readonly ILogger _log;
     readonly IDocumentStore _store;
     readonly CrawlerConfig _crawlerConfig;
 
     public CrawlerConfig Config => _crawlerConfig;
 
-    private static readonly string[] ravenDbUrlArray = new[] { "http://127.0.0.1:8080/" };
-
-    public RavenDbRepository(ILogger log)
+    public RavenDbRepository(ILogger log, IDocumentStore store, ICrawlerConfigProvider crawlerConfigProvider, RavenDbOptions ravenDbOptions)
     {
-        // Setup RavenDb
-        // docker run --rm -d -p 8080:8080 -p 38888:38888 ravendb/ravendb:latest
-        IDocumentStore store = new DocumentStore
-        {
-            Urls = ravenDbUrlArray
-            // Default database is not set
-        }.Initialize();
-
         _store = store;
         _log = log;
+        _databaseName = ravenDbOptions.DatabaseName;
 
         EnsureDatabaseExists(_databaseName, true);
 
-#if DEBUG
-        // Read the options in JSON format
-        using StreamReader sr = new StreamReader("crawlerConfig.json");
-        _crawlerConfig = JsonConvert.DeserializeObject<CrawlerConfig>(sr.ReadToEnd());
-#else
-        using (IDocumentSession session = store.OpenSession(database: _databaseName))
-        {
-            _crawlerConfig = session.Advanced.RawQuery<CrawlerConfig>("from CrawlerConfig").First();
-        }
-#endif
+        _crawlerConfig = crawlerConfigProvider.GetConfig();
 
         _log.Debug("Crawler config: {@config}", _crawlerConfig);
     }

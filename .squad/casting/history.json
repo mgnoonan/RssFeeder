@@ -1,0 +1,23 @@
+{
+  "universe_usage_history": [
+    {
+      "assignment_id": "2026-04-19-initial-cast",
+      "universe": "The Lord of the Rings",
+      "assigned_at": "2026-04-19T17:21:24Z",
+      "agent_count": 5
+    }
+  ],
+  "assignment_cast_snapshots": {
+    "2026-04-19-initial-cast": {
+      "universe": "The Lord of the Rings",
+      "assigned_at": "2026-04-19T17:21:24Z",
+      "members": [
+        "Aragorn",
+        "Gandalf",
+        "Legolas",
+        "Gimli",
+        "Frodo"
+      ]
+    }
+  }
+}

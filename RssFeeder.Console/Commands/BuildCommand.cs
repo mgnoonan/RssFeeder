@@ -5,12 +5,18 @@ namespace RssFeeder.Console.Commands;
 [Description("Build the RSS Feeds using the config file")]
 public class BuildCommand : OaktonCommand<BuildInput>
 {
-    private readonly IContainer _container;
+    private readonly IWebCrawler _crawler;
+    private readonly IFeedBuilderResolver _feedBuilderResolver;
+    private readonly ITagParserResolver _tagParserResolver;
+    private readonly IUtils _utils;
     private readonly ILogger _log;
 
-    public BuildCommand(IContainer container, ILogger log)
+    public BuildCommand(IWebCrawler crawler, IFeedBuilderResolver feedBuilderResolver, ITagParserResolver tagParserResolver, IUtils utils, ILogger log)
     {
-        _container = container;
+        _crawler = crawler;
+        _feedBuilderResolver = feedBuilderResolver;
+        _tagParserResolver = tagParserResolver;
+        _utils = utils;
         _log = log;
 
         // The usage pattern definition here is completely
@@ -29,20 +35,17 @@ public class BuildCommand : OaktonCommand<BuildInput>
 
         try
         {
-            var crawler = _container.Resolve<IWebCrawler>();
-            var utils = _container.Resolve<IUtils>();
-
             if (string.IsNullOrWhiteSpace(input.ConfigFile))
             {
                 input.ConfigFile = "feed-test.json";
             }
 
             // Initialize the bootstrap driver
-            crawler.Initialize(_container, "feed-items", "drudge-report");
+            _crawler.Initialize(_feedBuilderResolver, _tagParserResolver, "feed-items", "drudge-report");
 
             // Get the directory of the current executable, all config 
             // files should be in this path
-            string configFile = Path.Combine(utils.GetAssemblyDirectory(), input.ConfigFile);
+            string configFile = Path.Combine(_utils.GetAssemblyDirectory(), input.ConfigFile);
             _log.Information("Reading from config file: {configFile}", configFile);
 
             // Read the options in JSON format
@@ -66,11 +69,11 @@ public class BuildCommand : OaktonCommand<BuildInput>
                     {
                         if (feed.Enabled)
                         {
-                            crawler.Crawl(runID, feed);
-                            crawler.Export(runID, feed, startDate);
+                            _crawler.Crawl(runID, feed);
+                            _crawler.Export(runID, feed, startDate);
                         }
 
-                        crawler.Purge(feed);
+                        _crawler.Purge(feed);
                     }
                     catch (Exception ex)
                     {

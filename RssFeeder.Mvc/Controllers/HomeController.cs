@@ -4,21 +4,17 @@ namespace RssFeeder.Mvc.Controllers;
 
 public class HomeController : Controller
 {
-    private readonly string _sourceFile = "feeds.json";
-    private readonly List<FeedModel> _feeds;
+    private readonly IFeedDefinitionProvider _feedDefinitionProvider;
 
-    public HomeController()
+    public HomeController(IFeedDefinitionProvider feedDefinitionProvider)
     {
-        _feeds = System.Text.Json.JsonSerializer.Deserialize<List<FeedModel>>(
-            System.IO.File.ReadAllText(_sourceFile),
-            new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
+        _feedDefinitionProvider = feedDefinitionProvider;
     }
 
     [AllowAnonymous]
     public IActionResult Index()
     {
-        return View(_feeds.OrderByDescending(i => i.StatusMessage).ThenBy(i => i.title).AsEnumerable());
+        return View(_feedDefinitionProvider.GetFeeds().OrderByDescending(i => i.StatusMessage).ThenBy(i => i.title).AsEnumerable());
     }
 
     [AllowAnonymous]
