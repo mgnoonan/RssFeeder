@@ -6,7 +6,7 @@
     <UserSecretsId>1238335b-6957-46ee-a3dc-a4a5aa0a8856</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="AngleSharp" Version="1.4.0" />
+    <PackageReference Include="AngleSharp" Version="1.5.0" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="10.0.0" />
     <PackageReference Include="Domemtech.StringTemplate4" Version="4.3.0" />
     <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
