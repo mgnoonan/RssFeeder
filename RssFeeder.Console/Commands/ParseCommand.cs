@@ -3,12 +3,16 @@
 [Description("Parse article data from the specified URL")]
 public class ParseCommand : OaktonCommand<ParseInput>
 {
-    private readonly IContainer _container;
+    private readonly ITagParserResolver _tagParserResolver;
+    private readonly IUtils _utils;
+    private readonly IWebUtils _webUtils;
     private readonly ILogger _log;
 
-    public ParseCommand(IContainer container, ILogger log)
+    public ParseCommand(ITagParserResolver tagParserResolver, IUtils utils, IWebUtils webUtils, ILogger log)
     {
-        _container = container;
+        _tagParserResolver = tagParserResolver;
+        _utils = utils;
+        _webUtils = webUtils;
         _log = log;
 
         // The usage pattern definition here is completely
@@ -22,9 +26,7 @@ public class ParseCommand : OaktonCommand<ParseInput>
     {
         _log.Information("PARSE_START: Machine: {machineName}", Environment.MachineName);
 
-        var utils = _container.Resolve<IUtils>();
-        var webUtils = _container.Resolve<IWebUtils>();
-        var parser = _container.ResolveNamed<ITagParser>(input.Parser);
+        var parser = _tagParserResolver.Resolve(input.Parser);
         var template = new ArticleRouteTemplate
         {
             ArticleSelector = input.BodySelector,
@@ -32,8 +34,8 @@ public class ParseCommand : OaktonCommand<ParseInput>
             Name = input.Parser
         };
 
-        string urlHash = utils.CreateMD5Hash(input.Url);
-        string workingFolder = Path.Combine(utils.GetAssemblyDirectory(), "test-download");
+        string urlHash = _utils.CreateMD5Hash(input.Url);
+        string workingFolder = Path.Combine(_utils.GetAssemblyDirectory(), "test-download");
         if (!Directory.Exists(workingFolder))
         {
             Log.Information("Creating folder '{workingFolder}'", workingFolder);
@@ -42,9 +44,9 @@ public class ParseCommand : OaktonCommand<ParseInput>
 
         string filename = $"{workingFolder}\\{DateTime.Now:yyyyMMddhhmmss}_{urlHash}";
 
-        (_, string html, _, _) = webUtils.DownloadString(input.Url);
+        (_, string html, _, _) = _webUtils.DownloadString(input.Url);
 
-        webUtils.SaveContentToDisk(filename + ".html", false, html);
+        _webUtils.SaveContentToDisk(filename + ".html", false, html);
 
         var doc = new HtmlDocument();
         doc.Load(new StringReader(html));

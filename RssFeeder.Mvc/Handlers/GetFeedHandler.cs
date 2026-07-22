@@ -4,17 +4,14 @@ public class GetFeedHandler : IRequestHandler<GetFeedQuery, string>
 {
     private readonly IDatabaseService _databaseService;
     private readonly IFusionCache _cache;
-    private readonly List<FeedModel> _feeds;
+    private readonly IFeedDefinitionProvider _feedDefinitionProvider;
     private readonly ILogger _log;
-    private readonly string _sourceFile = "feeds.json";
 
-    public GetFeedHandler(IDatabaseService databaseService, IFusionCache cache, ILogger log)
+    public GetFeedHandler(IDatabaseService databaseService, IFusionCache cache, IFeedDefinitionProvider feedDefinitionProvider, ILogger log)
     {
         _databaseService = databaseService;
         _cache = cache;
-        _feeds = System.Text.Json.JsonSerializer.Deserialize<List<FeedModel>>(
-                System.IO.File.ReadAllText(_sourceFile),
-                new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        _feedDefinitionProvider = feedDefinitionProvider;
         _log = log;
     }
 
@@ -115,11 +112,11 @@ public class GetFeedHandler : IRequestHandler<GetFeedQuery, string>
 
     private FeedModel GetFeed(string id)
     {
-        return _feeds.Find(q => q.collectionname == id);
+        return _feedDefinitionProvider.GetFeed(id);
     }
 
     private bool FeedExists(string id)
     {
-        return _feeds.Any(q => q.collectionname == id);
+        return _feedDefinitionProvider.FeedExists(id);
     }
 }

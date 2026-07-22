@@ -10,16 +10,18 @@ public class CosmosDbRepository : IRepository, IExportRepository
 
     public CrawlerConfig Config => new CrawlerConfig();
 
-    public CosmosDbRepository(IConfigurationRoot configuration, ILogger log)
+    public CosmosDbRepository(CosmosDbOptions options, ILogger log)
     {
-        _databaseName = "rssfeeder";
+        _databaseName = options.DatabaseName;
         _log = log;
 
-        var config = new CosmosDbConfig();
-        configuration.GetSection("CosmosDB").Bind(config);
-        _log.Information("Loaded CosmosDB from config. Endpoint='{endpointUri}', authKey='{authKeyPartial}*****'", config.endpoint, config.authKey.Substring(0, 5));
+        var authKeyPrefix = string.IsNullOrWhiteSpace(options.Key)
+            ? ""
+            : options.Key.Substring(0, Math.Min(5, options.Key.Length));
 
-        _client = new CosmosClient(config.endpoint, config.authKey);
+        _log.Information("Loaded CosmosDb from config. Endpoint='{endpointUri}', authKey='{authKeyPartial}*****'", options.Account, authKeyPrefix);
+
+        _client = new CosmosClient(options.Account, options.Key);
     }
 
     public List<T> GetDocuments<T>(string collectionName, string sqlQueryText, Dictionary<string, object> parameters, bool addWait)

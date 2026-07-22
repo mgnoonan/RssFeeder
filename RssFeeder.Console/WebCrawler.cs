@@ -11,7 +11,8 @@ public class WebCrawler : IWebCrawler
     private readonly IUtils _utils;
     private readonly ILogger _log;
     private string _workingFolder;
-    private IContainer _container;
+    private IFeedBuilderResolver _feedBuilderResolver;
+    private ITagParserResolver _tagParserResolver;
 
     private string _exportCollectionName = "drudge-report";
     private string _crawlerCollectionName = "feed-items";
@@ -29,11 +30,12 @@ public class WebCrawler : IWebCrawler
         _log = log;
     }
 
-    public void Initialize(IContainer container, string crawlerCollectionName, string exportCollectionName)
+    public void Initialize(IFeedBuilderResolver feedBuilderResolver, ITagParserResolver tagParserResolver, string crawlerCollectionName, string exportCollectionName)
     {
         _log.Information($"{nameof(WebCrawler)} initializing");
 
-        _container = container;
+        _feedBuilderResolver = feedBuilderResolver;
+        _tagParserResolver = tagParserResolver;
         _crawlerCollectionName = crawlerCollectionName;
         _exportCollectionName = exportCollectionName;
 
@@ -106,7 +108,7 @@ public class WebCrawler : IWebCrawler
 
     private void DownloadList(Guid runID, RssFeed feed, List<RssFeedItem> list)
     {
-        _articleParser.Initialize(_container, _definitions, _webUtils, _log);
+        _articleParser.Initialize(_tagParserResolver, _definitions, _webUtils, _log);
 
         // Crawl any new articles and add them to the database
         _log.Information("Downloading new articles to the {collectionName} collection", feed.CollectionName);
@@ -291,7 +293,7 @@ public class WebCrawler : IWebCrawler
             _webUtils.SaveThumbnailToDisk(feed.Url, fileStem + ".png");
 
         // Parse the target links from the source to build the article crawl list
-        var builder = _container.ResolveNamed<IRssFeedBuilder>(feed.CollectionName);
+        var builder = _feedBuilderResolver.Resolve(feed.CollectionName);
         var list = builder.GenerateRssFeedItemList(feed, html);
 
         return list;

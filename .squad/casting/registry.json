@@ -1,0 +1,44 @@
+{
+  "agents": {
+    "aragorn": {
+      "persistent_name": "Aragorn",
+      "role": "Lead",
+      "universe": "The Lord of the Rings",
+      "created_at": "2026-04-19T17:21:24Z",
+      "legacy_named": false,
+      "status": "active"
+    },
+    "gandalf": {
+      "persistent_name": "Gandalf",
+      "role": "Backend Dev",
+      "universe": "The Lord of the Rings",
+      "created_at": "2026-04-19T17:21:24Z",
+      "legacy_named": false,
+      "status": "active"
+    },
+    "legolas": {
+      "persistent_name": "Legolas",
+      "role": "Frontend Dev",
+      "universe": "The Lord of the Rings",
+      "created_at": "2026-04-19T17:21:24Z",
+      "legacy_named": false,
+      "status": "active"
+    },
+    "gimli": {
+      "persistent_name": "Gimli",
+      "role": "Data Engineer",
+      "universe": "The Lord of the Rings",
+      "created_at": "2026-04-19T17:21:24Z",
+      "legacy_named": false,
+      "status": "active"
+    },
+    "frodo": {
+      "persistent_name": "Frodo",
+      "role": "Tester",
+      "universe": "The Lord of the Rings",
+      "created_at": "2026-04-19T17:21:24Z",
+      "legacy_named": false,
+      "status": "active"
+    }
+  }
+}

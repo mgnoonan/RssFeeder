@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using OwaspHeaders.Core.Extensions;
 using RssFeeder.Mvc;
+using RssFeeder.Mvc.Services;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -31,6 +32,7 @@ try
 
     builder.Services.AddControllers();
     builder.Services.AddApplicationInsightsTelemetry();
+    builder.Services.AddRssFeederMvcConfiguration(builder.Configuration);
 
     builder.Services.AddMicrosoftIdentityWebAppAuthentication(builder.Configuration);
     builder.Services.AddControllersWithViews(options =>
@@ -45,11 +47,9 @@ try
     builder.Services.AddHealthChecks();
 
     // Repositories
-    builder.Services.AddSingleton<IDatabaseService>(InitializeCosmosClientInstanceAsync(builder.Configuration.GetSection("CosmosDb")).GetAwaiter().GetResult());
     builder.Services.AddSingleton<AppVersionInfo>();
     builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
     builder.Services.AddMemoryCache();
-    builder.Services.AddApplicationInsightsTelemetry();
     builder.Services.AddFusionCache()
         .WithOptions(options =>
         {
@@ -126,22 +126,4 @@ finally
 {
     Log.Information("Shutdown complete");
     Log.CloseAndFlush();
-}
-
-/// <summary>
-/// Creates a Cosmos DB database and a container with the specified partition key. 
-/// </summary>
-/// <returns></returns>
-static async Task<CosmosDbService> InitializeCosmosClientInstanceAsync(IConfigurationSection configurationSection)
-{
-    string databaseName = configurationSection.GetSection("DatabaseName").Value;
-    string containerName = configurationSection.GetSection("ContainerName").Value;
-    string account = configurationSection.GetSection("Account").Value;
-    string key = configurationSection.GetSection("Key").Value;
-    CosmosClient client = new CosmosClient(account, key);
-    CosmosDbService cosmosDbService = new CosmosDbService(client, databaseName, containerName);
-    DatabaseResponse database = await client.CreateDatabaseIfNotExistsAsync(databaseName);
-    await database.Database.CreateContainerIfNotExistsAsync(containerName, "/HostName");
-
-    return cosmosDbService;
 }

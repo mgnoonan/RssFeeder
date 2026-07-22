@@ -5,12 +5,18 @@ namespace RssFeeder.Console.Commands;
 [Description("Audit the RSS Feeds using the config file", Name = "audit")]
 public class AuditCommand : OaktonCommand<AuditInput>
 {
-    private readonly IContainer _container;
+    private readonly IWebCrawler _crawler;
+    private readonly IFeedBuilderResolver _feedBuilderResolver;
+    private readonly ITagParserResolver _tagParserResolver;
+    private readonly IUtils _utils;
     private readonly ILogger _log;
 
-    public AuditCommand(IContainer container, ILogger log)
+    public AuditCommand(IWebCrawler crawler, IFeedBuilderResolver feedBuilderResolver, ITagParserResolver tagParserResolver, IUtils utils, ILogger log)
     {
-        _container = container;
+        _crawler = crawler;
+        _feedBuilderResolver = feedBuilderResolver;
+        _tagParserResolver = tagParserResolver;
+        _utils = utils;
         _log = log;
 
         // The usage pattern definition here is completely
@@ -29,20 +35,17 @@ public class AuditCommand : OaktonCommand<AuditInput>
 
         try
         {
-            var crawler = _container.Resolve<IWebCrawler>();
-            var utils = _container.Resolve<IUtils>();
-
             if (string.IsNullOrWhiteSpace(input.ConfigFile))
             {
                 input.ConfigFile = "feed-test.json";
             }
 
             // Initialize the bootstrap driver
-            crawler.Initialize(_container, "feed-items", "drudge-report");
+            _crawler.Initialize(_feedBuilderResolver, _tagParserResolver, "feed-items", "drudge-report");
 
             // Get the directory of the current executable, all config 
             // files should be in this path
-            string configFile = Path.Combine(utils.GetAssemblyDirectory(), input.ConfigFile);
+            string configFile = Path.Combine(_utils.GetAssemblyDirectory(), input.ConfigFile);
             _log.Information("Reading from config file: {configFile}", configFile);
 
             // Read the options in JSON format
@@ -65,7 +68,7 @@ public class AuditCommand : OaktonCommand<AuditInput>
                 {
                     try
                     {
-                        var list = crawler.Audit(runID, feed);
+                        var list = _crawler.Audit(runID, feed);
                         _log.Information("Feed '{feedTitle}' from '{feedUrl}' has {itemCount} items", feed.Title, feed.Url, list.Count);
 
                         foreach (var item in list)
