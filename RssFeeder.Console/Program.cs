@@ -26,12 +26,23 @@ var builder = new ContainerBuilder();
 
 builder.RegisterInstance(Log.Logger).As<ILogger>();
 builder.RegisterInstance(configuration).As<IConfigurationRoot>();
+
+bool isAuditMode = args.Length > 0 && string.Equals(args[0], "audit", StringComparison.OrdinalIgnoreCase);
+if (isAuditMode)
+{
+    builder.RegisterType<NullRepository>().As<IRepository>().SingleInstance();
+    builder.RegisterType<NullRepository>().As<IExportRepository>().SingleInstance();
+}
+else
+{
 #if DEBUG
-builder.RegisterType<RavenDbRepository>().As<IExportRepository>();
+    builder.RegisterType<RavenDbRepository>().As<IExportRepository>();
 #else
-builder.RegisterType<CosmosDbRepository>().As<IExportRepository>();
+    builder.RegisterType<CosmosDbRepository>().As<IExportRepository>();
 #endif
-builder.RegisterType<RavenDbRepository>().As<IRepository>();
+    builder.RegisterType<RavenDbRepository>().As<IRepository>();
+}
+
 builder.RegisterType<ArticleExporter>().As<IArticleExporter>();
 builder.RegisterType<ArticleParser>().As<IArticleParser>();
 builder.RegisterType<WebCrawler>().As<IWebCrawler>();
