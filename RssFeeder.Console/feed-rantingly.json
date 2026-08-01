@@ -1,4 +1,4 @@
-﻿[
+[
   {
     "Title": "Rantingly",
     "Enabled": "true",
@@ -11,6 +11,32 @@
     "CollectionName": "rantingly",
     "FileRetentionDays": 3,
     "DatabaseRetentionDays": 180,
-    "Filters": []
+    "Filters": [],
+    "Sections": [
+      {
+        "SectionName": "headlines",
+        "ContainerSelector": "#content-wrap > div.page-header > div",
+        "LinkSelector": "h2 > a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "above the fold",
+        "ContainerSelector": "ul.wpd-top-links",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "column 1",
+        "ContainerSelector": "#column-1 > div > div.wpd-posted-links",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "column 2",
+        "ContainerSelector": "#column-2 > div > div.wpd-posted-links",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      }
+    ]
   }
 ]

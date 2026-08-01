@@ -291,7 +291,12 @@ public class WebCrawler : IWebCrawler
             _webUtils.SaveThumbnailToDisk(feed.Url, fileStem + ".png");
 
         // Parse the target links from the source to build the article crawl list
-        var builder = _container.ResolveNamed<IRssFeedBuilder>(feed.CollectionName);
+        if (feed.Sections is not { Count: > 0 })
+        {
+            throw new InvalidOperationException($"Feed '{feed.CollectionName}' is missing section parsing configuration.");
+        }
+
+        var builder = _container.Resolve<IRssFeedBuilder>();
         var list = builder.GenerateRssFeedItemList(feed, html);
 
         return list;

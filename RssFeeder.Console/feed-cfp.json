@@ -1,4 +1,4 @@
-﻿[
+[
   {
     "Title": "Citizen Free Press",
     "Enabled": "true",
@@ -15,6 +15,38 @@
       "3fa6dfe31a8d75725aaa5620243838f2",
       "b73f81a2fa4475d68ba7ba39faf9dfb6",
       "9efbe7b79d607392f56e97f9a2a8441d"
+    ],
+    "Sections": [
+      {
+        "SectionName": "headlines",
+        "ContainerSelector": "#featured",
+        "LinkSelector": "a.headline-link",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "above the fold",
+        "ContainerSelector": "ul.wpd-top-links",
+        "LinkSelector": "a.headline-link",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "column 1",
+        "ContainerSelector": "#column-1",
+        "LinkSelector": "a.headline-link",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "column 2",
+        "ContainerSelector": "#column-2",
+        "LinkSelector": "a.headline-link",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "column 3",
+        "ContainerSelector": "#column-3",
+        "LinkSelector": "a.headline-link",
+        "FilterDuplicates": false
+      }
     ]
   }
 ]

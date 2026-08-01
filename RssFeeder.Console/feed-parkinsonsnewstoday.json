@@ -1,16 +1,24 @@
-﻿[
-    {
-        "Title": "Parkinson's News Today",
-        "Enabled": "true",
-        "EnableThumbnail": "false",
-        "Exportable": "false",
-        "Description": "Parkinson's News Today",
-        "Language": "en-US",
-        "Url": "https://parkinsonsnewstoday.com/",
-        "CustomParser": "RssFeeder.Console.FeedBuilders.ParkinsonsNewsTodayFeedBuilder",
-        "CollectionName": "parkinsons-news-today",
-        "FileRetentionDays": 3,
-        "DatabaseRetentionDays": 180,
-        "Filters": []
-    }
+[
+  {
+    "Title": "Parkinson's News Today",
+    "Enabled": "true",
+    "EnableThumbnail": "false",
+    "Exportable": "false",
+    "Description": "Parkinson's News Today",
+    "Language": "en-US",
+    "Url": "https://parkinsonsnewstoday.com/",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.ParkinsonsNewsTodayFeedBuilder",
+    "CollectionName": "parkinsons-news-today",
+    "FileRetentionDays": 3,
+    "DatabaseRetentionDays": 180,
+    "Filters": [],
+    "Sections": [
+      {
+        "SectionName": "featured headline",
+        "ContainerSelector": "div.bio-post-preview--title-and-byline",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      }
+    ]
+  }
 ]

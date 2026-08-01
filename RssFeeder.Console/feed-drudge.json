@@ -26,6 +26,41 @@
       "60306a36caf8451098e8e9518f9189e2",
       "05a84c37048fe22a1b897a2b11e31c84",
       "caf4e88953540b46b5c438af9648c9da"
+    ],
+    "Sections": [
+      {
+        "SectionName": "above the fold",
+        "ContainerSelector": "#DR-HU-TOP-LEFT",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "headlines",
+        "ContainerSelector": "#DR-HU-MAIN",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "column 1",
+        "ContainerSelector": "table > tbody > tr > td:nth-child(1) > tt",
+        "LinkSelector": "b > a",
+        "FilterDuplicates": false,
+        "StopHash": "1dc7f1c814187b538e82d9d56fd4f66d"
+      },
+      {
+        "SectionName": "column 2",
+        "ContainerSelector": "table > tbody > tr > td:nth-child(3) > tt",
+        "LinkSelector": "b > a",
+        "FilterDuplicates": false,
+        "StopHash": "4ee8a93f92a1be4ced3de6f96b13bcca"
+      },
+      {
+        "SectionName": "column 3",
+        "ContainerSelector": "table > tbody > tr > td:nth-child(5) > tt",
+        "LinkSelector": "b > a",
+        "FilterDuplicates": false,
+        "StopHash": "cb1d91b100c1732694cf8a55e39ad2d2"
+      }
     ]
   }
 ]

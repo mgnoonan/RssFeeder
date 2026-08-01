@@ -11,6 +11,14 @@
     "CollectionName": "rubin-report",
     "FileRetentionDays": 7,
     "DatabaseRetentionDays": 180,
-    "Filters": []
+    "Filters": [],
+    "Sections": [
+      {
+        "SectionName": "articles",
+        "ContainerSelector": "body",
+        "LinkSelector": "h3.entry-title > a",
+        "FilterDuplicates": false
+      }
+    ]
   }
 ]

@@ -1,4 +1,4 @@
-﻿[
+[
   {
     "Title": "Populist Press Extra",
     "Enabled": "true",
@@ -11,6 +11,20 @@
     "CollectionName": "populist-press",
     "FileRetentionDays": 3,
     "DatabaseRetentionDays": 180,
-    "Filters": []
+    "Filters": [],
+    "Sections": [
+      {
+        "SectionName": "above the fold",
+        "ContainerSelector": "#home_page_breaking",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "headlines",
+        "ContainerSelector": "#home_page_featured",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      }
+    ]
   }
 ]

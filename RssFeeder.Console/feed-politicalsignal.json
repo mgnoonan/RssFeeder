@@ -12,6 +12,35 @@
     "CollectionName": "political-signal",
     "FileRetentionDays": 7,
     "DatabaseRetentionDays": 7,
-    "Filters": []
+    "Filters": [],
+    "Sections": [
+      {
+        "SectionName": "headlines",
+        "ContainerSelector": "#home_page_featured",
+        "LinkSelector": "li > h2 > a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "column 1",
+        "ContainerSelector": "#column_1",
+        "TextSelector": "span.mf-headline > a",
+        "LinkSelector": "h2 > span.iconbox > a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "column 2",
+        "ContainerSelector": "#column_2",
+        "TextSelector": "span.mf-headline > a",
+        "LinkSelector": "h2 > span.iconbox > a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "column 3",
+        "ContainerSelector": "#column_3",
+        "TextSelector": "span.mf-headline > a",
+        "LinkSelector": "h2 > span.iconbox > a",
+        "FilterDuplicates": false
+      }
+    ]
   }
 ]
