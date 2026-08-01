@@ -28,7 +28,8 @@ internal class RubinReportFeedBuilder : BaseFeedBuilder, IRssFeedBuilder
         var list = new List<RssFeedItem>();
 
         // Main Headlines section
-        GetNodeLinks("headlines", "div.elementor-widget-container", "h1.elementor-post__title > a", list, false);
+        // #rt-tpg-container-450400301 > div.rt-row.rt-content-loader.grid-layout1.grid-behaviour.tpg-full-height.grid_layout_wrapper > div.rt-col-md-4.rt-col-sm-6.rt-col-xs-12.default.rt-grid-item.post-2462.post.type-post.status-publish.format-standard.has-post-thumbnail.hentry.category-uncategorized > div > div > div.post-footer > div > div > a
+        GetNodeLinks("articles", "body", "h3.entry-title > a", list, false);
 
         return list;
     }
