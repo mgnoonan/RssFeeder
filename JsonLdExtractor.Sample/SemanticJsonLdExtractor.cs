@@ -1,6 +1,8 @@
 using JsonLD.Core;
 using Newtonsoft.Json.Linq;
 
+namespace JsonLdExtractor.Sample;
+
 public sealed class SemanticJsonLdExtractor
 {
 	private static readonly Dictionary<string, string[]> PrefixMap = new(StringComparer.OrdinalIgnoreCase)

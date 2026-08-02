@@ -1,3 +1,5 @@
+namespace JsonLdExtractor.Sample;
+
 public sealed class ExtractionProfile
 {
 	public required string Name { get; init; }

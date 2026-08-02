@@ -1,3 +1,5 @@
+namespace JsonLdExtractor.Sample;
+
 public sealed class FieldSpec
 {
 	public FieldSpec(string fieldName, params string[] semanticKeys)
