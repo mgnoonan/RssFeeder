@@ -136,12 +136,12 @@ public class BaseArticleExporter
                     _log.Error("Error deserializing json+ld values for {urlHash}", exportFeedItem.UrlHash);
                 }
 
-                foreach (var value in list!)
+                var value = list?.FirstOrDefault();
+                if (value is not null)
                 {
                     exportFeedItem.VideoUrl = string.IsNullOrWhiteSpace(value.embedUrl) ? value.url : value.embedUrl;
                     exportFeedItem.VideoHeight = int.TryParse(Convert.ToString(value.height), out int height) ? height : 0;
                     exportFeedItem.VideoWidth = int.TryParse(Convert.ToString(value.width), out int width) ? width : 0;
-                    break;
                 }
             }
         }
