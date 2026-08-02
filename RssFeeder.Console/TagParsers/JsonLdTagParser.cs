@@ -31,6 +31,7 @@ public class JsonLdTagParser : TagParserBase, ITagParser
         var videoObjects = semanticExtractor.ExtractVideoObjectsFromHtml(_sourceHtml);
         if (videoObjects.Count > 0)
         {
+            _log.Information("Extracted JSON-LD videoObjects structure: {@videoObjects}", videoObjects);
             return JsonConvert.SerializeObject(videoObjects);
         }
 
