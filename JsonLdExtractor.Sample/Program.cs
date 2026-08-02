@@ -31,6 +31,7 @@ var profile = new ExtractionProfile
 	[
 		new FieldSpec("name", "schema:name", "schema:headline"),
 		new FieldSpec("url", "schema:url", "schema:mainEntityOfPage", "schema:embedUrl"),
+        new FieldSpec("embedUrl", "schema:embedUrl"),
 		new FieldSpec("width", "schema:width"),
 		new FieldSpec("height", "schema:height")
 	]
