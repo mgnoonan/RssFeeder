@@ -11,6 +11,38 @@
     "CollectionName": "liberty-daily",
     "FileRetentionDays": 7,
     "DatabaseRetentionDays": 7,
-    "Filters": []
+    "Filters": [],
+    "Sections": [
+      {
+        "SectionName": "headlines",
+        "ContainerSelector": "div.drudgery-featured",
+        "LinkSelector": "div.drudgery-featured-link > a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "above the fold",
+        "ContainerSelector": "div.drudgery-top-links",
+        "LinkSelector": "div.drudgery-top-link > a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "column 1",
+        "ContainerSelector": "div.drudgery-column-1 > div.drudgery-articles",
+        "LinkSelector": "div.drudgery-link > a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "column 2",
+        "ContainerSelector": "div.drudgery-column-2 > div.drudgery-articles",
+        "LinkSelector": "div.drudgery-link > a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "column 3",
+        "ContainerSelector": "div.drudgery-column-3 > div.drudgery-articles",
+        "LinkSelector": "div.drudgery-link > a",
+        "FilterDuplicates": false
+      }
+    ]
   }
 ]

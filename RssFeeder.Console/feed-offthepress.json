@@ -11,6 +11,20 @@
     "CollectionName": "off-the-press",
     "FileRetentionDays": 7,
     "DatabaseRetentionDays": 180,
-    "Filters": []
+    "Filters": [],
+    "Sections": [
+      {
+        "SectionName": "headlines",
+        "ContainerSelector": "div.featured-post",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "posts",
+        "ContainerSelector": "#post-list",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      }
+    ]
   }
 ]

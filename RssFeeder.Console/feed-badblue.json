@@ -1,4 +1,4 @@
-﻿[
+[
   {
     "Title": "Bad Blue",
     "Enabled": "true",
@@ -16,6 +16,22 @@
       "467ce4c01c974a5fd4f3ed39d95c7ec0",
       "c2c894c883513ca8914dc489caafdd6c",
       "f81d029ba2b79c1ab285bf5083623671"
+    ],
+    "Sections": [
+      {
+        "SectionName": "headlines",
+        "ContainerSelector": "div.headln1",
+        "LinkSelector": "span.tih1 > a",
+        "FilterDuplicates": false,
+        "MaxItems": 25
+      },
+      {
+        "SectionName": "stories",
+        "ContainerSelector": "div.grid > div.headlines",
+        "LinkSelector": "p > a",
+        "FilterDuplicates": false,
+        "MaxItems": 25
+      }
     ]
   }
 ]

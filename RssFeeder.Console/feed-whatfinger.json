@@ -15,6 +15,55 @@
     "Filters": [
       "1954ceefa0f85a89de6c34109de7ff44",
       "f474e4c0861b2de36e3421e0dd701db0"
+    ],
+    "Sections": [
+      {
+        "SectionName": "headlines",
+        "ContainerSelector": "div.creative-link.wpb_column.vc_column_container.vc_col-sm-8 > div > div > div:nth-child(3) > div",
+        "LinkSelector": "ul li a",
+        "FilterDuplicates": true,
+        "MaxItems": 20
+      },
+      {
+        "SectionName": "headlines",
+        "ContainerSelector": "div.creative-link.wpb_column.vc_column_container.vc_col-sm-8 > div > div > div:nth-child(4) > div",
+        "LinkSelector": "ul li a",
+        "FilterDuplicates": true,
+        "MaxItems": 20,
+        "OnlyIfEmpty": true
+      },
+      {
+        "SectionName": "headlines",
+        "ContainerSelector": "div.creative-link.wpb_column.vc_column_container.vc_col-sm-8 > div > div > div:nth-child(5) > div",
+        "LinkSelector": "ul li a",
+        "FilterDuplicates": true,
+        "MaxItems": 20,
+        "OnlyIfEmpty": true
+      },
+      {
+        "SectionName": "headlines",
+        "ContainerSelector": "div.creative-link.wpb_column.vc_column_container.vc_col-sm-8 > div > div > div:nth-child(6) > div",
+        "LinkSelector": "ul li a",
+        "FilterDuplicates": true,
+        "MaxItems": 20,
+        "OnlyIfEmpty": true
+      },
+      {
+        "SectionName": "headlines",
+        "ContainerSelector": "div.creative-link.wpb_column.vc_column_container.vc_col-sm-8 > div > div > div:nth-child(7) > div",
+        "LinkSelector": "ul li a",
+        "FilterDuplicates": true,
+        "MaxItems": 20,
+        "OnlyIfEmpty": true
+      },
+      {
+        "SectionName": "headlines",
+        "ContainerSelector": "div.creative-link.wpb_column.vc_column_container.vc_col-sm-8 > div > div > div:nth-child(8) > div",
+        "LinkSelector": "ul li a",
+        "FilterDuplicates": true,
+        "MaxItems": 20,
+        "OnlyIfEmpty": true
+      }
     ]
   }
 ]

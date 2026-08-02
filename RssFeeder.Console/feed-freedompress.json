@@ -1,4 +1,4 @@
-﻿[
+[
   {
     "Title": "Freedom of the Press",
     "Enabled": "true",
@@ -12,6 +12,32 @@
     "CollectionName": "freedom-press",
     "FileRetentionDays": 7,
     "DatabaseRetentionDays": 7,
-    "Filters": []
+    "Filters": [],
+    "Sections": [
+      {
+        "SectionName": "headlines",
+        "ContainerSelector": "#fg-widget-65cf26586c253334929d032bf > div.uw-sc-mask > div.uw-sc-cardcont",
+        "LinkSelector": "div > a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "column 1",
+        "ContainerSelector": "#fg-widget-fd07a65186f463b9a3ff917c1 > div.uw-sc-mask > div.uw-sc-cardcont",
+        "LinkSelector": "div > a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "column 2",
+        "ContainerSelector": "#fg-widget-f9e047dd6b8da3cdc21edad8d > div.uw-sc-mask > div.uw-sc-cardcont",
+        "LinkSelector": "div > a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "column 3",
+        "ContainerSelector": "#fg-widget-a52b0845e1da669a0aa917645 > div.uw-sc-mask > div.uw-sc-cardcont",
+        "LinkSelector": "div > a",
+        "FilterDuplicates": false
+      }
+    ]
   }
 ]

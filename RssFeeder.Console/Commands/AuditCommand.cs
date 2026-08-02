@@ -59,6 +59,12 @@ public class AuditCommand : OaktonCommand<AuditInput>
 
             foreach (var feed in feedList)
             {
+                if (!feed.Enabled)
+                {
+                    _log.Information("Skipping disabled feed '{feedTitle}' from '{feedUrl}'", feed.Title, feed.Url);
+                    continue;
+                }
+
                 using (LogContext.PushProperty("collectionName", feed.CollectionName))
                 using (LogContext.PushProperty("runID", runID))
                 using (LogContext.PushProperty("audit", true))

@@ -1,4 +1,4 @@
-﻿[
+[
   {
     "Title": "Twitchy",
     "Enabled": "true",
@@ -11,6 +11,26 @@
     "CollectionName": "twitchy",
     "FileRetentionDays": 3,
     "DatabaseRetentionDays": 180,
-    "Filters": []
+    "Filters": [],
+    "Sections": [
+      {
+        "SectionName": "headlines",
+        "ContainerSelector": "section.pt-2",
+        "LinkSelector": "div.wp-card-huge__title > a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "above the fold",
+        "ContainerSelector": "body>main>section:nth-child(2)",
+        "LinkSelector": "div.wp-card__title > a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "posts",
+        "ContainerSelector": "#post-list",
+        "LinkSelector": "div.wp-card__title > a",
+        "FilterDuplicates": false
+      }
+    ]
   }
 ]

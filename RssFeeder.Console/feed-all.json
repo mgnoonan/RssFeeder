@@ -1,4 +1,4 @@
-﻿[
+[
   {
     "Title": "The Drudge Report",
     "Enabled": "true",
@@ -26,6 +26,41 @@
       "60306a36caf8451098e8e9518f9189e2",
       "caf4e88953540b46b5c438af9648c9da",
       "4099925931f0e142ca280f22343236e3"
+    ],
+    "Sections": [
+      {
+        "SectionName": "above the fold",
+        "ContainerSelector": "#DR-HU-TOP-LEFT",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "headlines",
+        "ContainerSelector": "#DR-HU-MAIN",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "column 1",
+        "ContainerSelector": "table > tbody > tr > td:nth-child(1) > tt",
+        "LinkSelector": "b > a",
+        "FilterDuplicates": false,
+        "StopHash": "1dc7f1c814187b538e82d9d56fd4f66d"
+      },
+      {
+        "SectionName": "column 2",
+        "ContainerSelector": "table > tbody > tr > td:nth-child(3) > tt",
+        "LinkSelector": "b > a",
+        "FilterDuplicates": false,
+        "StopHash": "4ee8a93f92a1be4ced3de6f96b13bcca"
+      },
+      {
+        "SectionName": "column 3",
+        "ContainerSelector": "table > tbody > tr > td:nth-child(5) > tt",
+        "LinkSelector": "b > a",
+        "FilterDuplicates": false,
+        "StopHash": "cb1d91b100c1732694cf8a55e39ad2d2"
+      }
     ]
   },
   {
@@ -40,7 +75,39 @@
     "CollectionName": "liberty-daily",
     "FileRetentionDays": 3,
     "DatabaseRetentionDays": 180,
-    "Filters": []
+    "Filters": [],
+    "Sections": [
+      {
+        "SectionName": "headlines",
+        "ContainerSelector": "div.drudgery-featured",
+        "LinkSelector": "div.drudgery-featured-link > a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "above the fold",
+        "ContainerSelector": "div.drudgery-top-links",
+        "LinkSelector": "div.drudgery-top-link > a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "column 1",
+        "ContainerSelector": "div.drudgery-column-1 > div.drudgery-articles",
+        "LinkSelector": "div.drudgery-link > a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "column 2",
+        "ContainerSelector": "div.drudgery-column-2 > div.drudgery-articles",
+        "LinkSelector": "div.drudgery-link > a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "column 3",
+        "ContainerSelector": "div.drudgery-column-3 > div.drudgery-articles",
+        "LinkSelector": "div.drudgery-link > a",
+        "FilterDuplicates": false
+      }
+    ]
   },
   {
     "Title": "Bongino Report",
@@ -54,7 +121,81 @@
     "CollectionName": "bongino-report",
     "FileRetentionDays": 3,
     "DatabaseRetentionDays": 180,
-    "Filters": []
+    "Filters": [],
+    "Sections": [
+      {
+        "SectionName": "headlines",
+        "ContainerSelector": "div.feature-article > h1.lead-story_title",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "today's picks",
+        "ContainerSelector": "#hero > div > div > div.col-md-4 > div.row > div > div",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "top stories",
+        "ContainerSelector": "#home-top-stories > ul",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "trending videos",
+        "ContainerSelector": "#page-wrapper > section.stories-video-redesign > div > div > div",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "capitol hill",
+        "ContainerSelector": "#page-wrapper > section.all-stories > div > div > div:nth-child(1)",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "economy",
+        "ContainerSelector": "#page-wrapper > section.all-stories > div > div > div:nth-child(2)",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "swamp watch",
+        "ContainerSelector": "#page-wrapper > section.all-stories > div > div > div:nth-child(3)",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "natsec & global affairs",
+        "ContainerSelector": "#page-wrapper > section.all-stories > div > div > div:nth-child(4)",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "sports & entertainment",
+        "ContainerSelector": "#page-wrapper > section.all-stories > div > div > div:nth-child(5)",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "science & tech",
+        "ContainerSelector": "#page-wrapper > section.all-stories > div > div > div:nth-child(6)",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "health & fitness",
+        "ContainerSelector": "#page-wrapper > section.all-stories > div > div > div:nth-child(7)",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "opinion",
+        "ContainerSelector": "#page-wrapper > section.all-stories > div > div > div:nth-child(8)",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      }
+    ]
   },
   {
     "Title": "Citizen Free Press",
@@ -73,6 +214,38 @@
       "b73f81a2fa4475d68ba7ba39faf9dfb6",
       "9efbe7b79d607392f56e97f9a2a8441d",
       "1ab78eb41b5c38192fb6b5eeab468046"
+    ],
+    "Sections": [
+      {
+        "SectionName": "headlines",
+        "ContainerSelector": "#featured",
+        "LinkSelector": "a.headline-link",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "above the fold",
+        "ContainerSelector": "ul.wpd-top-links",
+        "LinkSelector": "a.headline-link",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "column 1",
+        "ContainerSelector": "#column-1",
+        "LinkSelector": "a.headline-link",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "column 2",
+        "ContainerSelector": "#column-2",
+        "LinkSelector": "a.headline-link",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "column 3",
+        "ContainerSelector": "#column-3",
+        "LinkSelector": "a.headline-link",
+        "FilterDuplicates": false
+      }
     ]
   },
   {
@@ -87,7 +260,33 @@
     "CollectionName": "rantingly",
     "FileRetentionDays": 3,
     "DatabaseRetentionDays": 180,
-    "Filters": []
+    "Filters": [],
+    "Sections": [
+      {
+        "SectionName": "headlines",
+        "ContainerSelector": "#content-wrap > div.page-header > div",
+        "LinkSelector": "h2 > a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "above the fold",
+        "ContainerSelector": "ul.wpd-top-links",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "column 1",
+        "ContainerSelector": "#column-1 > div > div.wpd-posted-links",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "column 2",
+        "ContainerSelector": "#column-2 > div > div.wpd-posted-links",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      }
+    ]
   },
   {
     "Title": "Populist Press Extra",
@@ -101,11 +300,25 @@
     "CollectionName": "populist-press",
     "FileRetentionDays": 3,
     "DatabaseRetentionDays": 180,
-    "Filters": []
+    "Filters": [],
+    "Sections": [
+      {
+        "SectionName": "above the fold",
+        "ContainerSelector": "#home_page_breaking",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "headlines",
+        "ContainerSelector": "#home_page_featured",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      }
+    ]
   },
   {
     "Title": "Bad Blue",
-    "Enabled": "true",
+    "Enabled": "false",
     "EnableThumbnail": "false",
     "Exportable": "true",
     "Description": "Bad Blue",
@@ -120,6 +333,22 @@
       "467ce4c01c974a5fd4f3ed39d95c7ec0",
       "c2c894c883513ca8914dc489caafdd6c",
       "f81d029ba2b79c1ab285bf5083623671"
+    ],
+    "Sections": [
+      {
+        "SectionName": "headlines",
+        "ContainerSelector": "div.headln1",
+        "LinkSelector": "span.tih1 > a",
+        "FilterDuplicates": false,
+        "MaxItems": 25
+      },
+      {
+        "SectionName": "stories",
+        "ContainerSelector": "div.grid > div.headlines",
+        "LinkSelector": "p > a",
+        "FilterDuplicates": false,
+        "MaxItems": 25
+      }
     ]
   },
   {
@@ -134,11 +363,19 @@
     "CollectionName": "revolver-news",
     "FileRetentionDays": 7,
     "DatabaseRetentionDays": 180,
-    "Filters": []
+    "Filters": [],
+    "Sections": [
+      {
+        "SectionName": "stories",
+        "ContainerSelector": "div.list-articles",
+        "LinkSelector": "article.item > div.text > h2.title > a",
+        "FilterDuplicates": false
+      }
+    ]
   },
   {
     "Title": "Freedom of the Press",
-    "Enabled": "true",
+    "Enabled": "false",
     "EnableThumbnail": "false",
     "Exportable": "true",
     "Description": "Freedom of the Press",
@@ -148,11 +385,37 @@
     "CollectionName": "freedom-press",
     "FileRetentionDays": 7,
     "DatabaseRetentionDays": 180,
-    "Filters": []
+    "Filters": [],
+    "Sections": [
+      {
+        "SectionName": "headlines",
+        "ContainerSelector": "#fg-widget-65cf26586c253334929d032bf > div.uw-sc-mask > div.uw-sc-cardcont",
+        "LinkSelector": "div > a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "column 1",
+        "ContainerSelector": "#fg-widget-fd07a65186f463b9a3ff917c1 > div.uw-sc-mask > div.uw-sc-cardcont",
+        "LinkSelector": "div > a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "column 2",
+        "ContainerSelector": "#fg-widget-f9e047dd6b8da3cdc21edad8d > div.uw-sc-mask > div.uw-sc-cardcont",
+        "LinkSelector": "div > a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "column 3",
+        "ContainerSelector": "#fg-widget-a52b0845e1da669a0aa917645 > div.uw-sc-mask > div.uw-sc-cardcont",
+        "LinkSelector": "div > a",
+        "FilterDuplicates": false
+      }
+    ]
   },
   {
     "Title": "Conservagator",
-    "Enabled": "true",
+    "Enabled": "false",
     "EnableThumbnail": "false",
     "Exportable": "true",
     "Description": "Conservagator",
@@ -164,6 +427,15 @@
     "DatabaseRetentionDays": 180,
     "Filters": [
       "6226cff02cfd1a8be63ac0e824fcd5f0"
+    ],
+    "Sections": [
+      {
+        "SectionName": "conservagator section",
+        "ContainerSelector": "div.wp-block-column",
+        "LinkSelector": "ul.rss-aggregator > li.feed-item > a",
+        "FilterDuplicates": false,
+        "MaxItems": 1
+      }
     ]
   },
   {
@@ -178,7 +450,39 @@
     "CollectionName": "noah-report",
     "FileRetentionDays": 7,
     "DatabaseRetentionDays": 180,
-    "Filters": []
+    "Filters": [],
+    "Sections": [
+      {
+        "SectionName": "headlines",
+        "ContainerSelector": "div.widget-area-top-2 > div.sl-links-main",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "above the fold",
+        "ContainerSelector": "div.widget-area-top-1 > div.sl-links-main",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "column 1",
+        "ContainerSelector": "div.homepage-column-1 > div.sl-links-main",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "column 2",
+        "ContainerSelector": "div.homepage-column-2 > div.sl-links-main",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "column 3",
+        "ContainerSelector": "div.homepage-column-3 > div.sl-links-main",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      }
+    ]
   },
   {
     "Title": "Pro Trump News",
@@ -192,7 +496,39 @@
     "CollectionName": "protrump-news",
     "FileRetentionDays": 7,
     "DatabaseRetentionDays": 180,
-    "Filters": []
+    "Filters": [],
+    "Sections": [
+      {
+        "SectionName": "headlines",
+        "ContainerSelector": "div.widget-area-top-2 > div.sl-links-main",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "above the fold",
+        "ContainerSelector": "div.widget-area-top-1 > div.sl-links-main",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "column 1",
+        "ContainerSelector": "div.homepage-column-1 > div.sl-links-main",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "column 2",
+        "ContainerSelector": "div.homepage-column-2 > div.sl-links-main",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "column 3",
+        "ContainerSelector": "div.homepage-column-3 > div.sl-links-main",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      }
+    ]
   },
   {
     "Title": "Off the Press",
@@ -206,26 +542,48 @@
     "CollectionName": "off-the-press",
     "FileRetentionDays": 7,
     "DatabaseRetentionDays": 180,
-    "Filters": []
+    "Filters": [],
+    "Sections": [
+      {
+        "SectionName": "headlines",
+        "ContainerSelector": "div.featured-post",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "posts",
+        "ContainerSelector": "#post-list",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      }
+    ]
   },
   {
     "Title": "Rubin Report",
-    "Enabled": "false",
+    "Enabled": "true",
     "EnableThumbnail": "false",
     "Exportable": "true",
     "Description": "Rubin Report",
-    "RequiresJavascript": true,
+    "RequiresJavascript": false,
     "Language": "en-US",
     "Url": "https://www.rubinwealthadvisors.com/rubinreport/",
     "CustomParser": "RssFeeder.Console.FeedBuilders.RubinReportFeedBuilder",
     "CollectionName": "rubin-report",
     "FileRetentionDays": 7,
     "DatabaseRetentionDays": 366,
-    "Filters": []
+    "Filters": [],
+    "Sections": [
+      {
+        "SectionName": "articles",
+        "ContainerSelector": "body",
+        "LinkSelector": "h3.entry-title > a",
+        "FilterDuplicates": false
+      }
+    ]
   },
   {
     "Title": "Whatfinger News",
-    "Enabled": "true",
+    "Enabled": "false",
     "EnableThumbnail": "false",
     "Exportable": "true",
     "Description": "Whatfinger News",
@@ -239,35 +597,121 @@
     "Filters": [
       "1954ceefa0f85a89de6c34109de7ff44",
       "f474e4c0861b2de36e3421e0dd701db0"
+    ],
+    "Sections": [
+      {
+        "SectionName": "headlines",
+        "ContainerSelector": "div.creative-link.wpb_column.vc_column_container.vc_col-sm-8 > div > div > div:nth-child(3) > div",
+        "LinkSelector": "ul li a",
+        "FilterDuplicates": true,
+        "MaxItems": 20
+      },
+      {
+        "SectionName": "headlines",
+        "ContainerSelector": "div.creative-link.wpb_column.vc_column_container.vc_col-sm-8 > div > div > div:nth-child(4) > div",
+        "LinkSelector": "ul li a",
+        "FilterDuplicates": true,
+        "MaxItems": 20,
+        "OnlyIfEmpty": true
+      },
+      {
+        "SectionName": "headlines",
+        "ContainerSelector": "div.creative-link.wpb_column.vc_column_container.vc_col-sm-8 > div > div > div:nth-child(5) > div",
+        "LinkSelector": "ul li a",
+        "FilterDuplicates": true,
+        "MaxItems": 20,
+        "OnlyIfEmpty": true
+      },
+      {
+        "SectionName": "headlines",
+        "ContainerSelector": "div.creative-link.wpb_column.vc_column_container.vc_col-sm-8 > div > div > div:nth-child(6) > div",
+        "LinkSelector": "ul li a",
+        "FilterDuplicates": true,
+        "MaxItems": 20,
+        "OnlyIfEmpty": true
+      },
+      {
+        "SectionName": "headlines",
+        "ContainerSelector": "div.creative-link.wpb_column.vc_column_container.vc_col-sm-8 > div > div > div:nth-child(7) > div",
+        "LinkSelector": "ul li a",
+        "FilterDuplicates": true,
+        "MaxItems": 20,
+        "OnlyIfEmpty": true
+      },
+      {
+        "SectionName": "headlines",
+        "ContainerSelector": "div.creative-link.wpb_column.vc_column_container.vc_col-sm-8 > div > div > div:nth-child(8) > div",
+        "LinkSelector": "ul li a",
+        "FilterDuplicates": true,
+        "MaxItems": 20,
+        "OnlyIfEmpty": true
+      }
     ]
   },
-    {
-        "Title": "Political Signal",
-        "Enabled": "true",
-        "EnableThumbnail": "false",
-        "Exportable": "true",
-        "Description": "Political Signal",
-        "RequiresJavascript": false,
-        "Language": "en-US",
-        "Url": "http://politicalsignal.com/",
-        "CustomParser": "RssFeeder.Console.FeedBuilders.PoliticalSignalFeedBuilder",
-        "CollectionName": "political-signal",
-        "FileRetentionDays": 7,
-        "DatabaseRetentionDays": 7,
-        "Filters": []
-    },
-    {
-        "Title": "Parkinson's News Today",
-        "Enabled": "true",
-        "EnableThumbnail": "false",
-        "Exportable": "true",
-        "Description": "Parkinson's News Today",
-        "Language": "en-US",
-        "Url": "https://parkinsonsnewstoday.com/",
-        "CustomParser": "RssFeeder.Console.FeedBuilders.ParkinsonsNewsTodayFeedBuilder",
-        "CollectionName": "parkinsons-news-today",
-        "FileRetentionDays": 3,
-        "DatabaseRetentionDays": 180,
-        "Filters": []
-    }
+  {
+    "Title": "Political Signal",
+    "Enabled": "false",
+    "EnableThumbnail": "false",
+    "Exportable": "true",
+    "Description": "Political Signal",
+    "RequiresJavascript": false,
+    "Language": "en-US",
+    "Url": "http://politicalsignal.com/",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.PoliticalSignalFeedBuilder",
+    "CollectionName": "political-signal",
+    "FileRetentionDays": 7,
+    "DatabaseRetentionDays": 7,
+    "Filters": [],
+    "Sections": [
+      {
+        "SectionName": "headlines",
+        "ContainerSelector": "#home_page_featured",
+        "LinkSelector": "li > h2 > a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "column 1",
+        "ContainerSelector": "#column_1",
+        "TextSelector": "span.mf-headline > a",
+        "LinkSelector": "h2 > span.iconbox > a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "column 2",
+        "ContainerSelector": "#column_2",
+        "TextSelector": "span.mf-headline > a",
+        "LinkSelector": "h2 > span.iconbox > a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "column 3",
+        "ContainerSelector": "#column_3",
+        "TextSelector": "span.mf-headline > a",
+        "LinkSelector": "h2 > span.iconbox > a",
+        "FilterDuplicates": false
+      }
+    ]
+  },
+  {
+    "Title": "Parkinson's News Today",
+    "Enabled": "true",
+    "EnableThumbnail": "false",
+    "Exportable": "true",
+    "Description": "Parkinson's News Today",
+    "Language": "en-US",
+    "Url": "https://parkinsonsnewstoday.com/",
+    "CustomParser": "RssFeeder.Console.FeedBuilders.ParkinsonsNewsTodayFeedBuilder",
+    "CollectionName": "parkinsons-news-today",
+    "FileRetentionDays": 3,
+    "DatabaseRetentionDays": 180,
+    "Filters": [],
+    "Sections": [
+      {
+        "SectionName": "featured headline",
+        "ContainerSelector": "div.bio-post-preview--title-and-byline",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      }
+    ]
+  }
 ]

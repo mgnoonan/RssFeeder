@@ -143,12 +143,12 @@ class BaseFeedBuilder
         return null;
     }
 
-    protected void GetNodeLinks(string sectionName, string containerSelector, string linkSelector, List<RssFeedItem> list, bool filterDuplicates, string stopHash = "")
+    protected void GetNodeLinks(string sectionName, string containerSelector, string linkSelector, List<RssFeedItem> list, bool filterDuplicates, string stopHash = "", int? maxItems = null)
     {
-        GetNodeLinks(sectionName, containerSelector, "", linkSelector, list, filterDuplicates, stopHash);
+        GetNodeLinks(sectionName, containerSelector, "", linkSelector, list, filterDuplicates, stopHash, maxItems);
     }
 
-    protected void GetNodeLinks(string sectionName, string containerSelector, string textSelector, string linkSelector, List<RssFeedItem> list, bool filterDuplicates, string stopHash = "")
+    protected void GetNodeLinks(string sectionName, string containerSelector, string textSelector, string linkSelector, List<RssFeedItem> list, bool filterDuplicates, string stopHash = "", int? maxItems = null)
     {
         var containers = _document.QuerySelectorAll(containerSelector);
         if (containers is null)
@@ -162,11 +162,11 @@ class BaseFeedBuilder
         _log.Information("SECTION {sectionName}: Selector {containerSelector} found {containerCount} containers", sectionName, containerSelector, containers.Length);
         foreach (var container in containers)
         {
-            GetNodeLinks(container, sectionName, textSelector, linkSelector, list, filterDuplicates, ref count, stopHash);
+            GetNodeLinks(container, sectionName, textSelector, linkSelector, list, filterDuplicates, ref count, stopHash, maxItems);
         }
     }
 
-    protected void GetNodeLinks(IElement container, string sectionName, string textSelector, string linkSelector, List<RssFeedItem> list, bool filterDuplicates, ref int count, string stopHash)
+    protected void GetNodeLinks(IElement container, string sectionName, string textSelector, string linkSelector, List<RssFeedItem> list, bool filterDuplicates, ref int count, string stopHash, int? maxItems = null)
     {
         if (container is null)
         {
@@ -183,8 +183,9 @@ class BaseFeedBuilder
         }
 
         string previousHash = "";
+    int maxNodeCount = maxItems.HasValue && maxItems.Value > 0 ? maxItems.Value : _articleMaxCount;
 
-        foreach (var node in nodes.Take(_articleMaxCount))
+    foreach (var node in nodes.Take(maxNodeCount))
         {
             if (!string.IsNullOrEmpty(textSelector))
             {

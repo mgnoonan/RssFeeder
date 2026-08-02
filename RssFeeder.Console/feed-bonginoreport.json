@@ -11,6 +11,80 @@
     "CollectionName": "bongino-report",
     "FileRetentionDays": 3,
     "DatabaseRetentionDays": 7,
-    "Filters": []
+    "Filters": [],
+    "Sections": [
+      {
+        "SectionName": "headlines",
+        "ContainerSelector": "div.feature-article > h1.lead-story_title",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "today's picks",
+        "ContainerSelector": "#hero > div > div > div.col-md-4 > div.row > div > div",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "top stories",
+        "ContainerSelector": "#home-top-stories > ul",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "trending videos",
+        "ContainerSelector": "#page-wrapper > section.stories-video-redesign > div > div > div",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "capitol hill",
+        "ContainerSelector": "#page-wrapper > section.all-stories > div > div > div:nth-child(1)",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "economy",
+        "ContainerSelector": "#page-wrapper > section.all-stories > div > div > div:nth-child(2)",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "swamp watch",
+        "ContainerSelector": "#page-wrapper > section.all-stories > div > div > div:nth-child(3)",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "natsec & global affairs",
+        "ContainerSelector": "#page-wrapper > section.all-stories > div > div > div:nth-child(4)",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "sports & entertainment",
+        "ContainerSelector": "#page-wrapper > section.all-stories > div > div > div:nth-child(5)",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "science & tech",
+        "ContainerSelector": "#page-wrapper > section.all-stories > div > div > div:nth-child(6)",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "health & fitness",
+        "ContainerSelector": "#page-wrapper > section.all-stories > div > div > div:nth-child(7)",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "opinion",
+        "ContainerSelector": "#page-wrapper > section.all-stories > div > div > div:nth-child(8)",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      }
+    ]
   }
 ]

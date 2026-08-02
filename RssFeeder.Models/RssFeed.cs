@@ -18,4 +18,5 @@ public record RssFeed
     public short DatabaseRetentionDays { get; set; }
     public List<string> Filters { get; set; }
     public bool RequiresJavascript { get; set; }
+    public List<FeedSection> Sections { get; set; }
 }

@@ -11,6 +11,14 @@
     "CollectionName": "revolver-news",
     "FileRetentionDays": 7,
     "DatabaseRetentionDays": 7,
-    "Filters": []
+    "Filters": [],
+    "Sections": [
+      {
+        "SectionName": "stories",
+        "ContainerSelector": "div.list-articles",
+        "LinkSelector": "article.item > div.text > h2.title > a",
+        "FilterDuplicates": false
+      }
+    ]
   }
 ]

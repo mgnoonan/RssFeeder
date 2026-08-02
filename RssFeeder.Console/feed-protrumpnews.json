@@ -11,6 +11,38 @@
     "CollectionName": "protrump-news",
     "FileRetentionDays": 7,
     "DatabaseRetentionDays": 180,
-    "Filters": []
+    "Filters": [],
+    "Sections": [
+      {
+        "SectionName": "headlines",
+        "ContainerSelector": "div.widget-area-top-2 > div.sl-links-main",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "above the fold",
+        "ContainerSelector": "div.widget-area-top-1 > div.sl-links-main",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "column 1",
+        "ContainerSelector": "div.homepage-column-1 > div.sl-links-main",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "column 2",
+        "ContainerSelector": "div.homepage-column-2 > div.sl-links-main",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      },
+      {
+        "SectionName": "column 3",
+        "ContainerSelector": "div.homepage-column-3 > div.sl-links-main",
+        "LinkSelector": "a",
+        "FilterDuplicates": false
+      }
+    ]
   }
 ]
