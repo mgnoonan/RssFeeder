@@ -66,7 +66,7 @@ static List<string> ExtractJsonLdBlocks(string html)
 	var blocks = new List<string>();
 	var unique = new HashSet<string>(StringComparer.Ordinal);
 	var pattern = "<script\\b(?<attrs>[^>]*)>(?<json>[\\s\\S]*?)</script>";
-	var matches = Regex.Matches(html, pattern, RegexOptions.IgnoreCase);
+	var matches = Regex.Matches(html, pattern, RegexOptions.IgnoreCase, TimeSpan.FromSeconds(3));
 
 	foreach (Match match in matches)
 	{
@@ -77,7 +77,7 @@ static List<string> ExtractJsonLdBlocks(string html)
 			continue;
 		}
 
-		var isLdJsonType = Regex.IsMatch(attrs, "type\\s*=\\s*([\"'][^\"']*ld\\+json[^\"']*[\"']|[^\\s>]*ld\\+json[^\\s>]*)", RegexOptions.IgnoreCase);
+		var isLdJsonType = Regex.IsMatch(attrs, "type\\s*=\\s*([\"'][^\"']*ld\\+json[^\"']*[\"']|[^\\s>]*ld\\+json[^\\s>]*)", RegexOptions.IgnoreCase, TimeSpan.FromSeconds(3));
 		if (isLdJsonType)
 		{
 			if (unique.Add(scriptContent))
@@ -102,7 +102,7 @@ static List<string> ExtractJsonLdBlocks(string html)
 static IEnumerable<string> ExtractEmbeddedJsonCandidates(string scriptContent)
 {
 	var candidates = new List<string>();
-	var markerPattern = new Regex("\\\"@context\\\"|\\\"@graph\\\"", RegexOptions.IgnoreCase);
+	var markerPattern = new Regex("\\\"@context\\\"|\\\"@graph\\\"", RegexOptions.IgnoreCase, TimeSpan.FromSeconds(3));
 	var markerMatches = markerPattern.Matches(scriptContent);
 
 	foreach (Match markerMatch in markerMatches)
