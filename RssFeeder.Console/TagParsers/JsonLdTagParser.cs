@@ -1,4 +1,5 @@
 ﻿using AngleSharp.Html.Dom;
+using Newtonsoft.Json;
 
 namespace RssFeeder.Console.TagParsers;
 
@@ -26,6 +27,13 @@ public class JsonLdTagParser : TagParserBase, ITagParser
 
     private string BuildArticleText(IHtmlDocument document, string bodySelector, string paragraphSelector)
     {
+        var semanticExtractor = new SemanticJsonLdExtractor();
+        var videoObjects = semanticExtractor.ExtractVideoObjectsFromHtml(_sourceHtml);
+        if (videoObjects.Count > 0)
+        {
+            return JsonConvert.SerializeObject(videoObjects);
+        }
+
         // Query the document by CSS selectors to get the article text
         var elements = document.QuerySelectorAll("script");
         if (elements.Length == 0)

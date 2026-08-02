@@ -1,0 +1,45 @@
+[
+  {
+    "@context": "http://schema.org",
+    "@type": "VideoObject",
+    "name": "Fauci's Diary Testimony Somehow Just Got Worse: Special Guest Pastor James Manning",
+    "playerType": "HTML5",
+    "description": "Dr. Anthony Fauci, disgraced deep state operator, took the stand yesterday to be grilled by Senator Rand Paul and the Republicans on the Homeland Security and Governmental Affairs Committee.",
+    "thumbnailUrl": "https://1a-1791.com/video/fww1/92/s8/1/q/n/_/K/qn_KA.qR4e-small-Faucis-Diary-Testimony-Some..jpg",
+    "uploadDate": "2026-07-30T13:18:13+00:00",
+    "duration": "PT01H57M54S",
+    "embedUrl": "https://rumble.com/embed/v7baqck/",
+    "url": "https://rumble.com/v7dh9hs--cyber-teachers-dei-ceos-and-fond-fauci-memories-lets-get-weird.html",
+    "interactionStatistic": {
+      "@type": "InteractionCounter",
+      "interactionType": {
+        "@type": "http://schema.org/WatchAction"
+      },
+      "userInteractionCount": 696079
+    },
+    "width": 1920,
+    "height": 1080,
+    "videoQuality": "Full HD"
+  },
+  {
+    "@context": "http://schema.org",
+    "@type": "WebSite",
+    "url": "https://rumble.com/",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://rumble.com/search/video?q={search}",
+      "query-input": "required name=search"
+    }
+  },
+  {
+    "@context": "http://schema.org",
+    "@type": "Organization",
+    "name": "Rumble",
+    "url": "https://rumble.com/",
+    "logo": "https://rumble.com/i/rumble_logo_back.png",
+    "sameAs": [
+      "https://www.facebook.com/rumblevideo/",
+      "https://twitter.com/rumblevideo"
+    ]
+  }
+]

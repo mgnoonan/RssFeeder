@@ -1,5 +1,7 @@
 ﻿namespace RssFeeder.Console.Exporters;
 
+using RssFeeder.Console.Utility;
+
 public class BaseArticleExporter
 {
     private readonly ILogger _log;
@@ -119,10 +121,10 @@ public class BaseArticleExporter
                 _log.Debug("EXPORT: Processing rumble.com ld+json metadata");
 
                 // application/ld+json parser result
-                List<JsonLdRumbleValues> list = default;
+                List<JsonLdVideoObject> list = default;
                 try
                 {
-                    list = JsonConvert.DeserializeObject<List<JsonLdRumbleValues>>(text);
+                    list = JsonConvert.DeserializeObject<List<JsonLdVideoObject>>(text);
                 }
                 catch (Exception ex)
                 {
@@ -134,15 +136,12 @@ public class BaseArticleExporter
                     _log.Error("Error deserializing json+ld values for {urlHash}", exportFeedItem.UrlHash);
                 }
 
-                foreach (var value in list!)
+                var value = list?.FirstOrDefault();
+                if (value is not null)
                 {
-                    if (string.IsNullOrWhiteSpace(value.embedUrl))
-                        continue;
-
-                    exportFeedItem.VideoUrl = value.embedUrl;
+                    exportFeedItem.VideoUrl = string.IsNullOrWhiteSpace(value.embedUrl) ? value.url : value.embedUrl;
                     exportFeedItem.VideoHeight = int.TryParse(Convert.ToString(value.height), out int height) ? height : 0;
                     exportFeedItem.VideoWidth = int.TryParse(Convert.ToString(value.width), out int width) ? width : 0;
-                    break;
                 }
             }
         }
