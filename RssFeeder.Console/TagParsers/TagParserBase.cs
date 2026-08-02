@@ -80,7 +80,7 @@ public partial class TagParserBase
         FixupImageSrc(document, baseUrl);
         FixupIframeSrc(document, baseUrl);
         FixupElementStyle(document, "figcaption", "font-size: 75%;font-style: italic;");
-        FixupElementStyle(document, "blockquote", "border-left: 6px solid #a6a6a6; border-top: 1px solid #cfcfcf; border-right: 1px solid #cfcfcf; border-bottom: 1px solid #cfcfcf; padding-left: 10px; padding-bottom: 1em;");
+        FixupElementStyle(document, "blockquote", "border-left: 6px solid #a6a6a6; border-top: 1px solid #cfcfcf; border-right: 1px solid #cfcfcf; border-bottom: 1px solid #cfcfcf; padding-left: 10px; padding-right: 1em; padding-bottom: 1em;");
         RemoveDuplicateImgTag(document);
         RemoveElementPadding(document);
         RemoveAllTag(document, "noscript");
