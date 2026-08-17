@@ -576,7 +576,7 @@
       {
         "SectionName": "articles",
         "ContainerSelector": "body",
-        "LinkSelector": "h3.entry-title > a",
+        "LinkSelector": "h3 > a",
         "FilterDuplicates": false
       }
     ]
