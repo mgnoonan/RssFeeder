@@ -46,9 +46,21 @@ public sealed class SemanticJsonLdExtractor
 
         foreach (var block in blocks)
         {
-            foreach (var obj in EnumerateJsonObjects(block))
+            if (block is JObject obj)
             {
                 results.Add(obj);
+                continue;
+            }
+
+            if (block is JArray arr)
+            {
+                foreach (var token in arr)
+                {
+                    if (token is JObject arrObj)
+                    {
+                        results.Add(arrObj);
+                    }
+                }
             }
         }
 
