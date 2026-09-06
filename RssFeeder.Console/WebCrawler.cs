@@ -163,7 +163,12 @@ public class WebCrawler : IWebCrawler
 
         // Crawl the given uri
         if (!CanCrawl(hostname, sourceUri))
+        {
+            // Even when excluded from crawling, ensure the item has hostname/site populated
+            if (string.IsNullOrEmpty(item.HostName)) item.HostName = hostname;
+            if (string.IsNullOrEmpty(item.SiteName)) item.SiteName = hostname;
             return;
+        }
 
         // Issue a HEAD request to determine the content type and unshortened Uri
         (HttpStatusCode statusCode, Uri trueUri, string contentType) = _webUtils.GetContentType(item.FeedAttributes.Url);
