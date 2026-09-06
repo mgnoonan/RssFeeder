@@ -1,4 +1,6 @@
-﻿namespace RssFeeder.Console;
+using RssFeeder.Console.Utility;
+
+namespace RssFeeder.Console;
 
 public class WebCrawler : IWebCrawler
 {
@@ -161,7 +163,12 @@ public class WebCrawler : IWebCrawler
 
         // Crawl the given uri
         if (!CanCrawl(hostname, sourceUri))
+        {
+            // Even when excluded from crawling, ensure the item has hostname/site populated
+            if (string.IsNullOrEmpty(item.HostName)) item.HostName = hostname;
+            if (string.IsNullOrEmpty(item.SiteName)) item.SiteName = hostname;
             return;
+        }
 
         // Issue a HEAD request to determine the content type and unshortened Uri
         (HttpStatusCode statusCode, Uri trueUri, string contentType) = _webUtils.GetContentType(item.FeedAttributes.Url);
@@ -209,6 +216,23 @@ public class WebCrawler : IWebCrawler
         switch (content)
         {
             case string:
+                // Before saving the HTML (which may remove <script> blocks), extract any parsed JSON-LD objects
+                try
+                {
+                    var extractor = new SemanticJsonLdExtractor();
+                    var jsonLdObjects = extractor.ExtractJsonLdObjects((string)content);
+                    if (jsonLdObjects.Count > 0)
+                    {
+                        // Persist the parsed JSON-LD objects with the document
+                        item.JsonLdObjects.AddRange(jsonLdObjects);
+                        _log.Information("Captured {count} JSON-LD object(s) for '{urlHash}'", jsonLdObjects.Count, item.FeedAttributes.UrlHash);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _log.Warning(ex, "Error extracting JSON-LD objects for '{url}'", item.FeedAttributes.Url);
+                }
+
                 _webUtils.SaveContentToDisk(filename, !_crawlerRepository.Config.IncludeScripts.Contains(hostname), (string)content);
                 item.FeedAttributes.FileName = filename;
                 break;
