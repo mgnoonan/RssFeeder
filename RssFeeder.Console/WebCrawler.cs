@@ -216,12 +216,11 @@ public class WebCrawler : IWebCrawler
                 {
                     var extractor = new SemanticJsonLdExtractor();
                     var jsonLdObjects = extractor.ExtractJsonLdObjects((string)content);
-                    int idx = 0;
-                    foreach (var obj in jsonLdObjects)
+                    if (jsonLdObjects.Count > 0)
                     {
-                        // Persist the parsed JObject with the document
-                        item.JsonLdObjects.Add(obj);
-                        _log.Information("Captured JSON-LD object #{index} for '{urlHash}'", idx++, item.FeedAttributes.UrlHash);
+                        // Persist the parsed JSON-LD objects with the document
+                        item.JsonLdObjects.AddRange(jsonLdObjects);
+                        _log.Information("Captured {count} JSON-LD object(s) for '{urlHash}'", jsonLdObjects.Count, item.FeedAttributes.UrlHash);
                     }
                 }
                 catch (Exception ex)
