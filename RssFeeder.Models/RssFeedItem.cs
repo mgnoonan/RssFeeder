@@ -10,6 +10,7 @@ public record RssFeedItem
         FeedAttributes = new FeedAttributes();
         OpenGraphAttributes = new Dictionary<string, string>();
         HtmlAttributes = new Dictionary<string, string>();
+        JsonLdObjects = new List<Newtonsoft.Json.Linq.JObject>();
     }
 
     public string Id { get; set; }
@@ -18,6 +19,12 @@ public record RssFeedItem
     public Guid RunId { get; set; }
     public Dictionary<string, string> OpenGraphAttributes { get; set; }
     public Dictionary<string, string> HtmlAttributes { get; set; }
+    /// <summary>
+    /// Parsed JSON-LD objects extracted from the HTML (each entry is a JObject parsed from a
+    /// &lt;script type="application/ld+json"&gt; block). Stored so the structured JSON-LD is
+    /// persisted with the item in the database.
+    /// </summary>
+    public List<Newtonsoft.Json.Linq.JObject> JsonLdObjects { get; set; }
     public FeedAttributes FeedAttributes { get; set; }
 }
 

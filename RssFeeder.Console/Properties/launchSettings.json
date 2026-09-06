@@ -2,7 +2,7 @@
   "profiles": {
     "RssFeeder.Console": {
       "commandName": "Project",
-      "commandLineArgs": "audit feed-drudge.json"
+      "commandLineArgs": "build feed-bonginoreport.json"
     }
   }
 }

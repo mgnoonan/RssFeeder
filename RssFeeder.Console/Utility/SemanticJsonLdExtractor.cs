@@ -35,6 +35,26 @@ public sealed class SemanticJsonLdExtractor
         return results;
     }
 
+    /// <summary>
+    /// Extract parsed JSON-LD objects (JObject) from the provided HTML. Returns each
+    /// JObject found inside application/ld+json script blocks.
+    /// </summary>
+    public List<Newtonsoft.Json.Linq.JObject> ExtractJsonLdObjects(string html)
+    {
+        var results = new List<Newtonsoft.Json.Linq.JObject>();
+        var blocks = ExtractJsonLdBlocks(html);
+
+        foreach (var block in blocks)
+        {
+            foreach (var obj in EnumerateJsonObjects(block))
+            {
+                results.Add(obj);
+            }
+        }
+
+        return results;
+    }
+
     private static List<JToken> ExtractJsonLdBlocks(string html)
     {
         var blocks = new List<JToken>();
@@ -57,6 +77,30 @@ public sealed class SemanticJsonLdExtractor
             {
                 // Ignore malformed script blocks.
             }
+        }
+
+        return blocks;
+    }
+
+    /// <summary>
+    /// Extract raw JSON-LD script block text from the provided HTML.
+    /// Returns the raw JSON strings (unparsed) for each application/ld+json script block.
+    /// </summary>
+    public List<string> ExtractRawJsonLdBlocks(string html)
+    {
+        var blocks = new List<string>();
+        var pattern = "<script\\b[^>]*type\\s*=\\s*([\"'][^\"']*ld\\+json[^\"']*[\"']|[^\\s>]*ld\\+json[^\\s>]*)[^>]*>(?<json>[\\s\\S]*?)</script>";
+        var matches = Regex.Matches(html, pattern, RegexOptions.IgnoreCase, TimeSpan.FromSeconds(3));
+
+        foreach (Match match in matches)
+        {
+            var json = match.Groups["json"].Value.Trim();
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                continue;
+            }
+
+            blocks.Add(json);
         }
 
         return blocks;

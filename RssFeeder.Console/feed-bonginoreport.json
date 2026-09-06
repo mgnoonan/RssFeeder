@@ -3,7 +3,7 @@
     "Title": "Bongino Report",
     "Enabled": "true",
     "EnableThumbnail": "false",
-    "Exportable": "true",
+    "Exportable": "false",
     "Description": "The Bongino Report",
     "Language": "en-US",
     "Url": "https://bonginoreport.com/",

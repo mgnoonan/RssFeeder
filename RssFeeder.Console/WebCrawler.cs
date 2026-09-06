@@ -1,4 +1,5 @@
 ﻿namespace RssFeeder.Console;
+using RssFeeder.Console.Utility;
 
 public class WebCrawler : IWebCrawler
 {
@@ -209,6 +210,24 @@ public class WebCrawler : IWebCrawler
         switch (content)
         {
             case string:
+                // Before saving the HTML (which may remove <script> blocks), extract any raw JSON-LD
+                try
+                {
+                    var extractor = new SemanticJsonLdExtractor();
+                    var jsonLdObjects = extractor.ExtractJsonLdObjects((string)content);
+                    int idx = 0;
+                    foreach (var obj in jsonLdObjects)
+                    {
+                        // Persist the parsed JObject with the document
+                        item.JsonLdObjects.Add(obj);
+                        _log.Information("Captured JSON-LD object #{index} for '{urlHash}'", idx++, item.FeedAttributes.UrlHash);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _log.Warning(ex, "Error extracting JSON-LD objects for '{url}'", item.FeedAttributes.Url);
+                }
+
                 _webUtils.SaveContentToDisk(filename, !_crawlerRepository.Config.IncludeScripts.Contains(hostname), (string)content);
                 item.FeedAttributes.FileName = filename;
                 break;
