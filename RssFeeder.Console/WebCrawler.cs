@@ -1,5 +1,6 @@
-﻿namespace RssFeeder.Console;
 using RssFeeder.Console.Utility;
+
+namespace RssFeeder.Console;
 
 public class WebCrawler : IWebCrawler
 {
