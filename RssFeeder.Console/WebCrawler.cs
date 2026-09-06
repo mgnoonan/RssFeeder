@@ -211,7 +211,7 @@ public class WebCrawler : IWebCrawler
         switch (content)
         {
             case string:
-                // Before saving the HTML (which may remove <script> blocks), extract any raw JSON-LD
+                // Before saving the HTML (which may remove <script> blocks), extract any parsed JSON-LD objects
                 try
                 {
                     var extractor = new SemanticJsonLdExtractor();
