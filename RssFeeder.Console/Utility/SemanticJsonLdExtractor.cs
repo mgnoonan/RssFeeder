@@ -70,7 +70,7 @@ public sealed class SemanticJsonLdExtractor
     private static List<JToken> ExtractJsonLdBlocks(string html)
     {
         var blocks = new List<JToken>();
-        var pattern = "<script\\b[^>]*type\\s*=\\s*[\"'][^\"']*ld\\+json[^\"']*[\"'][^>]*>(?<json>[\\s\\S]*?)</script>";
+        var pattern = "<script\\b[^>]*type\\s*=\\s*(?:[\"'][^\"']*ld\\+json[^\"']*[\"']|[^\\s>]*ld\\+json[^\\s>]*)[^>]*>(?<json>[\\s\\S]*?)</script>";
         var matches = Regex.Matches(html, pattern, RegexOptions.IgnoreCase, TimeSpan.FromSeconds(3));
 
         foreach (Match match in matches)
