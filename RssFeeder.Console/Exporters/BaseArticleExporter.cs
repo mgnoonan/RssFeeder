@@ -113,35 +113,76 @@ public class BaseArticleExporter
             exportFeedItem.SiteName = hostName;
         }
 
+        var jsonLdVideo = GetPrimaryJsonLdVideoObject(item);
+        if (jsonLdVideo is not null)
+        {
+            // Prefer VideoObject references when present, then fill any gaps from OG metadata.
+            exportFeedItem.VideoUrl = FirstNonEmpty(
+                ReadJsonLdString(jsonLdVideo, "embedUrl"),
+                ReadJsonLdString(jsonLdVideo, "contentUrl"),
+                ReadJsonLdString(jsonLdVideo, "url"),
+                exportFeedItem.VideoUrl);
+
+            if (exportFeedItem.VideoHeight == 0)
+            {
+                exportFeedItem.VideoHeight = ReadJsonLdInt(jsonLdVideo, "height");
+            }
+
+            if (exportFeedItem.VideoWidth == 0)
+            {
+                exportFeedItem.VideoWidth = ReadJsonLdInt(jsonLdVideo, "width");
+            }
+
+            if (string.IsNullOrWhiteSpace(exportFeedItem.Subtitle))
+            {
+                exportFeedItem.Subtitle = FirstNonEmpty(
+                    ReadJsonLdString(jsonLdVideo, "name"),
+                    ReadJsonLdString(jsonLdVideo, "headline"),
+                    exportFeedItem.Subtitle);
+            }
+
+            if (string.IsNullOrWhiteSpace(exportFeedItem.ImageUrl))
+            {
+                exportFeedItem.ImageUrl = ReadJsonLdString(jsonLdVideo, "thumbnailUrl");
+            }
+
+            description = FirstNonEmpty(
+                description,
+                ReadJsonLdString(jsonLdVideo, "description"));
+        }
+
         if (item.SiteName == "rumble")
         {
-            var text = item.HtmlAttributes.GetValueOrDefault("ParserResult") ?? "";
-            if (!string.IsNullOrEmpty(text) && !text.StartsWith('<'))
+            if (string.IsNullOrWhiteSpace(exportFeedItem.VideoUrl))
             {
-                _log.Debug("EXPORT: Processing rumble.com ld+json metadata");
+                var text = item.HtmlAttributes.GetValueOrDefault("ParserResult") ?? "";
+                if (!string.IsNullOrEmpty(text) && !text.StartsWith('<'))
+                {
+                    _log.Debug("EXPORT: Processing rumble.com ld+json metadata");
 
-                // application/ld+json parser result
-                List<JsonLdVideoObject> list = default;
-                try
-                {
-                    list = JsonConvert.DeserializeObject<List<JsonLdVideoObject>>(text);
-                }
-                catch (Exception ex)
-                {
-                    _log.Error(ex, "Error deserialzing json+ld values");
-                }
+                    // application/ld+json parser result
+                    List<JsonLdVideoObject> list = default;
+                    try
+                    {
+                        list = JsonConvert.DeserializeObject<List<JsonLdVideoObject>>(text);
+                    }
+                    catch (Exception ex)
+                    {
+                        _log.Error(ex, "Error deserialzing json+ld values");
+                    }
 
-                if (list is null)
-                {
-                    _log.Error("Error deserializing json+ld values for {urlHash}", exportFeedItem.UrlHash);
-                }
+                    if (list is null)
+                    {
+                        _log.Error("Error deserializing json+ld values for {urlHash}", exportFeedItem.UrlHash);
+                    }
 
-                var value = list?.FirstOrDefault();
-                if (value is not null)
-                {
-                    exportFeedItem.VideoUrl = string.IsNullOrWhiteSpace(value.embedUrl) ? value.url : value.embedUrl;
-                    exportFeedItem.VideoHeight = int.TryParse(Convert.ToString(value.height), out int height) ? height : 0;
-                    exportFeedItem.VideoWidth = int.TryParse(Convert.ToString(value.width), out int width) ? width : 0;
+                    var value = list?.FirstOrDefault();
+                    if (value is not null)
+                    {
+                        exportFeedItem.VideoUrl = string.IsNullOrWhiteSpace(value.embedUrl) ? value.url : value.embedUrl;
+                        exportFeedItem.VideoHeight = int.TryParse(Convert.ToString(value.height), out int height) ? height : 0;
+                        exportFeedItem.VideoWidth = int.TryParse(Convert.ToString(value.width), out int width) ? width : 0;
+                    }
                 }
             }
         }
@@ -159,7 +200,7 @@ public class BaseArticleExporter
             exportFeedItem.VideoWidth = 1920;
 
         }
-        else
+        else if (string.IsNullOrWhiteSpace(exportFeedItem.VideoUrl))
         {
             _log.Debug("EXPORT: Processing open graph video metadata");
 
@@ -180,6 +221,10 @@ public class BaseArticleExporter
             if (!string.IsNullOrEmpty(result))
                 description = result;
         }
+        else
+        {
+            _log.Debug("EXPORT: Using JSON-LD VideoObject defaults for video metadata");
+        }
 
         using (LogContext.PushProperty("hostName", hostName))
         {
@@ -188,6 +233,146 @@ public class BaseArticleExporter
 
         // There's no article text for most video sites, so just use the meta description
         exportFeedItem.ArticleText = $"<p>{description}</p>";
+    }
+
+    private static JObject GetPrimaryJsonLdVideoObject(RssFeedItem item)
+    {
+        if (item.JsonLdObjects == null || item.JsonLdObjects.Count == 0)
+        {
+            return null;
+        }
+
+        foreach (var rootObj in item.JsonLdObjects)
+        {
+            foreach (var obj in EnumerateJsonObjects(rootObj))
+            {
+                if (IsJsonLdVideoObject(obj))
+                {
+                    return obj;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static IEnumerable<JObject> EnumerateJsonObjects(JToken token)
+    {
+        if (token is JObject obj)
+        {
+            yield return obj;
+            foreach (var property in obj.Properties())
+            {
+                foreach (var nested in EnumerateJsonObjects(property.Value))
+                {
+                    yield return nested;
+                }
+            }
+            yield break;
+        }
+
+        if (token is JArray arr)
+        {
+            foreach (var child in arr)
+            {
+                foreach (var nested in EnumerateJsonObjects(child))
+                {
+                    yield return nested;
+                }
+            }
+        }
+    }
+
+    private static bool IsJsonLdVideoObject(JObject obj)
+    {
+        var typeToken = obj["@type"] ?? obj["type"];
+        if (typeToken is null)
+        {
+            return false;
+        }
+
+        if (typeToken.Type == JTokenType.String)
+        {
+            return IsVideoTypeName(typeToken.Value<string>());
+        }
+
+        if (typeToken is JArray typeArray)
+        {
+            foreach (var token in typeArray)
+            {
+                if (IsVideoTypeName(token.Value<string>()))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static bool IsVideoTypeName(string typeName)
+    {
+        if (string.IsNullOrWhiteSpace(typeName))
+        {
+            return false;
+        }
+
+        return string.Equals(typeName, "VideoObject", StringComparison.OrdinalIgnoreCase)
+            || typeName.EndsWith("/VideoObject", StringComparison.OrdinalIgnoreCase)
+            || typeName.EndsWith("#VideoObject", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string ReadJsonLdString(JObject obj, string fieldName)
+    {
+        if (obj[fieldName] is not JToken token)
+        {
+            return string.Empty;
+        }
+
+        if (token.Type == JTokenType.String)
+        {
+            return token.Value<string>() ?? string.Empty;
+        }
+
+        if (token is JArray arr && arr.Count > 0)
+        {
+            return arr[0].Type == JTokenType.String ? arr[0].Value<string>() ?? string.Empty : string.Empty;
+        }
+
+        return string.Empty;
+    }
+
+    private static int ReadJsonLdInt(JObject obj, string fieldName)
+    {
+        if (obj[fieldName] is not JToken token)
+        {
+            return 0;
+        }
+
+        if (token.Type == JTokenType.Integer)
+        {
+            return token.Value<int>();
+        }
+
+        if (token.Type == JTokenType.String && int.TryParse(token.Value<string>(), out int parsed))
+        {
+            return parsed;
+        }
+
+        return 0;
+    }
+
+    private static string FirstNonEmpty(params string[] values)
+    {
+        foreach (var value in values)
+        {
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                return value;
+            }
+        }
+
+        return string.Empty;
     }
 
     protected virtual T GetJsonDynamic<T>(string html, string tagName, string keyName)

@@ -34,10 +34,11 @@ public class ArticleExporter : BaseArticleExporter, IArticleExporter
             return exportFeedItem;
         }
 
+        bool hasJsonLdVideoObject = HasJsonLdVideoObject(item);
         string videoUrl = GetVideoUrl(item);
-        string videoType = GetVideoType(item, videoUrl);
+        string videoType = GetVideoType(item, videoUrl, hasJsonLdVideoObject);
 
-        if (HasSupportedVideoFormat(item, videoUrl, videoType))
+        if (HasSupportedVideoFormat(item, videoUrl, videoType, hasJsonLdVideoObject))
         {
             _log.Debug("Applying video metadata values for '{hostname}'", hostName);
             SetVideoMetaData(exportFeedItem, item, hostName);
@@ -91,7 +92,7 @@ public class ArticleExporter : BaseArticleExporter, IArticleExporter
             "";
     }
 
-    private string GetVideoType(RssFeedItem item, string videoUrl)
+    private string GetVideoType(RssFeedItem item, string videoUrl, bool hasJsonLdVideoObject)
     {
         string videoType;
         if (item.OpenGraphAttributes.TryGetValue("og:video:type", out string value))
@@ -110,6 +111,22 @@ public class ArticleExporter : BaseArticleExporter, IArticleExporter
         {
             videoType = "text/html";
         }
+        else if (hasJsonLdVideoObject)
+        {
+            if (videoUrl.EndsWith(".m3u8", StringComparison.OrdinalIgnoreCase))
+            {
+                videoType = "application/x-mpegURL";
+            }
+            else if (videoUrl.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase))
+            {
+                videoType = "video/mp4";
+            }
+            else
+            {
+                // Most JSON-LD video references are embed pages.
+                videoType = "text/html";
+            }
+        }
         else
         {
             videoType = "";
@@ -118,10 +135,62 @@ public class ArticleExporter : BaseArticleExporter, IArticleExporter
         return videoType;
     }
 
-    private bool HasSupportedVideoFormat(RssFeedItem item, string videoUrl, string videoType)
+    private bool HasSupportedVideoFormat(RssFeedItem item, string videoUrl, string videoType, bool hasJsonLdVideoObject)
     {
-        return (videoUrl.Length > 0 || item.SiteName == "rumble" || item.SiteName == "bitchute") &&
+        return (videoUrl.Length > 0 || hasJsonLdVideoObject || item.SiteName == "rumble" || item.SiteName == "bitchute") &&
             (videoType == "text/html" || videoType == "video/mp4" || videoType == "application/x-mpegURL");
+    }
+
+    private bool HasJsonLdVideoObject(RssFeedItem item)
+    {
+        if (item.JsonLdObjects == null || item.JsonLdObjects.Count == 0)
+        {
+            return false;
+        }
+
+        foreach (var obj in item.JsonLdObjects)
+        {
+            if (obj == null)
+            {
+                continue;
+            }
+
+            var typeToken = obj["@type"] ?? obj["type"];
+            if (typeToken == null)
+            {
+                continue;
+            }
+
+            if (typeToken.Type == JTokenType.String && IsVideoTypeName(typeToken.Value<string>()))
+            {
+                return true;
+            }
+
+            if (typeToken is JArray typeArray)
+            {
+                foreach (var token in typeArray)
+                {
+                    if (IsVideoTypeName(token.Value<string>()))
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static bool IsVideoTypeName(string typeName)
+    {
+        if (string.IsNullOrWhiteSpace(typeName))
+        {
+            return false;
+        }
+
+        return string.Equals(typeName, "VideoObject", StringComparison.OrdinalIgnoreCase)
+            || typeName.EndsWith("/VideoObject", StringComparison.OrdinalIgnoreCase)
+            || typeName.EndsWith("#VideoObject", StringComparison.OrdinalIgnoreCase);
     }
 
     private string GetParsedResult(RssFeedItem item, bool useTitle)
