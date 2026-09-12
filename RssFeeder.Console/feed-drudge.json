@@ -3,7 +3,7 @@
     "Title": "The Drudge Report",
     "Enabled": "true",
     "EnableThumbnail": "true",
-    "Exportable": "true",
+    "Exportable": "false",
     "Description": "The Drudge Report",
     "Language": "en-US",
     "Url": "http://www.drudgereport.com",

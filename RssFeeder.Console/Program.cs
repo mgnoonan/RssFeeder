@@ -69,6 +69,8 @@ builder.RegisterType<CheckRulesCommand>().SingleInstance();
 builder.RegisterType<CheckRulesInput>().SingleInstance();
 builder.RegisterType<AuditCommand>().SingleInstance();
 builder.RegisterType<AuditInput>().SingleInstance();
+builder.RegisterType<VideoReportCommand>().SingleInstance();
+builder.RegisterType<VideoReportInput>().SingleInstance();
 builder.RegisterType<HelpInput>().SingleInstance();
 
 var container = builder.Build();

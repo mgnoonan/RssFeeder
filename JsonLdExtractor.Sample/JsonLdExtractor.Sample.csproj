@@ -10,6 +10,11 @@
   <ItemGroup>
     <PackageReference Include="json-ld.net" Version="1.0.7" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="RavenDB.Client" Version="7.1.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\RssFeeder.Models\RssFeeder.Models.csproj" />
   </ItemGroup>
 
   <ItemGroup>
