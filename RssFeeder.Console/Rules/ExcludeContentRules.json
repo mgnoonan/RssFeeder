@@ -34,7 +34,7 @@
         "Enabled": true,
         "RuleName": "UlShare",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "id == \"post_meta\" OR id.StartsWith(\"sharebar\") OR text.StartsWith(\"Share\") OR (text.Contains(\"Facebook\") AND text.Contains(\"Twitter\")) OR classlist.Contains(\"social-tools__list\") OR classlist.Contains(\"widgets\")",
+        "Expression": "id == \"post_meta\" OR id.StartsWith(\"sharebar\") OR text.StartsWith(\"Share\") OR (text.Contains(\"Facebook\") AND text.Contains(\"Twitter\")) OR classlist.Contains(\"social-tools__list\") OR classList.Contains(\"share-popup-list\") OR classlist.Contains(\"widgets\")",
         "SuccessEvent": "true"
       },
       {
