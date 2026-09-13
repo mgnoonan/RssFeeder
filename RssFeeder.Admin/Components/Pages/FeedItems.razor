@@ -1,0 +1,248 @@
+@page "/"
+@page "/feed-items"
+@rendermode InteractiveServer
+
+@inject IFeedItemRepository Repository
+@inject IOptions<RavenDbOptions> RavenDbOptions
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
+
+<PageTitle>Feed items</PageTitle>
+
+<section class="hero-panel compact">
+    <div>
+        <p class="eyebrow">RavenDB browser</p>
+        <h1>Feed items</h1>
+        <p class="hero-copy">
+            Manage documents in <strong>@RavenDbOptions.Value.Database</strong> on <strong>@RavenDbOptions.Value.Url</strong>.
+        </p>
+    </div>
+
+    <div class="hero-actions">
+        <a class="btn btn-primary" href="feed-items/new">New document</a>
+        <a class="btn btn-outline-secondary" href="dashboard">Dashboard</a>
+    </div>
+</section>
+
+<section class="stats-strip">
+    <div class="stat-tile">
+        <span class="stat-label">Loaded</span>
+        <strong>@_items.Count</strong>
+    </div>
+    <div class="stat-tile">
+        <span class="stat-label">Collection</span>
+        <strong>RssFeedItems</strong>
+    </div>
+    <div class="stat-tile">
+        <span class="stat-label">Database</span>
+        <strong>@RavenDbOptions.Value.Database</strong>
+    </div>
+</section>
+
+<section class="panel-card">
+    <div class="panel-header">
+        <div>
+            <h2>Latest documents</h2>
+            <p>Use the action buttons to edit or delete individual documents.</p>
+        </div>
+        <button class="btn btn-outline-primary" @onclick="ReloadAsync" disabled="@_isLoading">Refresh</button>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(_errorMessage))
+    {
+        <div class="alert alert-danger">@_errorMessage</div>
+    }
+
+    <div class="filter-bar">
+        <label class="filter-field" for="urlHashFilter">UrlHash prefix</label>
+        <input id="urlHashFilter"
+               class="form-control filter-input"
+               value="@UrlHashFilter"
+               @oninput="HandleUrlHashFilterInput"
+               placeholder="Start of UrlHash" />
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(_statusMessage))
+    {
+        <div class="alert alert-info">@_statusMessage</div>
+    }
+
+    @if (_isLoading)
+    {
+        <p class="muted">Loading feed items...</p>
+    }
+    else if (_filteredItems.Count == 0)
+    {
+        <div class="empty-state">
+            <h3>@(_items.Count == 0 ? "No documents found" : "No UrlHash matches found")</h3>
+            <p>@(_items.Count == 0 ? "Create the first document to start working with the feed-items database." : "Try a different UrlHash prefix.")</p>
+            @if (_items.Count == 0)
+            {
+                <a class="btn btn-primary" href="feed-items/new">Create document</a>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle feed-table">
+                <thead>
+                    <tr>
+                        <th>Document</th>
+                        <th>Site</th>
+                        <th>Feed Id</th>
+                        <th>UrlHash</th>
+                        <th>Added</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in _filteredItems)
+                    {
+                        var feedAttributes = item.FeedAttributes;
+                        <tr @key="item.Id">
+                            <td>
+                                <div class="doc-title">@DisplayTitle(item)</div>
+                                <div class="doc-id">@item.Id</div>
+                            </td>
+                            <td>@item.SiteName</td>
+                            <td>
+                                <div class="doc-id">@(feedAttributes?.FeedId ?? "-")</div>
+                            </td>
+                            <td>@(feedAttributes?.UrlHash ?? "-")</td>
+                            <td>@FormatDate(feedAttributes?.DateAdded)</td>
+                            <td class="text-end">
+                                <div class="action-buttons">
+                                    <button class="btn btn-sm btn-outline-secondary" @onclick="() => EditAsync(item.Id)">Edit</button>
+                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteAsync(item)">Delete</button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
+
+@code {
+    private List<RssFeedItem> _items = [];
+    private List<RssFeedItem> _filteredItems = [];
+    private bool _isLoading = true;
+    private string? _statusMessage;
+    private string? _errorMessage;
+    private string _urlHashFilter = string.Empty;
+
+    private string UrlHashFilter
+    {
+        get => _urlHashFilter;
+        set
+        {
+            if (string.Equals(_urlHashFilter, value, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            _urlHashFilter = value;
+            ApplyFilter();
+        }
+    }
+
+    private void HandleUrlHashFilterInput(ChangeEventArgs args)
+    {
+        UrlHashFilter = args.Value?.ToString() ?? string.Empty;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ReloadAsync();
+    }
+
+    private async Task ReloadAsync()
+    {
+        _isLoading = true;
+        _statusMessage = null;
+        _errorMessage = null;
+
+        try
+        {
+            _items = (await Repository.GetFeedItemsAsync(RavenDbOptions.Value.DefaultTake)).ToList();
+            ApplyFilter();
+        }
+        catch (Exception ex)
+        {
+            _items = [];
+            _filteredItems = [];
+            _errorMessage = ex.Message;
+        }
+
+        _isLoading = false;
+    }
+
+    private void EditAsync(string? id)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            return;
+        }
+
+        NavigationManager.NavigateTo($"feed-items/edit/{Uri.EscapeDataString(id)}");
+    }
+
+    private async Task DeleteAsync(RssFeedItem item)
+    {
+        if (string.IsNullOrWhiteSpace(item.Id))
+        {
+            return;
+        }
+
+        try
+        {
+            var confirmed = await JsRuntime.InvokeAsync<bool>("confirm", $"Delete {DisplayTitle(item)}?");
+            if (!confirmed)
+            {
+                return;
+            }
+
+            await Repository.DeleteAsync(item.Id);
+            _statusMessage = $"Deleted {DisplayTitle(item)}.";
+            await ReloadAsync();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+    }
+
+    private static string DisplayTitle(RssFeedItem item)
+    {
+        var feedAttributes = item.FeedAttributes;
+
+        return feedAttributes?.Title
+            ?? item.SiteName
+            ?? item.HostName
+            ?? item.Id
+            ?? "Untitled document";
+    }
+
+    private void ApplyFilter()
+    {
+        if (string.IsNullOrWhiteSpace(_urlHashFilter))
+        {
+            _filteredItems = _items.ToList();
+            return;
+        }
+
+        _filteredItems = _items
+            .Where(item => !string.IsNullOrWhiteSpace(item.FeedAttributes?.UrlHash)
+                && item.FeedAttributes!.UrlHash.StartsWith(_urlHashFilter, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+
+    private static string FormatDate(DateTime? value)
+    {
+        return value.HasValue && value.Value != default
+            ? value.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
+            : "-";
+    }
+}

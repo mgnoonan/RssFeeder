@@ -1,0 +1,33 @@
+﻿@page "/dashboard"
+
+<PageTitle>Dashboard</PageTitle>
+
+<section class="hero-panel">
+	<p class="eyebrow">Admin overview</p>
+	<h1>RssFeeder admin</h1>
+	<p class="hero-copy">
+		Inspect and edit the documents stored in the local <strong>feed-items</strong> RavenDB database.
+	</p>
+
+	<div class="hero-actions">
+		<a class="btn btn-primary" href="feed-items">Open feed items</a>
+		<a class="btn btn-outline-secondary" href="/">Go to list</a>
+	</div>
+</section>
+
+<section class="card-grid">
+	<article class="info-card">
+		<h2>Database</h2>
+		<p>Connected to <strong>http://127.0.0.1:8080</strong> and the <strong>feed-items</strong> database.</p>
+	</article>
+
+	<article class="info-card">
+		<h2>CRUD workflow</h2>
+		<p>List, create, edit, and delete feed-item documents without leaving the browser.</p>
+	</article>
+
+	<article class="info-card">
+		<h2>Document shape</h2>
+		<p>Edits cover the shared <strong>RssFeedItem</strong> model, including feed metadata and JSON blobs.</p>
+	</article>
+</section>
