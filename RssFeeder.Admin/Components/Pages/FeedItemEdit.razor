@@ -1,0 +1,410 @@
+@page "/feed-items/new"
+@page "/feed-items/edit/{*Id}"
+@rendermode InteractiveServer
+
+@inject IFeedItemRepository Repository
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
+
+<PageTitle>@_pageTitle</PageTitle>
+
+<section class="hero-panel compact">
+    <div>
+        <p class="eyebrow">Document editor</p>
+        <h1>@_pageTitle</h1>
+        <p class="hero-copy">Edit the RavenDB document and save it back to the local feed-items database.</p>
+    </div>
+
+    <div class="hero-actions">
+        <a class="btn btn-outline-secondary" href="feed-items">Back to list</a>
+    </div>
+</section>
+
+@if (_isLoading)
+{
+    <p class="muted">Loading document...</p>
+}
+else
+{
+    <EditForm Model="_model" OnSubmit="SaveAsync">
+        <div class="editor-grid">
+            <section class="panel-card">
+                <div class="panel-header">
+                    <h2>Identity</h2>
+                </div>
+
+                <div class="field-grid">
+                    <label>
+                        <span>Document Id</span>
+                        <InputText class="form-control" @bind-Value="_model.Id" placeholder="RssFeedItems/1-A" />
+                    </label>
+
+                    <label>
+                        <span>Run Id</span>
+                        <InputText class="form-control" @bind-Value="_model.RunIdText" placeholder="GUID" />
+                    </label>
+
+                    <label>
+                        <span>Site name</span>
+                        <InputText class="form-control" @bind-Value="_model.SiteName" />
+                    </label>
+
+                    <label>
+                        <span>Host name</span>
+                        <InputText class="form-control" @bind-Value="_model.HostName" />
+                    </label>
+                </div>
+            </section>
+
+            <section class="panel-card">
+                <div class="panel-header">
+                    <h2>Feed attributes</h2>
+                </div>
+
+                <div class="field-grid">
+                    <label>
+                        <span>Feed Id</span>
+                        <InputText class="form-control" @bind-Value="_model.FeedId" />
+                    </label>
+
+                    <label>
+                        <span>Feed title</span>
+                        <InputText class="form-control" @bind-Value="_model.FeedTitle" />
+                    </label>
+
+                    <label>
+                        <span>Feed url</span>
+                        <InputText class="form-control" @bind-Value="_model.FeedUrl" />
+                    </label>
+
+                    <label>
+                        <span class="field-label-row">
+                            <span>Url hash</span>
+                            <button type="button" class="btn btn-sm btn-outline-secondary copy-button" @onclick="CopyUrlHashAsync" disabled="@string.IsNullOrWhiteSpace(_model.FeedUrlHash)">Copy</button>
+                        </span>
+                        <InputText class="form-control" @bind-Value="_model.FeedUrlHash" />
+                    </label>
+
+                    <label>
+                        <span>File name</span>
+                        <InputText class="form-control" @bind-Value="_model.FileName" />
+                    </label>
+
+                    <label>
+                        <span>Link location</span>
+                        <InputText class="form-control" @bind-Value="_model.LinkLocation" />
+                    </label>
+
+                    <label>
+                        <span>Date added</span>
+                        <InputText class="form-control" @bind-Value="_model.DateAddedText" placeholder="2026-09-13 18:30" />
+                    </label>
+
+                    <label class="checkbox-field">
+                        <InputCheckbox class="form-check-input" @bind-Value="_model.IsUrlShortened" />
+                        <span>Url shortened</span>
+                    </label>
+
+                    <label class="checkbox-field">
+                        <InputCheckbox class="form-check-input" @bind-Value="_model.IsHeadline" />
+                        <span>Headline</span>
+                    </label>
+                </div>
+            </section>
+
+            <section class="panel-card">
+                <div class="panel-header">
+                    <h2>JSON fields</h2>
+                </div>
+
+                <div class="json-stack">
+                    <label>
+                        <span class="field-label-row">
+                            <span>OpenGraph attributes</span>
+                            <button type="button" class="btn btn-sm btn-outline-secondary copy-button" @onclick="@( () => CopyJsonAsync(_model.OpenGraphJson, "OpenGraph attributes") )">Copy</button>
+                        </span>
+                        <InputTextArea class="form-control json-editor" rows="10" @bind-Value="_model.OpenGraphJson" />
+                    </label>
+
+                    <label>
+                        <span class="field-label-row">
+                            <span>HTML attributes</span>
+                            <button type="button" class="btn btn-sm btn-outline-secondary copy-button" @onclick="@( () => CopyJsonAsync(_model.HtmlAttributesJson, "HTML attributes") )">Copy</button>
+                        </span>
+                        <InputTextArea class="form-control json-editor" rows="10" @bind-Value="_model.HtmlAttributesJson" />
+                    </label>
+
+                    <label>
+                        <span class="field-label-row">
+                            <span>JSON-LD objects</span>
+                            <button type="button" class="btn btn-sm btn-outline-secondary copy-button" @onclick="@( () => CopyJsonAsync(_model.JsonLdObjectsJson, "JSON-LD objects") )">Copy</button>
+                        </span>
+                        <InputTextArea class="form-control json-editor" rows="10" @bind-Value="_model.JsonLdObjectsJson" />
+                    </label>
+                </div>
+            </section>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(_copyMessage))
+        {
+            <div class="alert alert-info mt-3">@_copyMessage</div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(_errorMessage))
+        {
+            <div class="alert alert-danger mt-3">@_errorMessage</div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(_statusMessage))
+        {
+            <div class="alert alert-success mt-3">@_statusMessage</div>
+        }
+
+        <div class="editor-actions">
+            <button class="btn btn-primary" type="submit" disabled="@_isSaving">@(_isSaving ? "Saving..." : "Save document")</button>
+            <a class="btn btn-outline-secondary" href="feed-items">Cancel</a>
+        </div>
+    </EditForm>
+}
+
+@code {
+    [Parameter]
+    public string? Id { get; set; }
+
+    private readonly FeedItemEditorModel _model = new();
+    private bool _isLoading = true;
+    private bool _isSaving;
+    private string? _pageTitle = "New feed item";
+    private string? _copyMessage;
+    private string? _errorMessage;
+    private string? _statusMessage;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _isLoading = true;
+        _copyMessage = null;
+        _errorMessage = null;
+        _statusMessage = null;
+
+        _model.Reset();
+
+        if (string.IsNullOrWhiteSpace(Id))
+        {
+            _pageTitle = "New feed item";
+            _model.DateAddedText = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm");
+            _isLoading = false;
+            return;
+        }
+
+        var entity = await Repository.GetAsync(Id);
+        if (entity is null)
+        {
+            _errorMessage = $"Document '{Id}' was not found.";
+            _pageTitle = "Document not found";
+            _isLoading = false;
+            return;
+        }
+
+        FeedItemEditorModel.FromEntity(entity, _model);
+        _pageTitle = string.IsNullOrWhiteSpace(entity.Id) ? "Edit feed item" : $"Edit {entity.Id}";
+        _isLoading = false;
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_isSaving)
+        {
+            return;
+        }
+
+        _isSaving = true;
+        _errorMessage = null;
+        _statusMessage = null;
+        _copyMessage = null;
+
+        try
+        {
+            var entity = _model.ToEntity();
+            var saved = await Repository.SaveAsync(entity);
+
+            _model.Id = saved.Id;
+            _pageTitle = string.IsNullOrWhiteSpace(saved.Id) ? "Feed item saved" : $"Edit {saved.Id}";
+            _statusMessage = "Document saved successfully.";
+
+            if (!string.IsNullOrWhiteSpace(saved.Id) && !string.Equals(Id, saved.Id, StringComparison.Ordinal))
+            {
+                NavigationManager.NavigateTo($"feed-items/edit/{Uri.EscapeDataString(saved.Id)}", replace: true);
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private async Task CopyUrlHashAsync()
+    {
+        await CopyToClipboardAsync(_model.FeedUrlHash, "UrlHash");
+    }
+
+    private async Task CopyJsonAsync(string? value, string label)
+    {
+        await CopyToClipboardAsync(value, label);
+    }
+
+    private async Task CopyToClipboardAsync(string? value, string label)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            _copyMessage = $"{label} is empty.";
+            return;
+        }
+
+        try
+        {
+            await JsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", value);
+            _copyMessage = $"{label} copied to clipboard.";
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+    }
+
+    private sealed class FeedItemEditorModel
+    {
+        public string? Id { get; set; }
+
+        public string? RunIdText { get; set; }
+
+        public string? SiteName { get; set; }
+
+        public string? HostName { get; set; }
+
+        public string? FeedId { get; set; }
+
+        public string? FeedUrl { get; set; }
+
+        public string? FeedUrlHash { get; set; }
+
+        public string? FeedTitle { get; set; }
+
+        public string? FileName { get; set; }
+
+        public string? LinkLocation { get; set; }
+
+        public string? DateAddedText { get; set; }
+
+        public bool IsUrlShortened { get; set; }
+
+        public bool IsHeadline { get; set; }
+
+        public string OpenGraphJson { get; set; } = "{}";
+
+        public string HtmlAttributesJson { get; set; } = "{}";
+
+        public string JsonLdObjectsJson { get; set; } = "[]";
+
+        public void Reset()
+        {
+            Id = null;
+            RunIdText = null;
+            SiteName = null;
+            HostName = null;
+            FeedId = null;
+            FeedUrl = null;
+            FeedUrlHash = null;
+            FeedTitle = null;
+            FileName = null;
+            LinkLocation = null;
+            DateAddedText = null;
+            IsUrlShortened = false;
+            IsHeadline = false;
+            OpenGraphJson = "{}";
+            HtmlAttributesJson = "{}";
+            JsonLdObjectsJson = "[]";
+        }
+
+        public static void FromEntity(RssFeedItem entity, FeedItemEditorModel model)
+        {
+            model.Id = entity.Id;
+            model.RunIdText = entity.RunId == Guid.Empty ? null : entity.RunId.ToString();
+            model.SiteName = entity.SiteName;
+            model.HostName = entity.HostName;
+            model.FeedId = entity.FeedAttributes.FeedId;
+            model.FeedUrl = entity.FeedAttributes.Url;
+            model.FeedUrlHash = entity.FeedAttributes.UrlHash;
+            model.FeedTitle = entity.FeedAttributes.Title;
+            model.FileName = entity.FeedAttributes.FileName;
+            model.LinkLocation = entity.FeedAttributes.LinkLocation;
+            model.DateAddedText = entity.FeedAttributes.DateAdded == default
+                ? null
+                : entity.FeedAttributes.DateAdded.ToString("yyyy-MM-dd HH:mm");
+            model.IsUrlShortened = entity.FeedAttributes.IsUrlShortened;
+            model.IsHeadline = entity.FeedAttributes.IsHeadline;
+            model.OpenGraphJson = JsonConvert.SerializeObject(entity.OpenGraphAttributes ?? [], Formatting.Indented);
+            model.HtmlAttributesJson = JsonConvert.SerializeObject(entity.HtmlAttributes ?? [], Formatting.Indented);
+            model.JsonLdObjectsJson = JsonConvert.SerializeObject(entity.JsonLdObjects ?? [], Formatting.Indented);
+        }
+
+        public RssFeedItem ToEntity()
+        {
+            return new RssFeedItem
+            {
+                Id = string.IsNullOrWhiteSpace(Id) ? null : Id.Trim(),
+                RunId = Guid.TryParse(RunIdText, out var runId) ? runId : Guid.Empty,
+                SiteName = SiteName?.Trim(),
+                HostName = HostName?.Trim(),
+                OpenGraphAttributes = ParseDictionary(OpenGraphJson),
+                HtmlAttributes = ParseDictionary(HtmlAttributesJson),
+                JsonLdObjects = ParseJsonLdObjects(JsonLdObjectsJson),
+                FeedAttributes = new FeedAttributes
+                {
+                    FeedId = FeedId?.Trim(),
+                    Url = FeedUrl?.Trim(),
+                    UrlHash = FeedUrlHash?.Trim(),
+                    Title = FeedTitle?.Trim(),
+                    FileName = FileName?.Trim(),
+                    LinkLocation = LinkLocation?.Trim(),
+                    DateAdded = ParseDateTime(DateAddedText),
+                    IsUrlShortened = IsUrlShortened,
+                    IsHeadline = IsHeadline
+                }
+            };
+        }
+
+        private static Dictionary<string, string> ParseDictionary(string? json)
+        {
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return [];
+            }
+
+            return JsonConvert.DeserializeObject<Dictionary<string, string>>(json) ?? [];
+        }
+
+        private static List<JObject> ParseJsonLdObjects(string? json)
+        {
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return [];
+            }
+
+            return JsonConvert.DeserializeObject<List<JObject>>(json) ?? [];
+        }
+
+        private static DateTime ParseDateTime(string? value)
+        {
+            if (DateTime.TryParse(value, out var parsed))
+            {
+                return parsed;
+            }
+
+            return DateTime.UtcNow;
+        }
+    }
+}
