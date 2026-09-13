@@ -499,7 +499,7 @@
         "Enabled": true,
         "RuleName": "ParagraphTextUseless",
         "RuleExpressionType": "LambdaExpression",
-        "Expression": "text.StartsWith(\"advertisement\", StringComparison.InvariantCultureIgnoreCase) OR text.StartsWith(\"Advertisement -\") OR text.StartsWith(\"Source:\") OR text.StartsWith(\"[Screenshot\") OR text.StartsWith(\"Screenshot/\") OR text == \"Follow Us\" OR text == \"Sign In\" OR text == \"Share this:\" OR text == \"Share\" OR text == \"Leave a comment\" OR text == \"Read next\" OR text == \".\"",
+        "Expression": "text.StartsWith(\"advertisement\", StringComparison.InvariantCultureIgnoreCase) OR text.StartsWith(\"Advertisement -\") OR text.StartsWith(\"Source:\") OR text.StartsWith(\"[Screenshot\") OR text.StartsWith(\"Screenshot/\") OR text == \"Follow Us\" OR text == \"Sign In\" OR text == \"Share this:\" OR text == \"Share\" OR text == \"Leave a comment\" OR text == \"Read next\" OR text == \".\" OR text == \"Article continues below this ad\"",
         "SuccessEvent": "true"
       },
       {
