@@ -83,6 +83,7 @@ public partial class TagParserBase
         FixupElementStyle(document, "blockquote", "border-left: 6px solid #a6a6a6; border-top: 1px solid #cfcfcf; border-right: 1px solid #cfcfcf; border-bottom: 1px solid #cfcfcf; padding-left: 10px; padding-right: 1em; padding-bottom: 1em;");
         RemoveDuplicateImgTag(document);
         RemoveElementPadding(document);
+        RemoveElementPositioning(document);
         RemoveAllTag(document, "noscript");
 
         // Check for embedded videos
@@ -412,6 +413,18 @@ public partial class TagParserBase
             if (element.TagName.ToLower() == "blockquote")
                 continue;
 
+            _log.Information("Replacing {tagName} style attribute {style}", element.TagName, element.GetAttribute("style"));
+            element.RemoveAttribute("style");
+        }
+    }
+
+    private void RemoveElementPositioning(IHtmlDocument document)
+    {
+        var elements = document.All.Where(m => m.HasAttribute("style") && m.GetAttribute("style").Contains("position:absolute"));
+        _log.Debug("{count} elements with a style attribute", elements.Count());
+
+        foreach (var element in elements)
+        {
             _log.Information("Replacing {tagName} style attribute {style}", element.TagName, element.GetAttribute("style"));
             element.RemoveAttribute("style");
         }
