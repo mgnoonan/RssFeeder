@@ -1,10 +1,16 @@
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Serializers;
+using Newtonsoft.Json.Linq;
 using Oakton.Help;
 using RssFeeder.Console;
 using RssFeeder.Console.Commands;
 using RssFeeder.Console.HttpClients;
+using RssFeeder.Models.Serialization;
 
+BsonSerializer.RegisterSerializer<JObject>(new JObjectBsonSerializer());
 
 // Load configuration
 var configBuilder = new ConfigurationBuilder()
@@ -35,12 +41,43 @@ if (isAuditMode)
 }
 else
 {
+    builder.RegisterType<RavenDbRepository>().SingleInstance();
+    builder.RegisterType<CosmosDbRepository>().SingleInstance();
+    builder.RegisterType<MongoDbRepository>().SingleInstance();
+
+    var repositoryProvider = configuration["Database:RepositoryProvider"]
+        ?? configuration["Database:Provider"]
+        ?? "RavenDB";
+    var exportRepositoryProvider = configuration["Database:ExportRepositoryProvider"]
 #if DEBUG
-    builder.RegisterType<RavenDbRepository>().As<IExportRepository>();
+        ?? "RavenDB";
 #else
-    builder.RegisterType<CosmosDbRepository>().As<IExportRepository>();
+        ?? "CosmosDB";
 #endif
-    builder.RegisterType<RavenDbRepository>().As<IRepository>();
+
+    builder.Register(context => repositoryProvider.ToUpperInvariant() switch
+        {
+            "RAVENDB" => (IRepository)context.Resolve<RavenDbRepository>(),
+            "COSMOSDB" => context.Resolve<CosmosDbRepository>(),
+            "MONGODB" => context.Resolve<MongoDbRepository>(),
+            _ => throw new InvalidOperationException(
+                $"Unsupported Database:RepositoryProvider '{repositoryProvider}'. Supported values are RavenDB, CosmosDB, and MongoDB.")
+        })
+        .As<IRepository>()
+        .SingleInstance();
+
+    builder.Register(context => exportRepositoryProvider.ToUpperInvariant() switch
+        {
+            "RAVENDB" => (IExportRepository)context.Resolve<RavenDbRepository>(),
+            "COSMOSDB" => context.Resolve<CosmosDbRepository>(),
+            "MONGODB" => context.Resolve<MongoDbRepository>(),
+            _ => throw new InvalidOperationException(
+                $"Unsupported Database:ExportRepositoryProvider '{exportRepositoryProvider}'. Supported values are RavenDB, CosmosDB, and MongoDB.")
+        })
+        .As<IExportRepository>()
+        .SingleInstance();
+
+    BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
 }
 
 builder.RegisterType<ArticleExporter>().As<IArticleExporter>();

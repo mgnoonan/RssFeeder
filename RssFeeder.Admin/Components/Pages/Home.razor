@@ -1,4 +1,6 @@
 ﻿@page "/dashboard"
+@rendermode InteractiveServer
+@inject ICrawlerRunService CrawlerRunService
 
 <PageTitle>Dashboard</PageTitle>
 
@@ -6,19 +8,40 @@
 	<p class="eyebrow">Admin overview</p>
 	<h1>RssFeeder admin</h1>
 	<p class="hero-copy">
-		Inspect and edit the documents stored in the local <strong>feed-items</strong> RavenDB database.
+		Inspect and edit the documents stored in the local <strong>feed-items</strong> MongoDB database.
 	</p>
 
 	<div class="hero-actions">
 		<a class="btn btn-primary" href="feed-items">Open feed items</a>
 		<a class="btn btn-outline-secondary" href="/">Go to list</a>
+		<button class="btn btn-outline-secondary" @onclick="RunAuditAsync" disabled="@_isAuditRunning">
+			@(_isAuditRunning ? "Running audit..." : "Run feed audit")
+		</button>
 	</div>
 </section>
+
+@if (!string.IsNullOrWhiteSpace(_auditMessage))
+{
+	<div class="alert @(_auditSucceeded ? "alert-success" : "alert-danger")">@_auditMessage</div>
+}
+
+@if (!string.IsNullOrWhiteSpace(_auditOutput))
+{
+	<section class="panel-card">
+		<div class="panel-header">
+			<div>
+				<h2>Latest audit output</h2>
+				<p>The audit uses feed-all.json and does not persist feed items.</p>
+			</div>
+		</div>
+		<pre class="crawler-output">@_auditOutput</pre>
+	</section>
+}
 
 <section class="card-grid">
 	<article class="info-card">
 		<h2>Database</h2>
-		<p>Connected to <strong>http://127.0.0.1:8080</strong> and the <strong>feed-items</strong> database.</p>
+		<p>Connected through Aspire to the <strong>feed-items</strong> MongoDB database.</p>
 	</article>
 
 	<article class="info-card">
@@ -31,3 +54,36 @@
 		<p>Edits cover the shared <strong>RssFeedItem</strong> model, including feed metadata and JSON blobs.</p>
 	</article>
 </section>
+
+@code {
+	private bool _isAuditRunning;
+	private bool _auditSucceeded;
+	private string? _auditMessage;
+	private string? _auditOutput;
+
+	private async Task RunAuditAsync()
+	{
+		_isAuditRunning = true;
+		_auditMessage = null;
+		_auditOutput = null;
+
+		try
+		{
+			var result = await CrawlerRunService.RunAuditAsync();
+			_auditSucceeded = result.ExitCode == 0;
+			_auditMessage = _auditSucceeded
+				? "The feed audit completed successfully."
+				: $"The feed audit exited with code {result.ExitCode}.";
+			_auditOutput = result.Output;
+		}
+		catch (Exception ex)
+		{
+			_auditSucceeded = false;
+			_auditMessage = $"Unable to run the feed audit: {ex.Message}";
+		}
+		finally
+		{
+			_isAuditRunning = false;
+		}
+	}
+}

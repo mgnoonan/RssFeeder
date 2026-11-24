@@ -1,9 +1,10 @@
 @page "/"
 @page "/feed-items"
 @rendermode InteractiveServer
+@using MongoDB.Driver
 
 @inject IFeedItemRepository Repository
-@inject IOptions<RavenDbOptions> RavenDbOptions
+@inject IMongoDatabase MongoDatabase
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JsRuntime
 
@@ -11,10 +12,10 @@
 
 <section class="hero-panel compact">
     <div>
-        <p class="eyebrow">RavenDB browser</p>
+        <p class="eyebrow">MongoDB browser</p>
         <h1>Feed items</h1>
         <p class="hero-copy">
-            Manage documents in <strong>@RavenDbOptions.Value.Database</strong> on <strong>@RavenDbOptions.Value.Url</strong>.
+            Manage documents in the <strong>@MongoDatabase.DatabaseNamespace.DatabaseName</strong> MongoDB database.
         </p>
     </div>
 
@@ -35,7 +36,7 @@
     </div>
     <div class="stat-tile">
         <span class="stat-label">Database</span>
-        <strong>@RavenDbOptions.Value.Database</strong>
+        <strong>@MongoDatabase.DatabaseNamespace.DatabaseName</strong>
     </div>
 </section>
 
@@ -166,7 +167,7 @@
 
         try
         {
-            _items = (await Repository.GetFeedItemsAsync(RavenDbOptions.Value.DefaultTake)).ToList();
+            _items = (await Repository.GetFeedItemsAsync(200)).ToList();
             ApplyFilter();
         }
         catch (Exception ex)

@@ -8,11 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="RavenDB.Client" Version="7.1.7" />
+    <ProjectReference Include="..\RssFeeder.Models\RssFeeder.Models.csproj" />
+    <ProjectReference Include="..\RssFeeder.ServiceDefaults\RssFeeder.ServiceDefaults.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\RssFeeder.Models\RssFeeder.Models.csproj" />
+    <PackageReference Include="Aspire.MongoDB.Driver" Version="17.0.0" />
   </ItemGroup>
 
 </Project>

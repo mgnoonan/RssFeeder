@@ -1,7 +1,18 @@
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Serializers;
+using Newtonsoft.Json.Linq;
 using RssFeeder.Admin.Components;
 using RssFeeder.Admin.Services;
+using RssFeeder.Models.Serialization;
+
+BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
+BsonSerializer.RegisterSerializer<JObject>(new JObjectBsonSerializer());
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.AddServiceDefaults();
+builder.AddMongoDBClient("feed-items");
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -10,8 +21,8 @@ builder.Services.AddRazorComponents()
         options.DetailedErrors = builder.Environment.IsDevelopment();
     });
 
-builder.Services.Configure<RavenDbOptions>(builder.Configuration.GetSection(RavenDbOptions.SectionName));
-builder.Services.AddSingleton<IFeedItemRepository, RavenDbFeedItemRepository>();
+builder.Services.AddSingleton<IFeedItemRepository, MongoDbFeedItemRepository>();
+builder.Services.AddSingleton<ICrawlerRunService, CrawlerRunService>();
 
 var app = builder.Build();
 
@@ -34,5 +45,6 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+app.MapDefaultEndpoints();
 
 app.Run();
