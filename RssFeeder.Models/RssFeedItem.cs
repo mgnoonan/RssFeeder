@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace RssFeeder.Models;
 
+[BsonIgnoreExtraElements]
 public record RssFeedItem
 {
     public RssFeedItem()
